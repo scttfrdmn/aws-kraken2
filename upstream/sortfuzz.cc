@@ -27,8 +27,8 @@
 // and then runs the unspecialized primary template on the same range through plain pointers, so
 // the algorithm, the comparisons and the moves are libstdc++'s own. libstdc++ is not modified.
 // The comparator type at that call depends on the library: GCC < 16 wraps it in
-// __gnu_cxx::__ops::_Iter_comp_iter<C>, GCC 16 passes C itself; both specializations are
-// declared where the type exists. If neither matched, the count would stay 0 on every case and
+// __gnu_cxx::__ops::_Iter_comp_iter<C>, GCC 16 passes C itself; the matching specialization is
+// chosen by _GLIBCXX_RELEASE. If neither matched, the count would stay 0 on every case and
 // the Go driver fails (a corpus that never reaches the fallback is a failure), so a mismatch is
 // loud, not silent. Every case is also sorted a second time with plain std::sort on
 // std::vector<uint64_t>::iterator, exactly upstream's call; any difference from the TagIt sort
@@ -102,12 +102,13 @@ struct Comp {
 }  // namespace
 
 namespace std {
+#if _GLIBCXX_RELEASE >= 16
 template <>
 inline void __partial_sort<TagIt, Comp>(TagIt first, TagIt middle, TagIt last, Comp comp) {
   g_heap++;
   std::__partial_sort<uint64_t *, Comp>(first.p, middle.p, last.p, comp);
 }
-#if _GLIBCXX_RELEASE < 16
+#else
 template <>
 inline void __partial_sort<TagIt, __gnu_cxx::__ops::_Iter_comp_iter<Comp> >(
     TagIt first, TagIt middle, TagIt last, __gnu_cxx::__ops::_Iter_comp_iter<Comp> comp) {
