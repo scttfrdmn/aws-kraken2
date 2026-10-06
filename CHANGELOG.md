@@ -46,6 +46,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - helper errors and state kept in files, so subshell errors count;
   - KILL for a hung tee;
   - shim content and self-test verification.
+- Pin identity is the commit SHA: every manifest writer (`run.sh`, `oracle.sh`, `g0b.sh`,
+  `equiv-seqout.sh`, `classify-oracle.sh`, `harness-build.sh`) records the full upstream SHA and
+  its `git describe --tags`, computed by `scripts/pin-identity.sh` from `scripts/pin.env` and
+  the oracle source checkout.
+- `make tag-objects` (`scripts/tag-objects.sh`, `docs/tag-objects.md`): `project=aws-kraken2`
+  plus `kind=data|payload|results` on every object under the project prefix. `stage-db.sh`,
+  `stage-reads.sh` and `run.sh` tag at write time, and `run.sh` tags the run prefix after each
+  run (the instance role cannot tag). The first run tagged 134 objects.
+- spawn 0.123.0: `scripts/udsize` is bumped to v0.123.0. The user-data builders were re-read
+  (only the bootstrap's #707 `$-` announcement changed).
 - User data:
   - `command[2]` is now `scripts/stub.sh` (region assert, presigned GET, sha256 check, exec);
     the preamble and body travel as `<run prefix>/payload.sh`;

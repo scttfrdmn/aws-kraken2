@@ -8,6 +8,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . scripts/pin.env
 . scripts/paths.sh
+. scripts/pin-identity.sh
+pin_identity || { echo "$(basename "$0"): cannot establish the upstream pin identity" >&2; exit 1; }
 K2="$ORACLE_DST"
 DB=${DB:-$K2_DB_ROOT/k2_viral_20260626}
 READS=${READS:-$K2_READS/SRR062634_200000}
@@ -57,7 +59,8 @@ for mode in se pe; do
     2>"$OUT/$mode/flagunique.log"
 done
 {
-  echo "pin $UPSTREAM_PIN"
+  echo "pin $UPSTREAM_SHA"
+  echo "pin_describe $UPSTREAM_DESCRIBE"
   cat "$K2/BUILD"
   echo "db $DB"
   cat "$DB/SOURCE" 2>/dev/null || true

@@ -1,6 +1,6 @@
 # spore.host in this repo
 
-How aws-kraken2 uses spawn, truffle, lagotto, spored and cohort. Verified against spawn 0.121.0
+How aws-kraken2 uses spawn, truffle, lagotto, spored and cohort. Verified against spawn 0.121.0, re-checked for 0.123.0
 (source: `spore-host/spawn` tag `v0.121.0`, `pkg/taskproto/`, `cmd/task.go`,
 `pkg/launcher/bootstrap.go`) and truffle 0.57.1. Every AWS run goes through `make run`
 ([run.md](run.md)), never through raw `spawn launch`.
@@ -115,5 +115,6 @@ means wrong region.
 | launch region | spawn could place the task elsewhere | `run.sh` terminates and fails if `launch.json` region != `AK2_REGION` |
 | tmpfs | `/tmp` is about RAM/2 whatever `disk_gib` says | size `memory_gib` or stage to a non-`/tmp` path |
 | user-data cap | 16384 bytes after base64 decoding; spawn gzips its bootstrap and uses about 10.4 KB itself | `command[2]` is `scripts/stub.sh`; preamble and body travel as a sha256-checked payload via a presigned URL; `run.sh` measures with spawn's own builders (`scripts/udsize`) |
+| 0.123.0 changes | `spawn-command.sh` now prints `$-` and an errexit warning (#707); `task status`/`--wait` read completion records again (#715: v0.117.0–v0.121.0 looked under `<task_id>/<task_id>/`). Wrapper, flush hook and `Provision` are unchanged | `run.sh` polls `<results_prefix>/<task_id>/completion.json` itself, so #715 never affected it; `scripts/udsize` is pinned to v0.123.0 and `run.sh` refuses a mismatched `spawn version` |
 | slow sizing | `task run` sizing (truffle search + live price per candidate) took ~4 min per call in 0.121.0 | `run.sh` sizes once (`--dry-run`) and pins `instance_type` for the launch |
 | local Docker | macOS lies about sticky bits, cgroup memory and CPU features | the AWS run is the only verdict |

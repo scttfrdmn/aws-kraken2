@@ -31,7 +31,7 @@ cat <<EOF
 | | |
 |---|---|
 | commit | \`$(m .commit)\` (tree dirty: $(m .tree_dirty)) |
-| upstream pin | \`$(m .upstream.pin)\` |
+| upstream pin | \`$(m .upstream.pin)\` (describe \`$(m .upstream.describe)\`) |
 | spec | \`$(m .spec)\` (sha256 \`$(m .spec_sha256 | cut -c1-12)\`) |
 | instance | $(m .instance.count) × \`$(m .instance.type)\` ($(m .instance.lifecycle)), AMI \`$(m .instance.ami)\` |
 | region / AZ | $(m .region) / $(m .instance.az) |
@@ -44,6 +44,7 @@ cat <<EOF
 | preflight region | $(m .preflight.region), asserted equal to the region of each declared bucket ($(m '.preflight.buckets // [] | map(.bucket) | join(", ")')) before the spec body ran |
 | bucket allow-list | $(jq -r 'if .allowed_buckets == null then "none: this run predates the allow-list" else (.allowed_buckets | join(", ")) + ". `aws s3`/`s3api` calls outside it were refused; curl and SDK calls are not covered" end' "$M") |
 | drop_caches usable | $(m .preflight.drop_caches_ok) |
+| object tags | ok=$(m .object_tags.ok): $(m .object_tags.line) |
 | S3 requests (spec-recorded) | $(m '.requests.total') |
 | sample accessions | $(jq -r 'if (.sample_accessions|length)==0 then "none" else .sample_accessions|join(", ") end' "$M") |
 | tools | spawn $(m .tools.spawn), truffle $(m .tools.truffle) |
