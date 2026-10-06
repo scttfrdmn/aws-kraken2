@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify tag-objects
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -54,6 +54,10 @@ oracle-classify:
 	K2_CLASSIFY_ORACLE="$(abspath $(CLASSIFY_ORACLE))" $(GO) test -count=1 -v -run Equiv \
 		./internal/classify/ > "$(CLASSIFY_ORACLE)/equiv.log" 2>&1; s=$$?; \
 		cat "$(CLASSIFY_ORACLE)/equiv.log"; exit $$s
+
+# Object tags on everything under the project's S3 prefix (docs/tag-objects.md).
+tag-objects:
+	scripts/tag-objects.sh $(PREFIX)
 
 ami:
 	scripts/ami.sh

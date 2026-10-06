@@ -13,6 +13,8 @@ cd "$(dirname "$0")/.." || exit 1
 . scripts/pin.env
 . scripts/paths.sh
 . scripts/ak2.env
+# shellcheck source=/dev/null
+. scripts/lib/tags.sh
 export AWS_PROFILE
 echo "stage-db: shell flags $-"
 case "${1:-}" in
@@ -31,14 +33,18 @@ for f in hash.k2d opts.k2d taxo.k2d SOURCE; do
   h=$(sha "$SRC/$f")
   have=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$KEY/$f" \
            --query 'Metadata.sha256' --output text 2>/dev/null)
-  if [ "$have" = "$h" ]; then echo "stage-db: $f present (sha256 $h)"; continue; fi
+  if [ "$have" = "$h" ]; then
+    t=$(ak2_tag_object "$BUCKET" "$KEY/$f" data) || { echo "stage-db: tagging $f failed" >&2; FAILED=1; continue; }
+    echo "stage-db: $f present (sha256 $h; tags $t)"; continue
+  fi
   aws s3 cp --only-show-errors --region us-west-2 --metadata "sha256=$h" "$SRC/$f" "s3://$BUCKET/$KEY/$f" \
     || { echo "stage-db: upload of $f failed" >&2; FAILED=1; continue; }
   got=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$KEY/$f" \
           --query '[Metadata.sha256, ContentLength]' --output text)
   [ "$got" = "$h	$(wc -c < "$SRC/$f" | tr -d ' ')" ] \
     || { echo "stage-db: $f: head-object says '$got'" >&2; FAILED=1; continue; }
-  echo "stage-db: $f uploaded (sha256 $h)"
+  t=$(ak2_tag_object "$BUCKET" "$KEY/$f" data) || { echo "stage-db: tagging $f failed" >&2; FAILED=1; continue; }
+  echo "stage-db: $f uploaded (sha256 $h; tags $t)"
 done
 [ "$FAILED" = 0 ] || exit 1
 echo "s3://$BUCKET/$KEY/"

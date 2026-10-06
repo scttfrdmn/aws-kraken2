@@ -13,6 +13,8 @@ cd "$ROOT" || exit 2
 . scripts/pin-identity.sh
 # shellcheck source=/dev/null
 . scripts/ak2.env
+# shellcheck source=/dev/null
+. scripts/lib/tags.sh
 export AWS_PROFILE
 
 GATE=${1:-}
@@ -292,6 +294,8 @@ fi
 aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD" "$PAYLOAD_URI" || die "could not upload the payload to $PAYLOAD_URI"
 GOT=$(aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD_URI" - | shasum -a 256 | cut -d' ' -f1)
 [ "$GOT" = "$PAYLOAD_SHA" ] || die "uploaded payload sha256 $GOT != $PAYLOAD_SHA"
+ak2_tag_object "$RESULTS_BUCKET" "${PAYLOAD_URI#s3://$RESULTS_BUCKET/}" payload >/dev/null ||
+  die "could not tag the payload object"
 LAUNCH_AT=$(now)
 spawn task run --spec "$LIVE_SPEC" --region "$REGION" -o json > "$RUN_DIR/launch.json" 2> "$RUN_DIR/launch.err"
 LRC=$?
@@ -358,6 +362,10 @@ for _ in $(seq 1 40); do
   sleep 15
 done
 aws s3 cp --only-show-errors --recursive "$PREFIX/" "$RUN_DIR/" || say "WARNING: fetch of $PREFIX failed"
+# The instance role has PutObject but not PutObjectTagging, so what the preamble and spawn wrote
+# under the run prefix is tagged here, after the run.
+TAGLINE=$(scripts/tag-objects.sh "$PREFIX/" 2>&1) || say "WARNING: $TAGLINE"
+say "$TAGLINE"
 DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json)
 # StateTransitionReason carries the termination time: "User initiated (2026-10-05 18:40:12 GMT)".
 END_AT=$(echo "$DESC" | jq -r '.StateTransitionReason' | sed -n 's/.*(\([0-9-]* [0-9:]*\) GMT).*/\1/p')
