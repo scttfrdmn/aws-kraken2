@@ -200,9 +200,14 @@ type Mismatch struct {
 	WantAmbig, GotAmbig bool
 	WantCount           int  // upstream's minimizer count for the record
 	WantEnded, GotEnded bool // one stream ended at Index
+	Batch               bool // the mismatch is in AppendMinimizers' stream, not Next's
 }
 
 func (m *Mismatch) String() string {
+	if m.Batch {
+		return fmt.Sprintf("AppendMinimizers: minimizer #%d: upstream %#016x ambig=%v, Go %#016x (count upstream %d)",
+			m.Index, m.Want, m.WantAmbig, m.Got, m.WantCount)
+	}
 	switch {
 	case m.GotEnded:
 		return fmt.Sprintf("minimizer #%d: Go stream ended; upstream has %#016x ambig=%v (upstream count %d)",
@@ -216,8 +221,41 @@ func (m *Mismatch) String() string {
 }
 
 // Check rescans rec.Seq over [rec.Start, rec.Finish) with s and compares the stream.
-// It returns nil on an exact match (values, ambiguous flags and length).
+// It returns nil on an exact match (values, ambiguous flags and length). For a record over the
+// whole sequence (the way classify scans), it then also checks AppendMinimizers, the batched
+// form classify uses: its output must be upstream's stream with ambiguous positions as
+// mmscan.Ambiguous.
 func Check(s *mmscan.Scanner, rec *Record) *Mismatch {
+	if m := checkNext(s, rec); m != nil {
+		return m
+	}
+	n := uint64(len(rec.Seq))
+	if rec.Start != 0 || rec.Finish < n {
+		return nil
+	}
+	got := s.AppendMinimizers(rec.Seq, nil)
+	for i, want := range rec.Minimizers {
+		w := want
+		if rec.Ambiguous[i] {
+			w = mmscan.Ambiguous
+		}
+		if i >= len(got) || got[i] != w {
+			g := uint64(0)
+			if i < len(got) {
+				g = got[i]
+			}
+			return &Mismatch{Index: i, Want: want, WantAmbig: rec.Ambiguous[i], Got: g,
+				WantCount: len(rec.Minimizers), Batch: true}
+		}
+	}
+	if len(got) != len(rec.Minimizers) {
+		return &Mismatch{Index: len(rec.Minimizers), Got: got[len(rec.Minimizers)],
+			WantCount: len(rec.Minimizers), Batch: true}
+	}
+	return nil
+}
+
+func checkNext(s *mmscan.Scanner, rec *Record) *Mismatch {
 	n := uint64(len(rec.Seq))
 	finish := min(rec.Finish, n) // upstream clamps finish_ to str_len_
 	start := min(rec.Start, n+1) // any start > finish behaves the same
