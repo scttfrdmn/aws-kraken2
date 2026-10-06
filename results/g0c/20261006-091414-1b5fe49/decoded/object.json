@@ -4,5 +4,6 @@
   "version_id": "null",
   "size": 1189091671800,
   "sha256": "bc6c65498309a6a32b121edec171a7d2189493020b2014e9c7f6c4cf0e96382c",
-  "sha256_source": "out/pass/summary.json"
+  "sha256_source": "out/pass/summary.json",
+  "sha256_check": "tables/checks.tsv all yes: ETag equal at launch, before, on every GET (If-Match + response ETag/Content-Range) and after; bytes streamed == object size; complete pass"
 }

@@ -44,6 +44,7 @@
 | size | 1189091671800 |
 | sha256 | bc6c65498309a6a32b121edec171a7d2189493020b2014e9c7f6c4cf0e96382c |
 | sha256_source | out/pass/summary.json |
+| sha256_check | tables/checks.tsv all yes: ETag equal at launch, before, on every GET (If-Match + response ETag/Content-Range) and after; bytes streamed == object size; complete pass |
 
 **decoded/pass.json**
 
@@ -83,7 +84,6 @@
 | theory_mean_run | 4.619792880950121 |
 | miss_probes_from_runs | 5.994749487612913 |
 | knuth_miss_probes | 6.023390121783806 |
-| knuth_hit_probes | 2.161834847658426 |
 | chunk_bytes | 67108864 |
 | workers | 48 |
 | window | 72 |
@@ -102,13 +102,14 @@
 | scan_gb_per_s_per_worker | 1.264095334171301 |
 | get_requests | 17720 |
 | get_retries | 0 |
+| knuth_hit_probes_uniform_key_null | 2.161834847658426 |
 
 **decoded/provenance.json**
 
 | field | value |
 |---|---|
-| decoded_at_commit | 1b5fe49030b75ea6278ae78826f2f502db10b51a |
-| decoded_at | 2026-10-06T09:29:34Z |
+| decoded_at_commit | b27b55f0dba89f70fac98af6620bd0b42cbcac52 |
+| decoded_at | 2026-10-06T09:53:01Z |
 | decoder | scripts/post/g0c-runs.sh (k2probe runs output) |
 
 **decoded/rules.json**
@@ -119,6 +120,20 @@
 | tail_rule | tail(b) = 0 if slot b-1 is empty, else run_past(b) + 1: the occupied cells from b on (mod C) plus the empty cell that stops a miss probing from b-1; tail(N) = max over its N boundaries |
 | theory | expected runs of length L = (C - occupied) * e^{-a(L+1)} (a(L+1))^L / (L+1)!, a = occupied/C (Borel; Poisson model of linear probing: Flajolet, Poblete & Viola 1998; Knuth TAOCP 3, 6.4) |
 | knuth | hit 1/2(1+1/(1-a)), miss 1/2(1+1/(1-a)^2) |
+
+**decoded/theory-tail.json**
+
+| field | value |
+|---|---|
+| rel_residual_65_128 | -0.049125135 |
+| rel_residual_129_256 | -0.16032093 |
+| observed_257_512 | 35 |
+| theory_257_512 | 82.299249 |
+| longest_run | 302 |
+| observed_runs_ge_longest | 1 |
+| theory_runs_ge_longest | 5.023815539137876 |
+| borel_over_predicts_long_tail | true |
+| source | out/pass/hist.tsv, out/pass/hist-raw.tsv, out/pass/summary.json |
 
 **tables/boundaries.tsv**
 
@@ -192,7 +207,7 @@ _60 of 64 rows shown; full table in the file._
 | check | observed | expected | ok |
 |---|---|---|---|
 | ETag: instance head-object before the pass | f80959f9556b50d76b3e744afdd3b22a-8860 | f80959f9556b50d76b3e744afdd3b22a-8860 | yes |
-| ETag: k2probe If-Match (every GET) | f80959f9556b50d76b3e744afdd3b22a-8860 | f80959f9556b50d76b3e744afdd3b22a-8860 | yes |
+| ETag: k2probe -etag, enforced in internal/rangeread as If-Match on every GET plus a check of each response's ETag and Content-Range | f80959f9556b50d76b3e744afdd3b22a-8860 | f80959f9556b50d76b3e744afdd3b22a-8860 | yes |
 | ETag: instance head-object after the pass | f80959f9556b50d76b3e744afdd3b22a-8860 | f80959f9556b50d76b3e744afdd3b22a-8860 | yes |
 | bytes streamed | 1189091671800 | 1189091671800 | yes |
 | complete pass | true | true | yes |
@@ -315,14 +330,15 @@ _60 of 67 rows shown; full table in the file._
 | file | bytes | sha256 |
 |---|---|---|
 | completion.json | 386 | `121c51a7e046c3cf` |
-| decoded/object.json | 314 | `e56063eb0d92d196` |
-| decoded/pass.json | 1825 | `95c1f10408de67a3` |
-| decoded/provenance.json | 173 | `a6f91c6cf44a7161` |
+| decoded/object.json | 502 | `9ae7fe7c0ba781ac` |
+| decoded/pass.json | 1842 | `03c03e2b7d756887` |
+| decoded/provenance.json | 173 | `333a5c48121b17ea` |
 | decoded/rules.json | 660 | `631237564c9720f0` |
+| decoded/theory-tail.json | 360 | `b206b0b362c2bf83` |
 | launch.err | 99 | `24508761f81a6d0b` |
 | launch.json | 165 | `53c699ffb188d765` |
 | log/run.log | 10543 | `c579fb5a9f6b818b` |
-| manifest.json | 6484 | `204b869f444a0915` |
+| manifest.json | 6661 | `fe5448d7ce561473` |
 | out/head-hash.k2d.after.json | 317 | `00588412d0516cf8` |
 | out/head-hash.k2d.json | 317 | `00588412d0516cf8` |
 | out/pass/boundaries.tsv | 2626 | `e2e4c41c19a985da` |
@@ -334,13 +350,14 @@ _60 of 67 rows shown; full table in the file._
 | out/requests.tsv | 452 | `9a2f01038f9f401b` |
 | payload.sh | 18329 | `3eb304e92aa8e754` |
 | preflight.json | 497 | `1c75ebaf7c641c9d` |
+| report.md | 18078 | `1dcf17f532cfe749` |
 | spawn-plan.txt | 2801 | `bf266a4636d760c9` |
 | spawn/ak2-g0c-20261006-091414-1b5fe49/command.log | 11049 | `2eebdd6ebe1ec777` |
 | spawn/ak2-g0c-20261006-091414-1b5fe49/completion.json | 386 | `121c51a7e046c3cf` |
 | spec.json | 4929 | `83e3585564acf66e` |
 | spec.resolved.json | 3653 | `078f28424a92052c` |
 | tables/boundaries.tsv | 2626 | `e2e4c41c19a985da` |
-| tables/checks.tsv | 651 | `ec5bf80ee57c0881` |
+| tables/checks.tsv | 748 | `df170c74c964a41b` |
 | tables/hist.tsv | 4074 | `4fd6a316cfb028dd` |
 | tables/phases.tsv | 289 | `6c982e77aea61619` |
 | tables/rates.tsv | 323 | `907d93ed5b1d82d7` |

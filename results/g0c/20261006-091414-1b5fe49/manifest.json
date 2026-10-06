@@ -44,7 +44,8 @@
       "size": 1189091671800,
       "last_modified": "2023-08-30T13:49:06+00:00",
       "sha256": "bc6c65498309a6a32b121edec171a7d2189493020b2014e9c7f6c4cf0e96382c",
-      "sha256_source": "out/pass/summary.json (k2probe runs, one streaming pass, If-Match etag)"
+      "sha256_source": "out/pass/summary.json (k2probe runs, one streaming pass)",
+      "sha256_check": "tables/checks.tsv all yes: ETag equal at launch, before, on every GET (If-Match + response ETag/Content-Range) and after; bytes streamed == object size; complete pass"
     },
     {
       "uri": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d",

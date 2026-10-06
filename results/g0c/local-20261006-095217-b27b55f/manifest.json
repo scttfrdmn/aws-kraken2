@@ -1,0 +1,47 @@
+{
+  "gate": "g0c",
+  "part": "local",
+  "commit": "b27b55f0dba89f70fac98af6620bd0b42cbcac52",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "finished": "2026-10-06T09:52:43Z",
+  "host": "Darwin arm64",
+  "go": "go version go1.27.1 darwin/arm64",
+  "sha256_tool": "/sbin/sha256sum",
+  "invocation": "make g0c PART=local",
+  "databases": [
+    {
+      "db": "k2_viral_20260626",
+      "source": "source s3://genome-idx/kraken/k2_viral_20260626.tar.gz etag \"df6f9dd95095a9ea2e0cfc580b0f684a-69\" fetched 2026-10-06T00:17:31Z ",
+      "sha256_streamed": "1bd239b207e1d0f679f910cf323c9b6894fdb85c80f0358fa144aca25a7bdfa7",
+      "sha256_local_tool": "1bd239b207e1d0f679f910cf323c9b6894fdb85c80f0358fa144aca25a7bdfa7",
+      "brute_identical": true,
+      "cells": 162183314,
+      "capacity": 162183314,
+      "occupied": 113651066,
+      "header_size": 113651066,
+      "runs": 24458326,
+      "longest_run": 216,
+      "ok": "yes"
+    },
+    {
+      "db": "k2_standard_08_GB_20260626",
+      "source": "source s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz etag \"815577bbfd245c6e337f1bea41fae968-709\" fetched 2026-10-06T01:19:22Z ",
+      "sha256_streamed": "6c60e422b621b8116b7a3451fe25c682edfcf7c159c0ef757fb7de271b318d46",
+      "sha256_local_tool": "6c60e422b621b8116b7a3451fe25c682edfcf7c159c0ef757fb7de271b318d46",
+      "brute_identical": true,
+      "cells": 2000000000,
+      "capacity": 2000000000,
+      "occupied": 1399434069,
+      "header_size": 1399434069,
+      "runs": 302305058,
+      "longest_run": 254,
+      "ok": "yes"
+    }
+  ]
+}

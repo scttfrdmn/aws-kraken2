@@ -1,0 +1,75 @@
+ak2: log tee up
+ak2-phase	2026-10-06T09:53:24Z	1791280404	preamble	no
+ak2: [2026-10-06T09:53:24Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T09:53:25Z] after set +e $-=hBc
+ak2: [2026-10-06T09:53:25Z] gate=g0c run=20261006-095218-b27b55f
+ak2: [2026-10-06T09:53:25Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T09:53:25Z] imds region=us-west-2 az=us-west-2c instance=i-005892199c7e03e5c type=c7g.large ami=ami-09325776a00699513
+ak2: [2026-10-06T09:53:25Z] bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-06T09:53:26Z] bucket cookbook-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-06T09:53:26Z] WARN: could not read Payer of cookbook-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-06T09:53:26Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-06T09:53:27Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-06T09:53:27Z] region assert passed
+ak2: [2026-10-06T09:53:27Z] drop_caches_ok=true
+ak2: [2026-10-06T09:53:27Z] preamble done; spec body starts
+ak2-phase	2026-10-06T09:53:27Z	1791280407	body	no
+ak2-phase	2026-10-06T09:53:27Z	1791280407	setup	no
+ak2: [2026-10-06T09:53:56Z] checkout b27b55f head=b27b55f0dba89f70fac98af6620bd0b42cbcac52
+ak2: [2026-10-06T09:54:19Z] go: go version go1.27.1 linux/arm64; k2probe built; nproc 2; mem_gib 3
+ak2-phase	2026-10-06T09:54:19Z	1791280459	head	no
+ak2: [2026-10-06T09:54:20Z] pushed out/head-hash.k2d.json
+ak2: [2026-10-06T09:54:20Z] hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800 version=null
+ak2-phase	2026-10-06T09:54:20Z	1791280460	fetch	no
+ak2: [2026-10-06T09:54:21Z] pushed out/opts.k2d
+ak2: [2026-10-06T09:54:21Z] pushed out/opts.k2d.get.json
+ak2: [2026-10-06T09:54:22Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE -> /home/ec2-user/ak2/reads/SRR062634_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T09:54:22Z] staged aws-kraken2/data/reads/SRR062634_200000.SOURCE bytes=400 sha256=6d38490b67153a1acd8fce4f0e49fc45024bed6c813dd6537dc0093990d57f4c object-metadata=6d38490b67153a1acd8fce4f0e49fc45024bed6c813dd6537dc0093990d57f4c
+ak2: [2026-10-06T09:54:23Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq -> /home/ec2-user/ak2/reads/SRR062634_200000_1.fq (51895574 bytes)
+ak2: [2026-10-06T09:54:23Z] staged aws-kraken2/data/reads/SRR062634_200000_1.fq bytes=51895574 sha256=7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 object-metadata=7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5
+ak2: [2026-10-06T09:54:24Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq -> /home/ec2-user/ak2/reads/SRR062634_200000_2.fq (51895574 bytes)
+ak2: [2026-10-06T09:54:25Z] staged aws-kraken2/data/reads/SRR062634_200000_2.fq bytes=51895574 sha256=e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 object-metadata=e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1
+ak2: [2026-10-06T09:54:25Z] reads SRR062634 verified against SOURCE
+ak2: [2026-10-06T09:54:26Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000.SOURCE -> /home/ec2-user/ak2/reads/ERR478965_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T09:54:26Z] staged aws-kraken2/data/reads/ERR478965_200000.SOURCE bytes=400 sha256=19128ba212d865300b586dcb73d4e9543137f500e03f48cde8ce33c7e2fb3d89 object-metadata=19128ba212d865300b586dcb73d4e9543137f500e03f48cde8ce33c7e2fb3d89
+ak2: [2026-10-06T09:54:27Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq -> /home/ec2-user/ak2/reads/ERR478965_200000_1.fq (47238491 bytes)
+ak2: [2026-10-06T09:54:27Z] staged aws-kraken2/data/reads/ERR478965_200000_1.fq bytes=47238491 sha256=385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be object-metadata=385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be
+ak2: [2026-10-06T09:54:28Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq -> /home/ec2-user/ak2/reads/ERR478965_200000_2.fq (47075003 bytes)
+ak2: [2026-10-06T09:54:29Z] staged aws-kraken2/data/reads/ERR478965_200000_2.fq bytes=47075003 sha256=71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 object-metadata=71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7
+ak2: [2026-10-06T09:54:29Z] reads ERR478965 verified against SOURCE
+ak2: [2026-10-06T09:54:29Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000.SOURCE -> /home/ec2-user/ak2/reads/ERR598966_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T09:54:30Z] staged aws-kraken2/data/reads/ERR598966_200000.SOURCE bytes=400 sha256=0ebfd8450300ef117b1cc54218e354d2a0155728e0111aab00c61403b8fdb225 object-metadata=0ebfd8450300ef117b1cc54218e354d2a0155728e0111aab00c61403b8fdb225
+ak2: [2026-10-06T09:54:31Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000_1.fq -> /home/ec2-user/ak2/reads/ERR598966_200000_1.fq (51418954 bytes)
+ak2: [2026-10-06T09:54:31Z] staged aws-kraken2/data/reads/ERR598966_200000_1.fq bytes=51418954 sha256=b0f23f494d2d7689d3b86806dc9d97f43a605235d27152f33d940a31e0adab79 object-metadata=b0f23f494d2d7689d3b86806dc9d97f43a605235d27152f33d940a31e0adab79
+ak2: [2026-10-06T09:54:32Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000_2.fq -> /home/ec2-user/ak2/reads/ERR598966_200000_2.fq (51400840 bytes)
+ak2: [2026-10-06T09:54:33Z] staged aws-kraken2/data/reads/ERR598966_200000_2.fq bytes=51400840 sha256=4ee0cfc006d43ca7ce8adfab6c829c5aa38f1cedca2a4bac777436c1fb75ca60 object-metadata=4ee0cfc006d43ca7ce8adfab6c829c5aa38f1cedca2a4bac777436c1fb75ca60
+ak2: [2026-10-06T09:54:33Z] reads ERR598966 verified against SOURCE
+ak2: [2026-10-06T09:54:33Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000.SOURCE -> /home/ec2-user/ak2/reads/SRR28305653_200000.SOURCE (422 bytes)
+ak2: [2026-10-06T09:54:34Z] staged aws-kraken2/data/reads/SRR28305653_200000.SOURCE bytes=422 sha256=80f176efce5891911cb6aca0c9505215232ebe40d7e3c57c14666a0464a39c2a object-metadata=80f176efce5891911cb6aca0c9505215232ebe40d7e3c57c14666a0464a39c2a
+ak2: [2026-10-06T09:54:35Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq -> /home/ec2-user/ak2/reads/SRR28305653_200000_1.fq (72980506 bytes)
+ak2: [2026-10-06T09:54:35Z] staged aws-kraken2/data/reads/SRR28305653_200000_1.fq bytes=72980506 sha256=ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946 object-metadata=ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946
+ak2: [2026-10-06T09:54:36Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq -> /home/ec2-user/ak2/reads/SRR28305653_200000_2.fq (72980506 bytes)
+ak2: [2026-10-06T09:54:37Z] staged aws-kraken2/data/reads/SRR28305653_200000_2.fq bytes=72980506 sha256=d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a object-metadata=d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a
+ak2: [2026-10-06T09:54:37Z] reads SRR28305653 verified against SOURCE
+ak2-phase	2026-10-06T09:54:37Z	1791280477	probes	no
+2026-10-06T09:54:37Z k2probe: probes: table capacity 297272917942 size 207831744422 alpha 0.699128; k=35 l=31 min_hash=0; expected probes hit 2.1618 miss 6.0234
+2026-10-06T09:54:38Z k2probe: SRR062634: 200000 reads, 9016552 lookups in the population; sampled 10000 (1.2 s)
+2026-10-06T09:55:16Z k2probe: SRR062634: resolved 10000 lookups with 10000 GETs in 37.6 s
+2026-10-06T09:55:17Z k2probe: ERR478965: 200000 reads, 7634946 lookups in the population; sampled 10000 (0.9 s)
+2026-10-06T09:55:54Z k2probe: ERR478965: resolved 10000 lookups with 10000 GETs in 37.0 s
+2026-10-06T09:55:55Z k2probe: ERR598966: 200000 reads, 9043546 lookups in the population; sampled 10000 (1.1 s)
+2026-10-06T09:56:31Z k2probe: ERR598966: resolved 10000 lookups with 10000 GETs in 36.4 s
+2026-10-06T09:56:33Z k2probe: SRR28305653: 200000 reads, 15357053 lookups in the population; sampled 10000 (1.8 s)
+2026-10-06T09:57:09Z k2probe: SRR28305653: resolved 10000 lookups with 10000 GETs in 35.8 s
+ak2: [2026-10-06T09:57:09Z] k2probe probes rc=0
+ak2-phase	2026-10-06T09:57:09Z	1791280629	push	no
+ak2: [2026-10-06T09:57:09Z] pushed out/probes/lookups-ERR478965.tsv
+ak2: [2026-10-06T09:57:10Z] pushed out/probes/lookups-ERR598966.tsv
+ak2: [2026-10-06T09:57:10Z] pushed out/probes/lookups-SRR062634.tsv
+ak2: [2026-10-06T09:57:11Z] pushed out/probes/lookups-SRR28305653.tsv
+ak2: [2026-10-06T09:57:11Z] pushed out/probes/probe-hist.tsv
+ak2: [2026-10-06T09:57:12Z] pushed out/probes/probe-summary.tsv
+ak2: [2026-10-06T09:57:12Z] pushed out/probes/summary.json
+ak2: [2026-10-06T09:57:12Z] G0c-b done rc=0 push_failures=0
+ak2: [2026-10-06T09:57:12Z] spec body exit rc=0
+ak2-phase	2026-10-06T09:57:12Z	1791280632	end	no
