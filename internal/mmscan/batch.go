@@ -30,6 +30,13 @@ func (s *Scanner) AppendMinimizers(seq []byte, out []uint64) []uint64 {
 	if n2 >= 64 {
 		rcMask = ^uint64(0)
 	}
+	// For DNA with revcom_version 1, reverse_complement(lmer) is the l-mer's ordinary reverse
+	// complement (l <= 31, so n*2 <= 62), kept incrementally: each new base's complement
+	// enters at the top. Once the l-mer is full (the only time it is used) every bit of it
+	// comes from the l-mer's own bases. revcom_version 0 keeps the full computation.
+	incRC := dna && !rcOld
+	top := (n2 - 2) & 63
+	var rcl uint64
 	lookup := &s.lookup
 	q, qMask := s.q, s.qMask
 	var lmer, lastAmbig uint64
@@ -56,6 +63,7 @@ outer:
 					lastAmbig |= ambigCode
 				} else {
 					lmer |= uint64(code)
+					rcl = (rcl >> 2) | (uint64(code^3) << top)
 				}
 				lmer &= lmerMask
 				lastAmbig &= lmerMask
@@ -74,7 +82,11 @@ outer:
 				break outer
 			}
 			canonical := lmer
-			if dna { // canonical_representation, reverse_complement inlined
+			if incRC {
+				if rcl < canonical {
+					canonical = rcl
+				}
+			} else if dna { // canonical_representation, reverse_complement inlined
 				x := lmer
 				x = ((x & 0xCCCCCCCCCCCCCCCC) >> 2) | ((x & 0x3333333333333333) << 2)
 				x = ((x & 0xF0F0F0F0F0F0F0F0) >> 4) | ((x & 0x0F0F0F0F0F0F0F0F) << 4)
