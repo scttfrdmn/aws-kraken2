@@ -2,21 +2,21 @@
 
 Commit `bf1cf209885495dd434479ac7054c86bba4773e1`; upstream `2731b35f7abb26ec926517274f3d87e78d42fd76` (2.17.2-20-g2731b35). Host: Linux aarch64 6.18.51-120.163.amzn2023.aarch64, m7g.2xlarge, 8 CPUs, 31 GiB, page size 4096, THP enabled `always [madvise] never`, defrag `always defer defer+madvise [madvise] never`. Linux aarch64 on EC2 (make run).
 Repetitions: cold 3, warm 10; threads fixed at 8 for both implementations; states run: cold warm (requested: cold warm; cold available: True, via ak2_drop_caches); 2026-10-06T15:51:36Z to 2026-10-06T17:09:18Z.
-Warm-up (unrecorded, not in any cell): one cold run of upstream on `empty` before the matrix, wall 61.414659 s, load 61.397885 s.
+Warm-up (unrecorded, not in any cell): 1 cold run(s) of upstream on `empty` before the matrix, wall 61.414659 s.
 Database storage: device /dev/nvme0n1p1, disk model Amazon Elastic Block Store, EBS {"id": "vol-057e58e7c2fc1e80d", "type": "gp3", "iops": 3000, "throughput_mibps": 125, "size_gib": 80}.
 Cold load rate (hash.k2d bytes / median cold load s): 126–127 MiB/s over every implementation and input. They agree within 5%: the cold rungs are capped by the storage, so they cannot resolve a difference in the load path itself.
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
 
-Noise floor per cell (largest |Δ median wall| over the A/A control pairs final → final-aa): empty cold 0.022 s; empty warm 0.004 s; pe cold 0.044 s; pe warm 0.004 s. A difference at or below it is marked "within noise".
+Noise floor per cell, from 1 A/A control pair(s) (final → final-aa): the larger of the pairs' largest |Δ median wall| and half the median min–max width of their rungs: empty cold 0.033 s (half range); empty warm 0.015 s (half range); pe cold 0.044 s (A/A Δ); pe warm 0.011 s (half range). Verdicts: |Δ| at or below the floor is "within noise (below floor)"; above it, "ranges overlap" or "ranges separated" by the min–max ranges. With one pair the floor itself is a single sample.
 
 ## Acceptance: `final` vs upstream, median whole-process wall
 
 | cell | upstream s | final s | Δ s | verdict |
 |---|---|---|---|---|
 | empty cold | 60.453 [60.394–61.102] | 60.340 [60.285–60.342] | -0.113 | ≤ upstream (ranges separated) |
-| empty warm | 0.191 [0.183–0.232] | 0.175 [0.167–0.205] | -0.016 | ≤ upstream by median, within noise |
-| pe cold | 61.343 [61.340–61.408] | 61.300 [61.270–61.303] | -0.042 | ≤ upstream by median, within noise |
+| empty warm | 0.191 [0.183–0.232] | 0.175 [0.167–0.205] | -0.016 | ≤ upstream, above floor, ranges overlap |
+| pe cold | 61.343 [61.340–61.408] | 61.300 [61.270–61.303] | -0.042 | within noise (below floor) |
 | pe warm | 0.411 [0.405–0.456] | 0.387 [0.378–0.394] | -0.024 | ≤ upstream (ranges separated) |
 
 ## input `empty`, cold
@@ -35,13 +35,13 @@ Noise floor per cell (largest |Δ median wall| over the A/A control pairs final 
 | final | 3 | 60.340 [60.285–60.342] | 60.324 [60.269–60.326] | 0.000 [0.000–0.000] | 0.015 [0.015–0.015] | 7250 [7244–7266] | 0.996 [0.993–1.003] |
 | final-aa | 3 | 60.318 [60.267–60.344] | 60.302 [60.250–60.329] | 0.000 [0.000–0.000] | 0.015 [0.014–0.016] | 7237 [7228–7241] | 0.984 [0.983–0.998] |
 
-- base − upstream, median wall: +0.265 s (60.718 s vs 60.453 s): > upstream
-- thp − upstream, median wall: -0.077 s (60.376 s vs 60.453 s): ≤ upstream by median, within noise
+- base − upstream, median wall: +0.265 s (60.718 s vs 60.453 s): > upstream, above floor, ranges overlap
+- thp − upstream, median wall: -0.077 s (60.376 s vs 60.453 s): ≤ upstream, above floor, ranges overlap
 - fill − upstream, median wall: -0.085 s (60.368 s vs 60.453 s): ≤ upstream (ranges separated)
 - scan − upstream, median wall: -0.110 s (60.343 s vs 60.453 s): ≤ upstream (ranges separated)
-- recycle − upstream, median wall: -0.101 s (60.352 s vs 60.453 s): ≤ upstream by median, within noise
-- rc − upstream, median wall: -0.101 s (60.352 s vs 60.453 s): ≤ upstream by median, within noise
-- matesize − upstream, median wall: -0.092 s (60.361 s vs 60.453 s): ≤ upstream by median, within noise
+- recycle − upstream, median wall: -0.101 s (60.352 s vs 60.453 s): ≤ upstream, above floor, ranges overlap
+- rc − upstream, median wall: -0.101 s (60.352 s vs 60.453 s): ≤ upstream, above floor, ranges overlap
+- matesize − upstream, median wall: -0.092 s (60.361 s vs 60.453 s): ≤ upstream, above floor, ranges overlap
 - batch − upstream, median wall: -0.109 s (60.344 s vs 60.453 s): ≤ upstream (ranges separated)
 - final − upstream, median wall: -0.113 s (60.340 s vs 60.453 s): ≤ upstream (ranges separated)
 - final-aa − upstream, median wall: -0.135 s (60.318 s vs 60.453 s): ≤ upstream (ranges separated)
@@ -62,16 +62,16 @@ Noise floor per cell (largest |Δ median wall| over the A/A control pairs final 
 | final | 10 | 0.175 [0.167–0.205] | 0.161 [0.154–0.190] | 0.000 [0.000–0.000] | 0.013 [0.013–0.014] | 7268 [7249–7351] | 1.092 [1.043–1.154] |
 | final-aa | 10 | 0.171 [0.166–0.188] | 0.157 [0.152–0.173] | 0.000 [0.000–0.000] | 0.014 [0.013–0.014] | 7282 [7256–7299] | 1.112 [0.969–1.289] |
 
-- base − upstream, median wall: +0.646 s (0.836 s vs 0.191 s): > upstream
-- thp − upstream, median wall: -0.014 s (0.177 s vs 0.191 s): ≤ upstream by median, within noise
-- fill − upstream, median wall: -0.017 s (0.173 s vs 0.191 s): ≤ upstream by median, within noise
-- scan − upstream, median wall: -0.015 s (0.175 s vs 0.191 s): ≤ upstream by median, within noise
-- recycle − upstream, median wall: -0.015 s (0.176 s vs 0.191 s): ≤ upstream by median, within noise
-- rc − upstream, median wall: -0.019 s (0.172 s vs 0.191 s): ≤ upstream by median, within noise
-- matesize − upstream, median wall: -0.017 s (0.173 s vs 0.191 s): ≤ upstream by median, within noise
-- batch − upstream, median wall: -0.016 s (0.174 s vs 0.191 s): ≤ upstream by median, within noise
-- final − upstream, median wall: -0.016 s (0.175 s vs 0.191 s): ≤ upstream by median, within noise
-- final-aa − upstream, median wall: -0.020 s (0.171 s vs 0.191 s): ≤ upstream by median, within noise
+- base − upstream, median wall: +0.646 s (0.836 s vs 0.191 s): > upstream (ranges separated)
+- thp − upstream, median wall: -0.014 s (0.177 s vs 0.191 s): within noise (below floor)
+- fill − upstream, median wall: -0.017 s (0.173 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- scan − upstream, median wall: -0.015 s (0.175 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- recycle − upstream, median wall: -0.015 s (0.176 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- rc − upstream, median wall: -0.019 s (0.172 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- matesize − upstream, median wall: -0.017 s (0.173 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- batch − upstream, median wall: -0.016 s (0.174 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- final − upstream, median wall: -0.016 s (0.175 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
+- final-aa − upstream, median wall: -0.020 s (0.171 s vs 0.191 s): ≤ upstream, above floor, ranges overlap
 
 ## input `pe`, cold
 
@@ -89,15 +89,15 @@ Noise floor per cell (largest |Δ median wall| over the A/A control pairs final 
 | final | 3 | 61.300 [61.270–61.303] | 60.372 [60.337–60.372] | 0.909 [0.906–0.910] | 0.021 [0.021–0.022] | 43868 [41289–44089] | 1.071 [0.984–1.125] |
 | final-aa | 3 | 61.256 [61.140–61.265] | 60.325 [60.210–60.336] | 0.907 [0.906–0.908] | 0.022 [0.021–0.022] | 42041 [41876–43554] | 0.969 [0.952–1.055] |
 
-- base − upstream, median wall: +0.327 s (61.670 s vs 61.343 s): > upstream
-- thp − upstream, median wall: -0.011 s (61.332 s vs 61.343 s): ≤ upstream by median, within noise
-- fill − upstream, median wall: -0.021 s (61.321 s vs 61.343 s): ≤ upstream by median, within noise
+- base − upstream, median wall: +0.327 s (61.670 s vs 61.343 s): > upstream (ranges separated)
+- thp − upstream, median wall: -0.011 s (61.332 s vs 61.343 s): within noise (below floor)
+- fill − upstream, median wall: -0.021 s (61.321 s vs 61.343 s): within noise (below floor)
 - scan − upstream, median wall: -0.070 s (61.273 s vs 61.343 s): ≤ upstream (ranges separated)
 - recycle − upstream, median wall: -0.064 s (61.278 s vs 61.343 s): ≤ upstream (ranges separated)
 - rc − upstream, median wall: -0.142 s (61.200 s vs 61.343 s): ≤ upstream (ranges separated)
 - matesize − upstream, median wall: -0.148 s (61.195 s vs 61.343 s): ≤ upstream (ranges separated)
 - batch − upstream, median wall: -0.087 s (61.256 s vs 61.343 s): ≤ upstream (ranges separated)
-- final − upstream, median wall: -0.042 s (61.300 s vs 61.343 s): ≤ upstream by median, within noise
+- final − upstream, median wall: -0.042 s (61.300 s vs 61.343 s): within noise (below floor)
 - final-aa − upstream, median wall: -0.086 s (61.256 s vs 61.343 s): ≤ upstream (ranges separated)
 
 ## input `pe`, warm
@@ -116,31 +116,31 @@ Noise floor per cell (largest |Δ median wall| over the A/A control pairs final 
 | final | 10 | 0.387 [0.378–0.394] | 0.160 [0.153–0.171] | 0.198 [0.196–0.208] | 0.025 [0.024–0.027] | 63101 [61673–65024] | 1.199 [1.101–1.362] |
 | final-aa | 10 | 0.383 [0.374–0.403] | 0.161 [0.153–0.170] | 0.199 [0.195–0.207] | 0.024 [0.024–0.025] | 63206 [58864–64621] | 1.202 [1.112–1.252] |
 
-- base − upstream, median wall: +0.721 s (1.133 s vs 0.411 s): > upstream
-- thp − upstream, median wall: +0.057 s (0.468 s vs 0.411 s): > upstream
-- fill − upstream, median wall: +0.057 s (0.468 s vs 0.411 s): > upstream
-- scan − upstream, median wall: -0.003 s (0.408 s vs 0.411 s): ≤ upstream by median, within noise
-- recycle − upstream, median wall: +0.004 s (0.416 s vs 0.411 s): > upstream
-- rc − upstream, median wall: -0.006 s (0.405 s vs 0.411 s): ≤ upstream by median, within noise
-- matesize − upstream, median wall: -0.029 s (0.383 s vs 0.411 s): ≤ upstream by median, within noise
+- base − upstream, median wall: +0.721 s (1.133 s vs 0.411 s): > upstream (ranges separated)
+- thp − upstream, median wall: +0.057 s (0.468 s vs 0.411 s): > upstream, above floor, ranges overlap
+- fill − upstream, median wall: +0.057 s (0.468 s vs 0.411 s): > upstream, above floor, ranges overlap
+- scan − upstream, median wall: -0.003 s (0.408 s vs 0.411 s): within noise (below floor)
+- recycle − upstream, median wall: +0.004 s (0.416 s vs 0.411 s): within noise (below floor)
+- rc − upstream, median wall: -0.006 s (0.405 s vs 0.411 s): within noise (below floor)
+- matesize − upstream, median wall: -0.029 s (0.383 s vs 0.411 s): ≤ upstream, above floor, ranges overlap
 - batch − upstream, median wall: -0.027 s (0.384 s vs 0.411 s): ≤ upstream (ranges separated)
 - final − upstream, median wall: -0.024 s (0.387 s vs 0.411 s): ≤ upstream (ranges separated)
 - final-aa − upstream, median wall: -0.028 s (0.383 s vs 0.411 s): ≤ upstream (ranges separated)
 
 ## Attribution (one row per change, Law 5)
 
-Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where it is at or below the cell's noise floor (above), or, without a control pair, where the min–max ranges overlap. "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians, classified by the same rule as the acceptance table (noise floor, then min–max ranges). "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
 
 | change | empty cold | empty warm | pe cold | pe warm |
 |---|---|---|---|---|
-| base → thp | 60.718 [60.714–61.023] → 60.376 [60.344–60.422] (-0.341) | 0.836 [0.791–0.905] → 0.177 [0.169–0.191] (-0.659) | 61.670 [61.627–61.686] → 61.332 [61.309–61.335] (-0.338) | 1.133 [1.089–1.186] → 0.468 [0.454–0.494] (-0.665) |
-| thp → fill | 60.376 [60.344–60.422] → 60.368 [60.338–60.387] (-0.008, within noise) | 0.177 [0.169–0.191] → 0.173 [0.169–0.183] (-0.004, within noise) | 61.332 [61.309–61.335] → 61.321 [61.315–61.328] (-0.011, within noise) | 0.468 [0.454–0.494] → 0.468 [0.455–0.520] (-0.000, within noise) |
-| fill → scan | 60.368 [60.338–60.387] → 60.343 [60.341–60.354] (-0.026) | 0.173 [0.169–0.183] → 0.175 [0.166–0.208] (+0.002, within noise) | 61.321 [61.315–61.328] → 61.273 [61.262–61.312] (-0.048) | 0.468 [0.455–0.520] → 0.408 [0.399–0.434] (-0.060) |
-| scan → recycle | 60.343 [60.341–60.354] → 60.352 [60.265–60.399] (+0.009, within noise) | 0.175 [0.166–0.208] → 0.176 [0.166–0.200] (+0.000, within noise) | 61.273 [61.262–61.312] → 61.278 [61.188–61.325] (+0.005, within noise) | 0.408 [0.399–0.434] → 0.416 [0.396–0.434] (+0.008) |
-| recycle → rc | 60.352 [60.265–60.399] → 60.352 [60.278–60.396] (+0.001, within noise) | 0.176 [0.166–0.200] → 0.172 [0.167–0.197] (-0.004, within noise) | 61.278 [61.188–61.325] → 61.200 [61.191–61.298] (-0.078) | 0.416 [0.396–0.434] → 0.405 [0.390–0.425] (-0.011) |
-| rc → matesize | 60.352 [60.278–60.396] → 60.361 [60.354–60.417] (+0.009, within noise) | 0.172 [0.167–0.197] → 0.173 [0.167–0.195] (+0.002, within noise) | 61.200 [61.191–61.298] → 61.195 [61.153–61.255] (-0.005, within noise) | 0.405 [0.390–0.425] → 0.383 [0.377–0.422] (-0.022) |
-| matesize → batch | 60.361 [60.354–60.417] → 60.344 [60.340–60.388] (-0.017, within noise) | 0.173 [0.167–0.195] → 0.174 [0.166–0.194] (+0.001, within noise) | 61.195 [61.153–61.255] → 61.256 [61.254–61.257] (+0.061) | 0.383 [0.377–0.422] → 0.384 [0.373–0.400] (+0.002, within noise) |
-| batch → final | 60.344 [60.340–60.388] → 60.340 [60.285–60.342] (-0.004, within noise) | 0.174 [0.166–0.194] → 0.175 [0.167–0.205] (+0.000, within noise) | 61.256 [61.254–61.257] → 61.300 [61.270–61.303] (+0.044) | 0.384 [0.373–0.400] → 0.387 [0.378–0.394] (+0.003, within noise) |
-| final → final-aa (A/A control) | 60.340 [60.285–60.342] → 60.318 [60.267–60.344] (-0.022, within noise) | 0.175 [0.167–0.205] → 0.171 [0.166–0.188] (-0.004, within noise) | 61.300 [61.270–61.303] → 61.256 [61.140–61.265] (-0.044, within noise) | 0.387 [0.378–0.394] → 0.383 [0.374–0.403] (-0.004, within noise) |
+| base → thp | 60.718 [60.714–61.023] → 60.376 [60.344–60.422] (-0.341, ≤ (ranges separated)) | 0.836 [0.791–0.905] → 0.177 [0.169–0.191] (-0.659, ≤ (ranges separated)) | 61.670 [61.627–61.686] → 61.332 [61.309–61.335] (-0.338, ≤ (ranges separated)) | 1.133 [1.089–1.186] → 0.468 [0.454–0.494] (-0.665, ≤ (ranges separated)) |
+| thp → fill | 60.376 [60.344–60.422] → 60.368 [60.338–60.387] (-0.008, within noise (below floor)) | 0.177 [0.169–0.191] → 0.173 [0.169–0.183] (-0.004, within noise (below floor)) | 61.332 [61.309–61.335] → 61.321 [61.315–61.328] (-0.011, within noise (below floor)) | 0.468 [0.454–0.494] → 0.468 [0.455–0.520] (-0.000, within noise (below floor)) |
+| fill → scan | 60.368 [60.338–60.387] → 60.343 [60.341–60.354] (-0.026, within noise (below floor)) | 0.173 [0.169–0.183] → 0.175 [0.166–0.208] (+0.002, within noise (below floor)) | 61.321 [61.315–61.328] → 61.273 [61.262–61.312] (-0.048, ≤ (ranges separated)) | 0.468 [0.455–0.520] → 0.408 [0.399–0.434] (-0.060, ≤ (ranges separated)) |
+| scan → recycle | 60.343 [60.341–60.354] → 60.352 [60.265–60.399] (+0.009, within noise (below floor)) | 0.175 [0.166–0.208] → 0.176 [0.166–0.200] (+0.000, within noise (below floor)) | 61.273 [61.262–61.312] → 61.278 [61.188–61.325] (+0.005, within noise (below floor)) | 0.408 [0.399–0.434] → 0.416 [0.396–0.434] (+0.008, within noise (below floor)) |
+| recycle → rc | 60.352 [60.265–60.399] → 60.352 [60.278–60.396] (+0.001, within noise (below floor)) | 0.176 [0.166–0.200] → 0.172 [0.167–0.197] (-0.004, within noise (below floor)) | 61.278 [61.188–61.325] → 61.200 [61.191–61.298] (-0.078, ≤, above floor, ranges overlap) | 0.416 [0.396–0.434] → 0.405 [0.390–0.425] (-0.011, within noise (below floor)) |
+| rc → matesize | 60.352 [60.278–60.396] → 60.361 [60.354–60.417] (+0.009, within noise (below floor)) | 0.172 [0.167–0.197] → 0.173 [0.167–0.195] (+0.002, within noise (below floor)) | 61.200 [61.191–61.298] → 61.195 [61.153–61.255] (-0.005, within noise (below floor)) | 0.405 [0.390–0.425] → 0.383 [0.377–0.422] (-0.022, ≤, above floor, ranges overlap) |
+| matesize → batch | 60.361 [60.354–60.417] → 60.344 [60.340–60.388] (-0.017, within noise (below floor)) | 0.173 [0.167–0.195] → 0.174 [0.166–0.194] (+0.001, within noise (below floor)) | 61.195 [61.153–61.255] → 61.256 [61.254–61.257] (+0.061, >, above floor, ranges overlap) | 0.383 [0.377–0.422] → 0.384 [0.373–0.400] (+0.002, within noise (below floor)) |
+| batch → final | 60.344 [60.340–60.388] → 60.340 [60.285–60.342] (-0.004, within noise (below floor)) | 0.174 [0.166–0.194] → 0.175 [0.167–0.205] (+0.000, within noise (below floor)) | 61.256 [61.254–61.257] → 61.300 [61.270–61.303] (+0.044, > (ranges separated)) | 0.384 [0.373–0.400] → 0.387 [0.378–0.394] (+0.003, within noise (below floor)) |
+| final → final-aa (A/A control) | 60.340 [60.285–60.342] → 60.318 [60.267–60.344] (-0.022, within noise (below floor)) | 0.175 [0.167–0.205] → 0.171 [0.166–0.188] (-0.004, within noise (below floor)) | 61.300 [61.270–61.303] → 61.256 [61.140–61.265] (-0.044, within noise (below floor)) | 0.387 [0.378–0.394] → 0.383 [0.374–0.403] (-0.004, within noise (below floor)) |
 
 Output check: every run of an input wrote the same --output bytes.

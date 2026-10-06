@@ -5,14 +5,14 @@ Repetitions: 3; threads fixed at 8 for both implementations; states run: warm (r
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
 
-No A/A control pair in this run: "within noise" falls back to overlapping min–max ranges, which is lax at small n.
+No A/A control pair in this run, so no noise floor: verdicts say only whether the min–max ranges overlap, which is lax at small n.
 
 ## Acceptance: `fill-streams16` vs upstream, median whole-process wall
 
 | cell | upstream s | fill-streams16 s | Δ s | verdict |
 |---|---|---|---|---|
 | empty warm | 0.241 [0.241–0.248] | 0.236 [0.230–0.240] | -0.005 | ≤ upstream (ranges separated) |
-| pe warm | 0.371 [0.367–0.382] | 0.387 [0.387–0.389] | +0.016 | > upstream |
+| pe warm | 0.371 [0.367–0.382] | 0.387 [0.387–0.389] | +0.016 | > upstream (ranges separated) |
 
 ## input `empty`, warm
 
@@ -39,19 +39,19 @@ No A/A control pair in this run: "within noise" falls back to overlapping min–
 | fill | 3 | 0.378 [0.374–0.379] | 0.157 [0.155–0.160] | 0.150 [0.149–0.151] | 0.068 [0.067–0.071] | 504202 [503957–504340] | 1.313 [1.312–1.348] |
 | fill-streams16 | 3 | 0.387 [0.387–0.389] | 0.163 [0.159–0.164] | 0.153 [0.144–0.153] | 0.074 [0.070–0.080] | 504248 [503467–504591] | 2.450 [2.355–2.488] |
 
-- base − upstream, median wall: +0.006 s (0.378 s vs 0.371 s): > upstream by median, within noise
-- thp − upstream, median wall: +0.002 s (0.373 s vs 0.371 s): > upstream by median, within noise
-- fill − upstream, median wall: +0.006 s (0.378 s vs 0.371 s): > upstream by median, within noise
-- fill-streams16 − upstream, median wall: +0.016 s (0.387 s vs 0.371 s): > upstream
+- base − upstream, median wall: +0.006 s (0.378 s vs 0.371 s): > upstream, no floor, ranges overlap
+- thp − upstream, median wall: +0.002 s (0.373 s vs 0.371 s): > upstream, no floor, ranges overlap
+- fill − upstream, median wall: +0.006 s (0.378 s vs 0.371 s): > upstream, no floor, ranges overlap
+- fill-streams16 − upstream, median wall: +0.016 s (0.387 s vs 0.371 s): > upstream (ranges separated)
 
 ## Attribution (one row per change, Law 5)
 
-Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where it is at or below the cell's noise floor (above), or, without a control pair, where the min–max ranges overlap. "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians, classified by the same rule as the acceptance table (noise floor, then min–max ranges). "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
 
 | change | empty warm | pe warm |
 |---|---|---|
-| base → thp | 0.219 [0.217–0.224] → 0.219 [0.217–0.224] (+0.000, within noise) | 0.378 [0.377–0.381] → 0.373 [0.372–0.379] (-0.005, within noise) |
-| thp → fill | 0.219 [0.217–0.224] → 0.225 [0.220–0.226] (+0.006, within noise) | 0.373 [0.372–0.379] → 0.378 [0.374–0.379] (+0.005, within noise) |
-| fill → fill-streams16 | 0.225 [0.220–0.226] → 0.236 [0.230–0.240] (+0.011) | 0.378 [0.374–0.379] → 0.387 [0.387–0.389] (+0.010) |
+| base → thp | 0.219 [0.217–0.224] → 0.219 [0.217–0.224] (+0.000, >, no floor, ranges overlap) | 0.378 [0.377–0.381] → 0.373 [0.372–0.379] (-0.005, ≤, no floor, ranges overlap) |
+| thp → fill | 0.219 [0.217–0.224] → 0.225 [0.220–0.226] (+0.006, >, no floor, ranges overlap) | 0.373 [0.372–0.379] → 0.378 [0.374–0.379] (+0.005, >, no floor, ranges overlap) |
+| fill → fill-streams16 | 0.225 [0.220–0.226] → 0.236 [0.230–0.240] (+0.011, > (ranges separated)) | 0.378 [0.374–0.379] → 0.387 [0.387–0.389] (+0.010, > (ranges separated)) |
 
 Output check: every run of an input wrote the same --output bytes.

@@ -52,11 +52,21 @@ are skipped, and the manifest records `cold.available=false`. A warm run is neve
 and the reads. Without a cold state, one unrecorded priming run warms the cache first. Every
 binary runs once (`--version`) before the matrix, so no rung pays for a first exec.
 
-**Warm-up** (`LB_WARMUP`, default 1): before the matrix, one cold run of the first implementation
-on the first input, not counted in any cell. The first cold read of a freshly staged database
-was an outlier on both boxes (upstream empty cold: 6.791 s against 7.5 s on r8gd's NVMe, 61.7 s
-against 60.4 s on m7g's gp3), so the matrix starts after it. Its numbers are in the manifest
-(`warmup`) and in `summary.md`.
+**Warm-up** (`LB_WARMUP`, default 1; `LB_WARMUPS` runs, default 1): before the matrix, cold
+runs of the first implementation on the first input, not counted in any cell. Their numbers are
+in the manifest (`warmups`) and in `summary.md`. The first cold reads of a freshly staged
+database are outliers on both boxes:
+- Without a warm-up, the first rung was off: upstream empty cold took 6.791 s against about
+  7.5 s on r8gd's NVMe, and 61.7 s against about 60.4 s on m7g's gp3.
+- With one warm-up, the warm-up itself was off (6.73 s and 61.41 s), and so was the next cold
+  read. That read is the first recorded rung, and in repetition 1 it is always upstream's
+  (rotation starts there): 7.961 s against about 7.53 s on r8gd, 61.10 s against about 60.4 s on
+  m7g (results/g2/20261006-135946-9035dd6, results/g2/20261006-154839-bf1cf20).
+
+This is a position effect, not an implementation effect: repetitions 2 and 3 are normal. It
+widens only upstream's max in those runs, so neither the medians nor the "ranges separated"
+verdicts (which compare against upstream's min) depend on it. The device-level cause is not
+established. For future runs, `LB_WARMUPS=2` absorbs both deviating reads.
 
 **Repetitions:** `LB_REPS` for both states, or `LB_REPS_COLD` and `LB_REPS_WARM` separately.
 Warm cells are sub-second, so the AWS specs run 10 of them; cold cells take a minute each on
@@ -88,14 +98,22 @@ lines form one row of the attribution table: median [min–max] before and after
 difference of the medians.
 
 **Noise floor.** Two consecutive ladder lines with the same binary and environment are an A/A
-control (`final` → `final-aa` in the #36 ladder). A cell's noise floor is the largest
-|Δ median wall| over its control pairs, and any difference at or below it, in an attribution row
-or against upstream, is marked "within noise". Without a control pair the summary says so and
-falls back to overlapping min–max ranges, which is lax at n = 3. The acceptance table gives each
-cell one verdict for `final` (or the last ladder line) against upstream:
-"≤ upstream (ranges separated)" (ours' max below upstream's min, and the difference above the
-floor), "≤ upstream by median, within noise", "> upstream by median, within noise", or
-"> upstream".
+control (`final` → `final-aa` in the #36 ladder). A cell's noise floor is the larger of:
+- the largest |Δ median wall| over its control pairs;
+- half the median min–max range width of those pairs' rungs.
+
+The second term keeps a lone pair whose medians happen to coincide from setting a floor near 0.
+The summary states how many pairs the floor rests on: one in the #36 runs, so the floor is
+itself a single sample.
+
+One rule classifies every comparison, both the attribution rows (after against before) and the
+acceptance table (`final`, or the last ladder line, against upstream):
+- |Δ| at or below the floor: "within noise (below floor)";
+- otherwise, overlapping min–max ranges: "≤/> upstream, above floor, ranges overlap";
+- otherwise: "≤/> upstream (ranges separated)".
+
+Without a control pair there is no floor, and the summary says so; verdicts then rest on the
+ranges alone ("no floor, ranges overlap" or "ranges separated").
 `scripts/loadbench.ladder` is the #36/#39 ladder. Pread streams are 8 for both implementations;
 a streams change would apply to upstream too (`K2_DB_READ_THREADS`).
 

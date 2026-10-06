@@ -6,7 +6,7 @@ Cold load rate (hash.k2d bytes / median cold load s): 16731–29691 MiB/s over e
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
 
-No A/A control pair in this run: "within noise" falls back to overlapping min–max ranges, which is lax at small n.
+No A/A control pair in this run, so no noise floor: verdicts say only whether the min–max ranges overlap, which is lax at small n.
 
 ## Acceptance: `fill-streams16` vs upstream, median whole-process wall
 
@@ -14,8 +14,8 @@ No A/A control pair in this run: "within noise" falls back to overlapping min–
 |---|---|---|---|---|
 | empty cold | 0.033 [0.032–0.145] | 0.023 [0.023–0.024] | -0.010 | ≤ upstream (ranges separated) |
 | empty warm | 0.019 [0.019–0.019] | 0.015 [0.014–0.015] | -0.004 | ≤ upstream (ranges separated) |
-| pe cold | 0.300 [0.300–0.303] | 0.363 [0.355–0.371] | +0.063 | > upstream |
-| pe warm | 0.283 [0.282–0.286] | 0.360 [0.344–0.366] | +0.077 | > upstream |
+| pe cold | 0.300 [0.300–0.303] | 0.363 [0.355–0.371] | +0.063 | > upstream (ranges separated) |
+| pe warm | 0.283 [0.282–0.286] | 0.360 [0.344–0.366] | +0.077 | > upstream (ranges separated) |
 
 ## input `empty`, cold
 
@@ -27,7 +27,7 @@ No A/A control pair in this run: "within noise" falls back to overlapping min–
 | fill | 3 | 0.023 [0.022–0.023] | 0.021 [0.021–0.021] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2312 [2293–2335] | 0.113 [0.113–0.115] |
 | fill-streams16 | 3 | 0.023 [0.023–0.024] | 0.021 [0.021–0.022] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2410 [2387–2430] | 0.123 [0.121–0.125] |
 
-- base − upstream, median wall: +0.018 s (0.051 s vs 0.033 s): > upstream by median, within noise
+- base − upstream, median wall: +0.018 s (0.051 s vs 0.033 s): > upstream, no floor, ranges overlap
 - thp − upstream, median wall: -0.010 s (0.023 s vs 0.033 s): ≤ upstream (ranges separated)
 - fill − upstream, median wall: -0.010 s (0.023 s vs 0.033 s): ≤ upstream (ranges separated)
 - fill-streams16 − upstream, median wall: -0.010 s (0.023 s vs 0.033 s): ≤ upstream (ranges separated)
@@ -42,7 +42,7 @@ No A/A control pair in this run: "within noise" falls back to overlapping min–
 | fill | 3 | 0.014 [0.014–0.015] | 0.013 [0.013–0.013] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2336 [2325–2348] | 0.070 [0.067–0.072] |
 | fill-streams16 | 3 | 0.015 [0.014–0.015] | 0.013 [0.012–0.014] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2370 [2325–2401] | 0.070 [0.069–0.070] |
 
-- base − upstream, median wall: +0.025 s (0.045 s vs 0.019 s): > upstream
+- base − upstream, median wall: +0.025 s (0.045 s vs 0.019 s): > upstream (ranges separated)
 - thp − upstream, median wall: -0.005 s (0.015 s vs 0.019 s): ≤ upstream (ranges separated)
 - fill − upstream, median wall: -0.005 s (0.014 s vs 0.019 s): ≤ upstream (ranges separated)
 - fill-streams16 − upstream, median wall: -0.004 s (0.015 s vs 0.019 s): ≤ upstream (ranges separated)
@@ -57,10 +57,10 @@ No A/A control pair in this run: "within noise" falls back to overlapping min–
 | fill | 3 | 0.381 [0.367–0.393] | 0.021 [0.021–0.022] | 0.354 [0.339–0.365] | 0.005 [0.005–0.005] | 57564 [57117–57638] | 0.148 [0.144–0.152] |
 | fill-streams16 | 3 | 0.363 [0.355–0.371] | 0.021 [0.020–0.021] | 0.336 [0.328–0.344] | 0.006 [0.006–0.006] | 57438 [57305–59217] | 0.168 [0.168–0.170] |
 
-- base − upstream, median wall: +0.102 s (0.403 s vs 0.300 s): > upstream
-- thp − upstream, median wall: +0.051 s (0.352 s vs 0.300 s): > upstream
-- fill − upstream, median wall: +0.081 s (0.381 s vs 0.300 s): > upstream
-- fill-streams16 − upstream, median wall: +0.063 s (0.363 s vs 0.300 s): > upstream
+- base − upstream, median wall: +0.102 s (0.403 s vs 0.300 s): > upstream (ranges separated)
+- thp − upstream, median wall: +0.051 s (0.352 s vs 0.300 s): > upstream (ranges separated)
+- fill − upstream, median wall: +0.081 s (0.381 s vs 0.300 s): > upstream (ranges separated)
+- fill-streams16 − upstream, median wall: +0.063 s (0.363 s vs 0.300 s): > upstream (ranges separated)
 
 ## input `pe`, warm
 
@@ -72,19 +72,19 @@ No A/A control pair in this run: "within noise" falls back to overlapping min–
 | fill | 3 | 0.358 [0.346–0.358] | 0.013 [0.013–0.013] | 0.339 [0.327–0.339] | 0.006 [0.005–0.006] | 56814 [56727–57356] | 0.104 [0.103–0.112] |
 | fill-streams16 | 3 | 0.360 [0.344–0.366] | 0.013 [0.013–0.013] | 0.340 [0.325–0.347] | 0.006 [0.005–0.006] | 56743 [56514–57591] | 0.111 [0.107–0.112] |
 
-- base − upstream, median wall: +0.114 s (0.397 s vs 0.283 s): > upstream
-- thp − upstream, median wall: +0.061 s (0.344 s vs 0.283 s): > upstream
-- fill − upstream, median wall: +0.075 s (0.358 s vs 0.283 s): > upstream
-- fill-streams16 − upstream, median wall: +0.077 s (0.360 s vs 0.283 s): > upstream
+- base − upstream, median wall: +0.114 s (0.397 s vs 0.283 s): > upstream (ranges separated)
+- thp − upstream, median wall: +0.061 s (0.344 s vs 0.283 s): > upstream (ranges separated)
+- fill − upstream, median wall: +0.075 s (0.358 s vs 0.283 s): > upstream (ranges separated)
+- fill-streams16 − upstream, median wall: +0.077 s (0.360 s vs 0.283 s): > upstream (ranges separated)
 
 ## Attribution (one row per change, Law 5)
 
-Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where it is at or below the cell's noise floor (above), or, without a control pair, where the min–max ranges overlap. "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians, classified by the same rule as the acceptance table (noise floor, then min–max ranges). "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
 
 | change | empty cold | empty warm | pe cold | pe warm |
 |---|---|---|---|---|
-| base → thp | 0.051 [0.049–0.056] → 0.023 [0.022–0.024] (-0.028) | 0.045 [0.044–0.051] → 0.015 [0.015–0.015] (-0.030) | 0.403 [0.403–0.408] → 0.352 [0.348–0.369] (-0.051) | 0.397 [0.388–0.413] → 0.344 [0.342–0.362] (-0.053) |
-| thp → fill | 0.023 [0.022–0.024] → 0.023 [0.022–0.023] (-0.000, within noise) | 0.015 [0.015–0.015] → 0.014 [0.014–0.015] (-0.001) | 0.352 [0.348–0.369] → 0.381 [0.367–0.393] (+0.029, within noise) | 0.344 [0.342–0.362] → 0.358 [0.346–0.358] (+0.014, within noise) |
-| fill → fill-streams16 | 0.023 [0.022–0.023] → 0.023 [0.023–0.024] (+0.000, within noise) | 0.014 [0.014–0.015] → 0.015 [0.014–0.015] (+0.001, within noise) | 0.381 [0.367–0.393] → 0.363 [0.355–0.371] (-0.018, within noise) | 0.358 [0.346–0.358] → 0.360 [0.344–0.366] (+0.002, within noise) |
+| base → thp | 0.051 [0.049–0.056] → 0.023 [0.022–0.024] (-0.028, ≤ (ranges separated)) | 0.045 [0.044–0.051] → 0.015 [0.015–0.015] (-0.030, ≤ (ranges separated)) | 0.403 [0.403–0.408] → 0.352 [0.348–0.369] (-0.051, ≤ (ranges separated)) | 0.397 [0.388–0.413] → 0.344 [0.342–0.362] (-0.053, ≤ (ranges separated)) |
+| thp → fill | 0.023 [0.022–0.024] → 0.023 [0.022–0.023] (-0.000, ≤, no floor, ranges overlap) | 0.015 [0.015–0.015] → 0.014 [0.014–0.015] (-0.001, ≤ (ranges separated)) | 0.352 [0.348–0.369] → 0.381 [0.367–0.393] (+0.029, >, no floor, ranges overlap) | 0.344 [0.342–0.362] → 0.358 [0.346–0.358] (+0.014, >, no floor, ranges overlap) |
+| fill → fill-streams16 | 0.023 [0.022–0.023] → 0.023 [0.023–0.024] (+0.000, >, no floor, ranges overlap) | 0.014 [0.014–0.015] → 0.015 [0.014–0.015] (+0.001, >, no floor, ranges overlap) | 0.381 [0.367–0.393] → 0.363 [0.355–0.371] (-0.018, ≤, no floor, ranges overlap) | 0.358 [0.346–0.358] → 0.360 [0.344–0.366] (+0.002, >, no floor, ranges overlap) |
 
 Output check: every run of an input wrote the same --output bytes.

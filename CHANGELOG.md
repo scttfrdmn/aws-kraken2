@@ -165,10 +165,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - the implementation order rotates per repetition;
   - the manifest records the database's storage (device, model, EBS volume);
   - the summary states the cold load rate and shows ranges in the attribution table;
-  - "within noise" uses a per-cell noise floor from A/A control rungs (same binary, consecutive
-    in the ladder), and an acceptance table gives each cell's verdict against upstream;
+  - a per-cell noise floor from A/A control rungs (same binary, consecutive in the ladder):
+    the larger of their largest |Δ median| and half their median range width, with the number
+    of pairs stated;
+  - one verdict rule for attribution rows and the per-cell acceptance table against upstream:
+    within noise (below floor), above floor with ranges overlapping, or ranges separated;
   - `LB_REPS_COLD` / `LB_REPS_WARM` set per-state repetitions;
-  - `LB_WARMUP` adds one unrecorded cold warm-up run, kept in the manifest;
+  - `LB_WARMUP` / `LB_WARMUPS` add unrecorded cold warm-up runs, kept in the manifest;
   - `LB_READS`, `LB_PROFILE_IMPLS` and `HEAD` in the ladder are new;
   - `runs/loadbench-g4.json` uses instance-store NVMe (r8gd/c8gd).
 - One `cmd/k2probe` dispatcher, with commands registered from `init()`. `header`/`opts` moved

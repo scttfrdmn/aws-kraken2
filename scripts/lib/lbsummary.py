@@ -83,11 +83,11 @@ def main():
              f"(requested: {man['states_requested']}; cold available: "
              f"{man['cold']['available']}, via {man['cold']['method']}); "
              f"{man['start']} to {man['stop']}.")
-    if man.get("warmup"):
-        w = man["warmup"]
-        L.append(f"Warm-up (unrecorded, not in any cell): one cold run of {w.get('impl')} on "
-                 f"`{w.get('input')}` before the matrix, wall {w.get('wall_s')} s, load "
-                 f"{w.get('load_s')} s.")
+    wus = man.get("warmups") or ([man["warmup"]] if man.get("warmup") else [])
+    if wus:
+        L.append(f"Warm-up (unrecorded, not in any cell): {len(wus)} cold run(s) of "
+                 f"{wus[0].get('impl')} on `{wus[0].get('input')}` before the matrix, wall "
+                 + ", ".join(f"{w.get('wall_s')} s" for w in wus) + ".")
     st_ = man.get("db", {}).get("storage") or {}
     if st_:
         ebs = st_.get("ebs") or {}
@@ -116,55 +116,70 @@ def main():
              "Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "
              "\"processed in\" figure. tail: that line to exit (report, flushes, teardown). "
              "minflt: minor page faults of the whole process tree. All from `runs.tsv`.")
-    # Noise floor per cell: the largest |difference of medians| over control pairs, consecutive
-    # ladder rungs with the same binary and environment (A/A). Without one, the min–max overlap
-    # rule stands in, and the summary says so.
+    # Noise floor per cell, from A/A control pairs (consecutive ladder rungs with the same binary
+    # and environment): the larger of (a) the largest |difference of medians| over the pairs and
+    # (b) half the median min–max range width of the pairs' rungs. (b) keeps a single pair whose
+    # medians happen to coincide from giving a floor of ~0. Without a pair there is no floor.
     by_label = {i["label"]: i for i in man["implementations"]}
     ladder = [i for i in impls if i not in ("upstream", "ours")]
     controls = [(a, b) for a, b in zip(ladder, ladder[1:])
                 if by_label[a]["sha256"] == by_label[b]["sha256"]
                 and by_label[a].get("env", "") == by_label[b].get("env", "")]
-    floor = {}
-    for inp in inputs:
-        for st in states:
-            ds = []
-            for a, b in controls:
-                x, y = med(inp, st, a), med(inp, st, b)
-                if x is not None and y is not None:
-                    ds.append(abs(y - x))
-            floor[(inp, st)] = max(ds) if ds else None
 
     def wstats(inp, st, im):
         return stats([num(r["wall_s"]) for r in groups.get((inp, st, im), [])])
 
-    def noisy(inp, st, x, y):
+    floor, floor_why = {}, {}
+    for inp in inputs:
+        for st in states:
+            ds, widths = [], []
+            for a, b in controls:
+                x, y = wstats(inp, st, a), wstats(inp, st, b)
+                if x is not None and y is not None:
+                    ds.append(abs(y[0] - x[0]))
+                    widths += [x[2] - x[1], y[2] - y[1]]
+            if ds:
+                dmax, half = max(ds), statistics.median(widths) / 2
+                floor[(inp, st)] = max(dmax, half)
+                floor_why[(inp, st)] = "A/A Δ" if dmax >= half else "half range"
+            else:
+                floor[(inp, st)] = None
+
+    def classify(inp, st, x, y):
+        """One rule for y against x (after vs before, or ours vs upstream)."""
+        d = y[0] - x[0]
         f = floor[(inp, st)]
-        if f is not None:
-            return abs(y[0] - x[0]) <= f
-        return x[1] <= y[2] and y[1] <= x[2]
+        rel = "≤" if d <= 0 else ">"
+        overlap = x[1] <= y[2] and y[1] <= x[2]
+        if f is not None and abs(d) <= f:
+            return d, "within noise (below floor)"
+        if overlap:
+            return d, f"{rel}, {'above floor, ' if f is not None else 'no floor, '}ranges overlap"
+        return d, f"{rel} (ranges separated)"
 
     def verdict(inp, st, im):
         o, u = wstats(inp, st, im), wstats(inp, st, "upstream")
         if o is None or u is None:
             return None
-        d = o[0] - u[0]
-        nz = noisy(inp, st, u, o)
-        if d <= 0:
-            if o[2] < u[1] and not nz:
-                return d, "≤ upstream (ranges separated)"
-            return d, "≤ upstream by median, within noise"
-        return d, ("> upstream by median, within noise" if nz else "> upstream")
+        d, v = classify(inp, st, u, o)
+        if v.startswith("≤") or v.startswith(">"):
+            v = v[0] + " upstream" + v[1:]
+        return d, v
 
     L.append("")
     if controls:
-        L.append("Noise floor per cell (largest |Δ median wall| over the A/A control pairs "
-                 + ", ".join(f"{a} → {b}" for a, b in controls) + "): "
-                 + "; ".join(f"{inp} {st} {floor[(inp, st)]:.3f} s" for inp in inputs for st in states
-                             if floor[(inp, st)] is not None)
-                 + ". A difference at or below it is marked \"within noise\".")
+        L.append(f"Noise floor per cell, from {len(controls)} A/A control pair(s) ("
+                 + ", ".join(f"{a} → {b}" for a, b in controls)
+                 + "): the larger of the pairs' largest |Δ median wall| and half the median "
+                 "min–max width of their rungs: "
+                 + "; ".join(f"{inp} {st} {floor[(inp, st)]:.3f} s ({floor_why[(inp, st)]})"
+                             for inp in inputs for st in states if floor[(inp, st)] is not None)
+                 + ". Verdicts: |Δ| at or below the floor is \"within noise (below floor)\"; above "
+                 "it, \"ranges overlap\" or \"ranges separated\" by the min–max ranges."
+                 + (" With one pair the floor itself is a single sample." if len(controls) == 1 else ""))
     else:
-        L.append("No A/A control pair in this run: \"within noise\" falls back to overlapping "
-                 "min–max ranges, which is lax at small n.")
+        L.append("No A/A control pair in this run, so no noise floor: verdicts say only whether "
+                 "the min–max ranges overlap, which is lax at small n.")
     fin = "final" if "final" in impls else (ladder[-1] if ladder else ("ours" if "ours" in impls else None))
     if fin and "upstream" in impls:
         L.append("")
@@ -205,10 +220,9 @@ def main():
         L.append("## Attribution (one row per change, Law 5)")
         L.append("")
         L.append("Median [min–max] wall seconds before → after each change, and the difference "
-                 "of the medians; \"within noise\" where it is at or below the cell's noise floor "
-                 "(above), or, without a control pair, where the min–max ranges overlap. "
-                 "\"(A/A control)\" marks a pair with the same binary. Ladder order is "
-                 "`LB_LADDER`'s.")
+                 "of the medians, classified by the same rule as the acceptance table (noise floor, "
+                 "then min–max ranges). \"(A/A control)\" marks a pair with the same binary. "
+                 "Ladder order is `LB_LADDER`'s.")
         L.append("")
         hdr = "| change |"
         sep = "|---|"
@@ -227,9 +241,9 @@ def main():
                     if x is None or y is None:
                         line += " - |"
                         continue
-                    noise = noisy(inp, st, x, y)
+                    d, v = classify(inp, st, x, y)
                     line += (f" {x[0]:.3f} [{x[1]:.3f}–{x[2]:.3f}] → {y[0]:.3f} [{y[1]:.3f}–{y[2]:.3f}]"
-                             f" ({y[0] - x[0]:+.3f}{', within noise' if noise else ''}) |")
+                             f" ({d:+.3f}, {v}) |")
             L.append(line)
     # Sanity: every implementation wrote the same --output for an input (Law 1 is make oracle's).
     L.append("")
