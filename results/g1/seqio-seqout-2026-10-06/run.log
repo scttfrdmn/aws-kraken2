@@ -1,0 +1,80 @@
+shell flags: hB
+pin 2731b35f7abb26ec926517274f3d87e78d42fd76  db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626  reads /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_200000  threads 4  work /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/2026-10-06
+se_fq_plain: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.249s (48192.8 Kseq/m, 4819.28 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fq_gz_auto: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.274s (43748.7 Kseq/m, 4374.87 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fq_gz_flag: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.278s (43214.0 Kseq/m, 4321.40 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fq_plain: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.482s (24873.1 Kseq/m, 4974.63 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+pe_fq_gz_auto: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.534s (22471.4 Kseq/m, 4494.29 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_q20: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.218s (54932.0 Kseq/m, 5493.20 Mbp/m).  826 sequences classified (0.41%)  199174 sequences unclassified (99.59%)
+pe_fq_gz_q20: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.474s (25311.3 Kseq/m, 5062.26 Mbp/m).  1614 sequences classified (0.81%)  198386 sequences unclassified (99.19%)
+se_fa: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.211s (56900.9 Kseq/m, 5690.09 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fa_wrap: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.207s (57960.4 Kseq/m, 5796.04 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fa_wrap_gz: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.433s (27720.1 Kseq/m, 5544.02 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+pe_fa_plain: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.400s (29968.1 Kseq/m, 5993.62 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_crlf: upstream exit 0; 200000 sequences (20.00 Mbp) processed in 0.247s (48649.0 Kseq/m, 4864.90 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fq_crlf: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.484s (24787.8 Kseq/m, 4957.56 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+pe_fq_slash_tab: upstream exit 0; 200000 sequences (40.00 Mbp) processed in 0.486s (24688.7 Kseq/m, 4937.73 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+extra sample: /Users/scttfrdmn/src/aws-kraken2/.cache/reads/ERR478965_200000 (accession ERR478965 records_per_mate 200000 urls ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_2.fastq.gz sha256 385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be ERR478965_200000_1.fq sha256 71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 ERR478965_200000_2.fq fetched 2026-10-06T00:29:07Z )
+ERR478965_se_fq_plain: upstream exit 0; 200000 sequences (18.13 Mbp) processed in 0.241s (49733.9 Kseq/m, 4507.96 Mbp/m).  396 sequences classified (0.20%)  199604 sequences unclassified (99.80%)
+ERR478965_se_fq_gz_auto: upstream exit 0; 200000 sequences (18.13 Mbp) processed in 0.258s (46519.6 Kseq/m, 4216.60 Mbp/m).  396 sequences classified (0.20%)  199604 sequences unclassified (99.80%)
+ERR478965_pe_fq_plain: upstream exit 0; 200000 sequences (36.17 Mbp) processed in 0.459s (26165.5 Kseq/m, 4732.66 Mbp/m).  482 sequences classified (0.24%)  199518 sequences unclassified (99.76%)
+ERR478965_pe_fq_gz_auto: upstream exit 0; 200000 sequences (36.17 Mbp) processed in 0.491s (24448.9 Kseq/m, 4422.17 Mbp/m).  482 sequences classified (0.24%)  199518 sequences unclassified (99.76%)
+=== RUN   TestOracleSeqout
+=== RUN   TestOracleSeqout/se_fq_plain
+    oracle_test.go:230: se_fq_plain: 200000 records, 1099 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/se_fq_gz_auto
+    oracle_test.go:230: se_fq_gz_auto: 200000 records, 1099 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/se_fq_gz_flag
+    oracle_test.go:230: se_fq_gz_flag: 200000 records, 1099 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fq_plain
+    oracle_test.go:230: pe_fq_plain: 200000 records, 2167 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fq_gz_auto
+    oracle_test.go:230: pe_fq_gz_auto: 200000 records, 2167 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/se_fq_q20
+    oracle_test.go:230: se_fq_q20: 200000 records, 826 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fq_gz_q20
+    oracle_test.go:230: pe_fq_gz_q20: 200000 records, 1614 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/se_fa
+    oracle_test.go:230: se_fa: 200000 records, 1099 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/se_fa_wrap
+    oracle_test.go:230: se_fa_wrap: 200000 records, 1099 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fa_wrap_gz
+    oracle_test.go:230: pe_fa_wrap_gz: 200000 records, 2167 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fa_plain
+    oracle_test.go:230: pe_fa_plain: 200000 records, 2167 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/se_fq_crlf
+    oracle_test.go:230: se_fq_crlf: 200000 records, 1099 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fq_crlf
+    oracle_test.go:230: pe_fq_crlf: 200000 records, 2167 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/pe_fq_slash_tab
+    oracle_test.go:230: pe_fq_slash_tab: 200000 records, 2167 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/ERR478965_se_fq_plain
+    oracle_test.go:230: ERR478965_se_fq_plain: 200000 records, 396 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/ERR478965_se_fq_gz_auto
+    oracle_test.go:230: ERR478965_se_fq_gz_auto: 200000 records, 396 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/ERR478965_pe_fq_plain
+    oracle_test.go:230: ERR478965_pe_fq_plain: 200000 records, 482 classified, 0 id/len mismatches
+=== RUN   TestOracleSeqout/ERR478965_pe_fq_gz_auto
+    oracle_test.go:230: ERR478965_pe_fq_gz_auto: 200000 records, 482 classified, 0 id/len mismatches
+--- PASS: TestOracleSeqout (2.55s)
+    --- PASS: TestOracleSeqout/se_fq_plain (0.11s)
+    --- PASS: TestOracleSeqout/se_fq_gz_auto (0.18s)
+    --- PASS: TestOracleSeqout/se_fq_gz_flag (0.18s)
+    --- PASS: TestOracleSeqout/pe_fq_plain (0.16s)
+    --- PASS: TestOracleSeqout/pe_fq_gz_auto (0.23s)
+    --- PASS: TestOracleSeqout/se_fq_q20 (0.09s)
+    --- PASS: TestOracleSeqout/pe_fq_gz_q20 (0.23s)
+    --- PASS: TestOracleSeqout/se_fa (0.06s)
+    --- PASS: TestOracleSeqout/se_fa_wrap (0.06s)
+    --- PASS: TestOracleSeqout/pe_fa_wrap_gz (0.12s)
+    --- PASS: TestOracleSeqout/pe_fa_plain (0.11s)
+    --- PASS: TestOracleSeqout/se_fq_crlf (0.09s)
+    --- PASS: TestOracleSeqout/pe_fq_crlf (0.15s)
+    --- PASS: TestOracleSeqout/pe_fq_slash_tab (0.16s)
+    --- PASS: TestOracleSeqout/ERR478965_se_fq_plain (0.08s)
+    --- PASS: TestOracleSeqout/ERR478965_se_fq_gz_auto (0.16s)
+    --- PASS: TestOracleSeqout/ERR478965_pe_fq_plain (0.17s)
+    --- PASS: TestOracleSeqout/ERR478965_pe_fq_gz_auto (0.20s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/seqout	3.004s
+go test exit 0
