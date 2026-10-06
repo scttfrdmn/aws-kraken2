@@ -28,6 +28,7 @@ import (
 	"strconv"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/chash"
+	"github.com/scttfrdmn/aws-kraken2/internal/mmscan"
 )
 
 // Sentinel taxa in the per-read taxa vector (classify.cc MATE_PAIR_BORDER_TAXON,
@@ -50,6 +51,13 @@ type Resolver interface{ Get(key uint64) uint32 }
 type Scanner interface {
 	Load(seq []byte)
 	Next() (minimizer uint64, ambiguous bool, ok bool)
+}
+
+// BatchScanner is a Scanner that also reports a whole sequence in one call, as
+// mmscan.Scanner.AppendMinimizers does: what Next would report, call by call, with
+// mmscan.Ambiguous where it reported ambiguous. Tokens.Scan uses it when available.
+type BatchScanner interface {
+	AppendMinimizers(seq []byte, out []uint64) []uint64
 }
 
 // Tree is the taxonomy view classification needs (internal IDs).
@@ -150,15 +158,18 @@ type Tokens struct {
 	lastMin uint64
 	minHash uint64
 	hash    func(uint64) uint64
+	defHash bool     // hash is chash.MurmurHash3: call it directly (inlined)
+	mm      []uint64 // BatchScanner output scratch
 }
 
 // NewTokens returns an empty token stream for an index. hashFn is MurmurHash3 (fmix64) for
 // the minimum_acceptable_hash_value check; nil uses chash.MurmurHash3, the one port of it.
 func NewTokens(idx IndexInfo, hashFn func(uint64) uint64) *Tokens {
-	if hashFn == nil {
+	def := hashFn == nil
+	if def {
 		hashFn = chash.MurmurHash3
 	}
-	t := &Tokens{minHash: idx.MinimumAcceptableHashValue, hash: hashFn}
+	t := &Tokens{minHash: idx.MinimumAcceptableHashValue, hash: hashFn, defHash: def}
 	t.Reset()
 	return t
 }
@@ -189,6 +200,37 @@ func (t *Tokens) Add(minimizer uint64, ambiguous bool) {
 	}
 }
 
+// addAll is Add over a BatchScanner's output (mmscan.Ambiguous = an ambiguous event), with
+// the stream state in locals.
+func (t *Tokens) addAll(mm []uint64) {
+	kinds, keys, last, minHash := t.kinds, t.Keys, t.lastMin, t.minHash
+	for _, m := range mm {
+		switch {
+		case m == mmscan.Ambiguous:
+			kinds = append(kinds, tokAmbig)
+		case m != last:
+			last = m
+			var skip bool
+			if minHash != 0 {
+				if t.defHash {
+					skip = chash.MurmurHash3(m) < minHash
+				} else {
+					skip = t.hash(m) < minHash
+				}
+			}
+			if skip {
+				kinds = append(kinds, tokSkip)
+			} else {
+				kinds = append(kinds, tokLookup)
+				keys = append(keys, m)
+			}
+		default:
+			kinds = append(kinds, tokRepeat)
+		}
+	}
+	t.kinds, t.Keys, t.lastMin = kinds, keys, last
+}
+
 // MateBorder ends the first mate of a pair and starts the second. Call it exactly once per
 // read when Options.Paired, between the mates' events.
 func (t *Tokens) MateBorder() {
@@ -198,6 +240,11 @@ func (t *Tokens) MateBorder() {
 
 // Scan loads seq into s and appends all of its events.
 func (t *Tokens) Scan(s Scanner, seq []byte) {
+	if bs, ok := s.(BatchScanner); ok {
+		t.mm = bs.AppendMinimizers(seq, t.mm[:0])
+		t.addAll(t.mm)
+		return
+	}
 	s.Load(seq)
 	for {
 		m, amb, ok := s.Next()
