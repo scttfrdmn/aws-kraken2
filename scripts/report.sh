@@ -31,7 +31,7 @@ cat <<EOF
 | | |
 |---|---|
 | commit | \`$(m .commit)\` (tree dirty: $(m .tree_dirty)) |
-| upstream pin | \`$(m .upstream.pin)\` |
+| upstream pin | `$(m .upstream.pin)` (describe `$(m .upstream.describe)`) |
 | spec | \`$(m .spec)\` (sha256 \`$(m .spec_sha256 | cut -c1-12)\`) |
 | instance | $(m .instance.count) × \`$(m .instance.type)\` ($(m .instance.lifecycle)), AMI \`$(m .instance.ami)\` |
 | region / AZ | $(m .region) / $(m .instance.az) |

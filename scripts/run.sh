@@ -10,6 +10,8 @@ cd "$ROOT" || exit 2
 # shellcheck source=/dev/null
 . scripts/pin.env
 # shellcheck source=/dev/null
+. scripts/pin-identity.sh
+# shellcheck source=/dev/null
 . scripts/ak2.env
 export AWS_PROFILE
 
@@ -20,6 +22,7 @@ say() { echo "make run: $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
 for t in jq spawn truffle aws curl git python3; do command -v "$t" >/dev/null || die "$t not on PATH"; done
+pin_identity || die "cannot establish the upstream pin identity (scripts/pin-identity.sh)"
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate, e.g. g0a> SPEC=runs/<file>.json"
 case "$SPEC" in runs/*.json) ;; *) die "SPEC must be a checked-in runs/*.json (got '$SPEC')" ;; esac
 [ -f "$SPEC" ] || die "$SPEC: no such file"
@@ -245,7 +248,7 @@ fi
 
 jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" \
   --arg spec_sha "$(shasum -a 256 "$SPEC" | cut -d' ' -f1)" --arg sha "$SHA" --argjson dirty "$DIRTY" \
-  --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_PIN" --arg region "$REGION" \
+  --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_SHA" --arg udesc "$UPSTREAM_DESCRIBE" --arg region "$REGION" \
   --arg spawn_v "$(spawn version 2>/dev/null | awk '/Version:/{print $2}')" \
   --arg truffle_v "$(truffle version 2>/dev/null | awk '/Version:/{print $2}')" \
   --arg ttl "$TTL" --argjson cost "$COST" --arg prefix "$PREFIX" --arg acc "$ACCESSIONS" \
@@ -253,7 +256,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --arg pbytes "$(wc -c < "$PAYLOAD" | tr -d ' ')" --argjson ud "$UD" \
   --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" '{
     gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha,
-    commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin},
+    commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin, sha:$upin, describe:$udesc},
     tools:{spawn:$spawn_v, truffle:$truffle_v},
     region:$region, ttl:$ttl, cost_limit_usd:$cost, s3_prefix:$prefix,
     sample_accessions:($acc|split(" ")|map(select(.!=""))),

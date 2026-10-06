@@ -24,6 +24,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 . scripts/pin.env
 . scripts/paths.sh
+. scripts/pin-identity.sh
+pin_identity || { echo "$(basename "$0"): cannot establish the upstream pin identity" >&2; exit 1; }
 usage() { echo "usage: $0 [-v lp|dh|lp,dh] [name...]" >&2; exit 2; }
 VARIANTS=lp
 NAMES=()
@@ -94,7 +96,8 @@ build_one() {  # name suffix flags lib
   mv -f "$bin.tmp.$$" "$bin"
   rm -rf "$bin.tmp.$$.dSYM"
   {
-    echo "pin $UPSTREAM_PIN"
+    echo "pin $UPSTREAM_SHA"
+    echo "pin_describe $UPSTREAM_DESCRIBE"
     echo "src $ORACLE_SRC (HEAD $HEAD, no tracked modifications; src sha256 $SRCSUM)"
     echo "harness upstream/$name.cc sha256 $(shasum -a 256 "upstream/$name.cc" | cut -d' ' -f1)"
     v=${sfx#.}; echo "variant ${v:-lp}"
