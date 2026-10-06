@@ -47,4 +47,4 @@ awk -F'\t' 'BEGIN{n=split("1 2 3 4 5 6-10 11-20 21-50 51-100 101+",B," ")}
   END{printf "sample\tclass"; for(i=1;i<=n;i++) printf "\t%s", B[i]; printf "\n";
       for(j=1;j<=m;j++){printf "%s", o[j]; for(i=1;i<=n;i++) printf "\t%d", c[o[j],i]; printf "\n"}}' \
   "$O/probes/probe-hist.tsv" > "$D/tables/probe-bands.tsv"
-echo "g0c-probes.post: $(awk -F'\t' 'NR>1 && $2!="all"{printf "%s/%s n=%s mean=%s max=%s; ", $1,$2,$3,$5,$11}' "$D/tables/probe-summary.tsv")"
+echo "g0c-probes.post: $(awk -F'\t' 'NR>1 && $2!="all"{printf "%s/%s n=%s mean=%s max=%s; ", $1,$2,$3,$5,$13}' "$D/tables/probe-summary.tsv")"
