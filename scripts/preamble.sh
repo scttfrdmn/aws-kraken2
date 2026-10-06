@@ -32,10 +32,16 @@ AK2_AMI=$(ak2_md ami-id)
 ak2_say "imds region=$AK2_REGION az=$AK2_AZ instance=$AK2_INSTANCE_ID type=$AK2_INSTANCE_TYPE ami=$AK2_AMI"
 export AWS_DEFAULT_REGION="$AK2_REGION" AWS_REGION="$AK2_REGION"
 
+# Close our end of the tee pipe and give tee up to 10 s to drain (a background job left
+# by the spec body can hold the pipe open, so never block on it).
+ak2_close_log() {
+  exec >&- 2>&-
+  local i; for i in $(seq 1 20); do kill -0 "$AK2_TEE_PID" 2>/dev/null || break; sleep 0.5; done
+}
 ak2_put() { aws s3 cp --only-show-errors "$1" "$AK2_S3_PREFIX/$2" >/dev/null 2>&1; }
 ak2_fatal() {
   ak2_say "FATAL: $*"
-  exec >&- 2>&-; wait "$AK2_TEE_PID" 2>/dev/null
+  ak2_close_log
   ak2_put "$AK2_LOG" log/run.log
   exit 97
 }
@@ -67,7 +73,7 @@ ak2_finish() {
   local rc=$1
   ak2_say "spec body exit rc=$rc"
   kill "$AK2_PUSHER" 2>/dev/null
-  exec >&- 2>&-; wait "$AK2_TEE_PID" 2>/dev/null
+  ak2_close_log
   ak2_put "$AK2_LOG" log/run.log
   exit "$rc"
 }
