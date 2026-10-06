@@ -11,7 +11,8 @@ make -s report GATE=g0a RUN=<run-id> > /tmp/comment.md
 **Inputs:** `results/<gate>/<run>/manifest.json`, which must be finalised
 (`manifest_finalised_at` set). Also, if present: `decoded/*.json` (flat objects, rendered as
 field/value tables) and `tables/*.tsv` (header row + data, rendered as markdown tables, first 60
-rows). Derived files come from the spec's `runs/<name>.post.sh`. To add a number to a report, add
+rows). Derived files come from `run.sh` (`tables/phases.tsv`, `tables/requests.tsv`) and from the
+spec's `scripts/post/<name>.sh` (for g0a: `decoded/`, `tables/etag-check.tsv`, listing tables). To add a number to a report, add
 it to one of these files from a script, never to the comment.
 
 **Outputs:** markdown on stdout, in this order: the run table (commit, pin, spec hash, instance,

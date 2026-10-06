@@ -41,7 +41,10 @@ cat <<EOF
 | TTL / cost_limit | $(m .ttl) / \$$(m .cost_limit_usd) |
 | task | state $(m .task.state), exit $(m .task.exit_code), retry_class "$(m .task.retry_class)" |
 | shell flags | inherited \`$(m .preflight.inherited_flags)\`, after \`set +e\` \`$(m .preflight.flags_after_set)\` |
-| preflight region | $(m .preflight.region) (asserted == every bucket's region before I/O) |
+| preflight region | $(m .preflight.region), asserted equal to the region of each declared bucket ($(m '.preflight.buckets // [] | map(.bucket) | join(", ")')) before the spec body ran |
+| bucket allow-list | $(jq -r 'if .allowed_buckets == null then "none: this run predates the allow-list" else (.allowed_buckets | join(", ")) + ". `aws s3`/`s3api` calls outside it were refused; curl and SDK calls are not covered" end' "$M") |
+| drop_caches usable | $(m .preflight.drop_caches_ok) |
+| S3 requests (spec-recorded) | $(m '.requests.total') |
 | sample accessions | $(jq -r 'if (.sample_accessions|length)==0 then "none" else .sample_accessions|join(", ") end' "$M") |
 | tools | spawn $(m .tools.spawn), truffle $(m .tools.truffle) |
 
