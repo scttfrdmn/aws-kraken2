@@ -1,0 +1,14 @@
+check	observed	expected	ok
+ETag: instance head-object	f80959f9556b50d76b3e744afdd3b22a-8860	f80959f9556b50d76b3e744afdd3b22a-8860	yes
+ETag: k2probe If-Match (every GET)	f80959f9556b50d76b3e744afdd3b22a-8860	f80959f9556b50d76b3e744afdd3b22a-8860	yes
+opts.k2d bytes == launch size	56	56	yes
+k, l from opts.k2d == used	35,31	35,31	yes
+minimum_acceptable_hash_value	0	0	yes
+SRR062634 lookups sampled	10000	10000	yes
+SRR062634 lookup rows	10000	10000	yes
+ERR478965 lookups sampled	10000	10000	yes
+ERR478965 lookup rows	10000	10000	yes
+ERR598966 lookups sampled	10000	10000	yes
+ERR598966 lookup rows	10000	10000	yes
+SRR28305653 lookups sampled	10000	10000	yes
+SRR28305653 lookup rows	10000	10000	yes
