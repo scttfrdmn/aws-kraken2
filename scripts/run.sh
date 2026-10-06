@@ -229,7 +229,7 @@ jq --rawfile stub scripts/stub.sh --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
 ' "$SPEC" > "$LIVE_SPEC" && write_resolved || die "could not resolve spec"
 cp "$SPEC" "$RUN_DIR/spec.json"
 
-# ---- user-data size, measured with spawn v0.121.0's own builders (scripts/udsize) ----
+# ---- user-data size, measured with the pinned spawn version's own builders (scripts/udsize) ----
 UDSIZE_BIN="$ROOT/bin/udsize"
 SPAWN_V=$(spawn version 2>/dev/null | awk '/Version:/{print $2}')
 UDSIZE_V=$(awk '$1=="require" && $2=="github.com/spore-host/spawn"{sub(/^v/,"",$3); print $3}' scripts/udsize/go.mod)

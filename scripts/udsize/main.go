@@ -1,4 +1,4 @@
-// Command udsize measures the EC2 user data that `spawn task run` (spawn v0.121.0) would send
+// Command udsize measures the EC2 user data that `spawn task run` (the spawn version pinned in go.mod) would send
 // for a resolved TaskSpec. It calls spawn's own builders, in the order cmd/task.go and
 // pkg/launcher/provision.go use them:
 //
