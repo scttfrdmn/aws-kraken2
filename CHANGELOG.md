@@ -105,6 +105,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   upstream and by `internal/chash`, so the 40-bit cell path is checked against upstream.
 - `docs/harness.md` runbook; `scripts/cxx.sh` is the compiler choice shared by the upstream build
   and the harnesses.
+- `make bracken-check` (#19, `scripts/bracken-check.sh`, `docs/bracken-check.md`): runs Bracken
+  v3.1 (`est_abundance.py`, levels S and G, `-r 100`) on upstream's and our `--report` for
+  Standard-8 on ERR478965 and SRR062634, and byte-compares the reports, Bracken's tables, its
+  adjusted reports and its stdout. Writes `results/g1/bracken-<ts>-<sha>/`.
 
 ### Changed
 
