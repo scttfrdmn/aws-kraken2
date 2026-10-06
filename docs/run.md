@@ -14,16 +14,23 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
 
 - `GATE`: lowercase alphanumeric (`g0a`, `g1`, …).
 - `SPEC`: `runs/<name>.json`, committed. `run.sh` also refuses to start if
-  `git status --porcelain -- scripts runs cmd internal` shows anything, because the manifest cites
-  one commit for the harness, spec and decoders. It is a spawn TaskSpec with these constraints:
+  `git status --porcelain -- scripts runs cmd internal upstream go.mod go.sum Makefile` shows
+  anything, because the manifest cites one commit for the harness, spec and decoders. It is a
+  spawn TaskSpec with these constraints:
   - `lifecycle.ttl` must match `^([0-9]+[hms])+$`, be non-zero and be at most `AK2_MAX_TTL_S`
     (4 h). `lifecycle.cost_limit` must be positive and at most `AK2_MAX_COST_USD` ($5). Both
     ceilings are in `ak2.env`. `on_complete` is forced to `terminate`;
   - `command` is `["bash","-c","<script>"]`. `container`, `inputs[]` and `results_prefix` are
     refused: spawn would stage inputs before the preamble's region assert, so use `ak2_stage`;
+  - the script may not turn errexit back on (`set -e`, `set -euo …`, `set -o errexit`,
+    `bash -e`, `shopt -so errexit`, a `-e` shebang); Law 4 says `set +e`;
+  - `placement.{ami,volumes,fsx_lustre_id,efs_id,…_mount_point}` are refused (the AMI is spawn's
+    auto-selection, recorded in the manifest), and so are `resources.purchase` other than
+    `on_demand` and `resources.fallback`. Spot is a later lever, and `cost_usd` assumes
+    on-demand;
   - every `outputs[].destination` must start with `${AK2_OUT}/`, which becomes `<run prefix>/out/`;
-  - `env` may not set `BASH_ENV`, `ENV`, `SHELLOPTS`, `BASHOPTS`, `PROMPT_COMMAND` or `PS4`, nor any
-    `AK2_*` key except the ones below (the rest are harness-owned);
+  - `env` is an allow-list: only the keys below. Anything else the script needs it sets itself;
+    `BASH_ENV`, `ENV` and the harness's own `AK2_*` keys are therefore refused;
   - `env.AK2_REGION`: the launch region;
   - `env.AK2_ACCESSIONS`: space-separated sample accessions (`""` for none). The key must be present;
   - `env.AK2_DATASETS`: the **bucket allow-list**, as space-separated `s3://` URIs. An object URI
@@ -44,29 +51,44 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
 The allowed set is the declared buckets plus the results bucket. It is enforced three ways:
 
 1. **Statically:** every `s3://<bucket>` literal and every `--bucket` or `--copy-source`
-   literal in the script must be in the allowed set.
-2. **At run time:** the preamble defines an `aws()` function, exported with `export -f` so child
-   `bash` processes inherit it. It refuses (rc 126) any `aws s3`/`s3api` call naming a bucket
-   outside the set, which covers variables like `--bucket "$B"`.
+   literal in the script (a leading `/` is stripped) must be in the allowed set.
+2. **At run time:** the preamble writes a shim, `/tmp/ak2-bin/aws`, and puts it first on `PATH`.
+   The shim has the allowed set and the real CLI's absolute path baked in. Any call with an
+   argument equal to `s3` or `s3api` that names a bucket outside the set is refused (rc 126).
+   The shim checks `s3://X`, `--bucket X`, `--bucket=X` and `--copy-source [/]X/…`. Everything
+   else is `exec`ed to the real CLI. This covers anything that finds `aws` through `PATH`: the
+   script, `env`, `xargs`, `timeout`, `sh -c`, and Python or other subprocesses.
 3. **Region:** every declared bucket's region must equal `AK2_REGION`, checked on the launch
    host and again on the instance.
 
-**Not covered:** `curl`, SDKs, other languages, `command aws`, `sudo aws`, and `sh` children.
-The allow-list is a guard against mistakes, not a sandbox.
+**Not covered:**
+- `curl` and SDKs (boto3, the Go SDK, and so on);
+- the real CLI called by absolute path;
+- `sudo aws`, since sudo resets `PATH`;
+- buckets passed inside `--cli-input-json`;
+- a process that rewrites `PATH`.
+
+The allow-list is a guard against mistakes, not a sandbox: keep data I/O on the `aws` CLI.
 
 ## The spec body's helpers
 
 | helper | what |
 |---|---|
 | `ak2_say MSG` | timestamped log line |
-| `ak2_phase NAME` | marks the start of a phase; `run.sh` derives `tables/phases.tsv` and `manifest.phases` |
-| `ak2_req OP N [BUCKET]` | records N S3 requests of type OP in the current phase; becomes `out/requests.tsv`, `tables/requests.tsv` and `manifest.requests` |
+| `ak2_phase NAME` | marks the start of a phase; `run.sh` derives `tables/phases.tsv` (phase, start, seconds, cold) and `manifest.phases`. A phase still running when the run was killed hard has empty seconds (`null`) |
+| `ak2_req OP N [BUCKET]` | records N S3 requests of type OP in the current phase; becomes `out/requests.tsv`, `tables/requests.tsv` and `manifest.requests`. OP must be a non-empty word and N a non-negative integer; otherwise it logs an error and a run that would have exited 0 exits 96 |
 | `ak2_stage SRC DST` | stage an input from a declared bucket (signed, then anonymous); `SRC` ending in `/` is recursive |
 | `ak2_push FILE [NAME]` | stream a result to `<run prefix>/out/NAME` now |
-| `ak2_drop_caches` | required before every cold rung. Logs `DROP_CACHES FAILED` and returns 1 if it could not drop them; check its status |
+| `ak2_drop_caches` | required before every cold rung. Marks the **next** `ak2_phase` as `cold=yes`. If the preflight found `drop_caches_ok=false`, or the drop fails, it ends the run with exit 95; a warm rung is never mislabelled cold |
 
-The body must not replace the EXIT trap. A bare `wait` is safe: the log tee and the pusher are
-disowned. Every spec must count its requests with `ak2_req`; `run.sh` warns if none were recorded.
+The helpers are `readonly -f`. The body must not replace the EXIT/TERM/HUP/INT traps.
+- On any exit, including a process-group SIGTERM at shutdown, the finish handler logs the real
+  status (143 for TERM, 129 for HUP, 130 for INT) and pushes `run.log` and `requests.tsv`.
+  It writes straight to the log file, so a dead tee cannot SIGPIPE it.
+- The tee ignores TERM/HUP. The preamble checks that it started (within 5 s) and exits 97 if not.
+- A bare `wait` is safe, because the tee and the pusher are disowned.
+
+Every spec must count its requests with `ak2_req`; `run.sh` warns if none were recorded.
 
 ## What it does
 
@@ -120,7 +142,10 @@ Exit status: the task's exit code, or one of these harness codes:
 | 2 | spec refused, launch failed, or launched in the wrong region (instance terminated) |
 | 3 | orphans found, or a region could not be checked |
 | 4 | a manifest update failed |
-| 97 | the on-instance region or Payer assert failed |
+| 95 | `ak2_drop_caches` could not drop caches (a cold rung was impossible) |
+| 96 | the body exited 0 but an `ak2_req` call was invalid |
+| 97 | the on-instance region or Payer assert failed, or the log tee/mkfifo/shim could not start |
+| 129 / 130 / 143 | the body was killed by HUP / INT / TERM (the log still reached S3) |
 | 98 | the post script failed |
 | 99 | no completion record |
 | 126 | (in the log) an `aws` call was refused by the allow-list |
@@ -132,8 +157,8 @@ Exit status: the task's exit code, or one of these harness codes:
 - `FATAL: …` in `log/run.log`, exit 97: cross-region placement, or a Requester-pays bucket
   without opt-in. Caught before the spec body ran.
 - `ak2: REFUSED aws … undeclared bucket(s)` in the log: declare the bucket in `AK2_DATASETS`.
-- `DROP_CACHES FAILED` in the log, or `drop_caches_ok: false` in the manifest: every rung after
-  the first was warm. Do not report them as cold.
+- Exit 95 with `FATAL: drop_caches …`: the instance could not drop caches, so the run stopped
+  before a rung it would have reported as cold. `tables/phases.tsv` shows which phases were cold.
 - `no completion record by TTL+3m`: the TTL or cost limit killed the task. `log/run.log` and
   `spawn/<task_id>/command.log` (from spored's pre-stop flush) show how far it got. Raise the TTL
   only after reading them.

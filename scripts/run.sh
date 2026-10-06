@@ -123,7 +123,7 @@ RESULTS_BUCKET=${!RB_VAR:-}
 ALLOWED_BUCKETS=$(printf '%s\n' $BUCKETS "$RESULTS_BUCKET" | sort -u | tr '\n' ' '); ALLOWED_BUCKETS=${ALLOWED_BUCKETS% }
 
 # Static check of the script: every literal bucket must be allowed. Variables ($B) can't be
-# resolved here; the preamble's aws() wrapper checks them at run time.
+# resolved here; the preamble's aws PATH shim checks them at run time.
 BODY=$(q '.command[2]')
 LITERALS=$( { printf '%s\n' "$BODY" | grep -oE 's3://[A-Za-z0-9._-]+' | sed 's|^s3://||'
               printf '%s\n' "$BODY" | grep -oE -- "--(bucket|copy-source)[= ]+[\"']?/?[A-Za-z0-9._-]+" |

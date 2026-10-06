@@ -111,7 +111,7 @@ means wrong region.
 | nf-spawn#96 | orphaned instances after a workflow | `make orphans` after every run (`run.sh` calls it) |
 | strict parse | unknown TaskSpec key fails validation | metadata in `env` |
 | IAM scope | instance can read only `inputs[]`/`s3_read_write` buckets | `--no-sign-request` for public data; `ak2_stage` tries signed, then anonymous |
-| allow-list scope | the preamble's `aws()` guard sees only the `aws` CLI from bash | curl/SDK calls are not covered; keep data I/O on the CLI |
+| allow-list scope | the preamble's `aws` PATH shim sees only the `aws` CLI found via `PATH` | curl/SDK/`sudo aws` are not covered; keep data I/O on the CLI |
 | launch region | spawn could place the task elsewhere | `run.sh` terminates and fails if `launch.json` region != `AK2_REGION` |
 | tmpfs | `/tmp` is about RAM/2 whatever `disk_gib` says | size `memory_gib` or stage to a non-`/tmp` path |
 | slow sizing | `task run` sizing (truffle search + live price per candidate) took ~4 min per call in 0.121.0 | `run.sh` sizes once (`--dry-run`) and pins `instance_type` for the launch |
