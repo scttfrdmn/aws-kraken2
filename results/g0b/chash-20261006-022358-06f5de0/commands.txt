@@ -1,0 +1,10 @@
+scripts/g0b.sh all  (G0B_DBS="viral standard8" G0B_RUN_ID=20261006-022358-06f5de0)
+per db: chash_keys opts.k2d keys 20261005 SRR062634_200000_1.fq SRR062634_200000_2.fq
+        (pop = real, subthreshold, random; keys-<pop>.u64)
+        chash_dump{,.dh} hash.k2d < keys-<pop>.u64 > up{,.dh}-<pop>.bin
+        k2probe equiv-hash -mode linear -load ram|mmap -expect up-<pop>.bin
+        k2probe equiv-hash -mode double -expect up.dh-<pop>.bin
+        k2probe equiv-hash -mode double -stop=false -expect up-<pop>.bin
+synthetic 40-bit: chash_build{,.dh} hash{,.dh}.k2d 1000003 18 22 700000 20261005 keys{,.dh}.u64
+        chash_dump{,.dh} hash{,.dh}.k2d < keys{,.dh}.u64 > up{,.dh}.bin
+        k2probe equiv-hash -mode linear -load ram|mmap (vs up.bin); -mode double (vs up.dh.bin)
