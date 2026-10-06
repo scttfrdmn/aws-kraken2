@@ -15,8 +15,14 @@ words of every simple command:
   eval    its arguments are joined and re-checked: eval "set -e"
   #!      a shebang carrying -e
 
-Leading assignments (X=1) and the prefixes command/builtin/if/then/else/elif/do/while/until/!/
-time are skipped. Quoted text and heredoc bodies are data, so `echo "set -e"` is not a finding.
+Leading assignments (X=1), the prefixes command/builtin/if/then/else/elif/do/while/until/!/time,
+and the wrappers exec, env (with its options and VAR=val words), sudo (with its options),
+timeout [opts] DURATION, nohup, nice [-n N], xargs [opts] and stdbuf [opts] are skipped before the
+command name, so `sudo -u x bash -e`, `env -i A=1 sh -e` and `timeout 5 bash -e` are findings.
+Quoted text, heredoc bodies and arithmetic ($((a << 2)), ((x <<= 1))) are data, so
+`echo "set -e"` is not a finding and `<<` inside arithmetic does not open a heredoc.
+
+Exit status: 0 no findings, 1 findings, 2 the checker itself failed (run.sh reports a crash).
 
 Not covered (the preamble's runtime check of $- is the backstop): code inside "$(...)" within
 double quotes, code reached through variables ($cmd -e), aliases, functions defined via eval of
@@ -31,6 +37,52 @@ import sys
 SEP = ";"
 SHELLS = {"bash", "sh", "dash", "ksh", "zsh"}
 PREFIXES = {"command", "builtin", "if", "then", "else", "elif", "do", "while", "until", "!", "time", "{", "}"}
+# Wrappers that run their trailing words as a command: name -> options that take a value.
+WRAPPERS = {
+    "exec": {"-a"},
+    "env": {"-u", "-C", "-S", "--unset", "--chdir", "--split-string"},
+    "sudo": {"-u", "-g", "-C", "-D", "-h", "-p", "-r", "-t", "-T", "-U", "--user", "--group",
+             "--chdir", "--host", "--prompt", "--role", "--type", "--command-timeout", "--other-user"},
+    "timeout": {"-s", "-k", "--signal", "--kill-after"},
+    "nohup": set(),
+    "nice": {"-n", "--adjustment"},
+    "xargs": {"-a", "-d", "-E", "-e", "-I", "-i", "-L", "-l", "-n", "-P", "-s", "--arg-file",
+              "--delimiter", "--eof", "--replace", "--max-lines", "--max-args", "--max-procs",
+              "--max-chars", "--process-slot-var"},
+    "stdbuf": {"-i", "-o", "-e", "--input", "--output", "--error"},
+    "command": set(),
+    "builtin": set(),
+}
+
+
+def skip_prefix(words, k):
+    """Index of the real command name after assignments, keywords and wrappers."""
+    while k < len(words):
+        w = words[k]
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", w) or w in PREFIXES - {"command", "builtin"}:
+            k += 1
+            continue
+        name = os.path.basename(w)
+        if name not in WRAPPERS:
+            return k
+        takes = WRAPPERS[name]
+        k += 1
+        while k < len(words):
+            a = words[k]
+            if a == "--":
+                k += 1
+                break
+            if name == "env" and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", a):
+                k += 1
+            elif a.startswith("-") and len(a) > 1:
+                opt = a.split("=", 1)[0]
+                # -n5 / --signal=TERM carry their value; "-n 5" takes the next word.
+                k += 2 if (opt in takes and "=" not in a and a == opt) else 1
+            else:
+                break
+        if name == "timeout" and k < len(words):
+            k += 1  # DURATION
+    return k
 
 
 def tokenize(s):
@@ -112,6 +164,17 @@ def tokenize(s):
             cur.extend(buf)
             line += s.count("\n", i, j)
             i = j + 1
+        elif s.startswith("$((", i) or (s.startswith("((", i) and cur is None):
+            # Arithmetic: copy through the matching "))" as data, so "<<" here is a shift.
+            j, depth = i + (2 if s[i] == "(" else 3), 2
+            while j < n and depth:
+                depth += {"(": 1, ")": -1}.get(s[j], 0)
+                j += 1
+            if cur is None:
+                cur, cur_line = [], line
+            cur.extend(s[i:j])
+            line += s.count("\n", i, j)
+            i = j
         elif s.startswith("<<<", i):
             flush()
             i += 3
@@ -191,9 +254,7 @@ def check(src, base_line=0, depth=0):
     for cmd in commands(tokenize(src)):
         words = [w for w, _ in cmd]
         ln = cmd[0][1] + base_line
-        k = 0
-        while k < len(words) and (re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", words[k]) or words[k] in PREFIXES):
-            k += 1
+        k = skip_prefix(words, 0)
         if k >= len(words):
             continue
         name, args = os.path.basename(words[k]), words[k + 1:]
@@ -245,6 +306,18 @@ SELF_TEST = [
     ("set +o errexit", False), ("bash -c 'echo -e x'", False), ("grep -e set f", False),
     ("set -- -e", False), ("ak2_say \"don't set -e\"", False), ("x=1 # set -e", False),
     ("cat <<EOF\nset -e\nEOF\nset -e", True),
+    # wrappers before the shell name
+    ("exec bash -e x.sh", True), ("env -i A=1 B=2 bash -e x", True), ("env -u HOME sh -e x", True),
+    ("sudo bash -e x", True), ("sudo -u root -E bash -ec 'y'", True), ("sudo -- sh -o errexit x", True),
+    ("timeout 5 bash -e x", True), ("timeout -s KILL -k 3 10m bash -e x", True), ("nohup sh -e x &", True),
+    ("nice -n 5 bash -e x", True), ("nice bash -e x", True), ("echo f | xargs -n1 -P4 bash -e", True),
+    ("stdbuf -oL bash -e x", True), ("stdbuf -o L sh -e x", True), ("command -p bash -e x", True),
+    ("sudo timeout 5 env A=1 bash -e x", True), ("env bash -c 'set -e'", True),
+    ("sudo -u root aws s3 ls", False), ("timeout 5 sleep 1", False), ("env A=1 printenv", False),
+    ("xargs -n1 echo -e", False), ("nice -n 5 make -e", False),
+    # arithmetic is not a heredoc
+    ("x=$((1 << 4))\nset -e", True), ("((x <<= 1))\nset -e", True), ("echo $((a<<b)); echo ok", False),
+    ("y=$(( (1 << 2) + 1 ))\ncat <<EOF\nset -e\nEOF", False),
 ]
 
 
@@ -259,10 +332,20 @@ def self_test():
     return 1 if bad else 0
 
 
-if __name__ == "__main__":
+def main():
     if sys.argv[1:] == ["--self-test"]:
-        sys.exit(self_test())
+        return self_test()
+    if os.environ.get("AK2_ERREXIT_CHECK_CRASH_TEST") == "1":
+        raise RuntimeError("induced crash (AK2_ERREXIT_CHECK_CRASH_TEST)")
     findings = check(sys.stdin.read())
     for ln, text in findings:
         print(f"line {ln}: {text}")
-    sys.exit(1 if findings else 0)
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:  # any checker bug must read as a crash, never as a verdict
+        print(f"errexit_check crashed: {type(e).__name__}: {e}")
+        sys.exit(2)

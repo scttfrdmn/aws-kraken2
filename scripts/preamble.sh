@@ -139,7 +139,8 @@ export PATH="$AK2_BIN:$PATH"
 hash -r
 [ "$(command -v aws)" = "$AK2_BIN/aws" ] || ak2_boot_fail "aws shim is not first on PATH"
 # Functional check: an undeclared bucket must be refused without reaching the real CLI.
-aws s3 ls s3://ak2-guard-selftest-undeclared >/dev/null 2>&1
+# The endpoint is a closed local port, so even a broken shim could not reach AWS.
+AWS_ENDPOINT_URL=http://127.0.0.1:9 aws s3 ls s3://ak2-guard-selftest-undeclared >/dev/null 2>&1
 [ $? = 126 ] || ak2_boot_fail "aws shim did not refuse an undeclared bucket"
 ak2_say "aws shim installed and self-tested ($AK2_BIN/aws -> $AK2_REAL_AWS)"
 
@@ -166,7 +167,9 @@ ak2_finish() {
   set +e +u
   local rc=$1 why=${2:-}
   if [ "$BASHPID" != "$AK2_MAIN_PID" ]; then exit "$rc"; fi
-  mkdir "$AK2_STATE/finishing" 2>/dev/null || exit "$rc"
+  # Recreate the state dir if the body deleted it; skip only if the lock itself already exists.
+  mkdir -p "$AK2_STATE" 2>/dev/null
+  if ! mkdir "$AK2_STATE/finishing" 2>/dev/null && [ -d "$AK2_STATE/finishing" ]; then exit "$rc"; fi
   trap - EXIT
   exec >>"$AK2_LOG" 2>&1
   if [[ "$flags" == *e* ]]; then

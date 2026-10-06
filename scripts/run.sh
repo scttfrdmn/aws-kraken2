@@ -139,7 +139,8 @@ case $? in
   0) ;;
   1) die "the script turns on errexit (Law 4 requires set +e):
 $ERREXIT" ;;
-  *) die "errexit check failed to run" ;;
+  *) die "errexit check crashed (scripts/lib/errexit_check.py); fix the checker, the spec was not judged:
+$ERREXIT" ;;
 esac
 
 # ---- Payer: refuse UNKNOWN; refuse Requester unless the spec opts in ----
