@@ -25,6 +25,12 @@ after every run; nf-spawn#96):
   time and TTL, and do not fail it.
 - It exits 2 if any region could not be queried, because then the run's own instance cannot be
   confirmed gone.
+- `run.sh` saves the check's output as `<run dir>/orphans.txt`. It also records the outcome in
+  the manifest as `.orphan_check`, which `make report` shows as a row:
+  `{mode:"own", task_id, rc, own_gone, others:[{region,id,task_id,state,launch,ttl_deadline,flag}], checked_regions, failed_regions, at}`.
+  `flag` is one of `within_ttl`, `probable_orphan`, `deadline_unparseable` or `no_deadline`.
+  The summary is written by `orphans.sh` itself on every exit, when `AK2_ORPHANS_JSON=<file>` is
+  set.
 
 **Probable orphans (both modes):** an instance more than 15 minutes past its
 `spawn:ttl-deadline` tag is flagged `PROBABLE ORPHAN`, since spored terminates a healthy run at
