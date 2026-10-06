@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle ami run orphans report
+.PHONY: build test lint oracle ami run orphans report g0b
 
 build:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/...
@@ -32,3 +32,8 @@ orphans:
 
 report:
 	scripts/report.sh "$(GATE)" "$(RUN)"
+
+# PART = scan | all (see docs/g0b.md)
+PART ?= all
+g0b:
+	scripts/g0b.sh "$(PART)"
