@@ -4,8 +4,9 @@
 #   base   AK2_TIMINGS phase log only (the load path of main at d396c75)
 #   thp    2 MiB-aligned table + MADV_HUGEPAGE
 #   fill   the Filler interface (a refactor: expected no change)
-#   fill-streams-ncpu   the same build with K2_DB_READ_THREADS = vCPU count (upstream: 8)
+#   fill-streams16   the same build with 16 pread streams (upstream: 8; the canonical boxes have
+#                    8 vCPUs, so "streams = vCPU count" would be the default there)
 base 666459f6991cc5b99f4e7cbc278aeff866c35d7b
 thp c138ab7f99e20af7dba8dc222c5b49630e4a50fb
 fill 9de50376abd84d6cc4255ad45bab03f032e46bbc
-fill-streams-ncpu 9de50376abd84d6cc4255ad45bab03f032e46bbc K2_DB_READ_THREADS=@NCPU
+fill-streams16 9de50376abd84d6cc4255ad45bab03f032e46bbc K2_DB_READ_THREADS=16
