@@ -303,7 +303,7 @@ rm -f "$LIVE_SPEC"
 if [ $LRC -ne 0 ] || ! jq -e .instance_id "$RUN_DIR/launch.json" >/dev/null 2>&1; then
   cat "$RUN_DIR/launch.err" >&2
   mset --arg t "$LAUNCH_AT" '.launch = {at:$t, error:"spawn task run failed"}'
-  scripts/orphans.sh
+  scripts/orphans.sh --own "$TASK_ID"
   die "launch failed (rc=$LRC)"
 fi
 IID=$(jq -r .instance_id "$RUN_DIR/launch.json")
@@ -319,7 +319,7 @@ if [ "$LREGION" != "$REGION" ]; then
   aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
   mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" \
     '.launch = {requested_at:$t, instance_id:$iid, region:$lr, error:"launched in the wrong region; terminated by run.sh"}'
-  scripts/orphans.sh
+  scripts/orphans.sh --own "$TASK_ID" "$IID"
   die "launch region $LREGION != $REGION"
 fi
 
@@ -423,6 +423,8 @@ fi
 [ "$LATE_FAIL" = 0 ] || { say "manifest updates failed (see above)"; [ "$EXIT" = 0 ] && EXIT=4; }
 
 say "run dir: $RUN_DIR  (task exit $EXIT, state $STATE, cost \$$(jq -r .cost_usd "$M"))"
-scripts/orphans.sh; ORC=$?
-[ "$ORC" -eq 0 ] || { say "ORPHANS FOUND (or a region could not be checked)"; exit 3; }
+# Scoped to this run: concurrent runs' instances are listed, not counted (make orphans is the
+# global, strict check, for when nothing is in flight).
+scripts/orphans.sh --own "$TASK_ID" "$IID"; ORC=$?
+[ "$ORC" -eq 0 ] || { say "THIS RUN'S INSTANCE IS STILL ALIVE (or a region could not be checked)"; exit 3; }
 exit "$EXIT"

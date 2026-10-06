@@ -1,176 +1,160 @@
+// Clean-room implementation (issue #35) from a prose behavioural specification of std::sort as
+// shipped in GCC 11.5.0's libstdc++; written without access to that library's source.
 // Copyright 2026 aws-kraken2 contributors. MIT License.
-//
-// Provenance: stdSort is a structural transliteration of libstdc++'s std::sort and its heap
-// helpers (bits/stl_algo.h: __introsort_loop, __move_median_to_first,
-// __unguarded_partition(_pivot), __final_insertion_sort, __insertion_sort,
-// __unguarded_linear_insert, __partial_sort; bits/stl_heap.h: __make_heap, __adjust_heap,
-// __push_heap, __pop_heap, __sort_heap), which derive from the HP STL (Copyright 1994
-// Hewlett-Packard Company) and the SGI STL (Copyright 1996 Silicon Graphics Computer Systems,
-// Inc.). It is reproduced only so that ties between equal elements land in the order upstream's
-// GCC builds leave them (report sibling order); it is not used for anything else.
 
 package report
 
 import "math/bits"
 
-// stdSort sorts a in place and leaves equal elements in exactly the order libstdc++'s
-// std::sort (GCC's introsort) leaves them.
-//
-// Upstream sorts each node's children with std::sort, which is not stable, so the order of
-// siblings with equal clade counts -- and hence report bytes -- is whatever libstdc++'s
-// algorithm produces. A Go sort would order those ties differently. This is the textbook
-// introsort (Musser 1997) with the parameters and pivot/partition/insertion-sort/heapsort
-// choices libstdc++ has used through GCC 16: a 16-element insertion-sort threshold, a depth
-// limit of 2*floor(log2(n)), median-of-three of (first+1, mid, last-1) moved to first, an
-// unguarded Hoare partition, a heapsort fallback, and a final insertion sort.
-// less must be a strict weak ordering; it is called with element values.
+// stdSortThreshold is the introsort cutoff: subranges of at most this size are left for the
+// final insertion pass.
+const stdSortThreshold = 16
+
+// stdSort sorts a in place under the strict weak ordering less, leaving the elements (equal ones
+// included) in exactly the order libstdc++'s std::sort (GCC 11.5.0) produces: introsort with a
+// median-of-3 pivot and unguarded partition, a heapsort fallback once the depth budget
+// 2*floor(log2 n) is spent, and a final insertion pass. It does not allocate.
 func stdSort(a []uint64, less func(x, y uint64) bool) {
 	n := len(a)
 	if n == 0 {
 		return
 	}
-	introsortLoop(a, 0, n, 2*(bits.Len(uint(n))-1), less)
-	finalInsertionSort(a, 0, n, less)
+	stdSortDepth(a, less, 2*(bits.Len(uint(n))-1))
 }
 
-const sortThreshold = 16
-
-func introsortLoop(a []uint64, first, last, depth int, less func(x, y uint64) bool) {
-	for last-first > sortThreshold {
-		if depth == 0 {
-			heapSort(a[first:last], less)
-			return
-		}
-		depth--
-		cut := partitionPivot(a, first, last, less)
-		introsortLoop(a, cut, last, depth, less)
-		last = cut
-	}
-}
-
-func partitionPivot(a []uint64, first, last int, less func(x, y uint64) bool) int {
-	mid := first + (last-first)/2
-	moveMedianToFirst(a, first, first+1, mid, last-1, less)
-	return unguardedPartition(a, first+1, last, first, less)
-}
-
-func moveMedianToFirst(a []uint64, result, x, y, z int, less func(x, y uint64) bool) {
-	var m int
-	switch {
-	case less(a[x], a[y]):
-		switch {
-		case less(a[y], a[z]):
-			m = y
-		case less(a[x], a[z]):
-			m = z
-		default:
-			m = x
-		}
-	case less(a[x], a[z]):
-		m = x
-	case less(a[y], a[z]):
-		m = z
-	default:
-		m = y
-	}
-	a[result], a[m] = a[m], a[result]
-}
-
-func unguardedPartition(a []uint64, first, last, pivot int, less func(x, y uint64) bool) int {
-	for {
-		for less(a[first], a[pivot]) {
-			first++
-		}
-		last--
-		for less(a[pivot], a[last]) {
-			last--
-		}
-		if first >= last {
-			return first
-		}
-		a[first], a[last] = a[last], a[first]
-		first++
-	}
-}
-
-func unguardedLinearInsert(a []uint64, last int, less func(x, y uint64) bool) {
-	val := a[last]
-	next := last - 1
-	for less(val, a[next]) {
-		a[last] = a[next]
-		last = next
-		next--
-	}
-	a[last] = val
-}
-
-func insertionSort(a []uint64, first, last int, less func(x, y uint64) bool) {
-	if first == last {
+// stdSortDepth is stdSort with an explicit depth budget (a test hook; stdSort passes 2*floor(log2 n)).
+func stdSortDepth(a []uint64, less func(x, y uint64) bool, depth int) {
+	if len(a) == 0 {
 		return
 	}
-	for i := first + 1; i != last; i++ {
-		if less(a[i], a[first]) {
-			val := a[i]
-			copy(a[first+1:i+1], a[first:i])
-			a[first] = val
-		} else {
-			unguardedLinearInsert(a, i, less)
+	introLoop(a, 0, len(a), depth, less)
+	finalInsertion(a, less)
+}
+
+func introLoop(a []uint64, f, l, d int, less func(x, y uint64) bool) {
+	for l-f > stdSortThreshold {
+		if d == 0 {
+			heapSort(a[f:l], less)
+			return
 		}
+		d--
+		medianToFirst(a, f, l, less)
+		c := unguardedPartition(a, f, l, less)
+		introLoop(a, c, l, d, less)
+		l = c
 	}
 }
 
-func finalInsertionSort(a []uint64, first, last int, less func(x, y uint64) bool) {
-	if last-first > sortThreshold {
-		insertionSort(a, first, first+sortThreshold, less)
-		for i := first + sortThreshold; i != last; i++ {
-			unguardedLinearInsert(a, i, less)
+func medianToFirst(a []uint64, f, l int, less func(x, y uint64) bool) {
+	xi, yi, zi := f+1, f+(l-f)/2, l-1
+	x, y, z := a[xi], a[yi], a[zi]
+	var m int
+	if less(x, y) {
+		switch {
+		case less(y, z):
+			m = yi
+		case less(x, z):
+			m = zi
+		default:
+			m = xi
 		}
 	} else {
-		insertionSort(a, first, last, less)
+		switch {
+		case less(x, z):
+			m = xi
+		case less(y, z):
+			m = zi
+		default:
+			m = yi
+		}
+	}
+	a[f], a[m] = a[m], a[f]
+}
+
+func unguardedPartition(a []uint64, f, l int, less func(x, y uint64) bool) int {
+	p := a[f]
+	i, j := f+1, l
+	for {
+		for less(a[i], p) {
+			i++
+		}
+		j--
+		for less(p, a[j]) {
+			j--
+		}
+		if i >= j {
+			return i
+		}
+		a[i], a[j] = a[j], a[i]
+		i++
 	}
 }
 
-// heapSort is partial_sort(first, last, last): make_heap then sort_heap.
+func settle(a []uint64, h, n int, v uint64, less func(x, y uint64) bool) {
+	top := h
+	for h < (n-1)/2 {
+		c := 2*h + 2
+		if less(a[c], a[c-1]) {
+			c--
+		}
+		a[h] = a[c]
+		h = c
+	}
+	if n%2 == 0 && h == (n-2)/2 {
+		a[h] = a[n-1]
+		h = n - 1
+	}
+	for h > top {
+		p := (h - 1) / 2
+		if !less(a[p], v) {
+			break
+		}
+		a[h] = a[p]
+		h = p
+	}
+	a[h] = v
+}
+
 func heapSort(a []uint64, less func(x, y uint64) bool) {
-	n := len(a)
-	if n >= 2 {
-		for parent := (n - 2) / 2; ; parent-- {
-			adjustHeap(a, parent, n, a[parent], less)
-			if parent == 0 {
-				break
-			}
+	m := len(a)
+	if m >= 2 {
+		for k := (m - 2) / 2; k >= 0; k-- {
+			settle(a, k, m, a[k], less)
 		}
 	}
-	for last := n; last > 1; {
-		last--
-		val := a[last]
-		a[last] = a[0]
-		adjustHeap(a, 0, last, val, less)
+	for e := m - 1; e >= 1; e-- {
+		v := a[e]
+		a[e] = a[0]
+		settle(a, 0, e, v, less)
 	}
 }
 
-func adjustHeap(a []uint64, hole, n int, val uint64, less func(x, y uint64) bool) {
-	top := hole
-	child := hole
-	for child < (n-1)/2 {
-		child = 2 * (child + 1)
-		if less(a[child], a[child-1]) {
-			child--
+func finalInsertion(a []uint64, less func(x, y uint64) bool) {
+	n := len(a)
+	guarded := n
+	if n > stdSortThreshold {
+		guarded = stdSortThreshold
+	}
+	for i := 1; i < guarded; i++ {
+		x := a[i]
+		if less(x, a[0]) {
+			copy(a[1:i+1], a[:i])
+			a[0] = x
+		} else {
+			unguardedInsert(a, i, less)
 		}
-		a[hole] = a[child]
-		hole = child
 	}
-	if n&1 == 0 && child == (n-2)/2 {
-		child = 2 * (child + 1)
-		a[hole] = a[child-1]
-		hole = child - 1
+	for i := guarded; i < n; i++ {
+		unguardedInsert(a, i, less)
 	}
-	// push_heap
-	parent := (hole - 1) / 2
-	for hole > top && less(a[parent], val) {
-		a[hole] = a[parent]
-		hole = parent
-		parent = (hole - 1) / 2
+}
+
+func unguardedInsert(a []uint64, i int, less func(x, y uint64) bool) {
+	x := a[i]
+	j := i
+	for less(x, a[j-1]) {
+		a[j] = a[j-1]
+		j--
 	}
-	a[hole] = val
+	a[j] = x
 }
