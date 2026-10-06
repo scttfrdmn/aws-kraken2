@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check tag-objects sortfuzz
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -34,6 +34,10 @@ harness:
 G0B ?= $(or $(PART),all)
 g0b:
 	scripts/g0b.sh $(G0B)
+
+# G0c run lengths and probe lengths (docs/g0c.md). PART = local|probes|runs; DRY_RUN passes through.
+g0c:
+	scripts/g0c.sh "$(PART)"
 
 # In-region copy of a pinned database for runs in us-west-2 (docs/oracle.md, "Canonical run").
 stage-db:

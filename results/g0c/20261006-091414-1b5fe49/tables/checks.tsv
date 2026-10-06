@@ -1,0 +1,9 @@
+check	observed	expected	ok
+ETag: instance head-object before the pass	f80959f9556b50d76b3e744afdd3b22a-8860	f80959f9556b50d76b3e744afdd3b22a-8860	yes
+ETag: k2probe -etag, enforced in internal/rangeread as If-Match on every GET plus a check of each response's ETag and Content-Range	f80959f9556b50d76b3e744afdd3b22a-8860	f80959f9556b50d76b3e744afdd3b22a-8860	yes
+ETag: instance head-object after the pass	f80959f9556b50d76b3e744afdd3b22a-8860	f80959f9556b50d76b3e744afdd3b22a-8860	yes
+bytes streamed	1189091671800	1189091671800	yes
+complete pass	true	true	yes
+cells counted == capacity	297272917942	297272917942	yes
+occupied (value != 0) == header size	207831744422	207831744422	yes
+SHA-256 scope	bytes [0,1189091671800)	bytes [0,1189091671800)	yes
