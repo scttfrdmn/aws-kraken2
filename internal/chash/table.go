@@ -47,24 +47,55 @@ func Load(path string, opt Options) (*Table, error) {
 		return nil, err
 	}
 	defer f.Close()
-	h, l, err := readHeader(f, path)
+	st, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	threads := opt.ReadThreads
+	if threads <= 0 {
+		threads = 8
+	}
+	return LoadFrom(f, st.Size(), path, ParallelPread{File: f, Streams: threads}, opt.Mode)
+}
+
+// A Filler copies the bytes of a hash.k2d image into memory: Fill writes len(dst) bytes,
+// starting at byte off of the image, into dst. LoadFrom allocates the table (off-heap, 2 MiB
+// aligned, huge-page advised) and hands it to a Filler, so every loader (the parallel pread
+// here, a later S3 ranged-GET loader) fills the same kind of buffer. Fill may write dst from
+// several goroutines; it must not retain dst.
+type Filler interface {
+	Fill(dst []byte, off int64) error
+}
+
+// ParallelPread fills from File with Streams concurrent pread calls over disjoint chunks, like
+// upstream's pread_parallel. Streams < 1 means 1.
+type ParallelPread struct {
+	File    *os.File
+	Streams int
+}
+
+// Fill implements Filler.
+func (p ParallelPread) Fill(dst []byte, off int64) error {
+	return preadParallel(p.File, dst, off, max(p.Streams, 1))
+}
+
+// LoadFrom loads a hash.k2d image of size bytes: the header through r, the cells through
+// fill. name labels errors.
+func LoadFrom(r io.ReaderAt, size int64, name string, fill Filler, mode Mode) (*Table, error) {
+	h, l, err := readHeader(r, size, name)
 	if err != nil {
 		return nil, err
 	}
 	n := int(l.FileSize() - HeaderSize)
 	buf, region, err := allocTable(n)
 	if err != nil {
-		return nil, fmt.Errorf("chash: allocate %d bytes for %s: %w", n, path, err)
+		return nil, fmt.Errorf("chash: allocate %d bytes for %s: %w", n, name, err)
 	}
-	threads := opt.ReadThreads
-	if threads <= 0 {
-		threads = 8
-	}
-	if err := preadParallel(f, buf, HeaderSize, threads); err != nil {
+	if err := fill.Fill(buf, HeaderSize); err != nil {
 		_ = syscall.Munmap(region)
-		return nil, fmt.Errorf("chash: read %s: %w", path, err)
+		return nil, fmt.Errorf("chash: read %s: %w", name, err)
 	}
-	return newTable(h, l, opt.Mode, buf, region)
+	return newTable(h, l, mode, buf, region)
 }
 
 // hugePage is the alignment upstream gives the table (posix_memalign to 2 MiB) so that
@@ -97,7 +128,11 @@ func Mmap(path string, opt Options) (*Table, error) {
 		return nil, err
 	}
 	defer f.Close()
-	h, l, err := readHeader(f, path)
+	st, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	h, l, err := readHeader(f, st.Size(), path)
 	if err != nil {
 		return nil, err
 	}
@@ -126,9 +161,9 @@ func FromBytes(image []byte, mode Mode) (*Table, error) {
 	return newTable(h, l, mode, cells, nil)
 }
 
-func readHeader(f *os.File, path string) (Header, Layout, error) {
+func readHeader(r io.ReaderAt, size int64, path string) (Header, Layout, error) {
 	var hb [HeaderSize]byte
-	if _, err := f.ReadAt(hb[:], 0); err != nil {
+	if _, err := r.ReadAt(hb[:], 0); err != nil {
 		return Header{}, Layout{}, fmt.Errorf("chash: read header of %s: %w", path, err)
 	}
 	h, err := ParseHeader(hb[:])
@@ -136,12 +171,8 @@ func readHeader(f *os.File, path string) (Header, Layout, error) {
 		return Header{}, Layout{}, fmt.Errorf("%s: %w", path, err)
 	}
 	l, _ := h.Layout()
-	st, err := f.Stat()
-	if err != nil {
-		return Header{}, Layout{}, err
-	}
 	// The size cross-check is kdb's (checked arithmetic), as upstream's "Capacity mismatch".
-	if _, err := kdb.CellWidth(kdb.HashHeader(h), st.Size()); err != nil {
+	if _, err := kdb.CellWidth(kdb.HashHeader(h), size); err != nil {
 		return Header{}, Layout{}, fmt.Errorf("chash: capacity mismatch in %s: %w", path, err)
 	}
 	return h, l, nil
