@@ -86,7 +86,7 @@ lb_main() {
     local label commit dst lenv
     while read -r label commit lenv; do
       case "$label" in ''|'#'*) continue ;; esac
-      dst="$ROOT/.cache/loadbench/bin/$commit"
+      dst="$ROOT/.cache/loadbench/bin/$(go env GOOS)-$(go env GOARCH)/$commit"
       if [ ! -x "$dst/aws-kraken2" ]; then
         rm -rf "$dst.src" && mkdir -p "$dst.src" "$dst" &&
           git archive "$commit" | tar -x -C "$dst.src" &&
@@ -218,17 +218,18 @@ lb_main() {
       for st in "${RSTATES[@]}"; do
         local label=${LABELS[$i]} bin=${BINS[$i]} ptag
         ptag="${LABELS[$i]}-$pin-$st"
-        [ "$st" = cold ] && { lb_drop || continue; }
-        declare -F ak2_phase >/dev/null && ak2_phase "lb-profile-$ptag"
         if [ -n "$PERF" ]; then
+          if [ "$st" = cold ]; then lb_drop || continue; fi
+          declare -F ak2_phase >/dev/null && ak2_phase "lb-perf-$ptag"
           # shellcheck disable=SC2046,SC2086
           $PERF stat -x, -o "$RES/profile/perf-$ptag.csv" \
             -e task-clock,page-faults,minor-faults,major-faults,context-switches,cpu-migrations,dTLB-load-misses \
-            -- env $EXTRA_ENV ${ENVS[$i]} "$bin" $(lb_args "$WORK/prof.out" "$pin") 2> "$RES/profile/perf-$ptag.stderr"
+            -- env $EXTRA_ENV ${ENVS[$i]} "$bin" $(lb_args "$WORK/perf.out" "$pin") 2> "$RES/profile/perf-$ptag.stderr"
           echo "loadbench: perf stat $ptag rc=$?"
         fi
         case "$label" in upstream) ;; *)
-          [ "$st" = cold ] && { lb_drop || continue; }
+          if [ "$st" = cold ]; then lb_drop || continue; fi
+          declare -F ak2_phase >/dev/null && ak2_phase "lb-pprof-$ptag"
           # shellcheck disable=SC2046,SC2086
           env AK2_TIMINGS=1 AK2_CPUPROFILE="$RES/profile/pprof-$ptag.cpu" GODEBUG=gctrace=1 $EXTRA_ENV ${ENVS[$i]} \
             "$bin" $(lb_args "$WORK/prof.out" "$pin") 2> "$RES/profile/gctrace-$ptag.txt"
@@ -239,7 +240,7 @@ lb_main() {
         esac
       done
     done
-    rm -f "$WORK/prof.out"
+    rm -f "$WORK/prof.out" "$WORK/perf.out" 2>/dev/null
   fi
   local stop; stop=$(date -u +%FT%TZ)
 
@@ -258,7 +259,8 @@ lb_main() {
   done
   local model; model=$(sysctl -n hw.model 2>/dev/null || cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null || echo unknown)
   local mem; mem=$(awk '/MemTotal/{print $2*1024}' /proc/meminfo 2>/dev/null); [ -n "$mem" ] || mem=$(sysctl -n hw.memsize 2>/dev/null || echo 0)
-  local canon=false; [ "$(uname -s)-$(uname -m)" = Linux-aarch64 ] && canon=true
+  # Canonical: Linux aarch64 on EC2 through make run (AK2_RUN_ID is set by the harness only).
+  local canon=false; [ "$(uname -s)-$(uname -m)" = Linux-aarch64 ] && [ -n "${AK2_RUN_ID:-}" ] && canon=true
   jq -n --arg gate "$GATE" --arg what "make loadbench: load-path and whole-process wall, upstream vs ours (#36)" \
     --arg commit "$(git rev-parse HEAD)" --argjson dirty "$dirty" \
     --arg pin "$UPSTREAM_PIN" --rawfile upbuild "$K2DIR/BUILD" \
@@ -283,7 +285,7 @@ lb_main() {
       host:{os:$os, arch:$arch, kernel:$kernel, model:$model, ncpu:$ncpu, mem_bytes:$mem,
             page_size:$pagesize, thp_enabled:$thp_en, thp_defrag:$thp_df,
             canonical_platform:$canonical,
-            note:(if $canonical then "Linux aarch64" else "NOT Linux aarch64: development evidence only" end)},
+            note:(if $canonical then "Linux aarch64 on EC2 (make run)" else "NOT a make run on Linux aarch64 EC2: development evidence only" end)},
       start:$start, stop:$stop, failures:$fails}' > "$RES/manifest.json"
   python3 scripts/lib/lbsummary.py "$RES" || FAILS=$((FAILS + 1))
   rm -rf "$WORK"

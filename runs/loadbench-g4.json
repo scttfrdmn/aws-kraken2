@@ -1,0 +1,31 @@
+{
+  "task_id": "loadbench-g4",
+  "command": [
+    "bash",
+    "-c",
+    "# Graviton4 variant of runs/loadbench.json (same body; truffle picks c8g or r8g).\n# #36 make loadbench on Graviton: load-path and whole-process wall of upstream kraken2 at the pin\n# and of our ladder builds (scripts/loadbench.ladder), Standard-8, 8 threads, cold\n# (ak2_drop_caches before every cold rung) and warm, 3 repetitions, plus the profiling mode\n# (perf stat of every implementation, pprof and gctrace of ours). Cheapest rung first: the\n# empty input (load only) before the paired sample.\n# Code: the launch commit (the short sha ending AK2_RUN_ID), cloned from GitHub. Database and\n# reads: the in-region copies declared in AK2_DATASETS, each file checked against its sha256.\n# Every setup step fails fast; the bench streams runs.tsv after every rung.\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nset -- $AK2_DATASETS\nU=${1#s3://}; B=${U%%/*}; K=${U#*/}; DATA=${K%/*/*}\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nhex64() { [[ $1 =~ ^[0-9a-f]{64}$ ]]; }\n\nak2_phase setup\nsudo -n dnf install -y -q git gcc-c++ make zlib-devel perl jq bzip2 gzip tar findutils diffutils python3 perf > \"$W/dnf.log\" 2>&1 \\\n  || { tail -20 \"$W/dnf.log\"; fail \"dnf install failed\"; }\nak2_say \"dnf ok ($(gcc --version | head -1); $(perf --version 2>&1 | head -1))\"\nak2_say \"thp enabled=[$(cat /sys/kernel/mm/transparent_hugepage/enabled)] defrag=[$(cat /sys/kernel/mm/transparent_hugepage/defrag)] kernel=$(uname -r) nproc=$(nproc)\"\nak2_say \"root volume: $(findmnt -no SOURCE / 2>/dev/null) $(lsblk -dno NAME,SIZE,MODEL 2>/dev/null | tr '\\n' ';')\"\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\nak2_say \"checkout $SHA head=$(git -C \"$W/repo\" rev-parse HEAD)\"\nGOV=$(awk '$1==\"go\"{print $2}' \"$W/repo/go.mod\")\ncurl -fsSL --retry 5 --retry-delay 5 \"https://go.dev/dl/go$GOV.linux-arm64.tar.gz\" -o \"$W/go.tgz\" || fail \"Go download failed\"\ntar -xzf \"$W/go.tgz\" -C \"$W\" || fail \"Go unpack failed\"\nexport PATH=\"$W/go/bin:$PATH\"\ngo version > /dev/null || fail \"no Go toolchain\"\nak2_say \"go: $(go version)\"\n\n# check_obj FILE KEY: FILE is non-empty and its sha256 equals the object's sha256 metadata.\ncheck_obj() {\n  local f=$1 key=$2 s want got\n  s=$(stat -c%s \"$f\" 2>/dev/null || echo 0)\n  # aws s3 cp: one GET below the 8 MiB multipart threshold, else 8 MiB ranged GETs.\n  ak2_req GetObject $(( s < 8388608 ? 1 : (s + 8388607) / 8388608 )) \"$B\"\n  want=$(aws s3api head-object --bucket \"$B\" --key \"$key\" --query Metadata.sha256 --output text)\n  ak2_req HeadObject 1 \"$B\"\n  got=$(sha256sum \"$f\" | cut -d' ' -f1)\n  ak2_say \"staged $key bytes=$s sha256=$got object-metadata=$want\"\n  hex64 \"$want\" && hex64 \"$got\" && [ \"$got\" = \"$want\" ] && [ \"$s\" -gt 0 ] \\\n    || fail \"$key does not match its sha256 metadata (or is empty)\"\n}\n\nak2_phase fetch\nNAME=k2_standard_08_GB_20260626\nP=\"$DATA/$NAME\"; DB=\"$W/repo/.cache/db/$NAME\"\nmkdir -p \"$DB\"\nak2_stage \"s3://$B/$P/\" \"$DB/\" || fail \"stage of $NAME failed\"\nak2_req ListObjectsV2 1 \"$B\"\nfor f in hash.k2d opts.k2d taxo.k2d SOURCE; do check_obj \"$DB/$f\" \"$P/$f\"; done\necho \"staged_from s3://$B/$P/ $(date -u +%FT%TZ)\" >> \"$DB/SOURCE\"\nRD=\"$W/repo/.cache/reads\"; mkdir -p \"$RD\"\nr=SRR062634\nfor f in \"${r}_200000.SOURCE\" \"${r}_200000_1.fq\" \"${r}_200000_2.fq\"; do\n  ak2_stage \"s3://$B/$DATA/reads/$f\" \"$RD/$f\" || fail \"stage of reads/$f failed\"\n  check_obj \"$RD/$f\" \"$DATA/reads/$f\"\ndone\nfor m in 1 2; do\n  f=\"${r}_200000_$m.fq\"\n  h=$(sha256sum \"$RD/$f\" | cut -d' ' -f1)\n  grep -qx \"sha256 $h $f\" \"$RD/${r}_200000.SOURCE\" || fail \"$f does not match ${r}_200000.SOURCE\"\ndone\nak2_say \"reads $r verified against SOURCE\"\n\nak2_phase build\ncd \"$W/repo\" || fail \"no repo\"\nscripts/oracle-build.sh > \"$W/oracle-build.out\" 2>&1 || { tail -30 \"$W/oracle-build.out\"; fail \"oracle-build failed\"; }\nak2_say \"oracle-build ok: $(tail -1 \"$W/oracle-build.out\")\"\nmake build > \"$W/make-build.out\" 2>&1 || { tail -30 \"$W/make-build.out\"; fail \"make build failed\"; }\nak2_say \"make build ok\"\n\n# Sourced, so cold rungs use ak2_drop_caches, every rung is an ak2_phase and runs.tsv streams.\nLB_DB=standard8 LB_THREADS=8 LB_REPS=3 LB_STATES=\"cold warm\" LB_INPUTS=\"empty pe\" \\\n  LB_IMPLS=upstream LB_LADDER=scripts/loadbench.ladder LB_PROFILE=1 LB_GATE=g2\nexport LB_DB LB_THREADS LB_REPS LB_STATES LB_INPUTS LB_IMPLS LB_LADDER LB_PROFILE LB_GATE\n. scripts/loadbench.sh\nRC=$?\nak2_say \"loadbench rc=$RC\"\nak2_phase push\n[ \"$RC\" != 0 ] && exit \"$RC\"\nexit 0\n"
+  ],
+  "resources": {
+    "cpu": 8,
+    "memory_gib": 32,
+    "architecture": "arm64",
+    "families": [
+      "c8g",
+      "r8g"
+    ],
+    "disk_gib": 80,
+    "s3_read_write": [
+      "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/"
+    ]
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "SRR062634",
+    "AK2_DATASETS": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/SOURCE s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq"
+  },
+  "lifecycle": {
+    "ttl": "2h30m",
+    "on_complete": "terminate",
+    "cost_limit": 3.0
+  }
+}
