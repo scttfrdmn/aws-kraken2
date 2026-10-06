@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle ami run orphans report
+.PHONY: build test lint oracle ami run orphans report harness g0b
 
 build:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/...
@@ -20,6 +20,14 @@ lint:
 
 oracle:
 	scripts/oracle.sh
+
+harness:
+	scripts/harness-build.sh
+
+# G0b equivalence (docs/g0b.md). G0B=hash|all; G0B_DBS and G0B_RUN_ID pass through the env.
+G0B ?= all
+g0b:
+	scripts/g0b.sh $(G0B)
 
 ami:
 	scripts/ami.sh

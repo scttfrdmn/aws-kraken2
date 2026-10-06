@@ -60,6 +60,7 @@ targets; ad hoc commands only during exploration.
 |---|---|
 | `make build` / `make test` / `make lint` | [docs/build.md](docs/build.md) |
 | `make oracle` | [docs/oracle.md](docs/oracle.md) |
+| `make harness` / `make g0b` | [docs/g0b.md](docs/g0b.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make run GATE=… SPEC=…` | [docs/run.md](docs/run.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
@@ -78,7 +79,7 @@ tables. **Reports cite only these files; a number not traceable to a manifest is
 | `cmd/aws-kraken2` | the classifier CLI (flags mirror upstream's `kraken2` wrapper) |
 | `cmd/k2probe` | G0 probes: header/opts reader, probe-length sampler |
 | `internal/kdb` | `opts.k2d`, `hash.k2d` header, cell-width detection |
-| `internal/chash` | fmix64, compact hash cell decode, double-hash probe (counts probes) |
+| `internal/chash` | fmix64, compact hash cell decode, linear or double probe (counts probes) |
 | `internal/mmscan` | minimizer scanner |
 | `internal/taxo` | `taxo.k2d` taxonomy |
 | `internal/classify` | per-read classification, ResolveTree, hit-list formatting |
