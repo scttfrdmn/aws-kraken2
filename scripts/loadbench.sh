@@ -70,6 +70,8 @@ lb_main() {
   # ---- implementations ----------------------------------------------------------------------
   local K2DIR
   K2DIR=$(scripts/oracle-build.sh) || { echo "loadbench: upstream build failed" >&2; return 1; }
+  . scripts/pin-identity.sh
+  pin_identity || { echo "loadbench: cannot establish the upstream pin identity" >&2; return 1; }
   make -s build || { echo "loadbench: go build failed" >&2; return 1; }
   local NCPU; NCPU=$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu)
   local -a LABELS=() BINS=() SRCS=() ENVS=()
@@ -263,8 +265,8 @@ lb_main() {
   local canon=false; [ "$(uname -s)-$(uname -m)" = Linux-aarch64 ] && [ -n "${AK2_RUN_ID:-}" ] && canon=true
   jq -n --arg gate "$GATE" --arg what "make loadbench: load-path and whole-process wall, upstream vs ours (#36)" \
     --arg commit "$(git rev-parse HEAD)" --argjson dirty "$dirty" \
-    --arg pin "$UPSTREAM_PIN" --rawfile upbuild "$K2DIR/BUILD" \
-    --arg describe "$(awk '$1=="describe"{print $2}' "$K2DIR/BUILD")" \
+    --arg pin "$UPSTREAM_SHA" --rawfile upbuild "$K2DIR/BUILD" \
+    --arg describe "$UPSTREAM_DESCRIBE" \
     --argjson impls "$impls_json" --arg go "$(go version 2>/dev/null)" \
     --arg db "$DBSEL" --arg dbname "$DBNAME" --argjson dbfiles "$dbfiles" \
     --arg dbsource "$(cat "$DBDIR/SOURCE" 2>/dev/null)" \
