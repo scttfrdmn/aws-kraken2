@@ -1,0 +1,319 @@
+spawn: [2026-10-06T05:13:05Z] wrapper start
+spawn: [2026-10-06T05:13:05Z] stage-in start
+spawn: [2026-10-06T05:13:05Z] stage-in done rc=0
+spawn: [2026-10-06T05:13:05Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 4bc96fe2b49a3a71d1c60d38a923d3d4f399a8a86845740dbaa9cd9c7458a9d8); exec
+ak2: log tee up
+ak2-phase	2026-10-06T05:13:05Z	1791263585	preamble	no
+ak2: [2026-10-06T05:13:05Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T05:13:05Z] after set +e $-=hBc
+ak2: [2026-10-06T05:13:05Z] gate=g1 run=20261006-051214-daf2056
+ak2: [2026-10-06T05:13:05Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T05:13:05Z] imds region=us-west-2 az=us-west-2a instance=i-02b8fc0ded37b52af type=m7g.2xlarge ami=ami-09325776a00699513
+ak2: [2026-10-06T05:13:05Z] bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-06T05:13:06Z] bucket cookbook-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-06T05:13:06Z] WARN: could not read Payer of cookbook-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-06T05:13:06Z] region assert passed
+ak2: [2026-10-06T05:13:06Z] drop_caches_ok=true
+ak2: [2026-10-06T05:13:07Z] preamble done; spec body starts
+ak2-phase	2026-10-06T05:13:07Z	1791263587	body	no
+ak2-phase	2026-10-06T05:13:07Z	1791263587	setup	no
+ak2: [2026-10-06T05:13:46Z] dnf ok (gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5); gzip 1.12)
+ak2: [2026-10-06T05:13:47Z] checkout daf2056 head=daf2056280065351c6f4de8229ea08838ef07c50
+ak2: [2026-10-06T05:13:48Z] go: go version go1.27.1 linux/arm64
+ak2-phase	2026-10-06T05:13:48Z	1791263628	fetch	no
+ak2: [2026-10-06T05:13:51Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/ -> /home/ec2-user/ak2/repo/.cache/db/k2_viral_20260626/ (651204289 bytes)
+ak2: [2026-10-06T05:13:52Z] staged aws-kraken2/data/k2_viral_20260626/hash.k2d bytes=648733288 sha256=1bd239b207e1d0f679f910cf323c9b6894fdb85c80f0358fa144aca25a7bdfa7 object-metadata=1bd239b207e1d0f679f910cf323c9b6894fdb85c80f0358fa144aca25a7bdfa7
+ak2: [2026-10-06T05:13:52Z] staged aws-kraken2/data/k2_viral_20260626/opts.k2d bytes=64 sha256=b7ecfc6e365325b71a3514049bc80faeaf2549463ab93ff07cdbc112bd5a8c75 object-metadata=b7ecfc6e365325b71a3514049bc80faeaf2549463ab93ff07cdbc112bd5a8c75
+ak2: [2026-10-06T05:13:53Z] staged aws-kraken2/data/k2_viral_20260626/taxo.k2d bytes=2470742 sha256=681162e42813064ebe74d55950cf53da33157d28db3ef4e4ad378af007384d24 object-metadata=681162e42813064ebe74d55950cf53da33157d28db3ef4e4ad378af007384d24
+ak2: [2026-10-06T05:13:53Z] staged aws-kraken2/data/k2_viral_20260626/SOURCE bytes=127 sha256=5b3cc6d4b0f14357ab3858c010e94066989a7bb2b42d6cd0b6aeda0208f93bc4 object-metadata=5b3cc6d4b0f14357ab3858c010e94066989a7bb2b42d6cd0b6aeda0208f93bc4
+ak2: [2026-10-06T05:13:54Z] pushed out/db-SOURCE-k2_viral_20260626
+ak2: [2026-10-06T05:14:24Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/ -> /home/ec2-user/ak2/repo/.cache/db/k2_standard_08_GB_20260626/ (8004818876 bytes)
+ak2: [2026-10-06T05:14:31Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d bytes=8000000032 sha256=6c60e422b621b8116b7a3451fe25c682edfcf7c159c0ef757fb7de271b318d46 object-metadata=6c60e422b621b8116b7a3451fe25c682edfcf7c159c0ef757fb7de271b318d46
+ak2: [2026-10-06T05:14:31Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d bytes=64 sha256=5d80247b7332536ff08f4afa0fbc29e897e0e178fdf4aa9c28e84028fdbcc235 object-metadata=5d80247b7332536ff08f4afa0fbc29e897e0e178fdf4aa9c28e84028fdbcc235
+ak2: [2026-10-06T05:14:32Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d bytes=4818575 sha256=65f9dd8c9a859dc613db5444160e989d275b386475486a013c6ca7f4dd09bc2e object-metadata=65f9dd8c9a859dc613db5444160e989d275b386475486a013c6ca7f4dd09bc2e
+ak2: [2026-10-06T05:14:33Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/SOURCE bytes=137 sha256=2a5827a124b438ddd053330317aeaf07063d1868a537ea3cff7bd286421afd53 object-metadata=2a5827a124b438ddd053330317aeaf07063d1868a537ea3cff7bd286421afd53
+ak2: [2026-10-06T05:14:33Z] pushed out/db-SOURCE-k2_standard_08_GB_20260626
+ak2: [2026-10-06T05:14:34Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE -> /home/ec2-user/ak2/repo/.cache/reads/SRR062634_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T05:14:35Z] staged aws-kraken2/data/reads/SRR062634_200000.SOURCE bytes=400 sha256=6d38490b67153a1acd8fce4f0e49fc45024bed6c813dd6537dc0093990d57f4c object-metadata=6d38490b67153a1acd8fce4f0e49fc45024bed6c813dd6537dc0093990d57f4c
+ak2: [2026-10-06T05:14:36Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq -> /home/ec2-user/ak2/repo/.cache/reads/SRR062634_200000_1.fq (51895574 bytes)
+ak2: [2026-10-06T05:14:36Z] staged aws-kraken2/data/reads/SRR062634_200000_1.fq bytes=51895574 sha256=7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 object-metadata=7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5
+ak2: [2026-10-06T05:14:37Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq -> /home/ec2-user/ak2/repo/.cache/reads/SRR062634_200000_2.fq (51895574 bytes)
+ak2: [2026-10-06T05:14:38Z] staged aws-kraken2/data/reads/SRR062634_200000_2.fq bytes=51895574 sha256=e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 object-metadata=e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1
+ak2: [2026-10-06T05:14:39Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq.gz -> /home/ec2-user/ak2/repo/.cache/reads/SRR062634_200000_1.fq.gz (15955195 bytes)
+ak2: [2026-10-06T05:14:40Z] staged aws-kraken2/data/reads/SRR062634_200000_1.fq.gz bytes=15955195 sha256=4d13958862d7e45cb179acff08d11d327af24376570ddf17c71af527233df341 object-metadata=4d13958862d7e45cb179acff08d11d327af24376570ddf17c71af527233df341
+ak2: [2026-10-06T05:14:40Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq.gz -> /home/ec2-user/ak2/repo/.cache/reads/SRR062634_200000_2.fq.gz (15893511 bytes)
+ak2: [2026-10-06T05:14:41Z] staged aws-kraken2/data/reads/SRR062634_200000_2.fq.gz bytes=15893511 sha256=df47311fd6f56471134ab66da08a52d525f92c62f8d596aa1f7c28c9a220d478 object-metadata=df47311fd6f56471134ab66da08a52d525f92c62f8d596aa1f7c28c9a220d478
+ak2: [2026-10-06T05:14:42Z] reads SRR062634 verified against SOURCE
+ak2: [2026-10-06T05:14:42Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000.SOURCE -> /home/ec2-user/ak2/repo/.cache/reads/ERR478965_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T05:14:43Z] staged aws-kraken2/data/reads/ERR478965_200000.SOURCE bytes=400 sha256=19128ba212d865300b586dcb73d4e9543137f500e03f48cde8ce33c7e2fb3d89 object-metadata=19128ba212d865300b586dcb73d4e9543137f500e03f48cde8ce33c7e2fb3d89
+ak2: [2026-10-06T05:14:44Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq -> /home/ec2-user/ak2/repo/.cache/reads/ERR478965_200000_1.fq (47238491 bytes)
+ak2: [2026-10-06T05:14:45Z] staged aws-kraken2/data/reads/ERR478965_200000_1.fq bytes=47238491 sha256=385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be object-metadata=385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be
+ak2: [2026-10-06T05:14:46Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq -> /home/ec2-user/ak2/repo/.cache/reads/ERR478965_200000_2.fq (47075003 bytes)
+ak2: [2026-10-06T05:14:46Z] staged aws-kraken2/data/reads/ERR478965_200000_2.fq bytes=47075003 sha256=71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 object-metadata=71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7
+ak2: [2026-10-06T05:14:47Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq.gz -> /home/ec2-user/ak2/repo/.cache/reads/ERR478965_200000_1.fq.gz (13868909 bytes)
+ak2: [2026-10-06T05:14:47Z] staged aws-kraken2/data/reads/ERR478965_200000_1.fq.gz bytes=13868909 sha256=12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9 object-metadata=12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9
+ak2: [2026-10-06T05:14:48Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq.gz -> /home/ec2-user/ak2/repo/.cache/reads/ERR478965_200000_2.fq.gz (13801673 bytes)
+ak2: [2026-10-06T05:14:49Z] staged aws-kraken2/data/reads/ERR478965_200000_2.fq.gz bytes=13801673 sha256=64b73612b72ce90efcd8af1e3a8ae85a92227b6367a136936ea3307c65bf99ae object-metadata=64b73612b72ce90efcd8af1e3a8ae85a92227b6367a136936ea3307c65bf99ae
+ak2: [2026-10-06T05:14:49Z] reads ERR478965 verified against SOURCE
+ak2: [2026-10-06T05:14:50Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000.SOURCE -> /home/ec2-user/ak2/repo/.cache/reads/SRR28305653_200000.SOURCE (422 bytes)
+ak2: [2026-10-06T05:14:50Z] staged aws-kraken2/data/reads/SRR28305653_200000.SOURCE bytes=422 sha256=80f176efce5891911cb6aca0c9505215232ebe40d7e3c57c14666a0464a39c2a object-metadata=80f176efce5891911cb6aca0c9505215232ebe40d7e3c57c14666a0464a39c2a
+ak2: [2026-10-06T05:14:51Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq -> /home/ec2-user/ak2/repo/.cache/reads/SRR28305653_200000_1.fq (72980506 bytes)
+ak2: [2026-10-06T05:14:52Z] staged aws-kraken2/data/reads/SRR28305653_200000_1.fq bytes=72980506 sha256=ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946 object-metadata=ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946
+ak2: [2026-10-06T05:14:53Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq -> /home/ec2-user/ak2/repo/.cache/reads/SRR28305653_200000_2.fq (72980506 bytes)
+ak2: [2026-10-06T05:14:54Z] staged aws-kraken2/data/reads/SRR28305653_200000_2.fq bytes=72980506 sha256=d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a object-metadata=d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a
+ak2: [2026-10-06T05:14:55Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq.gz -> /home/ec2-user/ak2/repo/.cache/reads/SRR28305653_200000_1.fq.gz (9836969 bytes)
+ak2: [2026-10-06T05:14:55Z] staged aws-kraken2/data/reads/SRR28305653_200000_1.fq.gz bytes=9836969 sha256=08d2d9c25510c0d12668d484d4a92fca8cb566da302b2fbb831d69db6ec55cad object-metadata=08d2d9c25510c0d12668d484d4a92fca8cb566da302b2fbb831d69db6ec55cad
+ak2: [2026-10-06T05:14:56Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq.gz -> /home/ec2-user/ak2/repo/.cache/reads/SRR28305653_200000_2.fq.gz (10134869 bytes)
+ak2: [2026-10-06T05:14:57Z] staged aws-kraken2/data/reads/SRR28305653_200000_2.fq.gz bytes=10134869 sha256=4e512ea5f32865c34125f580f8681a73fa160d262d9483834a79c514ff760e5e object-metadata=4e512ea5f32865c34125f580f8681a73fa160d262d9483834a79c514ff760e5e
+ak2: [2026-10-06T05:14:57Z] reads SRR28305653 verified against SOURCE
+ak2-phase	2026-10-06T05:14:57Z	1791263697	build	no
+ak2: [2026-10-06T05:15:27Z] oracle-build ok: /home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76
+ak2: [2026-10-06T05:15:32Z] make build ok
+ak2-phase	2026-10-06T05:15:32Z	1791263732	oracle	no
+scripts/oracle.sh all
+oracle: shell flags huB
+shell flags: huB
+invocation: scripts/oracle.sh all  (db=viral threads=8 filter='')
+case viral se-default-S1: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-default-gz-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-default-S2: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-default-gz-S2: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-default-gz-S3: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-default-S3: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-t1-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-t1-gz-S3: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-gzflag-S2: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-conf0-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-conf0.1-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-conf0.5-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-conf0.1-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-conf0.5-gz-S2: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-mhg1-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-mhg3-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-mhg3-S2: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-mhg2-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-quick-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-quick-conf0.5-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-quick-mhg1-gz-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-zero-S1: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-mpa-S1: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-mpa-zero-gz-S3: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-conf0.1-zero-S2: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-names-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-names-conf0.5-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-q20-S1: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-q20-gz-S2: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-mmap-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-mmap-t1-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-slash-slash: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-slash-slash: upstream exit 0, ours 0, 4 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-short-short: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-short-short: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-short-q20-gz-short: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-short-quick-short: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-multi-S1,S2: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-multi-gz-S2,S3: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-empty-empty: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-empty-zero-empty: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-stdout-S1: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-stdout-cls-gz-S3: upstream exit 0, ours 0, 6 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-fasta-fasta: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-fasta-wrap-fastaw: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-bz2-auto-bz: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-bz2-flag-bz: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-db-by-name-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-env-threads-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-report-unwritable-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-seqout-unwritable-S1: upstream exit 0, ours 0, 4 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-seqout-unwritable-S1: upstream exit 1, ours 1, 6 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-output-unwritable-S1: upstream exit 1, ours 1, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-empty-then-S1-empty,S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-mates-differ-mates: upstream exit 65, ours 65, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-cls-nohash-S1: upstream exit 65, ours 65, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral pe-conf-range-S1: upstream exit 255, ours 255, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-mpa-noreport-S1: upstream exit 64, ours 64, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case viral se-threads0-S1: upstream exit 64, ours 64, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+(control, expected) DIFF viral control-conf-S1 output:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-conf-S1/upstream.output /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-conf-S1/ours.output differ: byte 53229, line 1289
+1289c1289
+< C	SRR062634.1289	2169863	100|100	0:66 |:| 0:3 2169863:3 0:60 
+---
+> U	SRR062634.1289	0	100|100	0:66 |:| 0:3 2169863:3 0:60 
+1781c1781
+< C	SRR062634.1781	67082	100|100	0:17 67082:1 0:5 67082:1 0:42 |:| 0:66 
+(control, expected) DIFF viral control-conf-S1 report:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-conf-S1/upstream.report /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-conf-S1/ours.report differ: byte 3, line 1
+1,15c1,15
+<  98.92	197833	197833	U	0	unclassified
+<   1.08	2167	0	R	1	root
+<   1.08	2167	8	R1	10239	  Viruses
+<   0.90	1805	0	R2	2732004	    Varidnaviria
+<   0.90	1804	0	K	2732005	      Bamfordvirae
+case viral control-conf-S1: upstream exit 0, ours 0, 3 files, identical=no, control=yes, pass=yes, stderr_same=no
+(control, expected) DIFF viral control-mhg-S3 output:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/upstream.output /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/ours.output differ: byte 4327, line 137
+137c137
+< C	SRR28305653.137	67082	150	67082:1 0:78 67082:1 0:36 
+---
+> U	SRR28305653.137	0	150	67082:1 0:78 67082:1 0:36 
+250,251c250,251
+< C	SRR28305653.250	166122	150	0:51 166122:4 0:5 166122:5 0:51 
+(control, expected) DIFF viral control-mhg-S3 report:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/upstream.report /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/ours.report differ: byte 5, line 1
+1,37c1,51
+<  99.18	198359	198359	U	0	unclassified
+<   0.82	1641	0	R	1	root
+<   0.82	1641	17	R1	10239	  Viruses
+<   0.71	1412	0	R2	2732004	    Varidnaviria
+<   0.71	1412	0	K	2732005	      Bamfordvirae
+(control, expected) DIFF viral control-mhg-S3 c1:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/upstream.cls.fq /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/ours.cls.fq differ: byte 14, line 1
+1,32d0
+< @SRR28305653.137 kraken:taxid|67082 A00474:333:HKK7CDSX7:1:1101:15971:1313/1
+< GAGTAGCTGGGATTACAGGCACACGCCACCACACCCAGCTGATTTTTTTATTTTTAGTAGAGATGGGGTTTTGCCATGTTGGCCGGCCTGGTCTCGAACTCCTGACCTCAGGTGATCCGCCCATCTCCGCCTCCCAAAGCGCTAGGATTA
+< +
+< ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+< @SRR28305653.250 kraken:taxid|166122 A00474:333:HKK7CDSX7:1:1101:1081:1485/1
+(control, expected) DIFF viral control-mhg-S3 u1:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/upstream.uncls.fq /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/viral/control-mhg-S3/ours.uncls.fq differ: byte 49096, line 545
+544a545,548
+> @SRR28305653.137 A00474:333:HKK7CDSX7:1:1101:15971:1313/1
+> GAGTAGCTGGGATTACAGGCACACGCCACCACACCCAGCTGATTTTTTTATTTTTAGTAGAGATGGGGTTTTGCCATGTTGGCCGGCCTGGTCTCGAACTCCTGACCTCAGGTGATCCGCCCATCTCCGCCTCCCAAAGCGCTAGGATTA
+> +
+> ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+992a997,1004
+case viral control-mhg-S3: upstream exit 0, ours 0, 5 files, identical=no, control=yes, pass=yes, stderr_same=no
+results: results/g1/oracle-viral-20261006T051532Z
+shell flags: huB
+invocation: scripts/oracle.sh all  (db=standard8 threads=8 filter='')
+case standard8 se-default-S1: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-default-gz-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-default-S2: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-default-gz-S2: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-default-gz-S3: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-default-S3: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-t1-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-t1-gz-S3: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-gzflag-S2: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-conf0-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-conf0.1-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-conf0.5-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-conf0.1-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-conf0.5-gz-S2: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-mhg1-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-mhg3-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-mhg3-S2: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-mhg2-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-quick-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-quick-conf0.5-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-quick-mhg1-gz-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-zero-S1: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-mpa-S1: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-mpa-zero-gz-S3: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-conf0.1-zero-S2: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-names-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-names-conf0.5-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-q20-S1: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-q20-gz-S2: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-mmap-S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-mmap-t1-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-slash-slash: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-slash-slash: upstream exit 0, ours 0, 4 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-short-short: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-short-short: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-short-q20-gz-short: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-short-quick-short: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-multi-S1,S2: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-multi-gz-S2,S3: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-empty-empty: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-empty-zero-empty: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-stdout-S1: upstream exit 0, ours 0, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-stdout-cls-gz-S3: upstream exit 0, ours 0, 6 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-fasta-fasta: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-fasta-wrap-fastaw: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-bz2-auto-bz: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-bz2-flag-bz: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-db-by-name-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-env-threads-S3: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-report-unwritable-S1: upstream exit 0, ours 0, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-seqout-unwritable-S1: upstream exit 0, ours 0, 4 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-seqout-unwritable-S1: upstream exit 1, ours 1, 6 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-output-unwritable-S1: upstream exit 1, ours 1, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-empty-then-S1-empty,S1: upstream exit 0, ours 0, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-mates-differ-mates: upstream exit 65, ours 65, 7 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-cls-nohash-S1: upstream exit 65, ours 65, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 pe-conf-range-S1: upstream exit 255, ours 255, 3 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-mpa-noreport-S1: upstream exit 64, ours 64, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+case standard8 se-threads0-S1: upstream exit 64, ours 64, 2 files, identical=yes, control=no, pass=yes, stderr_same=yes
+(control, expected) DIFF standard8 control-conf-S1 output:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-conf-S1/upstream.output /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-conf-S1/ours.output differ: byte 114, line 3
+3c3
+< C	SRR062634.3	9606	100|100	0:46 9606:3 0:17 |:| 0:16 9606:2 0:48 
+---
+> U	SRR062634.3	0	100|100	0:46 9606:3 0:17 |:| 0:16 9606:2 0:48 
+5c5
+< C	SRR062634.5	9606	100|100	0:12 9606:2 0:25 9606:1 0:26 |:| 0:66 
+(control, expected) DIFF standard8 control-conf-S1 report:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-conf-S1/upstream.report /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-conf-S1/ours.report differ: byte 2, line 1
+1,107c1,42
+<  20.06	40121	40121	U	0	unclassified
+<  79.94	159879	71	R	1	root
+<  79.63	159252	407	R1	131567	  cellular organisms
+<  79.40	158806	0	D	2759	    Eukaryota
+<  79.40	158806	0	D1	33154	      Opisthokonta
+case standard8 control-conf-S1: upstream exit 0, ours 0, 3 files, identical=no, control=yes, pass=yes, stderr_same=no
+(control, expected) DIFF standard8 control-mhg-S3 output:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/upstream.output /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/ours.output differ: byte 242, line 5
+5c5
+< C	SRR28305653.5	9606	150	A:1 0:43 9606:3 0:18 9606:5 0:46 
+---
+> U	SRR28305653.5	0	150	A:1 0:43 9606:3 0:18 9606:5 0:46 
+7,8c7,8
+< C	SRR28305653.7	9606	150	A:1 0:90 9606:5 0:10 9606:2 0:8 
+(control, expected) DIFF standard8 control-mhg-S3 report:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/upstream.report /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/ours.report differ: byte 2, line 1
+1,41c1,35
+<  31.39	62790	62790	U	0	unclassified
+<  68.61	137210	0	R	1	root
+<  68.61	137210	557	R1	131567	  cellular organisms
+<  68.32	136648	0	D	2759	    Eukaryota
+<  68.32	136648	0	D1	33154	      Opisthokonta
+(control, expected) DIFF standard8 control-mhg-S3 c1:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/upstream.cls.fq /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/ours.cls.fq differ: byte 768, line 9
+9,20d8
+< @SRR28305653.5 kraken:taxid|9606 A00474:333:HKK7CDSX7:1:1101:6108:1141/1
+< TNTGATGTGTGCCTTCAACTCACAGAGTTTAACCTTTCTTTTCTTAGAGCAGTTTAGAAACACTCTGCTTGTTATGTCTGCAAGTGGATATTTGGACCTCTTTGAGGCCTTCGTTGCAAACGGGGTTTCTTCCTTTCATGCTAGACTAAG
+< +
+< ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+< @SRR28305653.7 kraken:taxid|9606 A00474:333:HKK7CDSX7:1:1101:7319:1141/1
+(control, expected) DIFF standard8 control-mhg-S3 u1:
+/home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/upstream.uncls.fq /home/ec2-user/ak2/repo/.cache/oracle/20261006T051532Z/standard8/control-mhg-S3/ours.uncls.fq differ: byte 732, line 9
+8a9,12
+> @SRR28305653.5 A00474:333:HKK7CDSX7:1:1101:6108:1141/1
+> TNTGATGTGTGCCTTCAACTCACAGAGTTTAACCTTTCTTTTCTTAGAGCAGTTTAGAAACACTCTGCTTGTTATGTCTGCAAGTGGATATTTGGACCTCTTTGAGGCCTTCGTTGCAAACGGGGTTTCTTCCTTTCATGCTAGACTAAG
+> +
+> ??????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
+12a17,24
+case standard8 control-mhg-S3: upstream exit 0, ours 0, 5 files, identical=no, control=yes, pass=yes, stderr_same=no
+results: results/g1/oracle-standard8-20261006T051532Z
+oracle: ok
+ak2: [2026-10-06T05:20:02Z] make oracle DB=all rc=0
+ak2-phase	2026-10-06T05:20:02Z	1791264002	push	no
+ak2: [2026-10-06T05:20:03Z] pushed out/oracle-viral-20261006T051532Z/cases.tsv
+ak2: [2026-10-06T05:20:03Z] pushed out/oracle-viral-20261006T051532Z/checks.tsv
+ak2: [2026-10-06T05:20:04Z] pushed out/oracle-viral-20261006T051532Z/manifest.json
+ak2: [2026-10-06T05:20:04Z] pushed out/oracle-viral-20261006T051532Z/opts.json
+ak2: [2026-10-06T05:20:05Z] pushed out/oracle-viral-20261006T051532Z/run.log
+ak2: [2026-10-06T05:20:05Z] pushed out/oracle-viral-20261006T051532Z/summary.md
+ak2: [2026-10-06T05:20:06Z] pushed out/oracle-standard8-20261006T051532Z/cases.tsv
+ak2: [2026-10-06T05:20:07Z] pushed out/oracle-standard8-20261006T051532Z/checks.tsv
+ak2: [2026-10-06T05:20:07Z] pushed out/oracle-standard8-20261006T051532Z/manifest.json
+ak2: [2026-10-06T05:20:08Z] pushed out/oracle-standard8-20261006T051532Z/opts.json
+ak2: [2026-10-06T05:20:08Z] pushed out/oracle-standard8-20261006T051532Z/run.log
+ak2: [2026-10-06T05:20:09Z] pushed out/oracle-standard8-20261006T051532Z/summary.md
+ak2: [2026-10-06T05:20:09Z] pushed out/oracle.out
+ak2: [2026-10-06T05:20:09Z] G1 oracle done rc=0 push_failures=0
+spawn: [2026-10-06T05:20:10Z] command exit rc=0
