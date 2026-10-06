@@ -18,3 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - G0a spec `runs/g0a.json`, post-processing `scripts/post/g0a.sh`, and its first run under
   `results/g0a/` (#3).
 - `internal/chash`: port of upstream's compact hash lookup path (fmix64, 32- and 40-bit cells, linear and double probing, RAM and mmap loaders, `CellSource` probe over `io.ReaderAt`); `upstream/chash_dump.cc` and `upstream/chash_keys.cc` oracle harnesses; `k2probe equiv-hash`; `make harness` and `make g0b` (#4).
+- `internal/mmscan`: port of upstream's `MinimizerScanner` (DNA and protein, both revcom versions,
+  `LoadSequence` intervals, zero allocations per minimizer). It is checked against upstream by
+  `upstream/mm_dump.cc`, `k2probe equiv-scan` and `make g0b PART=scan`. `scripts/harness-build.sh`
+  builds the oracle harnesses (#5).

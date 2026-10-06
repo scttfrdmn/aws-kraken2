@@ -1,22 +1,32 @@
 #!/usr/bin/env bash
 # G0b equivalence runs: Go ports vs upstream at the pin, on real reads and real databases.
-# Usage: scripts/g0b.sh hash|all        (other G0b steps add their own case below)
-# Env:   G0B_DBS     databases to run (default "viral standard8"; an incomplete download is skipped)
-#        G0B_RUN_ID  results directory name suffix (default: UTC date)
-# Writes results/g0b/<step>-<run-id>/ (small summaries) and .cache/g0b/ (key and output dumps).
+# See docs/g0b.md.
+# Usage: scripts/g0b.sh hash|scan|all
+#   hash  internal/chash vs upstream CompactHashTable (issue #4), via upstream/chash_{keys,dump}.cc
+#   scan  internal/mmscan vs upstream MinimizerScanner (issue #5), via upstream/mm_dump.cc
+# Env:   G0B_DBS         databases for hash (default "viral standard8"; an incomplete download is
+#                        skipped)
+#        G0B_SCAN_READS  read stems for scan (default "SRR062634_200000 SRR5935746_200000")
+#        G0B_RUN_ID      results directory suffix (default: UTC timestamp, so re-runs never
+#                        overwrite)
+# Writes results/g0b/<step>-<run-id>/ (manifest.json and small summaries) and .cache/g0b/ (key and
+# output dumps, not committed). Exits non-zero on any mismatch.
 set +e
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 . scripts/pin.env
 . scripts/paths.sh
 echo "g0b: shell flags $-"
+INVOCATION="scripts/g0b.sh $*"
 
 STEP=${1:-all}
-RUN_ID=${G0B_RUN_ID:-$(date -u +%F)}
+RUN_ID=${G0B_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
 DBS=${G0B_DBS:-viral standard8}
+SCAN_READS=${G0B_SCAN_READS:-SRR062634_200000 SRR5935746_200000}
 READS=SRR062634_200000
 SEED=20261005
 FAILED=0
+BIN=bin
 
 db_dir() {
   case "$1" in
@@ -29,10 +39,9 @@ db_dir() {
 # fail MSG: record a failed acceptance check and keep going (the summary says which).
 fail() { echo "g0b: FAIL: $*" >&2; FAILED=1; }
 
-prepare() {
-  HARNESS=$(scripts/harness-build.sh) || { echo "g0b: harness build failed" >&2; exit 1; }
-  make -s build || { echo "g0b: go build failed" >&2; exit 1; }
-}
+dirty() { git diff --quiet HEAD -- . ':!results' && [ -z "$(git ls-files --others --exclude-standard -- . ':!results')" ] && echo false || echo true; }
+
+go_build() { make -s build || { echo "g0b: go build failed" >&2; exit 1; }; }
 
 # manifest DIR STEP START [STOP]: written once at the start (so a killed run still has one) and
 # rewritten with the stop time and outcome at the end.
@@ -41,18 +50,19 @@ manifest() {
   {
     echo "{"
     echo "  \"gate\": \"g0b\", \"step\": \"$2\", \"run_id\": \"$RUN_ID\","
-    echo "  \"commit\": \"$(git rev-parse HEAD)\", \"dirty\": $([ -n "$(git status --porcelain -- . ':(exclude)results')" ] && echo true || echo false),"
+    echo "  \"invocation\": \"$INVOCATION\","
+    echo "  \"env\": {\"G0B_DBS\": \"$DBS\", \"G0B_SCAN_READS\": \"$SCAN_READS\"},"
+    echo "  \"commit\": \"$(git rev-parse HEAD)\", \"dirty\": $(dirty),"
     echo "  \"upstream_pin\": \"$UPSTREAM_PIN\","
     echo "  \"host\": \"$(uname -sm) $(sysctl -n hw.model 2>/dev/null || hostname)\","
+    echo "  \"canonical_platform\": \"Linux aarch64; this host is $( [ "$(uname -s)/$(uname -m)" = Linux/aarch64 ] && echo canonical || echo development-only)\","
     echo "  \"go\": \"$(go version)\","
-    echo "  \"reads\": \"$READS (SRR062634, 1000 Genomes human WGS)\", \"key_seed\": $SEED,"
-    echo "  \"dbs\": \"$DBS\","
     echo "  \"start\": \"$3\", \"stop\": \"${4:-}\", \"failed\": $FAILED"
     echo "}"
   } > "$out/manifest.json"
-  cp "$HARNESS/BUILD" "$out/harness-BUILD.txt"
-  cp "$K2_READS/$READS.SOURCE" "$out/reads-SOURCE.txt" 2>/dev/null
 }
+
+# ---- hash -------------------------------------------------------------------------------------
 
 # run_hash DB: keys from upstream's scanner, upstream lookups, Go lookups, comparisons.
 run_hash() {
@@ -65,7 +75,7 @@ run_hash() {
   mkdir -p "$out" "$cache"
   cp "$dir/SOURCE" "$out/db-SOURCE.txt"
   echo "== g0b hash $db"
-  "$HARNESS/chash_keys" "$dir/opts.k2d" "$cache/keys" "$SEED" \
+  "$H/chash_keys" "$dir/opts.k2d" "$cache/keys" "$SEED" \
     "$K2_READS/${READS}_1.fq" "$K2_READS/${READS}_2.fq" 2> "$out/keys.txt" \
     || { fail "$db: chash_keys"; return 1; }
   cat "$out/keys.txt"
@@ -73,7 +83,7 @@ run_hash() {
   for pop in real subthreshold random; do
     if [ ! -s "$cache/keys-$pop.u64" ]; then echo "-- no $pop keys for $db"; continue; fi
     for v in "" .dh; do
-      "$HARNESS/chash_dump$v" "$dir/hash.k2d" < "$cache/keys-$pop.u64" > "$cache/up$v-$pop.bin" \
+      "$H/chash_dump$v" "$dir/hash.k2d" < "$cache/keys-$pop.u64" > "$cache/up$v-$pop.bin" \
         2> "$out/upstream$v-$pop.txt" || { fail "$db: chash_dump$v $pop"; return 1; }
     done
     echo "-- upstream $pop (linear, as shipped):"; cat "$out/upstream-$pop.txt"
@@ -95,37 +105,14 @@ run_hash() {
   done
 }
 
-BIN=bin
-
-# step_hash: issue #4 (internal/chash vs upstream CompactHashTable).
-step_hash() {
-    RES="results/g0b/chash-$RUN_ID"
-    mkdir -p "$RES"
-    local start; start=$(date -u +%FT%TZ)
-    manifest "$RES" hash "$start"
-    {
-      echo "scripts/g0b.sh hash  (G0B_DBS=\"$DBS\" G0B_RUN_ID=$RUN_ID)"
-      echo "per db: chash_keys opts.k2d keys $SEED ${READS}_1.fq ${READS}_2.fq"
-      echo "        (pop = real, subthreshold, random; keys-<pop>.u64)"
-      echo "        chash_dump{,.dh} hash.k2d < keys-<pop>.u64 > up{,.dh}-<pop>.bin"
-      echo "        k2probe equiv-hash -mode linear -load ram|mmap -expect up-<pop>.bin"
-      echo "        k2probe equiv-hash -mode double -expect up.dh-<pop>.bin"
-      echo "        k2probe equiv-hash -mode double -stop=false -expect up-<pop>.bin"
-    } > "$RES/commands.txt"
-    local db
-    for db in $DBS; do run_hash "$db"; done
-    manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"
-    summarize_hash > "$RES/summary.md"
-}
-
 # summarize_hash: one readable page assembled from the files in $RES (nothing computed here).
 summarize_hash() {
   echo "# g0b hash equivalence, run $RUN_ID"
   echo
-  echo "Upstream pin \`$UPSTREAM_PIN\`; commit \`$(git rev-parse HEAD)\`. Failed checks: $FAILED."
+  echo "Upstream pin \`$UPSTREAM_PIN\`; commit \`$(git rev-parse HEAD)\` (dirty: $(dirty)). Failed checks: $FAILED."
   echo "Raw per-run files are alongside; \`manifest.json\` has the run metadata."
   echo
-  echo '```'; cat "$RES/commands.txt"; echo; cat "$RES/harness-BUILD.txt"; echo '```'
+  echo '```'; cat "$RES/commands.txt"; echo; cat "$RES"/harness-*.BUILD; echo '```'
   local d f
   for d in "$RES"/*/; do
     [ -f "$d/db-SOURCE.txt" ] || continue
@@ -143,10 +130,110 @@ summarize_hash() {
   done
 }
 
+step_hash() {
+  RES="results/g0b/chash-$RUN_ID"
+  mkdir -p "$RES"
+  local start b; start=$(date -u +%FT%TZ)
+  manifest "$RES" hash "$start"
+  scripts/harness-build.sh --dh chash_keys chash_dump > "$RES/harness-paths.txt" \
+    || { fail "harness build"; manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"; return 1; }
+  H=$(dirname "$(head -1 "$RES/harness-paths.txt")")
+  rm -f "$RES/harness-paths.txt"
+  for b in chash_keys chash_dump chash_dump.dh; do cp "$H/$b.BUILD" "$RES/harness-$b.BUILD"; done
+  cp "$K2_READS/$READS.SOURCE" "$RES/reads-SOURCE.txt" 2>/dev/null
+  {
+    echo "$INVOCATION  (G0B_DBS=\"$DBS\" G0B_RUN_ID=$RUN_ID)"
+    echo "per db: chash_keys opts.k2d keys $SEED ${READS}_1.fq ${READS}_2.fq"
+    echo "        (pop = real, subthreshold, random; keys-<pop>.u64)"
+    echo "        chash_dump{,.dh} hash.k2d < keys-<pop>.u64 > up{,.dh}-<pop>.bin"
+    echo "        k2probe equiv-hash -mode linear -load ram|mmap -expect up-<pop>.bin"
+    echo "        k2probe equiv-hash -mode double -expect up.dh-<pop>.bin"
+    echo "        k2probe equiv-hash -mode double -stop=false -expect up-<pop>.bin"
+  } > "$RES/commands.txt"
+  local db
+  for db in $DBS; do run_hash "$db"; done
+  manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"
+  summarize_hash > "$RES/summary.md"
+}
+
+# ---- scan -------------------------------------------------------------------------------------
+
+step_scan() {
+  local out="results/g0b/scan-$RUN_ID" log sum fails=0 start
+  start=$(date -u +%FT%TZ)
+  mkdir -p "$out"; log="$out/scan.log"; sum="$out/summary.txt"; : > "$log"; : > "$sum"
+  manifest "$out" scan "$start"
+  { echo "shell flags: $-"; echo "invocation: $INVOCATION"; echo "G0B_SCAN_READS=$SCAN_READS"; } >> "$log"
+  {
+    echo "commit $(git rev-parse HEAD) dirty=$(dirty)"
+    echo "upstream $UPSTREAM_REPO @ $UPSTREAM_PIN"
+    echo "date $(date -u +%FT%TZ) host $(uname -sm)"
+    echo "go $(go env GOVERSION)"
+  } >> "$sum"
+  local harness
+  harness=$(scripts/harness-build.sh mm_dump) || { fail "scan: harness build failed"; return 1; }
+  sed 's/^/harness /' "$harness.BUILD" >> "$sum"
+
+  local viral std8 st db
+  viral=$(db_dir viral); std8=$(db_dir standard8)
+  [ -s "$viral/opts.k2d" ] || { fail "scan: no Viral DB at $viral (scripts/fetch-db.sh)"; return 1; }
+  local stems=($SCAN_READS) sets=()
+  for st in "${stems[@]}"; do
+    if [ -s "$K2_READS/${st}_1.fq" ] && [ -s "$K2_READS/${st}_2.fq" ]; then
+      sets+=("$st")
+    else
+      echo "skip reads $st (absent; scripts/fetch-reads.sh)" | tee -a "$sum"
+    fi
+  done
+  [ ${#sets[@]} -gt 0 ] || { fail "scan: no read sets"; return 1; }
+  for db in "$viral" "$std8"; do
+    [ -s "$db/SOURCE" ] && sed "s|^|db $(basename "$db") |" "$db/SOURCE" >> "$sum"
+  done
+  for st in "${sets[@]}"; do
+    sed "s|^|reads $st |" "$K2_READS/$st.SOURCE" >> "$sum"
+  done
+
+  # case: label | opts.k2d | read stem | extra flags
+  local cases=()
+  for st in "${sets[@]}"; do cases+=("viral|$viral/opts.k2d|$st|"); done
+  if [ -s "$std8/opts.k2d" ]; then
+    for st in "${sets[@]}"; do cases+=("standard-8|$std8/opts.k2d|$st|"); done
+  else
+    echo "skip standard-8 (no $std8/opts.k2d)" | tee -a "$sum"
+  fi
+  # Scanner-path coverage on real reads with synthetic options (not DB configurations):
+  # sub-intervals, pre-2.0.8 revcom, the k == l short circuit, other k/l/masks, protein.
+  local st0=${sets[0]} f
+  for f in "-r" "-R 0 -r" "-k 31 -l 31 -r" "-k 10 -l 5 -s 0 -t 0 -r" "-k 25 -l 20 -s 0 -r" \
+           "-k 64 -l 31 -r" "-P -k 15 -l 12 -s 0 -r" "-P -k 12 -l 12 -r"; do
+    cases+=("viral-variant|$viral/opts.k2d|$st0|$f")
+  done
+
+  local c label opts flags line rc o
+  for c in "${cases[@]}"; do
+    IFS='|' read -r label opts st flags <<< "$c"
+    echo "== $label $st $flags" >> "$log"
+    echo "+ $BIN/k2probe equiv-scan -harness $harness $flags $opts $K2_READS/${st}_1.fq $K2_READS/${st}_2.fq" >> "$log"
+    # shellcheck disable=SC2086
+    o=$("$BIN/k2probe" equiv-scan -harness "$harness" $flags "$opts" \
+      "$K2_READS/${st}_1.fq" "$K2_READS/${st}_2.fq" 2>&1)
+    rc=$?
+    printf '%s\n' "$o" >> "$log"
+    line=$(printf '%s\n' "$o" | grep -E '^(opts k=|MATCH|k2probe)' | tr '\n' ' ')
+    [ $rc -eq 0 ] || fails=$((fails + 1))
+    echo "case $label reads=$st flags='${flags}' rc=$rc :: $line" | tee -a "$sum"
+  done
+  echo "failures $fails" | tee -a "$sum"
+  [ $fails -eq 0 ] || fail "scan: $fails case(s) mismatched"
+  manifest "$out" scan "$start" "$(date -u +%FT%TZ)"
+  echo "$out"
+}
+
 case "$STEP" in
-  hash) prepare; step_hash ;;
-  all)  prepare; step_hash ;;
-  *) echo "usage: $0 hash|all" >&2; exit 2 ;;
+  hash) go_build; step_hash ;;
+  scan) go_build; step_scan ;;
+  all)  go_build; step_scan; step_hash ;;
+  *) echo "usage: $0 hash|scan|all" >&2; exit 2 ;;
 esac
 
 if [ "$FAILED" != 0 ]; then echo "g0b: FAILED" >&2; exit 1; fi
