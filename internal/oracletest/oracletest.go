@@ -10,12 +10,16 @@
 //
 // Tests that need an artifact t.Skip when it is absent (docs/build.md), unless
 // AWS_KRAKEN2_REQUIRE_ORACLE=1, which turns every skip here into a failure.
+// AWS_KRAKEN2_DBS (space-separated database directory names, e.g. "k2_viral_20260626") says
+// which databases a run provides: DB skips any other, even when the oracle is required, so CI can
+// require everything it fetched and nothing it did not.
 package oracletest
 
 import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -143,6 +147,9 @@ func Reads(t testing.TB, name string) string {
 // still being fetched lacks SOURCE, which fetch-db.sh writes last), skipping if absent.
 func DB(t testing.TB, name string) string {
 	t.Helper()
+	if list, ok := os.LookupEnv("AWS_KRAKEN2_DBS"); ok && !slices.Contains(strings.Fields(list), name) {
+		t.Skipf("database %s not provided by this run (AWS_KRAKEN2_DBS=%q)", name, list)
+	}
 	dir := Need(t, filepath.Join(".cache", "db", name))
 	for _, f := range []string{"SOURCE", "taxo.k2d", "hash.k2d", "opts.k2d"} {
 		if _, err := os.Stat(filepath.Join(dir, f)); err != nil {

@@ -52,7 +52,7 @@ and git worktrees reach them through git's common dir:
   the same rule.
 
 In both, `K2_SHARED_ROOT` overrides the root, and so does `AWS_KRAKEN2_ROOT` in Go. A test skips
-when an artifact is absent. With `AWS_KRAKEN2_REQUIRE_ORACLE=1`, it fails instead.
+when an artifact is absent. With `AWS_KRAKEN2_REQUIRE_ORACLE=1`, it fails instead. `AWS_KRAKEN2_DBS` (space-separated database directory names) names the databases a run provides; a test of any other database skips even then, which is how CI requires Viral without Standard-8.
 
 **Failure looks like:**
 - a non-zero exit with `harness-build: ...` naming the cause: no upstream source, not at the pin,

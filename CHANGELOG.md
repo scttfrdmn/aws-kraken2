@@ -62,7 +62,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `internal/seqio` (FASTA/FASTQ reader ported from upstream `fast_reader`, two-file and interleaved
   pairs, gzip/bzip2 input with the wrapper's detection and `gzip -dc`'s behaviour on damaged
   streams, quality masking with Linux aarch64 unsigned-char semantics) and `internal/seqout`
-  (`--classified-out`/`--unclassified-out` writers, ordered batch output). `make equiv-seqout`
+  (`--classified-out`/`--unclassified-out` writers; `seqout.Ordered` restores batch order in the
+  seqout oracle test, while the CLI orders its output with its own pwrite sequencer). `make equiv-seqout`
   checks both byte-for-byte against upstream on Viral (#12, #16).
 - `internal/classify`: per-read classification (ClassifySequence's minimizer loop, ResolveTree,
   `--quick`, `--confidence`, `--minimum-hit-groups`, `-F`) and the `--output` line (#13, #14), with
@@ -77,13 +78,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `bin/aws-kraken2` on real reads (SRR062634, ERR478965, SRR28305653 and awk variants for `/1`
   `/2` IDs, mates shorter than k and unequal mate files) against Viral and/or Standard-8. It
   byte-compares `--output`, `--report`, the sequence outputs, stdout and the exit status, runs
-  coverage checks and negative controls, and writes `results/g1/oracle-<db>-<ts>/`
+  coverage checks, negative controls and matrix-integrity checks (requested outputs exist,
+  nothing unrequested is written, every case recorded, a filter must match), covers standard
+  output, FASTA, bzip2, `KRAKEN2_DB_PATH`/`KRAKEN2_NUM_THREADS` and unwritable outputs, and
+  writes `results/g1/oracle-<db>-<ts>/`
   (`manifest.json`, `cases.tsv`, `checks.tsv`, `summary.md`).
-- CI (#20): `.github/workflows/ci.yml` runs build, test, `go test -race ./internal/...`, lint
-  and `make oracle DB=viral` on `ubuntu-24.04-arm`.
-- `runs/g1-oracle-standard8.json`: TaskSpec for `make oracle DB=standard8` on Graviton in
-  us-west-2. Prepared, not launched. `make stage-db` (`scripts/stage-db.sh`) makes the in-region
-  database copy it stages from.
+- CI (#20): `.github/workflows/ci.yml` runs build, test and `go test -race ./...` (oracle-backed
+  tests required, `AWS_KRAKEN2_REQUIRE_ORACLE=1`, with `AWS_KRAKEN2_DBS` naming the databases
+  the job provides), lint with a pinned staticcheck, and `make oracle DB=viral` on
+  `ubuntu-24.04-arm`. The `.oracle` cache key includes the compiler version.
+- `runs/g1-oracle.json`: TaskSpec for `make oracle DB=all` on Graviton in us-west-2, the
+  canonical evidence for both databases. Prepared, not launched. `make stage-db`
+  (`scripts/stage-db.sh`) makes the in-region database copies it stages and verifies.
 - `classify.Calls`: report input from merged counters, keeping zero-read taxa, with an end-to-end
   counters-to-report test.
 - `upstream/chash_build.cc` and a g0b `hash` sub-step: a synthetic 40-bit table built by
@@ -115,6 +121,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and its own copies are gone.
 
 ### Fixed
+
+- `aws-kraken2`: an unwritable `--report` is silently not written and the run exits 0, as with
+  upstream's unchecked ofstream (it exited 1). "Unable to open file" reasons are worded as C's
+  strerror.
+- `fetch-reads.sh` uses `sha256sum` when `shasum` is absent and fails on an empty hash.
 
 - `internal/chash`: `32 + capacity × cellBytes` is checked for overflow, so a crafted header can
   no longer pass the size check into an out-of-bounds slice. The header is decoded by

@@ -81,7 +81,7 @@ func (o *outputs) newSink(f *os.File) *sink {
 func (o *outputs) openStream(name string) (*sink, int) {
 	f, err := os.Create(name)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "\rUnable to open file: %s, reason: %v\n", name, unwrapPath(err))
+		fmt.Fprintf(os.Stderr, "\rUnable to open file: %s, reason: %s\n", name, unwrapPath(err))
 		return nil, exitFailure
 	}
 	return o.newSink(f), 0
@@ -96,11 +96,16 @@ func (o *outputs) openPlain(name string) *sink {
 	return o.newSink(f)
 }
 
-func unwrapPath(err error) error {
+// unwrapPath is the reason as C strerror words it ("No such file or directory").
+func unwrapPath(err error) string {
 	if pe, ok := err.(*os.PathError); ok {
-		return pe.Err
+		err = pe.Err
 	}
-	return err
+	m := err.Error()
+	if m != "" && m[0] >= 'a' && m[0] <= 'z' {
+		m = string(m[0]-'a'+'A') + m[1:]
+	}
+	return m
 }
 
 // initialize is InitializeOutputs: classified, then unclassified, then --output.

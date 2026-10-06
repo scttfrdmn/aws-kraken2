@@ -189,9 +189,11 @@ func classifyRun(c *classifyArgs) int {
 			classify.MergeCounts(counts, w.w.Counts)
 		}
 		calls := classify.Calls(counts)
+		// Upstream writes the report through an unchecked ofstream: a report that cannot be
+		// created is silently not written, and the run still exits 0.
 		f, err := os.Create(name)
 		if err != nil {
-			return classifyErr(exitFailure, "unable to open report file %s: %v", name, err)
+			return 0
 		}
 		bw := bufio.NewWriterSize(f, 1<<20)
 		ropt := report.Options{ZeroCounts: c.zeroCounts}
@@ -207,7 +209,8 @@ func classifyRun(c *classifyArgs) int {
 			err = e
 		}
 		if err != nil {
-			return classifyErr(exIOErr, "%s: %v", name, err)
+			// Upstream does not check the report's writes either; say so, keep its status.
+			fmt.Fprintf(os.Stderr, "%s: warning: report %s: %v\n", prog, name, err)
 		}
 	}
 	return 0

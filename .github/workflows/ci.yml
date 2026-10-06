@@ -38,14 +38,15 @@ jobs:
 
       - name: Install staticcheck
         run: |
-          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install honnef.co/go/tools/cmd/staticcheck@2026.2.1
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
 
-      - name: Pin
+      - name: Pin and compiler
         id: pin
         run: |
           . scripts/pin.env
           echo "pin=$UPSTREAM_PIN" >> "$GITHUB_OUTPUT"
+          echo "cxx=$(g++ --version | head -1 | sha256sum | cut -c1-12)" >> "$GITHUB_OUTPUT"
 
       - name: Cache upstream build (.oracle, keyed on the pin)
         uses: actions/cache@v4
@@ -53,7 +54,7 @@ jobs:
           path: |
             .oracle/src-${{ steps.pin.outputs.pin }}
             .oracle/${{ steps.pin.outputs.pin }}
-          key: oracle-${{ runner.os }}-${{ runner.arch }}-${{ steps.pin.outputs.pin }}-${{ hashFiles('scripts/oracle-build.sh', 'scripts/cxx.sh') }}
+          key: oracle-${{ runner.os }}-${{ runner.arch }}-${{ steps.pin.outputs.pin }}-cxx${{ steps.pin.outputs.cxx }}-${{ hashFiles('scripts/oracle-build.sh', 'scripts/cxx.sh') }}
 
       - name: Cache Viral database
         uses: actions/cache@v4
@@ -83,11 +84,19 @@ jobs:
       - name: Oracle harnesses (for the oracle-backed unit tests)
         run: make harness
 
+      # Oracle-backed tests must run, not skip: everything this job fetched is required, and only
+      # Standard-8 (not fetched here) may be skipped.
       - name: make test
+        env:
+          AWS_KRAKEN2_REQUIRE_ORACLE: "1"
+          AWS_KRAKEN2_DBS: k2_viral_20260626
         run: make test
 
-      - name: go test -race ./internal/...
-        run: go test -race ./internal/...
+      - name: go test -race ./...
+        env:
+          AWS_KRAKEN2_REQUIRE_ORACLE: "1"
+          AWS_KRAKEN2_DBS: k2_viral_20260626
+        run: go test -race ./...
 
       - name: make lint
         run: make lint

@@ -39,8 +39,8 @@ make oracle DB=all          # both, one results directory each
    - `scripts/fetch-reads.sh` fetches any of the three samples that is missing.
    - `scripts/fetch-db.sh` fetches the selected database if it is missing.
    - Both use the shared `.cache/`; see [harness.md](harness.md#shared-resources-scriptspathssh-internaloracletest).
-3. **Variants.** Three variants of the real reads are made with `awk` under
-   `.cache/oracle/<ts>/variants/`. Their sha256 go into the manifest.
+3. **Variants.** Variants of the real reads (table below) are made with `awk`, `gzip` and
+   `bzip2` under `.cache/oracle/<ts>/variants/`. Their sha256 go into the manifest.
 4. **Cases.** Every case is run on both sides, with the comparisons above.
 5. **Results.** The run writes `results/g1/oracle-<db>-<UTC timestamp>/`.
 
@@ -63,6 +63,9 @@ never reach:
 | `short` | S2 | every 5th mate 1 is cut to 20 bases, every 3rd mate 2 to 30, every 13th of both to 0 | the empty hit list `0:0` (single-end), and hit lists ending at, or consisting only of, the mate border `\|:\|` (paired); the empty-record path |
 | `mates` | S2 | the last 10 records of mate 2 are removed | unequal mate files: upstream writes every pair it can, then exits 65 without the report |
 | `empty` | none | empty files | no input: upstream opens no output until an input holds data |
+| `fasta` | S1 | FASTA, one line per sequence | FASTA input; FASTA sequence outputs |
+| `fastaw` | S3 | FASTA wrapped at 60 columns | multi-line FASTA records |
+| `bz` | S2 | bzip2-compressed | bzip2 input, auto-detected and with `--bzip2-compressed` |
 
 **Databases:**
 - **Viral** has `minimum_acceptable_hash_value` 0.
@@ -80,7 +83,10 @@ least one sample, and the main options on more than one sample, layout or compre
 | dimension | cases |
 |---|---|
 | single-end and paired | every sample, both layouts |
-| plain and gzip | gzip auto-detected (`*.fq.gz`) across samples and options, plus `--gzip-compressed` given explicitly |
+| input formats | plain FASTQ; gzip auto-detected (`*.fq.gz`) across samples and options, plus `--gzip-compressed` given explicitly; bzip2, auto-detected and with `--bzip2-compressed`; FASTA, single-line and wrapped |
+| `--output` on standard output | no `--output` at all: S1 single-end with a report; S3 paired gzip with sequence outputs and `--threads 4` |
+| database lookup and environment | `--db` by name through `KRAKEN2_DB_PATH` (with a nonexistent entry and an empty one first); `KRAKEN2_NUM_THREADS` in place of `--threads` |
+| unwritable outputs | `--report` (upstream's ofstream is unchecked: exit 0, no report); single-end `--classified-out`/`--unclassified-out` (unchecked: exit 0, no files); paired ones and `--output` (checked: exit 1) |
 | `--confidence` 0, 0.1, 0.5 | S1 paired (all three); S3 single-end 0.1; S2 paired gzip 0.5 |
 | `--minimum-hit-groups` 1, 3, plus the default 2 | S1 paired 1 and 3; S2 single-end 3; S3 paired 2 given explicitly; the default everywhere else |
 | `--quick` | S1 paired; `--quick --confidence 0.5`; S3 `--quick --minimum-hit-groups 1`; the `short` variant |
@@ -93,7 +99,7 @@ least one sample, and the main options on more than one sample, layout or compre
 | several inputs in one run | `S1,S2` single-end and `S2,S3` paired gzip (outputs, stats and report span the files) |
 | empty input | an empty file alone (no output file is created), with `--report-zero-counts` (percentages `nan`), and an empty pair before S1 (outputs open at the first input with data) |
 | exit statuses | mates differ (65); paired `--classified-out` without `#` (65); `--confidence 1.5` (255); `--use-mpa-style` without `--report` (64); `--threads 0` (64) |
-| controls | two cases add one option on our side only (`--confidence 0.05`, `--minimum-hit-groups 3`). They must come out different, which shows the comparison is not blind. |
+| controls | cases that add one option on our side only (`--confidence 0.05`, `--minimum-hit-groups 3`). Each must exit alike on both sides with at least one output file different, which shows the comparison is not blind. |
 
 **Coverage checks** (Law 4: could the matrix have seen the effect?). These are computed from
 upstream's own outputs and written to `checks.tsv`. A failed check fails the run:
@@ -107,6 +113,21 @@ upstream's own outputs and written to `checks.tsv`. A failed check fails the run
 - `--quick` changes `--output`.
 
 `minimum_acceptable_hash_value` is recorded as well.
+
+**Matrix integrity** (each fails the run):
+- a case filter that matches no case;
+- on an unfiltered run, fewer rows in `cases.tsv` than cases defined;
+- when a case expects exit 0: a requested output missing on either side (standard output: empty),
+  or an output the case expects to be absent (empty input, unwritable path) present on either side;
+- any file in a case's directory that the case did not ask for, on either side;
+- the manifest's `failed` flag, which is computed from all of the above and decides the exit
+  status.
+
+## Known, tracked divergence
+
+`--report-minimizer-data` (issue #18) is not implemented: `aws-kraken2` refuses it with exit 64,
+where upstream adds the minimizer columns to the report. The matrix does not exercise it. It is
+the one wrapper option whose output is not under the oracle yet.
 
 ## Outputs
 
@@ -128,6 +149,7 @@ typed:
   - the sha256 of every output on both sides (`absent` for not produced, `-` for not
     requested);
   - `files_compared`, `identical`, `upstream_exit_ok`, `control` and `pass`;
+  - `requested_outputs_ok` and `unexpected_files` (the integrity checks above);
   - `stderr_same`, which is informational. stderr is not under Law 1; timings, program names
     and output file names are removed before comparing;
   - each side's classification time, as reported on its stderr.
@@ -141,23 +163,25 @@ passing case's large files are deleted.
 
 **Canonical platform:** Linux aarch64 (C `char` is unsigned there, which decides `-Q` on bytes
 ≥ 0x80). Darwin runs are development evidence only, and the manifest says so. CI runs
-`make oracle DB=viral` on `ubuntu-24.04-arm`. `runs/g1-oracle-standard8.json` runs
-`DB=standard8` on Graviton through `make run`.
+`make oracle DB=viral` on `ubuntu-24.04-arm`; `runs/g1-oracle.json` runs `DB=all` on Graviton
+through `make run`.
 
 ## Canonical run (Linux aarch64, Graviton)
 
-`runs/g1-oracle-standard8.json` runs `make oracle DB=standard8` on a Graviton instance in
-us-west-2 through `make run GATE=g1 SPEC=runs/g1-oracle-standard8.json` ([run.md](run.md)). The
+`runs/g1-oracle.json` runs `make oracle DB=all` (Viral and Standard-8) on a Graviton instance in
+us-west-2 through `make run GATE=g1 SPEC=runs/g1-oracle.json` ([run.md](run.md)). The
 instance clones the launch commit (the short sha that ends the run ID) from GitHub, so that
 commit must be pushed first. It installs g++, perl, jq and GNU gzip with dnf, and Go at the
-version in `go.mod`. It stages the database with `ak2_stage` and checks each file's sha256
-against the object metadata. Then it builds upstream and our binary, runs the oracle, and
+version in `go.mod`. It stages both databases with `ak2_stage` (the instance gets read access
+to the data prefix through `resources.s3_read_write`) and checks each file: both its sha256 and
+the object's sha256 metadata must be 64 hex digits and equal, and the file non-empty, or the run
+stops before anything is built. Only then does it record in `SOURCE` where the copy came from. Then it builds upstream and our binary, runs the oracle, and
 pushes the results directory with `ak2_push`. The phases are setup, fetch, build, oracle and
 push, and every S3 request is counted with `ak2_req`.
 
-The database must already be in the run's region. The pinned object
-(`genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz`) is in us-east-1, so
-`make stage-db DB=standard8` (`scripts/stage-db.sh`) copies the fetched `hash.k2d`, `opts.k2d`,
+The databases must already be in the run's region. The pinned objects
+(`genome-idx/kraken/<name>.tar.gz`) are in us-east-1, so `make stage-db DB=viral` and
+`make stage-db DB=standard8` (`scripts/stage-db.sh`) copy the fetched `hash.k2d`, `opts.k2d`,
 `taxo.k2d` and `SOURCE` from `.cache/db/` to
 `s3://cookbook-942542972736-us-west-2/aws-kraken2/data/<name>/`. Each object carries its sha256
 as metadata, checked after upload. The `SOURCE` file keeps the genome-idx origin and ETag, and
@@ -167,8 +191,9 @@ every declared file at launch and refuses the run if one is missing.
 
 **Failure looks like:**
 - a non-zero exit with `oracle: FAILED`;
-- `summary.md` lists the differing cases, the unexpected upstream exits, any control the
-  comparison did not flag, and any failed coverage check;
+- `summary.md` lists the differing cases, the unexpected upstream exits, wrong output
+  existence, unexpected files, any control the comparison did not flag, and any failed coverage
+  check;
 - `run.log` shows `DIFF <db> <case> <kind>:` followed by the first differing lines.
 
 Timings in the summary are informational. They come from one run each on a warm page cache, so

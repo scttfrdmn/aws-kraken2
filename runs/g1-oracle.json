@@ -1,0 +1,35 @@
+{
+  "task_id": "g1-oracle",
+  "command": [
+    "bash",
+    "-c",
+    "# G1 (#17): make oracle DB=all on Graviton (Linux aarch64), the canonical oracle platform, for\n# both pinned databases (Viral and Standard-8).\n# Code: the launch commit (the short sha ending AK2_RUN_ID), cloned from GitHub. Databases: the\n# in-region copies declared in AK2_DATASETS (made by `make stage-db DB=viral|standard8` from the\n# pinned genome-idx objects, which are in us-east-1 and so cannot be declared here); each SOURCE\n# names the genome-idx origin and ETag. Reads: ENA over HTTPS (scripts/fetch-reads.sh, inside\n# make oracle). Not a benchmark: no cold rung, no drop_caches. Results are pushed as written.\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nset -- $AK2_DATASETS\nU=${1#s3://}; B=${U%%/*}; K=${U#*/}; DATA=${K%/*/*}\n\nak2_phase setup\nsudo -n dnf install -y -q git gcc-c++ make zlib-devel perl jq bzip2 gzip tar findutils > \"$W/dnf.log\" 2>&1\nak2_say \"dnf install rc=$? ($(gcc --version | head -1); $(gzip --version | head -1))\"\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || { ak2_say \"ERROR: clone failed\"; exit 1; }\ngit -C \"$W/repo\" checkout -q \"$SHA\" || { ak2_say \"ERROR: checkout $SHA failed\"; exit 1; }\nak2_say \"checkout $SHA head=$(git -C \"$W/repo\" rev-parse HEAD)\"\nGOV=$(awk '$1==\"go\"{print $2}' \"$W/repo/go.mod\")\ncurl -fsSL \"https://go.dev/dl/go$GOV.linux-arm64.tar.gz\" | tar -xz -C \"$W\"\nexport PATH=\"$W/go/bin:$PATH\"\ngo version > /dev/null || { ak2_say \"ERROR: no Go toolchain\"; exit 1; }\nak2_say \"go: $(go version)\"\n\nak2_phase fetch\nfor NAME in k2_viral_20260626 k2_standard_08_GB_20260626; do\n  P=\"$DATA/$NAME\"; DB=\"$W/repo/.cache/db/$NAME\"\n  mkdir -p \"$DB\"\n  ak2_stage \"s3://$B/$P/\" \"$DB/\" || { ak2_say \"ERROR: stage of $NAME failed\"; exit 1; }\n  ak2_req ListObjectsV2 1 \"$B\"\n  for f in hash.k2d opts.k2d taxo.k2d SOURCE; do\n    # aws s3 cp: one GET below the 8 MiB multipart threshold, else 8 MiB ranged GETs.\n    S=$(stat -c%s \"$DB/$f\" 2>/dev/null || echo 0)\n    ak2_req GetObject $(( S < 8388608 ? 1 : (S + 8388607) / 8388608 )) \"$B\"\n    want=$(aws s3api head-object --bucket \"$B\" --key \"$P/$f\" --query Metadata.sha256 --output text)\n    ak2_req HeadObject 1 \"$B\"\n    got=$(sha256sum \"$DB/$f\" | cut -d' ' -f1)\n    ak2_say \"staged $NAME/$f bytes=$S sha256=$got object-metadata=$want\"\n    if ! [[ $want =~ ^[0-9a-f]{64}$ && $got =~ ^[0-9a-f]{64}$ ]] || [ \"$got\" != \"$want\" ] || ! [ \"$S\" -gt 0 ]; then\n      ak2_say \"ERROR: $NAME/$f does not match its sha256 metadata (or is empty)\"; exit 1\n    fi\n  done\n  # Only a verified copy is marked as staged.\n  echo \"staged_from s3://$B/$P/ $(date -u +%FT%TZ)\" >> \"$DB/SOURCE\"\n  ak2_push \"$DB/SOURCE\" \"db-SOURCE-$NAME\"\ndone\n\nak2_phase build\ncd \"$W/repo\" || exit 1\nscripts/oracle-build.sh > \"$W/oracle-build.out\" 2>&1\nak2_say \"oracle-build rc=$? $(tail -1 \"$W/oracle-build.out\")\"\nmake build > \"$W/make-build.out\" 2>&1\nak2_say \"make build rc=$?\"\n\nak2_phase oracle\nmake oracle DB=all ORACLE_THREADS=8 > \"$W/oracle.out\" 2>&1\nRC=$?\nak2_say \"make oracle DB=all rc=$RC\"\ntail -5 \"$W/oracle.out\"\n\nak2_phase push\nfor d in results/g1/oracle-*/; do\n  for f in \"$d\"*; do ak2_push \"$f\" \"$(basename \"$d\")/$(basename \"$f\")\"; done\ndone\nak2_push \"$W/oracle.out\" oracle.out\nak2_say \"G1 oracle done rc=$RC\"\nexit $RC\n"
+  ],
+  "resources": {
+    "cpu": 8,
+    "memory_gib": 32,
+    "architecture": "arm64",
+    "families": [
+      "m7g",
+      "c7g",
+      "r7g",
+      "m8g",
+      "c8g",
+      "r8g"
+    ],
+    "disk_gib": 80,
+    "s3_read_write": [
+      "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/"
+    ]
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "SRR062634 ERR478965 SRR28305653",
+    "AK2_DATASETS": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/hash.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/opts.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/taxo.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/SOURCE s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/SOURCE"
+  },
+  "lifecycle": {
+    "ttl": "3h",
+    "on_complete": "terminate",
+    "cost_limit": 3.0
+  }
+}

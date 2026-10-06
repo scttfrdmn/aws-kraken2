@@ -24,7 +24,14 @@ for u in $URLS; do
   gzip -kn9 -f "$out"
   files+=("$out"); i=$((i+1))
 done
+if command -v sha256sum >/dev/null; then sha() { sha256sum "$1" | cut -d' ' -f1; }
+else sha() { shasum -a 256 "$1" | cut -d' ' -f1; }; fi
+declare -A hashes
+for f in "${files[@]}"; do
+  hashes[$f]=$(sha "$f")
+  [[ ${hashes[$f]} =~ ^[0-9a-f]{64}$ ]] || { echo "fetch-reads: no sha256 for $f" >&2; exit 1; }
+done
 { echo "accession $ACC"; echo "records_per_mate $N"; echo "urls $URLS"
-  for f in "${files[@]}"; do echo "sha256 $(shasum -a 256 "$f" | cut -d' ' -f1) $(basename "$f")"; done
+  for f in "${files[@]}"; do echo "sha256 ${hashes[$f]} $(basename "$f")"; done
   echo "fetched $(date -u +%FT%TZ)"; } > "$STEM.SOURCE"
 echo "$STEM"
