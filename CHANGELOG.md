@@ -46,6 +46,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - helper errors and state kept in files, so subshell errors count;
   - KILL for a hung tee;
   - shim content and self-test verification.
+- User data:
+  - `command[2]` is now `scripts/stub.sh` (region assert, presigned GET, sha256 check, exec);
+    the preamble and body travel as `<run prefix>/payload.sh`;
+  - `run.sh` measures the exact user data with spawn v0.121.0's builders (`scripts/udsize`)
+    and refuses within 1024 bytes of EC2's 16384-byte cap, including under `DRY_RUN`.
 - `internal/chash`: port of upstream's compact hash lookup path (fmix64, 32- and 40-bit cells, linear and double probing, RAM and mmap loaders, `CellSource` probe over `io.ReaderAt`); `upstream/chash_dump.cc` and `upstream/chash_keys.cc` oracle harnesses; `k2probe equiv-hash`; `make harness` and `make g0b` (#4).
 - `internal/mmscan`: port of upstream's `MinimizerScanner` (DNA and protein, both revcom versions,
   `LoadSequence` intervals, zero allocations per minimizer). It is checked against upstream by

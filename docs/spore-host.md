@@ -114,5 +114,6 @@ means wrong region.
 | allow-list scope | the preamble's `aws` PATH shim sees only the `aws` CLI found via `PATH` | curl/SDK/`sudo aws` are not covered; keep data I/O on the CLI |
 | launch region | spawn could place the task elsewhere | `run.sh` terminates and fails if `launch.json` region != `AK2_REGION` |
 | tmpfs | `/tmp` is about RAM/2 whatever `disk_gib` says | size `memory_gib` or stage to a non-`/tmp` path |
+| user-data cap | 16384 bytes after base64 decoding; spawn gzips its bootstrap and uses about 10.4 KB itself | `command[2]` is `scripts/stub.sh`; preamble and body travel as a sha256-checked payload via a presigned URL; `run.sh` measures with spawn's own builders (`scripts/udsize`) |
 | slow sizing | `task run` sizing (truffle search + live price per candidate) took ~4 min per call in 0.121.0 | `run.sh` sizes once (`--dry-run`) and pins `instance_type` for the launch |
 | local Docker | macOS lies about sticky bits, cgroup memory and CPU features | the AWS run is the only verdict |

@@ -1,0 +1,40 @@
+ak2: log tee up
+ak2-phase	2026-10-06T04:55:56Z	1791262556	preamble	no
+ak2: [2026-10-06T04:55:56Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T04:55:56Z] after set +e $-=hBc
+ak2: [2026-10-06T04:55:56Z] gate=g0a run=20261006-045444-4651a05
+ak2: [2026-10-06T04:55:56Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T04:55:56Z] imds region=us-west-2 az=us-west-2c instance=i-04f45832b5eda123e type=t4g.micro ami=ami-09325776a00699513
+ak2: [2026-10-06T04:55:56Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-06T04:55:57Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-06T04:55:57Z] region assert passed
+ak2: [2026-10-06T04:55:58Z] drop_caches_ok=true
+ak2: [2026-10-06T04:55:58Z] preamble done; spec body starts
+ak2-phase	2026-10-06T04:55:58Z	1791262558	body	no
+ak2-phase	2026-10-06T04:55:58Z	1791262558	hash-header	no
+ak2: [2026-10-06T04:55:59Z] ranged GET hash.k2d 0-31 rc=0 bytes=32
+ak2: [2026-10-06T04:56:00Z] pushed out/hash.k2d.head32
+ak2: [2026-10-06T04:56:01Z] pushed out/hash.k2d.head32.get.json
+ak2-phase	2026-10-06T04:56:01Z	1791262561	opts	no
+ak2: [2026-10-06T04:56:01Z] GET opts.k2d rc=0 bytes=56
+ak2: [2026-10-06T04:56:02Z] pushed out/opts.k2d
+ak2: [2026-10-06T04:56:03Z] pushed out/opts.k2d.get.json
+ak2-phase	2026-10-06T04:56:03Z	1791262563	listing	no
+ak2: [2026-10-06T04:56:05Z] list-objects-v2 rc=0 objects=9
+ak2: [2026-10-06T04:56:06Z] pushed out/list-objects-v2.json
+ak2: [2026-10-06T04:56:07Z] list-object-versions rc=0
+ak2: [2026-10-06T04:56:07Z] pushed out/list-object-versions.json
+ak2: [2026-10-06T04:56:08Z] pushed out/list-object-versions.err
+ak2-phase	2026-10-06T04:56:08Z	1791262568	head	no
+ak2: [2026-10-06T04:56:09Z] head-object hash.k2d rc=0
+ak2: [2026-10-06T04:56:09Z] pushed out/head-hash.k2d.json
+ak2: [2026-10-06T04:56:10Z] head-object opts.k2d rc=0
+ak2: [2026-10-06T04:56:11Z] pushed out/head-opts.k2d.json
+ak2: [2026-10-06T04:56:12Z] head-object taxo.k2d rc=0
+ak2: [2026-10-06T04:56:13Z] pushed out/head-taxo.k2d.json
+ak2-phase	2026-10-06T04:56:13Z	1791262573	payer	no
+ak2: [2026-10-06T04:56:14Z] get-bucket-request-payment rc=0 {"Payer":"BucketOwner"}
+ak2: [2026-10-06T04:56:15Z] pushed out/request-payment.json
+ak2: [2026-10-06T04:56:15Z] G0a probe done
+ak2: [2026-10-06T04:56:15Z] spec body exit rc=0
+ak2-phase	2026-10-06T04:56:15Z	1791262575	end	no
