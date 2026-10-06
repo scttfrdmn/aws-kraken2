@@ -1,0 +1,143 @@
+# CI (#20): build, test, lint and the Viral oracle on Linux aarch64, the canonical oracle
+# platform. Runbooks: docs/build.md, docs/oracle.md.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Toolchain for the upstream oracle (system g++ with OpenMP, GNU gzip, perl, jq)
+        run: |
+          set +e; echo "shell flags $-"
+          sudo apt-get update -q && sudo apt-get install -y -q g++ make zlib1g-dev perl jq gzip bzip2 curl
+          st=$?
+          g++ --version | head -1; gzip --version | head -1; uname -sm
+          exit $st
+
+      - name: Install staticcheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@2026.2.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Pin and compiler
+        id: pin
+        run: |
+          . scripts/pin.env
+          echo "pin=$UPSTREAM_PIN" >> "$GITHUB_OUTPUT"
+          echo "cxx=$(g++ --version | head -1 | sha256sum | cut -c1-12)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache upstream build (.oracle, keyed on the pin)
+        uses: actions/cache@v4
+        with:
+          path: |
+            .oracle/src-${{ steps.pin.outputs.pin }}
+            .oracle/${{ steps.pin.outputs.pin }}
+          key: oracle-${{ runner.os }}-${{ runner.arch }}-${{ steps.pin.outputs.pin }}-cxx${{ steps.pin.outputs.cxx }}-${{ hashFiles('scripts/oracle-build.sh', 'scripts/cxx.sh') }}
+
+      - name: Cache Viral database
+        uses: actions/cache@v4
+        with:
+          path: .cache/db/k2_viral_20260626
+          key: db-k2_viral_20260626-${{ hashFiles('scripts/fetch-db.sh') }}
+
+      - name: Cache reads
+        uses: actions/cache@v4
+        with:
+          path: .cache/reads
+          key: reads-SRR062634-ERR478965-SRR28305653-200000-${{ hashFiles('scripts/fetch-reads.sh') }}
+
+      - name: Fetch inputs and build upstream at the pin
+        run: |
+          set +e; echo "shell flags $-"
+          st=0
+          scripts/fetch-db.sh viral || st=1
+          for acc in SRR062634 ERR478965 SRR28305653; do scripts/fetch-reads.sh "$acc" 200000 || st=1; done
+          scripts/oracle-build.sh || st=1
+          cat ".oracle/${{ steps.pin.outputs.pin }}/BUILD"
+          exit $st
+
+      - name: make build
+        run: make build
+
+      - name: Oracle harnesses (for the oracle-backed unit tests)
+        run: make harness
+
+      # Inputs for the oracle-backed tests that replay a script's outputs: the classify traces
+      # (.cache/classify) and the seqio/seqout work directory (.cache/equiv-seqout/latest).
+      - name: Classify oracle inputs (scripts/classify-oracle.sh)
+        run: scripts/classify-oracle.sh .cache/classify
+
+      - name: make equiv-seqout
+        run: make equiv-seqout
+
+      # Oracle-backed tests must run, not skip: everything this job fetched or produced is
+      # required (a skip is a failure), and only Standard-8 (not fetched here) may be skipped.
+      # -v plus the summary below prove in the log which tests ran and which skipped.
+      - name: make test
+        env:
+          AWS_KRAKEN2_REQUIRE_ORACLE: "1"
+          AWS_KRAKEN2_DBS: k2_viral_20260626
+        run: make test
+
+      - name: go test -race -v ./... (with a ran/skipped summary)
+        env:
+          AWS_KRAKEN2_REQUIRE_ORACLE: "1"
+          AWS_KRAKEN2_DBS: k2_viral_20260626
+        run: |
+          set +e; echo "shell flags $-"
+          go test -race -v -count=1 ./... > "$RUNNER_TEMP/test-v.log" 2>&1
+          st=$?
+          echo "== tests passed: $(grep -cE '^\s*--- PASS' "$RUNNER_TEMP/test-v.log")  failed: $(grep -cE '^\s*--- FAIL' "$RUNNER_TEMP/test-v.log")  skipped: $(grep -cE '^\s*--- SKIP' "$RUNNER_TEMP/test-v.log")"
+          echo "== skipped (each must be a database this job does not provide):"
+          grep -A1 -E '^\s*--- SKIP' "$RUNNER_TEMP/test-v.log"
+          echo "== oracle-backed tests that ran:"
+          grep -E '^\s*--- (PASS|FAIL): (TestOracle|TestEquiv|TestRealDB|TestViralDB)' "$RUNNER_TEMP/test-v.log"
+          [ $st = 0 ] || tail -80 "$RUNNER_TEMP/test-v.log"
+          exit $st
+
+      - name: make lint
+        run: make lint
+
+      - name: make oracle DB=viral
+        run: make oracle DB=viral
+
+      # Only the result directories this run created (untracked), not the committed ones.
+      - name: List this run's results
+        if: always()
+        id: newres
+        run: |
+          {
+            echo 'dirs<<EOF'
+            git ls-files --others --exclude-standard -- results/g1 | xargs -r -n1 dirname | sort -u
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload oracle results
+        if: always() && steps.newres.outputs.dirs != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-viral-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ steps.newres.outputs.dirs }}
+          if-no-files-found: error

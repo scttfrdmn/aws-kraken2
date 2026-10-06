@@ -1,0 +1,8 @@
+equiv-hash standard8-real-vs-upstream-dh: mode=double load=ram capacity=2000000000 size=1399434069 key_bits=16 value_bits=16 cell_bytes=4
+  keys 1912650 compared 1912650 | upstream hits 1763653, go hits 1763653 | value mismatches 0, probe mismatches 0
+  hits at the home cell: upstream 1763608, go 1763608 | past it: upstream 45, go 45
+  go load 0.158s, get 0.099s (51.7 ns/key, 1 thread)
+  probes upstream hits   n=1763653 mean=1.000 max=8: 1:1763608 2:14 3:12 4:9 5:8 6:0 7:0 8:2
+  probes upstream misses n=148997 mean=3.481 max=39: 1:37821 2:33272 3:22946 4:16728 5:10958 6:9057 7:5309 8:4007 9:3005 10:1768 11:1157 12:885 13:604 14:429 15:293 16:253 17:168 18:85 19:80 20:46 21:40 22:12 23:15 24:24 25:14 26:10 27:2 28:4 >32:5
+  probes go hits         n=1763653 mean=1.000 max=8: 1:1763608 2:14 3:12 4:9 5:8 6:0 7:0 8:2
+  probes go misses       n=148997 mean=3.481 max=39: 1:37821 2:33272 3:22946 4:16728 5:10958 6:9057 7:5309 8:4007 9:3005 10:1768 11:1157 12:885 13:604 14:429 15:293 16:253 17:168 18:85 19:80 20:46 21:40 22:12 23:15 24:24 25:14 26:10 27:2 28:4 >32:5

@@ -1,0 +1,18 @@
+{
+  "kind": "local oracle equivalence (no AWS resources)",
+  "commit": "6639ddd56e93614a9d43ab6e2dad3a351ac3c112",
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+  "upstream_build": "g++-16 (Homebrew GCC 16.2.0) -fopenmp -DLINEAR_PROBING, Darwin arm64",
+  "dataset": {
+    "name": "k2_viral_20260626",
+    "source": "s3://genome-idx/kraken/k2_viral_20260626.tar.gz",
+    "etag": "\"df6f9dd95095a9ea2e0cfc580b0f684a-69\""
+  },
+  "samples": ["SRR062634 (first 200000 pairs)", "SRR28305653 (first 200000 pairs)"],
+  "date": "2026-10-05",
+  "files": [
+    "summary.txt",
+    "SRR062634/MANIFEST", "SRR062634/equiv.log", "SRR062634/upstream-output.sha256",
+    "SRR28305653/MANIFEST", "SRR28305653/equiv.log", "SRR28305653/upstream-output.sha256"
+  ]
+}

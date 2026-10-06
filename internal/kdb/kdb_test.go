@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 )
 
 func header(capacity, size, kb, vb uint64) []byte {
@@ -153,24 +155,11 @@ func TestReadOptionsTooLong(t *testing.T) {
 	}
 }
 
-// findViral walks up from the package directory looking for the coordinator's cached
-// Viral DB; the main checkout keeps .cache/ at its root and worktrees sit below it.
+// findViral is the shared Viral DB (internal/oracletest); a missing DB fails the test when the
+// oracle is required.
 func findViral(t *testing.T) string {
-	dir, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	for {
-		p := filepath.Join(dir, ".cache", "db", "k2_viral_20260626")
-		if _, err := os.Stat(filepath.Join(p, "opts.k2d")); err == nil {
-			return p
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			t.Skip(".cache/db/k2_viral_20260626 not present")
-		}
-		dir = parent
-	}
+	t.Helper()
+	return oracletest.DB(t, oracletest.Viral)
 }
 
 func TestViralDB(t *testing.T) {

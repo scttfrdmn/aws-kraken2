@@ -59,7 +59,11 @@ targets; ad hoc commands only during exploration.
 | target | runbook |
 |---|---|
 | `make build` / `make test` / `make lint` | [docs/build.md](docs/build.md) |
-| `make oracle` | [docs/oracle.md](docs/oracle.md) |
+| `make oracle [DB=viral\|standard8\|all]` / `make stage-db DB=…` / `make stage-reads` | [docs/oracle.md](docs/oracle.md) |
+| `make harness [NAME=…] [VARIANTS=…]` | [docs/harness.md](docs/harness.md) |
+| `make g0b [G0B=hash\|scan\|all]` | [docs/g0b.md](docs/g0b.md) |
+| `make equiv-seqout` | [docs/equiv-seqout.md](docs/equiv-seqout.md) |
+| `make oracle-classify` | [docs/oracle-classify.md](docs/oracle-classify.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make run GATE=… SPEC=…` | [docs/run.md](docs/run.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
@@ -76,16 +80,19 @@ tables. **Reports cite only these files; a number not traceable to a manifest is
 | path | what |
 |---|---|
 | `cmd/aws-kraken2` | the classifier CLI (flags mirror upstream's `kraken2` wrapper) |
-| `cmd/k2probe` | G0 probes: header/opts reader, probe-length sampler |
+| `cmd/k2probe` | G0 probes: `header`, `opts`, `equiv-hash`, `equiv-scan` |
 | `internal/kdb` | `opts.k2d`, `hash.k2d` header, cell-width detection |
-| `internal/chash` | fmix64, compact hash cell decode, double-hash probe (counts probes) |
-| `internal/mmscan` | minimizer scanner |
+| `internal/chash` | fmix64, compact hash cell decode, linear/double probe (counts probes), RAM and mmap loads |
+| `internal/mmscan` | minimizer scanner (`mmdump`: the harness stream format) |
 | `internal/taxo` | `taxo.k2d` taxonomy |
 | `internal/classify` | per-read classification, ResolveTree, hit-list formatting |
-| `internal/seqio` | FASTA/FASTQ reader, paired input, gzip (klauspost/compress) |
-| `internal/report` | kraken-style `--report` |
+| `internal/seqio` | FASTA/FASTQ reader, paired input, gzip (klauspost/compress), `-Q` masking |
+| `internal/seqout` | `--classified-out` / `--unclassified-out` formatting |
+| `internal/report` | kraken-style and mpa-style `--report` |
+| `internal/oracletest` | locates the shared oracle artifacts for tests (same rule as `scripts/paths.sh`) |
 | `upstream/` | oracle harnesses (C++ linked against upstream at the pin; not in the core path) |
 | `scripts/` | everything a make target runs |
+| `.github/workflows/` | CI: build, test, lint, `make oracle DB=viral` on Linux aarch64 |
 
 ## Ported-file header
 

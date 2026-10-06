@@ -1,0 +1,45 @@
+internal/classify --output byte-identity vs upstream (issues #13, #14)
+
+code       aws-kraken2 6639ddd56e93614a9d43ab6e2dad3a351ac3c112 (internal/classify, upstream/classify_trace.cc)
+pin        DerrickWood/kraken2 2731b35f7abb26ec926517274f3d87e78d42fd76 (2.17.2-20-g2731b35),
+           g++-16 (Homebrew GCC 16.2.0), -fopenmp, -DLINEAR_PROBING, Darwin arm64 (local, not AWS)
+db         k2_viral_20260626 (s3://genome-idx/kraken/k2_viral_20260626.tar.gz,
+           etag "df6f9dd95095a9ea2e0cfc580b0f684a-69"); k=35 l=31 minimum_acceptable_hash_value=0
+reads      SRR062634, first 200000 pairs (sha256 in SRR062634/MANIFEST); acceptance set
+           SRR28305653, first 200000 pairs (sha256 in SRR28305653/MANIFEST); extra coverage
+
+commands   make oracle-classify
+           make oracle-classify CLASSIFY_ORACLE=.cache/classify-SRR28305653 \
+             READS=<main>/.cache/reads/SRR28305653_200000
+           (scripts/classify-oracle.sh builds the harness, traces both modes, runs upstream kraken2
+           over the matrix with --threads 4; then go test -run Equiv replays the traces.)
+
+method     upstream/classify_trace.cc runs upstream's FastReader, MinimizerScanner, CompactHashTable
+           and Taxonomy and writes each mate's (minimizer, ambiguous, value) events. The Go test
+           feeds them to classify.Tokens.Add / MateBorder, resolves keys from the traced values,
+           runs Classifier.Classify, and compares with bytes.Equal against upstream's --output file.
+
+result     44/44 byte-identical (22 per sample: se and pe x 11 configs). The classified counts below
+           are upstream's stderr totals; the Go replay's counts are identical (equiv.log).
+
+config          kraken2 flags                            SRR062634 se/pe   SRR28305653 se/pe
+default         (--minimum-hit-groups 2)                  1099 / 2167       1641 / 3191
+conf0.1         --confidence 0.1                           832 /  446        395 /  114
+conf0.5         --confidence 0.5                            77 /   78         10 /    2
+mhg1            --minimum-hit-groups 1                    2871 / 5288      19672 / 22544
+mhg3            --minimum-hit-groups 3                     532 / 1029        740 / 1441
+quick           --quick                                   1099 / 2167       1641 / 3191
+quick-mhg1      --quick --minimum-hit-groups 1            2871 / 5288      19672 / 22544
+quick-conf0.5   --quick --confidence 0.5                   208 /  236        110 /  126
+names           --use-names                               1099 / 2167       1641 / 3191
+names-conf0.5   --use-names --confidence 0.5                77 /   78         10 /    2
+flagunique      classify -F -g 2 (not exposed by kraken2)  1099 / 2167       1641 / 3191
+
+per-taxon  With CountTaxa set (as -R does), Worker.Counts[internal taxid].Reads equals the "reads
+counts     assigned directly" column of upstream's --report for every taxon in both samples and
+           modes. SRR062634: se 12, pe 27 called taxa. SRR28305653: se 15, pe 47 called taxa.
+
+sensitivity  Changing ResolveTree's `max_score >= required_score` to `>` makes conf0.1 fail
+           (SRR062634: se 2 lines, pe 3 lines differ). Viral DB on these samples classifies only
+           about 1-11% of reads, so confidence and tie paths are exercised by thousands of reads,
+           not millions.
