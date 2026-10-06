@@ -18,8 +18,9 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
   anything, because the manifest cites one commit for the harness, spec and decoders. It is a
   spawn TaskSpec with these constraints:
   - `lifecycle.ttl` must match `^([0-9]+[hms])+$`, be non-zero and be at most `AK2_MAX_TTL_S`
-    (4 h). `lifecycle.cost_limit` must be positive and at most `AK2_MAX_COST_USD` ($5). Both
-    ceilings are in `ak2.env`. `on_complete` is forced to `terminate`;
+    (8 h). `lifecycle.cost_limit` must be positive and at most `AK2_MAX_COST_USD` ($50, a hard
+    backstop; $5 per run is Scott's guide, not a cap). Both ceilings are in `ak2.env`. Set each
+    spec's `cost_limit` to what that run needs. `on_complete` is forced to `terminate`;
   - `command` is `["bash","-c","<script>"]`. `container`, `inputs[]` and `results_prefix` are
     refused: spawn would stage inputs before the preamble's region assert, so use `ak2_stage`;
   - the script may not turn errexit back on; Law 4 says `set +e`. See [errexit](#errexit) below;
