@@ -10,3 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Repository bootstrap: license, changelog, CLAUDE.md with the experiment's laws, make targets.
+- `internal/seqio` (FASTA/FASTQ reader ported from upstream `fast_reader`, two-file and interleaved
+  pairs, gzip/bzip2 input with the wrapper's detection) and `internal/seqout`
+  (`--classified-out`/`--unclassified-out` writers, ordered batch output). `make equiv-seqout`
+  checks both byte-for-byte against upstream on Viral (#12, #16).

@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle ami run orphans report
+.PHONY: build test lint oracle equiv-seqout ami run orphans report
 
 build:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/...
@@ -20,6 +20,9 @@ lint:
 
 oracle:
 	scripts/oracle.sh
+
+equiv-seqout:
+	scripts/equiv-seqout.sh
 
 ami:
 	scripts/ami.sh
