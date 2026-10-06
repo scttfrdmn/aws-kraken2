@@ -74,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI (#20): `.github/workflows/ci.yml` runs build, test, `go test -race ./internal/...`, lint
   and `make oracle DB=viral` on `ubuntu-24.04-arm`.
 - `runs/g1-oracle-standard8.json`: TaskSpec for `make oracle DB=standard8` on Graviton in
-  us-west-2. Prepared, not launched.
+  us-west-2. Prepared, not launched. `make stage-db` (`scripts/stage-db.sh`) makes the in-region
+  database copy it stages from.
 - `classify.Calls`: report input from merged counters, keeping zero-read taxa, with an end-to-end
   counters-to-report test.
 - `upstream/chash_build.cc` and a g0b `hash` sub-step: a synthetic 40-bit table built by

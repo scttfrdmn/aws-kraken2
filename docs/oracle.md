@@ -144,6 +144,27 @@ passing case's large files are deleted.
 `make oracle DB=viral` on `ubuntu-24.04-arm`. `runs/g1-oracle-standard8.json` runs
 `DB=standard8` on Graviton through `make run`.
 
+## Canonical run (Linux aarch64, Graviton)
+
+`runs/g1-oracle-standard8.json` runs `make oracle DB=standard8` on a Graviton instance in
+us-west-2 through `make run GATE=g1 SPEC=runs/g1-oracle-standard8.json` ([run.md](run.md)). The
+instance clones the launch commit (the short sha that ends the run ID) from GitHub, so that
+commit must be pushed first. It installs g++, perl, jq and GNU gzip with dnf, and Go at the
+version in `go.mod`. It stages the database with `ak2_stage` and checks each file's sha256
+against the object metadata. Then it builds upstream and our binary, runs the oracle, and
+pushes the results directory with `ak2_push`. The phases are setup, fetch, build, oracle and
+push, and every S3 request is counted with `ak2_req`.
+
+The database must already be in the run's region. The pinned object
+(`genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz`) is in us-east-1, so
+`make stage-db DB=standard8` (`scripts/stage-db.sh`) copies the fetched `hash.k2d`, `opts.k2d`,
+`taxo.k2d` and `SOURCE` from `.cache/db/` to
+`s3://cookbook-942542972736-us-west-2/aws-kraken2/data/<name>/`. Each object carries its sha256
+as metadata, checked after upload. The `SOURCE` file keeps the genome-idx origin and ETag, and
+the instance appends where it staged from. `stage-db` is idempotent: an object whose metadata
+already matches is skipped. Run it once, before the first launch. `make run` head-objects
+every declared file at launch and refuses the run if one is missing.
+
 **Failure looks like:**
 - a non-zero exit with `oracle: FAILED`;
 - `summary.md` lists the differing cases, the unexpected upstream exits, any control the

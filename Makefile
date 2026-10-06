@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle ami run orphans report harness g0b equiv-seqout oracle-classify
+.PHONY: build test lint oracle stage-db ami run orphans report harness g0b equiv-seqout oracle-classify
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -33,6 +33,10 @@ harness:
 G0B ?= $(or $(PART),all)
 g0b:
 	scripts/g0b.sh $(G0B)
+
+# In-region copy of a pinned database for runs in us-west-2 (docs/oracle.md, "Canonical run").
+stage-db:
+	scripts/stage-db.sh $(DB)
 
 # seqio/seqout oracle (docs/equiv-seqout.md).
 equiv-seqout:

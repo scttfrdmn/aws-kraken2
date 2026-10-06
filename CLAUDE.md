@@ -59,7 +59,7 @@ targets; ad hoc commands only during exploration.
 | target | runbook |
 |---|---|
 | `make build` / `make test` / `make lint` | [docs/build.md](docs/build.md) |
-| `make oracle [DB=viral\|standard8\|all]` | [docs/oracle.md](docs/oracle.md) |
+| `make oracle [DB=viral\|standard8\|all]` / `make stage-db DB=…` | [docs/oracle.md](docs/oracle.md) |
 | `make harness [NAME=…] [VARIANTS=…]` | [docs/harness.md](docs/harness.md) |
 | `make g0b [G0B=hash\|scan\|all]` | [docs/g0b.md](docs/g0b.md) |
 | `make equiv-seqout` | [docs/equiv-seqout.md](docs/equiv-seqout.md) |
