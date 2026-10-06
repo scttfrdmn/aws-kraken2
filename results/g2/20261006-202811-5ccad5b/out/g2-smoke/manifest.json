@@ -1,0 +1,94 @@
+{
+  "commit": "5ccad5b9d8a09b523ba6f6ddfcb86a88826cce24",
+  "tree_dirty": false,
+  "upstream": {
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35",
+    "install": "/home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5))\nversion Kraken version 2.17.1\nbuilt 2026-10-06T20:30:34Z Linux aarch64"
+  },
+  "madvrandom": {
+    "install": "/home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76-madvrandom",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\nvariant madvrandom (diagnostic; not the oracle or the baseline)\npatch upstream/madvrandom.patch\npatch_sha256 b71f3a927c5b713a420cd0029c74c7ab7dc593739628623eae3a91ee1053efae\ncxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5))\nversion Kraken version 2.17.1\nbuilt 2026-10-06T20:30:53Z Linux aarch64",
+    "diagnostic_only": true
+  },
+  "plan": "scripts/g2/smoke.plan",
+  "plan_sha256": "49fedd0d671b727ec3bfa6fd81a8f382a90ddc870c5d8a1026c27ea372ba89a2",
+  "notes": [
+    "smoke test of the g2 driver on AWS: Standard-8, SRR062634; checks instruments, not a result"
+  ],
+  "db": "/mnt/nvme/db/k2_standard_08_GB_20260626",
+  "ramdb": "",
+  "reads": "/mnt/nvme/reads",
+  "inputs": {
+    "SRR062634_200000-gz": {
+      "name": "SRR062634_200000",
+      "format": "gz",
+      "pairs": 200000,
+      "mate1_bytes": 51895574,
+      "blocks_8mib": 7,
+      "plain_sha256": [
+        "7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5",
+        "e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"
+      ],
+      "gz_sha256": [
+        "4d13958862d7e45cb179acff08d11d327af24376570ddf17c71af527233df341",
+        "df47311fd6f56471134ab66da08a52d525f92c62f8d596aa1f7c28c9a220d478"
+      ]
+    },
+    "SRR062634_50000-fq": {
+      "name": "SRR062634_50000",
+      "format": "fq",
+      "pairs": 50000,
+      "mate1_bytes": 12916748,
+      "blocks_8mib": 2,
+      "plain_sha256": [
+        "ab33b8be9cdcd11ece16fa8c7f9d31f0d6871a33d6f466b3d5fb9a52df42b1b4",
+        "dff836553f7f4eb032c4d1ec96318cbaf4953c3b41170fd9321a6545510438b2"
+      ],
+      "gz_sha256": null
+    },
+    "SRR062634_50000-gz": {
+      "name": "SRR062634_50000",
+      "format": "gz",
+      "pairs": 50000,
+      "mate1_bytes": 12916748,
+      "blocks_8mib": 2,
+      "plain_sha256": [
+        "ab33b8be9cdcd11ece16fa8c7f9d31f0d6871a33d6f466b3d5fb9a52df42b1b4",
+        "dff836553f7f4eb032c4d1ec96318cbaf4953c3b41170fd9321a6545510438b2"
+      ],
+      "gz_sha256": [
+        "252f725b6427d4e8e27ba38a067335343017b4fb54ffc1795e13fbfe96cf6cf5",
+        "76e5210138dfe84bf9b32165bc42ad2d7d6efcf79b30906d8725b8fa59ef0b28"
+      ]
+    }
+  },
+  "storage": "instance-store NVMe 1x (220.7G Amazon EC2 NVMe Instance Storage)  xfs noatime at /mnt/nvme; read_ahead_kb: nvme0n1=128KiB; scheduler: nvme0n1=[none]mq-deadlinekyberbfq",
+  "instruments": {
+    "devs": "nvme0n1",
+    "perf_events": "task-clock,context-switches,cpu-migrations,page-faults,major-faults,minor-faults,cycles,instructions,dTLB-loads,dTLB-load-misses,dtlb_walk,stall_backend,syscalls:sys_enter_futex",
+    "sampler_hz": 20,
+    "rung_timeout_s": 300,
+    "deadline_epoch": 1791320945,
+    "extra_env": ""
+  },
+  "cold": {
+    "available": true,
+    "method": "ak2_drop_caches"
+  },
+  "host": {
+    "instance_type": "r8gd.xlarge",
+    "kernel": "6.18.51-120.163.amzn2023.aarch64",
+    "arch": "aarch64",
+    "ncpu": "4",
+    "mem_kib": "32248252",
+    "thp_enabled": "always [madvise] never",
+    "thp_defrag": "always defer defer+madvise [madvise] never"
+  },
+  "make_run_id": "20261006-202811-5ccad5b",
+  "start": "2026-10-06T20:30:53Z",
+  "stop": "2026-10-06T20:32:07Z",
+  "failures": 0,
+  "skipped": 0
+}

@@ -143,7 +143,8 @@ def main():
                "timeout_s": max([r.get("wall_s") or 0 for r in rs if r.get("timed_out")] or [0]) or None}
         rows.append(row)
         ss = [sig(r) for r in ok] or [sig(r) for r in rs]
-        srow = {"regime": key[0], "input": key[1], "state": key[2], "threads": T, "n": len(ss)}
+        srow = {"regime": key[0], "input": key[1], "state": key[2], "threads": T, "n": len(ss),
+                "blocks_ok": (B >= 2 * T) if B else None, "busy_max": min(T, B) if B else T}
         for k in ss[0].keys():
             srow[k] = med([s.get(k) for s in ss])
         sigrows.append(srow)
@@ -281,19 +282,23 @@ def main():
 
     # mechanical verdicts per regime
     md.append("## Candidates per regime (mechanical reading; see docs/g2.md for the rules)\n")
-    md.append("| regime | candidate | evidence | could the probe resolve it? |\n|---|---|---|---|")
-    regimes = sorted(set(s["regime"] for s in sigrows))
-    for rg in regimes:
-        ss = sorted([s for s in sigrows if s["regime"] == rg and s["state"] == "cold"] or
-                    [s for s in sigrows if s["regime"] == rg], key=lambda s: s["threads"])
+    md.append("One block of rows per ladder (regime / input / state). Critical sections are read only "
+              "on rungs with >= 2 input blocks per thread: with fewer, idle threads wait at the "
+              "OpenMP barrier in futex and would look like lock contention.\n")
+    md.append("| ladder | candidate | evidence | could the probe resolve it? |\n|---|---|---|---|")
+    ladders = sorted(set((s["regime"], s["input"], s["state"]) for s in sigrows))
+    for lk in ladders:
+        rg = "%s / %s / %s" % lk
+        ss = sorted([s for s in sigrows if (s["regime"], s["input"], s["state"]) == lk], key=lambda s: s["threads"])
         if not ss:
             continue
         lo, hi = ss[0], ss[-1]
         # queue depth
         io = [s for s in ss if (s["rd_ios"] or 0) >= 1000]
         if io:
-            ev = "; ".join("T=%d aqu=%s (%.2f/thread)" % (s["threads"], f(s["aqu_sz"], 1), s["aqu_per_thread"] or 0) for s in io)
-            seen = all((s["aqu_per_thread"] or 0) >= 0.7 for s in io)
+            ev = "; ".join("T=%d aqu=%s (%.2f per busy-able thread, %d)" % (
+                s["threads"], f(s["aqu_sz"], 1), (s["aqu_sz"] or 0) / s["busy_max"], s["busy_max"]) for s in io)
+            seen = all((s["aqu_sz"] or 0) / s["busy_max"] >= 0.7 for s in io)
             md.append("| %s | sync faults cap NVMe QD (aqu-sz ~ T) | %s: %s | yes (>= 1000 read IOs per rung) |" % (rg, "seen" if seen else "not seen at every T", ev))
         else:
             md.append("| %s | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |" % rg)
@@ -304,8 +309,12 @@ def main():
             md.append("| %s | read-around amplification | %s: %s | yes (>= 1000 major faults) |" % (rg, "seen" if seen else "not seen", ev))
         else:
             md.append("| %s | read-around amplification | < 1000 major faults | no |" % rg)
-        sm = [s for s in ss if (s["samples"] or 0) >= 50]
-        if len(sm) >= 2:
+        sm = [s for s in ss if (s["samples"] or 0) >= 50 and s.get("blocks_ok") is not False]
+        idle = [s["threads"] for s in ss if s.get("blocks_ok") is False]
+        if len(sm) < 2 and idle:
+            md.append("| %s | critical sections | confounded: fewer than 2 blocks per thread at T=%s | no |" % (
+                rg, ",".join(str(t) for t in idle)))
+        elif len(sm) >= 2:
             a, b = sm[0], sm[-1]
             ev = "S-futex %s -> %s, off-CPU %s -> %s (T=%d -> %d)" % (f(a["thr_S_futex"], 2), f(b["thr_S_futex"], 2),
                  f(a["offcpu_frac"], 2), f(b["offcpu_frac"], 2), a["threads"], b["threads"])
@@ -319,8 +328,11 @@ def main():
             md.append("| %s | DRAM/TLB limits | %s | yes (perf counters present) |" % (rg, ev))
         else:
             md.append("| %s | DRAM/TLB limits | no perf counters | no |" % rg)
-        gz = [(k, r) for k, r in byk.items() if k[0] == rg and k[3].endswith("-gz") and (k[0], k[1], k[2], k[3][:-3] + "-fq") in byk]
-        if gz:
+        gz = [(k, r) for k, r in byk.items() if k[0] == lk[0] and k[1] == lk[2] and k[3] == lk[1]
+              and k[3].endswith("-gz") and (k[0], k[1], k[2], k[3][:-3] + "-fq") in byk]
+        if not lk[1].endswith("-gz"):
+            pass
+        elif gz:
             ev = "; ".join("%s T=%d gz/fq %s" % (k[1], k[2], f(r["classify_med"] / byk[(k[0], k[1], k[2], k[3][:-3] + "-fq")]["classify_med"], 3))
                            for k, r in sorted(gz) if r["classify_med"] and byk[(k[0], k[1], k[2], k[3][:-3] + "-fq")]["classify_med"])
             md.append("| %s | single-stream gzip | %s | yes (gz and fq at the same T) |" % (rg, ev))
