@@ -17,8 +17,12 @@ cd "$(dirname "$0")/.." || exit 1
 . scripts/lib/tags.sh
 export AWS_PROFILE
 echo "stage-reads: shell flags $-"
-N=200000
-RUNS=(SRR062634 ERR478965 SRR28305653 SRR5935746 ERR598966)
+# STAGE_READS_N / STAGE_READS_RUNS stage another subset (G2's larger SRR062634 subset:
+# STAGE_READS_N=8000000 STAGE_READS_RUNS=SRR062634 make stage-reads, after
+# scripts/fetch-reads.sh SRR062634 8000000).
+N=${STAGE_READS_N:-200000}
+# shellcheck disable=SC2206
+RUNS=(${STAGE_READS_RUNS:-SRR062634 ERR478965 SRR28305653 SRR5935746 ERR598966})
 BUCKET=$AK2_RESULTS_BUCKET_us_west_2
 KEY="$AK2_RESULTS_ROOT/data/reads"
 if command -v sha256sum >/dev/null; then sha() { sha256sum "$1" | cut -d' ' -f1; }

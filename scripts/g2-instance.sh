@@ -11,7 +11,7 @@ g2i_fail() { ak2_say "ERROR: $*"; exit 1; }
 # g2i_setup: packages, perf access, the perf event list (G2_PERF_EVENTS), host facts.
 g2i_setup() {
   sudo -n dnf install -y -q git gcc-c++ make zlib-devel perl jq bzip2 gzip tar findutils diffutils \
-    python3 perf sysstat xfsprogs mdadm numactl util-linux > "$W/dnf.log" 2>&1 ||
+    python3 perf sysstat xfsprogs mdadm numactl util-linux patch > "$W/dnf.log" 2>&1 ||
     { tail -20 "$W/dnf.log"; g2i_fail "dnf install failed"; }
   sudo -n sysctl -q kernel.perf_event_paranoid=-1 kernel.kptr_restrict=0 || g2i_fail "sysctl perf failed"
   local tf
