@@ -4,9 +4,10 @@
 # AK2_BUCKETS, AK2_ALLOWED_BUCKETS, AK2_S3_PREFIX, AK2_RUN_ID, AK2_GATE.
 #
 # Contract for the spec body that follows (docs/run.md):
-#   - `set +e` is in force (run.sh refuses a body that turns -e back on); check statuses by hand.
+#   - `set +e` is in force (run.sh refuses a body that turns -e back on, and $- is checked at
+#     body start and at exit); check statuses by hand.
 #   - stdout/stderr go to $AK2_LOG, pushed to S3 every 5 s and once more on exit or on
-#     TERM/HUP/INT. Do not replace the EXIT or signal traps.
+#     TERM/HUP/INT/PIPE. Do not replace the EXIT or signal traps.
 #   - `aws` on PATH is a shim that refuses s3/s3api calls naming a bucket outside
 #     $AK2_ALLOWED_BUCKETS (declared buckets plus the results bucket), then execs the real CLI.
 #     It covers anything that finds `aws` via PATH; not curl, SDKs, or `sudo aws`.
@@ -15,23 +16,28 @@
 #   - ak2_phase NAME        mark the start of a phase (run.sh derives phases.tsv)
 #   - ak2_req OP N [BUCKET] record N S3 requests of OP in the current phase (requests.tsv)
 #   - ak2_drop_caches       required before every cold rung; marks the next phase cold.
-#                           Exits the run with 95 if caches cannot be dropped.
+#                           Ends the run with 95 if caches cannot be dropped.
+# Helper state (current phase, cold marker, errors, finish lock) lives in files under
+# $AK2_STATE, so helpers called from subshells still count and the body cannot clobber it by
+# assigning a variable.
 AK2_INHERITED_FLAGS="$-"
 set +e
 AK2_LOG=/tmp/ak2-run.log
 AK2_REQS=/tmp/ak2-requests.tsv
 AK2_FIFO=/tmp/ak2-log.fifo
 AK2_BIN=/tmp/ak2-bin
+AK2_STATE=/tmp/ak2-state
 AK2_PUSH_EVERY=5
+AK2_MAIN_PID=$BASHPID
 readonly AK2_EXPECT_REGION AK2_BUCKETS AK2_ALLOWED_BUCKETS AK2_S3_PREFIX AK2_RUN_ID AK2_GATE \
-  AK2_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN
+  AK2_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN AK2_STATE AK2_MAIN_PID AK2_INHERITED_FLAGS
 AK2_REAL_AWS=$(command -v aws)
 readonly AK2_REAL_AWS
 : > "$AK2_LOG"
 printf 'phase\top\tcount\tbucket\n' > "$AK2_REQS"
-AK2_REQ_ERRORS=0
-AK2_COLD_NEXT=no
-AK2_PHASE=preamble
+rm -rf "$AK2_STATE"; mkdir -p "$AK2_STATE"
+: > "$AK2_STATE/errors"          # one line per helper error: <exit code>\t<message>
+echo preamble > "$AK2_STATE/phase"
 
 # ---- the log tee: a FIFO, not a process substitution (bash's bare `wait` waits for the last
 # process substitution), immune to TERM/HUP so the final lines survive a process-group kill,
@@ -46,6 +52,7 @@ rm -f "$AK2_FIFO"
 mkfifo "$AK2_FIFO" || ak2_boot_fail "mkfifo $AK2_FIFO failed"
 ( trap '' TERM HUP; exec tee -a "$AK2_LOG" ) < "$AK2_FIFO" &
 AK2_TEE_PID=$!
+readonly AK2_TEE_PID
 disown "$AK2_TEE_PID"
 exec 3<>"$AK2_FIFO" || ak2_boot_fail "cannot open $AK2_FIFO"
 echo "ak2: log tee up" >&3
@@ -53,7 +60,8 @@ AK2_I=0
 until grep -q '^ak2: log tee up$' "$AK2_LOG" 2>/dev/null; do
   AK2_I=$((AK2_I + 1))
   if [ "$AK2_I" -gt 50 ] || ! kill -0 "$AK2_TEE_PID" 2>/dev/null; then
-    kill "$AK2_TEE_PID" 2>/dev/null; exec 3>&-
+    # A tee that is alive but stuck ignores TERM by design, so KILL it.
+    kill -KILL "$AK2_TEE_PID" 2>/dev/null; exec 3>&-
     ak2_boot_fail "log tee did not start within 5 s"
   fi
   sleep 0.1
@@ -61,18 +69,28 @@ done
 exec > "$AK2_FIFO" 2>&1 3>&-
 
 ak2_say() { printf 'ak2: [%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
+# Record a helper error. Counted at exit even if the helper ran in a subshell.
+ak2_err() {
+  local m=${2//$'\t'/\\t}; m=${m//$'\n'/\\n}   # one error per line, whatever the caller passed
+  printf '%s\t%s\n' "$1" "$m" >> "$AK2_STATE/errors"; ak2_say "ERROR: $m"
+}
 ak2_phase() {
-  AK2_PHASE=$1
-  printf 'ak2-phase\t%s\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(date +%s)" "$1" "$AK2_COLD_NEXT"
-  AK2_COLD_NEXT=no
+  local name=${1:-} cold=no
+  if [ -z "$name" ] || [[ "$name" == *[[:space:]]* ]]; then
+    ak2_err 96 "ak2_phase '$name': name must be a non-empty word (the run will exit 96)"; return 2
+  fi
+  [ -e "$AK2_STATE/cold_next" ] && { cold=yes; rm -f "$AK2_STATE/cold_next"; }
+  echo "$name" > "$AK2_STATE/phase"
+  printf 'ak2-phase\t%s\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(date +%s)" "$name" "$cold"
 }
 ak2_req() {
-  if [ -z "${1:-}" ] || [[ "${1:-}" == *[[:space:]]* ]] || ! [[ "${2:-}" =~ ^[0-9]+$ ]]; then
-    AK2_REQ_ERRORS=$((AK2_REQ_ERRORS + 1))
-    ak2_say "ERROR: ak2_req '${1:-}' '${2:-}': op must be a non-empty word and count a non-negative integer (the run will exit 96)"
+  local op=${1:-} n=${2:-} b=${3:-}
+  if [ -z "$op" ] || [[ "$op" == *[[:space:]]* ]] || ! [[ "$n" =~ ^[0-9]+$ ]] ||
+     { [ -n "$b" ] && ! [[ "$b" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]]; }; then
+    ak2_err 96 "ak2_req '$op' '$n' '$b': op must be a non-empty word, count a non-negative integer, bucket empty or a valid bucket name (the run will exit 96)"
     return 2
   fi
-  printf '%s\t%s\t%s\t%s\n' "$AK2_PHASE" "$1" "$2" "${3:-}" >> "$AK2_REQS"
+  printf '%s\t%s\t%s\t%s\n' "$(cat "$AK2_STATE/phase" 2>/dev/null)" "$op" "$n" "$b" >> "$AK2_REQS"
 }
 ak2_phase preamble
 ak2_say "inherited \$-=$AK2_INHERITED_FLAGS"
@@ -82,7 +100,7 @@ ak2_say "gate=$AK2_GATE run=$AK2_RUN_ID"
 # ---- aws guard: a PATH shim, so env/xargs/timeout/sh/python subprocesses are covered too ----
 [ -n "$AK2_REAL_AWS" ] || ak2_boot_fail "no aws CLI on PATH"
 mkdir -p "$AK2_BIN" || ak2_boot_fail "cannot create $AK2_BIN"
-cat > "$AK2_BIN/aws" <<AK2SHIM
+AK2_SHIM=$(cat <<AK2SHIM
 #!/bin/bash
 # aws-kraken2 bucket allow-list shim (scripts/preamble.sh). Any call with an s3 or s3api
 # argument may only name allowed buckets; everything else passes straight through.
@@ -112,10 +130,18 @@ if [ "\$s3" = 1 ]; then
 fi
 exec "$AK2_REAL_AWS" "\$@"
 AK2SHIM
+)
+printf '%s\n' "$AK2_SHIM" > "$AK2_BIN/aws" || ak2_boot_fail "cannot write the aws shim"
 chmod 0555 "$AK2_BIN/aws" || ak2_boot_fail "cannot chmod the aws shim"
+[ -s "$AK2_BIN/aws" ] && [ -x "$AK2_BIN/aws" ] || ak2_boot_fail "aws shim is empty or not executable"
+[ "$(printf '%s\n' "$AK2_SHIM" | cksum)" = "$(cksum < "$AK2_BIN/aws")" ] || ak2_boot_fail "aws shim content does not match what was written"
 export PATH="$AK2_BIN:$PATH"
 hash -r
 [ "$(command -v aws)" = "$AK2_BIN/aws" ] || ak2_boot_fail "aws shim is not first on PATH"
+# Functional check: an undeclared bucket must be refused without reaching the real CLI.
+aws s3 ls s3://ak2-guard-selftest-undeclared >/dev/null 2>&1
+[ $? = 126 ] || ak2_boot_fail "aws shim did not refuse an undeclared bucket"
+ak2_say "aws shim installed and self-tested ($AK2_BIN/aws -> $AK2_REAL_AWS)"
 
 # ---- region assert: IMDSv2 region must equal every declared bucket's region, before any data I/O ----
 AK2_TOK=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')
@@ -130,21 +156,32 @@ export AWS_DEFAULT_REGION="$AK2_REGION" AWS_REGION="$AK2_REGION"
 
 ak2_put() { aws s3 cp --only-show-errors "$1" "$AK2_S3_PREFIX/$2" >/dev/null 2>&1; }
 AK2_PUSHER=""
-# Runs on every exit path: normal exit, `exit N`, and TERM/HUP/INT (e.g. a process-group kill at
-# shutdown). Its own output goes straight to the log file, so a dead tee cannot SIGPIPE it.
+# Runs on every exit path of the main shell: normal exit, `exit N`, and TERM/HUP/INT/PIPE (e.g. a
+# process-group kill at shutdown). Its own output goes straight to the log file, so a dead tee
+# cannot SIGPIPE it. The finish lock is a directory (mkdir is atomic) and only the main shell
+# takes it, so neither a subshell nor a variable assignment can make the real finish skip.
 ak2_finish() {
+  local flags="$-"
   trap '' PIPE TERM HUP INT
   set +e +u
   local rc=$1 why=${2:-}
-  if [ -n "${AK2_FINISHING:-}" ]; then exit "$rc"; fi
-  AK2_FINISHING=1
+  if [ "$BASHPID" != "$AK2_MAIN_PID" ]; then exit "$rc"; fi
+  mkdir "$AK2_STATE/finishing" 2>/dev/null || exit "$rc"
   trap - EXIT
   exec >>"$AK2_LOG" 2>&1
-  if [ "$rc" = 0 ] && [ "${AK2_REQ_ERRORS:-0}" -gt 0 ]; then rc=96; why="ak2_req errors: $AK2_REQ_ERRORS"; fi
+  if [[ "$flags" == *e* ]]; then
+    printf '96\t%s\n' "errexit was on at exit (\$-=$flags); Law 4 requires set +e" >> "$AK2_STATE/errors"
+    ak2_say "ERROR: errexit was on at exit (\$-=$flags)"
+  fi
+  if [ "$rc" = 0 ] && [ -s "$AK2_STATE/errors" ]; then
+    rc=$(head -1 "$AK2_STATE/errors" | cut -f1)
+    why="$(wc -l < "$AK2_STATE/errors" | tr -d ' ') helper error(s); first: $(head -1 "$AK2_STATE/errors" | cut -f2)"
+  fi
   ak2_say "spec body exit rc=$rc${why:+ ($why)}"
   ak2_phase end
   [ -n "$AK2_PUSHER" ] && kill "$AK2_PUSHER" 2>/dev/null
   ak2_put "$AK2_REQS" out/requests.tsv
+  [ -s "$AK2_STATE/errors" ] && ak2_put "$AK2_STATE/errors" out/helper-errors.tsv
   local i; for i in 1 2 3 4; do kill -0 "$AK2_TEE_PID" 2>/dev/null || break; sleep 0.5; done
   ak2_put "$AK2_LOG" log/run.log
   exit "$rc"
@@ -153,7 +190,10 @@ trap 'ak2_finish $?' EXIT
 trap 'ak2_finish 143 SIGTERM' TERM
 trap 'ak2_finish 129 SIGHUP' HUP
 trap 'ak2_finish 130 SIGINT' INT
-ak2_fatal() { ak2_say "FATAL: $1"; exit "${2:-97}"; }
+trap 'ak2_finish 141 SIGPIPE' PIPE
+# Fatal: in the main shell this exits through ak2_finish; in a subshell the error file makes
+# the main shell's exit status carry it too.
+ak2_fatal() { ak2_err "${2:-97}" "FATAL: $1"; exit "${2:-97}"; }
 
 [ -n "$AK2_REGION" ] || ak2_fatal "IMDSv2 returned no region"
 [ "$AK2_REGION" = "$AK2_EXPECT_REGION" ] ||
@@ -194,6 +234,7 @@ ak2_put /tmp/ak2-preflight.json preflight.json || ak2_say "WARN: preflight push 
 # ---- log streaming ----
 ( while sleep "$AK2_PUSH_EVERY"; do ak2_put "$AK2_LOG" log/run.log; ak2_put "$AK2_REQS" out/requests.tsv; done ) >/dev/null 2>&1 &
 AK2_PUSHER=$!
+readonly AK2_PUSHER
 disown "$AK2_PUSHER"
 
 ak2_push() {
@@ -218,10 +259,13 @@ ak2_drop_caches() {
   sync
   sudo -n sh -c 'echo 3 > /proc/sys/vm/drop_caches' ||
     ak2_fatal "DROP_CACHES FAILED: the next rung would not be cold" 95
-  AK2_COLD_NEXT=yes
+  : > "$AK2_STATE/cold_next"
   ak2_say "drop_caches done; next phase is cold"
 }
-readonly -f ak2_say ak2_phase ak2_req ak2_put ak2_finish ak2_fatal ak2_push ak2_stage ak2_drop_caches ak2_md ak2_boot_fail
+readonly -f ak2_say ak2_err ak2_phase ak2_req ak2_put ak2_finish ak2_fatal ak2_push ak2_stage \
+  ak2_drop_caches ak2_md ak2_boot_fail
 ak2_say "preamble done; spec body starts"
 ak2_phase body
+# Backstop for the static errexit check: nothing inherited or sourced may have turned -e on.
+case "$-" in *e*) ak2_fatal "errexit is on at body start (\$-=$-); Law 4 requires set +e" 97 ;; esac
 # ---- spec body follows ----
