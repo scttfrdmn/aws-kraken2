@@ -1,0 +1,75 @@
+{
+  "commit": "2058d42de1a186b7804ce85ca837030d06d9b83b",
+  "tree_dirty": false,
+  "upstream": {
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35",
+    "install": "/home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5))\nversion Kraken version 2.17.1\nbuilt 2026-10-06T21:07:13Z Linux aarch64"
+  },
+  "madvrandom": null,
+  "plan": "scripts/g2/ram-load.plan",
+  "plan_sha256": "f27dc6d46eff7219ab76ed34871ba04aa1bb8c8009f3d5c735064c2e5e8553e3",
+  "notes": [
+    "#22 r8gd.48xlarge default load from NVMe RAID0 (6 devices); K2_DB_READ_THREADS 8 (default), 32, 96"
+  ],
+  "db": "/mnt/nvme/db/RefSeqCompleteV205",
+  "ramdb": "",
+  "reads": "/mnt/nvme/reads",
+  "inputs": {
+    "SRR062634_8000000-fq": {
+      "name": "SRR062634_8000000",
+      "format": "fq",
+      "pairs": 8000000,
+      "mate1_bytes": 2093755239,
+      "blocks_8mib": 250,
+      "plain_sha256": [
+        "4adae422162ed57988a5b808ee761e54307d31c81e21f0988c1835cb722b598b",
+        "ad320f634269e530a1f5c683bee8d212137e28da897aa40926d6b0420bc38728"
+      ],
+      "gz_sha256": null
+    },
+    "SRR062634_8000000-gz": {
+      "name": "SRR062634_8000000",
+      "format": "gz",
+      "pairs": 8000000,
+      "mate1_bytes": 2093755239,
+      "blocks_8mib": 250,
+      "plain_sha256": [
+        "4adae422162ed57988a5b808ee761e54307d31c81e21f0988c1835cb722b598b",
+        "ad320f634269e530a1f5c683bee8d212137e28da897aa40926d6b0420bc38728"
+      ],
+      "gz_sha256": [
+        "4a47908c4f5fae545818d62a62f99f8a832b206999dec8c9da284360765ec408",
+        "e7a5da6f92af9b6d3687684f31f2d52adff1283c7b9f27651645a0639a3f5b9c"
+      ]
+    }
+  },
+  "storage": "instance-store NVMe 6x ( 1.7T Amazon EC2 NVMe Instance Storage) mdadm RAID0 chunk 512K as md0; xfs noatime at /mnt/nvme; read_ahead_kb: md0=6144KiB nvme4n1=128KiB nvme6n1=128KiB nvme1n1=128KiB nvme0n1=128KiB nvme3n1=128KiB nvme5n1=128KiB; scheduler: md0= nvme4n1=[none]mq-deadlinekyberbfq nvme6n1=[none]mq-deadlinekyberbfq nvme1n1=[none]mq-deadlinekyberbfq nvme0n1=[none]mq-deadlinekyberbfq nvme3n1=[none]mq-deadlinekyberbfq nvme5n1=[none]mq-deadlinekyberbfq",
+  "instruments": {
+    "devs": "md0,nvme4n1,nvme6n1,nvme1n1,nvme0n1,nvme3n1,nvme5n1",
+    "perf_events": "task-clock,context-switches,cpu-migrations,page-faults,major-faults,minor-faults,cycles,instructions,dTLB-loads,dTLB-load-misses,dtlb_walk,stall_backend,syscalls:sys_enter_futex",
+    "sampler_hz": 20,
+    "rung_timeout_s": 2400,
+    "deadline_epoch": 1791330895,
+    "extra_env": ""
+  },
+  "cold": {
+    "available": true,
+    "method": "ak2_drop_caches"
+  },
+  "host": {
+    "instance_type": "r8gd.48xlarge",
+    "kernel": "6.18.51-120.163.amzn2023.aarch64",
+    "arch": "aarch64",
+    "ncpu": "192",
+    "mem_kib": "1557294648",
+    "thp_enabled": "always [madvise] never",
+    "thp_defrag": "always defer defer+madvise [madvise] never"
+  },
+  "make_run_id": "20261006-210414-2058d42",
+  "start": "2026-10-06T21:15:54Z",
+  "stop": "2026-10-06T21:25:19Z",
+  "failures": 0,
+  "skipped": 0
+}

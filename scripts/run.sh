@@ -323,7 +323,15 @@ if [ "$LREGION" != "$REGION" ]; then
   die "launch region $LREGION != $REGION"
 fi
 
-DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json)
+# EC2 is eventually consistent: right after RunInstances, DescribeInstances can answer
+# InvalidInstanceID.NotFound (g2 run 20261006-210414-2058d42), so retry for up to 2 minutes.
+DESC=""
+for _ in $(seq 1 24); do
+  DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json 2>/dev/null) &&
+    [ -n "$DESC" ] && [ "$DESC" != null ] && break
+  DESC=""; sleep 5
+done
+[ -n "$DESC" ] || say "WARNING: DescribeInstances never found $IID; instance fields stay null (scripts/refinalise.sh fills them after the run)"
 PRICE_ERR=$(mktemp)
 PRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2> "$PRICE_ERR" | jq '.[0].on_demand_price // null')
 mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg type "$ITYPE" --arg lr "$LREGION" \

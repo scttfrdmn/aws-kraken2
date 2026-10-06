@@ -253,7 +253,12 @@ Exit status: the task's exit code, or one of these harness codes:
 - `no completion record by TTL+3m`: the TTL or cost limit killed the task. `log/run.log` and
   `spawn/<task_id>/command.log` (from spored's pre-stop flush) show how far it got. Raise the TTL
   only after reading them.
-- `manifest.json` without `manifest_finalised_at`: run.sh was interrupted. Run `make orphans` now.
+- `manifest.json` without `manifest_finalised_at`: run.sh was interrupted, or its finalisation
+  failed. Run `make orphans` now. If the instance fields are null (DescribeInstances answered
+  `InvalidInstanceID.NotFound` right after launch; run.sh now retries for 2 minutes), run
+  `scripts/refinalise.sh results/<gate>/<run-id>` within about an hour of termination. It fills
+  the null fields from DescribeInstances, applies run.sh's finalisation, and records itself in
+  `.manifest_repair`.
 - `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or

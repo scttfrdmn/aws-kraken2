@@ -1,0 +1,20 @@
+# runs/g2-ram.json part 1 (r8gd.48xlarge: 192 vCPU, 1536 GiB, 6x1900 GB instance-store NVMe as
+# RAID0). #22 big-RAM baseline: upstream's default load (no --memory-mapping): hash.k2d read into
+# RAM by upstream's K2_DB_READ_THREADS pread streams (default 8), table resident, then classify.
+# Load time (load_s) is reported separately from classify (classify_s), cold (drop_caches: the
+# load reads NVMe) and warm (no drop: whatever of hash.k2d the page cache kept; it cannot keep it
+# all, since the table itself takes 1107.6 GiB of the 1536). Cheapest rung first: load-only
+# (empty input) before the 8M-pair sample.
+note #22 r8gd.48xlarge default load from NVMe RAID0 (6 devices); K2_DB_READ_THREADS 8 (default), 32, 96
+run load empty cold 2 64
+run load empty warm 1 64
+env K2_DB_READ_THREADS=32
+run load empty cold 1 64
+env K2_DB_READ_THREADS=96
+run load empty cold 1 64
+env -
+run load SRR062634_8000000-gz cold 1 64
+run load SRR062634_8000000-gz warm 1 64
+# validation of the ram regime (part 2: -M on a tmpfs copy) against the default load
+run load SRR062634_8000000-fq warm 1 64
+run load SRR062634_8000000-gz warm 1 8

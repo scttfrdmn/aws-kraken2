@@ -1,0 +1,112 @@
+# make g2: g2-ram-load-20261006T211554Z
+
+| | |
+|---|---|
+| commit | `2058d42de1a186b7804ce85ca837030d06d9b83b` (dirty: False) |
+| upstream pin | `2731b35f7abb26ec926517274f3d87e78d42fd76` (`2.17.2-20-g2731b35`) |
+| madvrandom (diagnostic) | not used |
+| host | r8gd.48xlarge, 192 CPUs, 1557294648 KiB, kernel 6.18.51-120.163.amzn2023.aarch64, THP [always [madvise] never] defrag [always defer defer+madvise [madvise] never] |
+| storage | instance-store NVMe 6x ( 1.7T Amazon EC2 NVMe Instance Storage) mdadm RAID0 chunk 512K as md0; xfs noatime at /mnt/nvme; read_ahead_kb: md0=6144KiB nvme4n1=128KiB nvme6n1=128KiB nvme1n1=128KiB nvme0n1=128KiB nvme3n1=128KiB nvme5n1=128KiB; scheduler: md0= nvme4n1=[none]mq-deadlinekyberbfq nvme6n1=[none]mq-deadlinekyberbfq nvme1n1=[none]mq-deadlinekyberbfq nvme0n1=[none]mq-deadlinekyberbfq nvme3n1=[none]mq-deadlinekyberbfq nvme5n1=[none]mq-deadlinekyberbfq |
+| make run id | 20261006-210414-2058d42 |
+| cold | True (ak2_drop_caches) |
+| rungs / skipped / failures | 9 / 0 / 0 |
+| note | #22 r8gd.48xlarge default load from NVMe RAID0 (6 devices); K2_DB_READ_THREADS 8 (default), 32, 96 |
+
+## Inputs
+
+| input | pairs | mate-1 bytes | 8 MiB blocks | max busy threads |
+|---|---|---|---|---|
+| SRR062634_8000000-fq | 8000000 | 2093755239 | 250 | 250 |
+| SRR062634_8000000-gz | 8000000 | 2093755239 | 250 | 250 |
+
+## Cells (classify_s = upstream's own `processed in`; median [min-max])
+
+| regime | input | state | T | n | classify_s | pairs/s | load_s | wall_s | blocks/T | quant | output sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| load | SRR062634_8000000-fq | warm | 64 | 1 | 1.826 [1.826-1.826] | 4381161 | 49.145 [49.145-49.145] | 53.963 | 3.91 | 1.02 | 7280030b1b1b |
+| load | SRR062634_8000000-gz | cold | 64 | 1 | 22.317 [22.317-22.317] | 358471 | 50.341 [50.341-50.341] | 75.673 | 3.91 | 1.02 | 7280030b1b1b |
+| load | SRR062634_8000000-gz | warm | 8 | 1 | 22.194 [22.194-22.194] | 360458 | 46.381 [46.381-46.381] | 71.514 | 31.25 | 1.02 | 7280030b1b1b |
+| load | SRR062634_8000000-gz | warm | 64 | 1 | 22.340 [22.340-22.340] | 358102 | 49.091 [49.091-49.091] | 74.359 | 3.91 | 1.02 | 7280030b1b1b |
+| load | empty | cold | 64 | 2 | 0.009 [0.008-0.009] | - | 50.406 [50.389-50.423] | 53.007 | - | - | - |
+| load | empty | warm | 64 | 1 | 0.010 [0.010-0.010] | - | 49.939 [49.939-49.939] | 52.648 | - | - | - |
+| load[K2_DB_READ_THREADS=32] | empty | cold | 64 | 1 | 0.008 [0.008-0.008] | - | 50.358 [50.358-50.358] | 53.152 | - | - | - |
+| load[K2_DB_READ_THREADS=96] | empty | cold | 64 | 1 | 0.006 [0.006-0.006] | - | 50.479 [50.479-50.479] | 53.333 | - | - | - |
+
+## Output identity
+
+`--output` must not depend on thread count or regime (all oracle-identical builds; madvrandom changes only page-fault read-around).
+
+| input | distinct --output sha256 over all rungs |
+|---|---|
+| SRR062634_8000000-fq | 1 (identical) |
+| SRR062634_8000000-gz | 1 (identical) |
+
+## Ladders (speedup and step efficiency)
+
+Step efficiency = (throughput gain - 1) / (thread ratio - 1) between consecutive rungs: 1 = linear, 0 = flat, < 0 = slower. A step is *resolved* when the two rungs' classify_s ranges are separated; rungs with fewer than 2 blocks per thread cannot resolve scaling (8 MiB input blocks).
+
+**load / SRR062634_8000000-gz / warm**
+
+| T | classify_s | pairs/s | speedup vs T=8 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 8 | 22.194 [22.194-22.194] | 360458 | 1.00 | - | - | True |
+| 64 | 22.340 [22.340-22.340] | 358102 | 0.99 | -9.34e-04 | yes | True |
+
+Knee: first step below 50% efficiency is T=8 -> 64 (efficiency -0.00; resolved; blocks/T >= 2 at 64: True).
+
+## gzip vs plain input (single-stream gzip candidate)
+
+| regime | state | T | input | gz classify_s | fq classify_s | gz/fq | separated |
+|---|---|---|---|---|---|---|---|
+| load | warm | 64 | SRR062634_8000000 | 22.340 [22.340-22.340] | 1.826 [1.826-1.826] | 12.234 | yes |
+
+## Candidate signatures per cell (medians over reps; classify window only)
+
+| regime | input | state | T | aqu-sz (NVMe) | aqu/T | r/s | KiB/IO | MiB/s | majflt | bytes/majflt (x 4 KiB) | off-CPU | R | D | S futex | S read | gzip R | IPC | dTLB miss | dTLB walk/kinst | futex/s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| load | SRR062634_8000000-fq | warm | 64 | 4.1 | 0.06 | 17520 | 127.5 | 2182 | 7 | 598216704 (146049.0) | 0.32 | 0.69 | 4.00e-04 | 0.31 | 0.00 | - | 2.79 | 0.0043 | 0.63 | 384 |
+| load | SRR062634_8000000-gz | cold | 64 | 0.1 | 1.67e-03 | 431 | 127.4 | 54 | 122 | 10297919 (2514.1) | 0.92 | 0.06 | 1.90e-03 | 0.93 | 8.20e-03 | 0.48 | 2.56 | 0.0039 | 0.54 | 36 |
+| load | SRR062634_8000000-gz | warm | 8 | 0.1 | 0.01 | 434 | 127.3 | 54 | 10 | 125612851 (30667.2) | 0.38 | 0.50 | 3.00e-04 | 0.43 | 0.06 | 0.49 | 2.56 | 0.0040 | 0.54 | 24 |
+| load | SRR062634_8000000-gz | warm | 64 | 0.1 | 1.72e-03 | 431 | 127.3 | 54 | 39 | 32208423 (7863.4) | 0.92 | 0.06 | 1.70e-03 | 0.93 | 7.80e-03 | 0.49 | 2.53 | 0.0039 | 0.54 | 36 |
+| load | empty | cold | 64 | 0.0 | 0.00 | 204 | 2.8 | 5.63e-01 | 8 | 1423 (0.3) | 0.94 | 0.06 | 0.06 | 0.88 | 0.00 | - | 4.31 | 0.0033 | 0.10 | 12389 |
+| load | empty | warm | 64 | 0 | 0.00 | 0 | - | 0 | 3 | 0 (-) | 0.92 | 0.04 | 0.00 | 0.96 | 0.00 | - | 4.29 | 0.0029 | 0.09 | 13512 |
+| load[K2_DB_READ_THREADS=32] | empty | cold | 64 | 0 | 0.00 | 191 | 2.8 | 5.28e-01 | 6 | 1451 (0.4) | 0.89 | 0.00 | 0.03 | 0.97 | 0.00 | - | 4.06 | 0.0034 | 0.18 | 10054 |
+| load[K2_DB_READ_THREADS=96] | empty | cold | 64 | 0 | 0.00 | 220 | 2.8 | 6.09e-01 | 10 | 870 (0.2) | 0.94 | 0.11 | 0.50 | 0.39 | 0.00 | - | 4.09 | 0.0029 | 0.18 | 9606 |
+
+## Candidates per regime (mechanical reading; see docs/g2.md for the rules)
+
+One block of rows per ladder (regime / input / state). Critical sections are read only on rungs with >= 2 input blocks per thread: with fewer, idle threads wait at the OpenMP barrier in futex and would look like lock contention.
+
+| ladder | candidate | evidence | could the probe resolve it? |
+|---|---|---|---|
+| load / SRR062634_8000000-fq / warm | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=64 aqu=4.1 (0.06 per busy-able thread, 64) | yes (>= 1000 read IOs per rung) |
+| load / SRR062634_8000000-fq / warm | read-around amplification | < 1000 major faults | no |
+| load / SRR062634_8000000-fq / warm | critical sections | too few sampler samples | no |
+| load / SRR062634_8000000-fq / warm | DRAM/TLB limits | T=64 IPC 2.79 dTLB-miss 0.0043 walk/kinst 0.63 | yes (perf counters present) |
+| load / SRR062634_8000000-gz / cold | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=64 aqu=0.1 (0.00 per busy-able thread, 64) | yes (>= 1000 read IOs per rung) |
+| load / SRR062634_8000000-gz / cold | read-around amplification | < 1000 major faults | no |
+| load / SRR062634_8000000-gz / cold | critical sections | too few sampler samples | no |
+| load / SRR062634_8000000-gz / cold | DRAM/TLB limits | T=64 IPC 2.56 dTLB-miss 0.0039 walk/kinst 0.54 | yes (perf counters present) |
+| load / SRR062634_8000000-gz / cold | single-stream gzip | no gz/fq pair | no |
+| load / SRR062634_8000000-gz / warm | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=8 aqu=0.1 (0.01 per busy-able thread, 8); T=64 aqu=0.1 (0.00 per busy-able thread, 64) | yes (>= 1000 read IOs per rung) |
+| load / SRR062634_8000000-gz / warm | read-around amplification | < 1000 major faults | no |
+| load / SRR062634_8000000-gz / warm | critical sections | seen: S-futex 0.43 -> 0.93, off-CPU 0.38 -> 0.92 (T=8 -> 64) | yes (>= 50 samples at >= 2 T) |
+| load / SRR062634_8000000-gz / warm | DRAM/TLB limits | T=8 IPC 2.56 dTLB-miss 0.0040 walk/kinst 0.54; T=64 IPC 2.53 dTLB-miss 0.0039 walk/kinst 0.54 | yes (perf counters present) |
+| load / SRR062634_8000000-gz / warm | single-stream gzip | warm T=64 gz/fq 12.234 | yes (gz and fq at the same T) |
+| load / empty / cold | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| load / empty / cold | read-around amplification | < 1000 major faults | no |
+| load / empty / cold | critical sections | too few sampler samples | no |
+| load / empty / cold | DRAM/TLB limits | T=64 IPC 4.31 dTLB-miss 0.0033 walk/kinst 0.10 | yes (perf counters present) |
+| load / empty / warm | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| load / empty / warm | read-around amplification | < 1000 major faults | no |
+| load / empty / warm | critical sections | too few sampler samples | no |
+| load / empty / warm | DRAM/TLB limits | T=64 IPC 4.29 dTLB-miss 0.0029 walk/kinst 0.09 | yes (perf counters present) |
+| load[K2_DB_READ_THREADS=32] / empty / cold | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| load[K2_DB_READ_THREADS=32] / empty / cold | read-around amplification | < 1000 major faults | no |
+| load[K2_DB_READ_THREADS=32] / empty / cold | critical sections | too few sampler samples | no |
+| load[K2_DB_READ_THREADS=32] / empty / cold | DRAM/TLB limits | T=64 IPC 4.06 dTLB-miss 0.0034 walk/kinst 0.18 | yes (perf counters present) |
+| load[K2_DB_READ_THREADS=96] / empty / cold | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| load[K2_DB_READ_THREADS=96] / empty / cold | read-around amplification | < 1000 major faults | no |
+| load[K2_DB_READ_THREADS=96] / empty / cold | critical sections | too few sampler samples | no |
+| load[K2_DB_READ_THREADS=96] / empty / cold | DRAM/TLB limits | T=64 IPC 4.09 dTLB-miss 0.0029 walk/kinst 0.18 | yes (perf counters present) |
+

@@ -1,0 +1,150 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 17K of event 'cycles'
+# Event count (approx.): 235649083506
+#
+# Overhead  Shared Object        Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+# ........  ...................  ......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+    26.58%  classify             [.] ClassifySequence
+            |
+            ---ClassifySequence
+               ProcessFiles
+               |          
+                --26.23%--0xffffac154440
+                          start_thread
+                          thread_start
+    20.86%  classify             [.] kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+            |
+            ---kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+               ClassifySequence
+               ProcessFiles
+               |          
+                --20.51%--0xffffac154440
+                          start_thread
+                          thread_start
+    14.98%  classify             [.] kraken2::MinimizerScanner::NextMinimizer
+            |
+            ---kraken2::MinimizerScanner::NextMinimizer
+               |          
+                --14.90%--ClassifySequence
+                          ProcessFiles
+                          |          
+                           --14.69%--0xffffac154440
+                                     start_thread
+                                     thread_start
+     4.87%  classify             [.] kraken2::Taxonomy::IsAAncestorOfB
+            |
+            ---kraken2::Taxonomy::IsAAncestorOfB
+               ResolveTree
+               ClassifySequence
+               ProcessFiles
+               |          
+                --4.75%--0xffffac154440
+                          start_thread
+                          thread_start
+     3.73%  libstdc++.so.6.0.33  [.] std::__ostream_insert<char, std::char_traits<char> >
+            |
+            ---std::__ostream_insert<char, std::char_traits<char> >
+               |          
+                --3.25%--AddHitlistString
+                          ClassifySequence
+                          ProcessFiles
+                          |          
+                           --3.21%--0xffffac154440
+                                     start_thread
+                                     thread_start
+     2.91%  classify             [.] std::__detail::_Map_base<unsigned long, std::pair<unsigned long const, unsigned long>, std::allocator<std::pair<unsigned long const, unsigned long> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[]
+            |
+            ---std::__detail::_Map_base<unsigned long, std::pair<unsigned long const, unsigned long>, std::allocator<std::pair<unsigned long const, unsigned long> >, std::__detail::_Select1st, std::equal_to<unsigned long>, std::hash<unsigned long>, std::__detail::_Mod_range_hashing, std::__detail::_Default_ranged_hash, std::__detail::_Prime_rehash_policy, std::__detail::_Hashtable_traits<false, false, true>, true>::operator[]
+               |          
+                --2.80%--ClassifySequence
+                          ProcessFiles
+                          |          
+                           --2.76%--0xffffac154440
+                                     start_thread
+                                     thread_start
+     2.38%  libc.so.6            [.] __GI___memcpy_sve
+            |
+            ---__GI___memcpy_sve
+               |          
+                --1.97%--std::basic_streambuf<char, std::char_traits<char> >::xsputn
+                          |          
+                          |--0.78%--std::__ostream_insert<char, std::char_traits<char> >
+                          |          |          
+                          |           --0.66%--AddHitlistString
+                          |                     ClassifySequence
+                          |                     ProcessFiles
+                          |                     |          
+                          |                      --0.65%--0xffffac154440
+                          |                                start_thread
+                          |                                thread_start
+                          |          
+                          |--0.59%--std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>
+                          |          std::ostream::_M_insert<long>
+                          |          AddHitlistString
+                          |          ClassifySequence
+                          |          ProcessFiles
+                          |          0xffffac154440
+                          |          start_thread
+                          |          thread_start
+                          |          
+                           --0.57%--std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<unsigned long>
+                                     std::ostream::_M_insert<unsigned long>
+     2.02%  classify             [.] ResolveTree
+            |
+            ---ResolveTree
+               ClassifySequence
+               ProcessFiles
+               |          
+                --1.99%--0xffffac154440
+                          start_thread
+                          thread_start
+     1.73%  libstdc++.so.6.0.33  [.] std::basic_streambuf<char, std::char_traits<char> >::xsputn
+            |
+            ---std::basic_streambuf<char, std::char_traits<char> >::xsputn
+               |          
+                --1.04%--std::__ostream_insert<char, std::char_traits<char> >
+                          |          
+                           --0.96%--AddHitlistString
+                                     ClassifySequence
+                                     ProcessFiles
+                                     |          
+                                      --0.95%--0xffffac154440
+                                                start_thread
+                                                thread_start
+     1.25%  libstdc++.so.6.0.33  [.] 0x00000000001384e0
+            |
+            ---0xffffabf384e0
+               |          
+                --0.81%--std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<unsigned long>
+                          std::ostream::_M_insert<unsigned long>
+                          |          
+                           --0.74%--AddHitlistString
+                                     ClassifySequence
+                                     ProcessFiles
+                                     |          
+                                      --0.72%--0xffffac154440
+                                                start_thread
+                                                thread_start
+     1.24%  [kernel.kallsyms]    [k] contpte_get_and_clear_full_ptes
+            |
+            ---contpte_get_and_clear_full_ptes
+               get_and_clear_full_ptes
+               zap_present_ptes
+               zap_pte_range
+               zap_pmd_range.isra.0
+               unmap_page_range
+               unmap_single_vma.constprop.0
+               unmap_vmas
+               vms_clear_ptes.part.0
+               vms_complete_munmap_vmas
+               do_vmi_align_munmap
+               do_vmi_munmap
+               __vm_munmap
+               __arm64_sys_munmap
+               invoke_syscall
+               el0_svc_common.constprop.0
