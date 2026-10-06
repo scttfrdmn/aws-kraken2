@@ -3,12 +3,14 @@ package chash
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 )
@@ -425,5 +427,57 @@ func TestReaderAtSourceEOF(t *testing.T) {
 	short := &ReaderAtSource{R: eofAtEnd{img[:len(img)-1]}, Layout: l}
 	if _, err := short.Cell(last); err == nil {
 		t.Fatal("short last cell: no error")
+	}
+}
+
+// readerFiller is a Filler over an in-memory image, in uneven pieces (another loader's shape).
+type readerFiller struct {
+	img   []byte
+	calls int
+	fail  error
+}
+
+func (f *readerFiller) Fill(dst []byte, off int64) error {
+	for p := 0; p < len(dst); p += 777 {
+		f.calls++
+		copy(dst[p:min(p+777, len(dst))], f.img[off+int64(p):])
+	}
+	return f.fail
+}
+
+// LoadFrom with a non-file Filler gives the same table, in a 2 MiB-aligned buffer; a Filler
+// error fails the load.
+func TestLoadFromFiller(t *testing.T) {
+	for _, cb := range []int{4, 5} {
+		kb, vb := uint64(16), uint64(16)
+		if cb == 5 {
+			kb, vb = 22, 18
+		}
+		img, kv := synth(t, 10007, kb, vb, cb, Linear, 7000, 7)
+		f := &readerFiller{img: img}
+		tab, err := LoadFrom(bytes.NewReader(img), int64(len(img)), "synthetic", f, Linear)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if f.calls < 2 {
+			t.Fatalf("filler called %d times", f.calls)
+		}
+		checkTable(t, tab, img, kv)
+		var p uintptr
+		if tab.cells32 != nil {
+			p = uintptr(unsafe.Pointer(&tab.cells32[0]))
+		} else {
+			p = uintptr(unsafe.Pointer(&tab.cells40[0]))
+		}
+		if p%hugePage != 0 {
+			t.Errorf("cells at %#x, not 2 MiB aligned", p)
+		}
+		if err := tab.Close(); err != nil {
+			t.Fatal(err)
+		}
+		bad := &readerFiller{img: img, fail: io.ErrUnexpectedEOF}
+		if _, err := LoadFrom(bytes.NewReader(img), int64(len(img)), "synthetic", bad, Linear); !errors.Is(err, io.ErrUnexpectedEOF) {
+			t.Fatalf("failing filler: err = %v", err)
+		}
 	}
 }

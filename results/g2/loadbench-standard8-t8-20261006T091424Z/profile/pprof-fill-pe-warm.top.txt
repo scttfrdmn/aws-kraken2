@@ -1,0 +1,47 @@
+File: aws-kraken2
+Type: cpu
+Time: 2026-10-06 03:14:37 MDT
+Duration: 509.48ms, Total samples = 830ms (162.91%)
+Showing nodes accounting for 830ms, 100% of 830ms total
+Showing top 40 nodes out of 53
+      flat  flat%   sum%        cum   cum%
+     760ms 91.57% 91.57%      760ms 91.57%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Find
+      30ms  3.61% 95.18%       30ms  3.61%  syscall.rawsyscalln
+      10ms  1.20% 96.39%       10ms  1.20%  runtime.madvise
+      10ms  1.20% 97.59%       10ms  1.20%  runtime.memclrNoHeapPointers
+      10ms  1.20% 98.80%       10ms  1.20%  runtime.memmove
+      10ms  1.20%   100%       10ms  1.20%  runtime.pthread_kill
+         0     0%   100%       10ms  1.20%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%      760ms 91.57%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Get (inline)
+         0     0%   100%       20ms  2.41%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%       10ms  1.20%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+         0     0%   100%       20ms  2.41%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%       10ms  1.20%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).loadMates
+         0     0%   100%       10ms  1.20%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadBlock
+         0     0%   100%       10ms  1.20%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadRecords
+         0     0%   100%       10ms  1.20%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).fill
+         0     0%   100%       20ms  2.41%  internal/poll.(*FD).Pread
+         0     0%   100%       20ms  2.41%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%       20ms  2.41%  internal/poll.ignoringEINTR2[go.shape.int] (inline)
+         0     0%   100%       20ms  2.41%  main.(*runner).processFiles.func1
+         0     0%   100%      760ms 91.57%  main.(*runner).processFiles.func2
+         0     0%   100%      760ms 91.57%  main.(*runner).work
+         0     0%   100%       10ms  1.20%  main.classifyRun
+         0     0%   100%       10ms  1.20%  main.classifyRun.func1
+         0     0%   100%       10ms  1.20%  main.main
+         0     0%   100%       10ms  1.20%  main.run
+         0     0%   100%       20ms  2.41%  os.(*File).ReadAt
+         0     0%   100%       20ms  2.41%  os.(*File).pread (inline)
+         0     0%   100%       10ms  1.20%  runtime.(*gcControllerState).enlistWorker
+         0     0%   100%       10ms  1.20%  runtime.(*mheap).alloc.func1
+         0     0%   100%       10ms  1.20%  runtime.(*mheap).allocSpan
+         0     0%   100%       10ms  1.20%  runtime.gcBgMarkWorker.func2
+         0     0%   100%       10ms  1.20%  runtime.gcDrain
+         0     0%   100%       10ms  1.20%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0%   100%       10ms  1.20%  runtime.growslice
+         0     0%   100%       10ms  1.20%  runtime.main
+         0     0%   100%       10ms  1.20%  runtime.makeslice
+         0     0%   100%       10ms  1.20%  runtime.mallocgc
+         0     0%   100%       10ms  1.20%  runtime.mallocgcLarge
+         0     0%   100%       10ms  1.20%  runtime.memclrNoHeapPointersChunked
+         0     0%   100%       10ms  1.20%  runtime.preemptM

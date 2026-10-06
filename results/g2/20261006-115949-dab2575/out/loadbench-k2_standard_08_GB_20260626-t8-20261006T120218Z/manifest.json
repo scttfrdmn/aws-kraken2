@@ -1,0 +1,142 @@
+{
+  "gate": "g2",
+  "what": "make loadbench: load-path and whole-process wall, upstream vs ours (#36)",
+  "commit": "dab2575cfdf4546f3a6c9effb66fb5ad43c458d1",
+  "dirty": false,
+  "ak2_run_id": "20261006-115949-dab2575",
+  "upstream": {
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5))\nversion Kraken version 2.17.1\nbuilt 2026-10-06T12:02:09Z Linux aarch64\n"
+  },
+  "implementations": [
+    {
+      "label": "upstream",
+      "binary": ".oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2",
+      "source": "upstream@2731b35f7abb26ec926517274f3d87e78d42fd76",
+      "sha256": "5fdf940e1dd54901252cdbb253ca8329653c9ac8c46a788865eb6de6881699cf",
+      "env": ""
+    },
+    {
+      "label": "base",
+      "binary": ".cache/loadbench/bin/linux-arm64/666459f6991cc5b99f4e7cbc278aeff866c35d7b/aws-kraken2",
+      "source": "666459f6991cc5b99f4e7cbc278aeff866c35d7b",
+      "sha256": "a8541d637c3bce3d464c2c4719e47b4722a57a90765adaf88363f7caef7a219b",
+      "env": ""
+    },
+    {
+      "label": "thp",
+      "binary": ".cache/loadbench/bin/linux-arm64/c138ab7f99e20af7dba8dc222c5b49630e4a50fb/aws-kraken2",
+      "source": "c138ab7f99e20af7dba8dc222c5b49630e4a50fb",
+      "sha256": "53a9d22d2865bb4cfbd6eaa70ef1adf8d25903f3fb3725d72633172ec4e099fd",
+      "env": ""
+    },
+    {
+      "label": "fill",
+      "binary": ".cache/loadbench/bin/linux-arm64/9de50376abd84d6cc4255ad45bab03f032e46bbc/aws-kraken2",
+      "source": "9de50376abd84d6cc4255ad45bab03f032e46bbc",
+      "sha256": "b2ac826e0fe3d1f9e9507098f91ad9cdc3130a69652fed6b7654e455bcdcedda",
+      "env": ""
+    },
+    {
+      "label": "scan",
+      "binary": ".cache/loadbench/bin/linux-arm64/fed426300c38b9f39f62af75fd542e02df705e24/aws-kraken2",
+      "source": "fed426300c38b9f39f62af75fd542e02df705e24",
+      "sha256": "1635f6d7dc5c8c36b8caf4c4d472ea0f6e9dddf31a0db5aedfcf6ea9c0e82db1",
+      "env": ""
+    },
+    {
+      "label": "recycle",
+      "binary": ".cache/loadbench/bin/linux-arm64/97fe7e67196841bebf28290afc1fa1743fde4cea/aws-kraken2",
+      "source": "97fe7e67196841bebf28290afc1fa1743fde4cea",
+      "sha256": "fe63cf10bd6f246d0025fe1bb279ee626acba3f629d327199a58b7b26851c2e4",
+      "env": ""
+    },
+    {
+      "label": "rc",
+      "binary": ".cache/loadbench/bin/linux-arm64/8db28f03b0340808aedad1d05534949fcb44c631/aws-kraken2",
+      "source": "8db28f03b0340808aedad1d05534949fcb44c631",
+      "sha256": "861177151c103e1772e3d810d4e77f1cd177b457c18207aa96df2d6df1a0fc74",
+      "env": ""
+    },
+    {
+      "label": "matesize",
+      "binary": ".cache/loadbench/bin/linux-arm64/fd4eea8ce87566815330d76539cab2cf306c9e7c/aws-kraken2",
+      "source": "fd4eea8ce87566815330d76539cab2cf306c9e7c",
+      "sha256": "86ef82ceccfd60eb7d755bf8df3f051224a52e4ce03a2ab2605081a896da50e3",
+      "env": ""
+    },
+    {
+      "label": "batch",
+      "binary": ".cache/loadbench/bin/linux-arm64/411d4b430c577c80d9041483ed8167b2738dd9bb/aws-kraken2",
+      "source": "411d4b430c577c80d9041483ed8167b2738dd9bb",
+      "sha256": "b0ed820c67947745d791745a42a6ba3032ba4e598dd3cef12a06b19e4a8bc8c0",
+      "env": ""
+    },
+    {
+      "label": "final",
+      "binary": ".cache/loadbench/bin/linux-arm64/dab2575cfdf4546f3a6c9effb66fb5ad43c458d1/aws-kraken2",
+      "source": "dab2575cfdf4546f3a6c9effb66fb5ad43c458d1",
+      "sha256": "b0ed820c67947745d791745a42a6ba3032ba4e598dd3cef12a06b19e4a8bc8c0",
+      "env": ""
+    }
+  ],
+  "go": "go version go1.27.1 linux/arm64",
+  "db": {
+    "name": "/mnt/nvme/db/k2_standard_08_GB_20260626",
+    "dir": "k2_standard_08_GB_20260626",
+    "files": [
+      {
+        "file": "hash.k2d",
+        "bytes": 8000000032
+      },
+      {
+        "file": "opts.k2d",
+        "bytes": 64
+      },
+      {
+        "file": "taxo.k2d",
+        "bytes": 4818575
+      }
+    ],
+    "source": "source s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz\netag \"815577bbfd245c6e337f1bea41fae968-709\"\nfetched 2026-10-06T01:19:22Z\nstaged_from s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/ 2026-10-06T12:01:45Z",
+    "storage": {
+      "device": "/dev/nvme0n1",
+      "fstype": "xfs",
+      "disk": "nvme0n1",
+      "model": "Amazon EC2 NVMe Instance Storage",
+      "serial": "AWS45945F9E365145E4C",
+      "ebs": null
+    }
+  },
+  "reads_source": "accession SRR062634\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz\nsha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq\nsha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq\nfetched 2026-10-06T00:20:27Z",
+  "reads_dir": "/mnt/nvme/reads",
+  "order": "implementations rotate by one per repetition",
+  "threads": 8,
+  "reps": 3,
+  "inputs": "empty pe",
+  "states_requested": "cold warm",
+  "states_run": "cold warm",
+  "extra_env": "",
+  "profile": true,
+  "cold": {
+    "available": true,
+    "method": "ak2_drop_caches"
+  },
+  "host": {
+    "os": "Linux",
+    "arch": "aarch64",
+    "kernel": "6.18.51-120.163.amzn2023.aarch64",
+    "model": "r8gd.2xlarge",
+    "ncpu": 8,
+    "mem_bytes": 66199486464,
+    "page_size": "4096",
+    "thp_enabled": "always [madvise] never",
+    "thp_defrag": "always defer defer+madvise [madvise] never",
+    "canonical_platform": true,
+    "note": "Linux aarch64 on EC2 (make run)"
+  },
+  "start": "2026-10-06T12:02:18Z",
+  "stop": "2026-10-06T12:12:39Z",
+  "failures": 0
+}

@@ -1,0 +1,48 @@
+File: aws-kraken2
+Build ID: bf5761e2bbe6787cea4d1b95eb42e71e904e9370
+Type: cpu
+Time: 2026-10-06 10:44:39 UTC
+Duration: 62.20s, Total samples = 1.08s ( 1.74%)
+Showing nodes accounting for 1.08s, 100% of 1.08s total
+Showing top 40 nodes out of 53
+      flat  flat%   sum%        cum   cum%
+     0.62s 57.41% 57.41%      0.76s 70.37%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).Next
+     0.09s  8.33% 65.74%      0.09s  8.33%  internal/runtime/syscall/linux.Syscall6
+     0.08s  7.41% 73.15%      0.14s 12.96%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).canonicalRepresentation (inline)
+     0.07s  6.48% 79.63%      0.07s  6.48%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).replay
+     0.06s  5.56% 85.19%      0.06s  5.56%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).reverseComplement
+     0.04s  3.70% 88.89%      0.04s  3.70%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Add
+     0.02s  1.85% 90.74%      0.82s 75.93%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Scan
+     0.02s  1.85% 92.59%      0.02s  1.85%  internal/strconv.AppendUint
+     0.01s  0.93% 93.52%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Find
+     0.01s  0.93% 94.44%      0.03s  2.78%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendCode
+     0.01s  0.93% 95.37%      0.04s  3.70%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendHitlist
+     0.01s  0.93% 96.30%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).Parse
+     0.01s  0.93% 97.22%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+     0.01s  0.93% 98.15%      0.01s  0.93%  runtime.greyobject
+     0.01s  0.93% 99.07%      0.01s  0.93%  runtime.memclrNoHeapPointers
+     0.01s  0.93%   100%      0.02s  1.85%  runtime.scanObject
+         0     0%   100%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Get (inline)
+         0     0%   100%      0.08s  7.41%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%      0.12s 11.11%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).Classify
+         0     0%   100%      0.05s  4.63%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendLine
+         0     0%   100%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadBlock
+         0     0%   100%      0.01s  0.93%  github.com/scttfrdmn/aws-kraken2/internal/seqio.PairBlocks
+         0     0%   100%      0.08s  7.41%  internal/poll.(*FD).Pread
+         0     0%   100%      0.08s  7.41%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%      0.08s  7.41%  internal/poll.ignoringEINTR2[go.shape.int] (inline)
+         0     0%   100%      0.01s  0.93%  main.(*runner).processFiles.func1
+         0     0%   100%      0.96s 88.89%  main.(*runner).processFiles.func2
+         0     0%   100%      0.96s 88.89%  main.(*runner).work
+         0     0%   100%      0.01s  0.93%  main.classifyRun
+         0     0%   100%      0.01s  0.93%  main.classifyRun.func1
+         0     0%   100%      0.01s  0.93%  main.main
+         0     0%   100%      0.01s  0.93%  main.run
+         0     0%   100%      0.08s  7.41%  os.(*File).ReadAt
+         0     0%   100%      0.08s  7.41%  os.(*File).pread (inline)
+         0     0%   100%      0.02s  1.85%  runtime.gcBgMarkWorker
+         0     0%   100%      0.02s  1.85%  runtime.gcBgMarkWorker.func2
+         0     0%   100%      0.02s  1.85%  runtime.gcDrain
+         0     0%   100%      0.01s  0.93%  runtime.gcDrainMarkWorkerDedicated (inline)

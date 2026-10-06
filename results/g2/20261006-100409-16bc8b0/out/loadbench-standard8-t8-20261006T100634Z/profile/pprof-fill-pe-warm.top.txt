@@ -1,0 +1,48 @@
+File: aws-kraken2
+Build ID: bf5761e2bbe6787cea4d1b95eb42e71e904e9370
+Type: cpu
+Time: 2026-10-06 10:45:42 UTC
+Duration: 428.36ms, Total samples = 1.23s (287.14%)
+Showing nodes accounting for 1.23s, 100% of 1.23s total
+Showing top 40 nodes out of 89
+      flat  flat%   sum%        cum   cum%
+     0.47s 38.21% 38.21%      0.59s 47.97%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).Next
+     0.15s 12.20% 50.41%      0.15s 12.20%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).replay
+     0.11s  8.94% 59.35%      0.11s  8.94%  internal/runtime/syscall/linux.Syscall6
+     0.09s  7.32% 66.67%      0.12s  9.76%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).canonicalRepresentation (inline)
+     0.08s  6.50% 73.17%      0.08s  6.50%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Find
+     0.07s  5.69% 78.86%      0.07s  5.69%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Add
+     0.03s  2.44% 81.30%      0.04s  3.25%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendHitlist
+     0.03s  2.44% 83.74%      0.69s 56.10%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Scan
+     0.03s  2.44% 86.18%      0.03s  2.44%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).reverseComplement
+     0.03s  2.44% 88.62%      0.04s  3.25%  internal/strconv.AppendUint
+     0.02s  1.63% 90.24%      0.02s  1.63%  internal/bytealg.IndexByteString
+     0.02s  1.63% 91.87%      0.02s  1.63%  runtime.memmove
+     0.01s  0.81% 92.68%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).resolveTree
+     0.01s  0.81% 93.50%      0.04s  3.25%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).Parse.func2 (inline)
+     0.01s  0.81% 94.31%      0.04s  3.25%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+     0.01s  0.81% 95.12%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/seqio.isHeaderSpace (inline)
+     0.01s  0.81% 95.93%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/taxo.(*Taxonomy).ExternalID
+     0.01s  0.81% 96.75%      0.01s  0.81%  internal/runtime/atomic.(*Uint8).Load (inline)
+     0.01s  0.81% 97.56%      0.03s  2.44%  runtime.bulkBarrierPreWrite
+     0.01s  0.81% 98.37%      0.01s  0.81%  runtime.heapArenaOf (inline)
+     0.01s  0.81% 99.19%      0.01s  0.81%  runtime.nanotime
+     0.01s  0.81%   100%      0.02s  1.63%  runtime.tryDeferToSpanScan
+         0     0%   100%      0.02s  1.63%  bytes.IndexByte (inline)
+         0     0%   100%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%      0.08s  6.50%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Get
+         0     0%   100%      0.08s  6.50%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%      0.24s 19.51%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).Classify
+         0     0%   100%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendCode
+         0     0%   100%      0.08s  6.50%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendLine
+         0     0%   100%      0.05s  4.07%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).Parse
+         0     0%   100%      0.05s  4.07%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).loadMates
+         0     0%   100%      0.04s  3.25%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadBlock
+         0     0%   100%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadRecords
+         0     0%   100%      0.01s  0.81%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).fill
+         0     0%   100%      0.05s  4.07%  github.com/scttfrdmn/aws-kraken2/internal/seqio.PairBlocks
+         0     0%   100%      0.01s  0.81%  internal/poll.(*FD).Close
+         0     0%   100%      0.08s  6.50%  internal/poll.(*FD).Pread
+         0     0%   100%      0.08s  6.50%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%      0.01s  0.81%  internal/poll.(*FD).Read

@@ -1,0 +1,1027 @@
+ak2: log tee up
+ak2-phase	2026-10-06T14:00:39Z	1791295239	preamble	no
+ak2: [2026-10-06T14:00:39Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T14:00:39Z] after set +e $-=hBc
+ak2: [2026-10-06T14:00:39Z] gate=g2 run=20261006-135946-9035dd6
+ak2: [2026-10-06T14:00:39Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T14:00:39Z] imds region=us-west-2 az=us-west-2b instance=i-07f63f0f88d5a49af type=r8gd.2xlarge ami=ami-09325776a00699513
+ak2: [2026-10-06T14:00:39Z] bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-06T14:00:40Z] bucket cookbook-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-06T14:00:40Z] WARN: could not read Payer of cookbook-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-06T14:00:40Z] region assert passed
+ak2: [2026-10-06T14:00:40Z] drop_caches_ok=true
+ak2: [2026-10-06T14:00:40Z] preamble done; spec body starts
+ak2-phase	2026-10-06T14:00:40Z	1791295240	body	no
+ak2-phase	2026-10-06T14:00:40Z	1791295240	setup	no
+ak2: [2026-10-06T14:01:12Z] dnf ok (gcc (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5); perf version 6.1.188-233.386.amzn2023.aarch64)
+ak2: [2026-10-06T14:01:12Z] thp enabled=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] kernel=6.18.51-120.163.amzn2023.aarch64 nproc=8
+ak2: [2026-10-06T14:01:12Z] disks: nvme1n1    80G Amazon Elastic Block Store       vol06c79a7807cb313e7;nvme0n1 441.4G Amazon EC2 NVMe Instance Storage AWS435BA0ABF03744B91;
+ak2: [2026-10-06T14:01:12Z] storage: instance-store NVMe /dev/nvme0n1 (441.4G Amazon EC2 NVMe Instance Storage) mounted at /mnt/nvme
+ak2: [2026-10-06T14:01:13Z] checkout 9035dd6 head=9035dd6687f62bb45e82df1e0968d2d2422655d1
+ak2: [2026-10-06T14:01:15Z] go: go version go1.27.1 linux/arm64
+ak2-phase	2026-10-06T14:01:15Z	1791295275	fetch	no
+ak2: [2026-10-06T14:01:34Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/ -> /mnt/nvme/db/k2_standard_08_GB_20260626/ (8004818876 bytes)
+ak2: [2026-10-06T14:01:40Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d bytes=8000000032 sha256=6c60e422b621b8116b7a3451fe25c682edfcf7c159c0ef757fb7de271b318d46 object-metadata=6c60e422b621b8116b7a3451fe25c682edfcf7c159c0ef757fb7de271b318d46
+ak2: [2026-10-06T14:01:40Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d bytes=64 sha256=5d80247b7332536ff08f4afa0fbc29e897e0e178fdf4aa9c28e84028fdbcc235 object-metadata=5d80247b7332536ff08f4afa0fbc29e897e0e178fdf4aa9c28e84028fdbcc235
+ak2: [2026-10-06T14:01:40Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d bytes=4818575 sha256=65f9dd8c9a859dc613db5444160e989d275b386475486a013c6ca7f4dd09bc2e object-metadata=65f9dd8c9a859dc613db5444160e989d275b386475486a013c6ca7f4dd09bc2e
+ak2: [2026-10-06T14:01:41Z] staged aws-kraken2/data/k2_standard_08_GB_20260626/SOURCE bytes=137 sha256=2a5827a124b438ddd053330317aeaf07063d1868a537ea3cff7bd286421afd53 object-metadata=2a5827a124b438ddd053330317aeaf07063d1868a537ea3cff7bd286421afd53
+ak2: [2026-10-06T14:01:41Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE -> /mnt/nvme/reads/SRR062634_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T14:01:42Z] staged aws-kraken2/data/reads/SRR062634_200000.SOURCE bytes=400 sha256=6d38490b67153a1acd8fce4f0e49fc45024bed6c813dd6537dc0093990d57f4c object-metadata=6d38490b67153a1acd8fce4f0e49fc45024bed6c813dd6537dc0093990d57f4c
+ak2: [2026-10-06T14:01:42Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq -> /mnt/nvme/reads/SRR062634_200000_1.fq (51895574 bytes)
+ak2: [2026-10-06T14:01:43Z] staged aws-kraken2/data/reads/SRR062634_200000_1.fq bytes=51895574 sha256=7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 object-metadata=7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5
+ak2: [2026-10-06T14:01:44Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq -> /mnt/nvme/reads/SRR062634_200000_2.fq (51895574 bytes)
+ak2: [2026-10-06T14:01:44Z] staged aws-kraken2/data/reads/SRR062634_200000_2.fq bytes=51895574 sha256=e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 object-metadata=e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1
+ak2: [2026-10-06T14:01:44Z] reads SRR062634 verified against SOURCE
+ak2-phase	2026-10-06T14:01:44Z	1791295304	build	no
+ak2: [2026-10-06T14:02:07Z] oracle-build ok: /home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76
+ak2: [2026-10-06T14:02:13Z] make build ok
+loadbench: shell flags hBc
+loadbench: db=/mnt/nvme/db/k2_standard_08_GB_20260626 threads=8 reps=3 states=cold warm inputs=empty pe impls=upstream base thp fill scan recycle rc matesize batch final final-aa cold=true (ak2_drop_caches) thp=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never]
+loadbench: results /home/ec2-user/ak2/repo/results/g2/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z
+ak2: [2026-10-06T14:02:25Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:02:25Z	1791295345	lb-warmup-upstream-empty	yes
+loadbench: warmup (unrecorded) {"exit":0,"wall_s":6.730015,"load_s":6.714048,"classify_s":0.001,"tail_s":0.015361,"minflt":6478,"majflt":48,"user_s":0.010103,"sys_s":1.333645,"maxrss":7820872,"impl":"upstream","input":"empty","state":"cold"}
+ak2: [2026-10-06T14:02:33Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:02:33Z	1791295353	lb-1-upstream-empty-cold	yes
+loadbench: 1-upstream-empty-cold {"wall_s":7.960692,"load_s":7.94464,"classify_s":0.001,"tail_s":0.015427,"minflt":6476}
+ak2-phase	2026-10-06T14:02:41Z	1791295361	lb-1-upstream-empty-warm	no
+loadbench: 1-upstream-empty-warm {"wall_s":0.253342,"load_s":0.239025,"classify_s":0.001,"tail_s":0.013659,"minflt":6502}
+ak2: [2026-10-06T14:02:42Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:02:42Z	1791295362	lb-1-base-empty-cold	yes
+loadbench: 1-base-empty-cold {"wall_s":7.820278,"load_s":7.468933,"classify_s":0.0,"tail_s":0.349777,"minflt":1956230}
+ak2-phase	2026-10-06T14:02:51Z	1791295371	lb-1-base-empty-warm	no
+loadbench: 1-base-empty-warm {"wall_s":0.895476,"load_s":0.522861,"classify_s":0.0,"tail_s":0.372359,"minflt":1956228}
+ak2: [2026-10-06T14:02:52Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:02:52Z	1791295372	lb-1-thp-empty-cold	yes
+loadbench: 1-thp-empty-cold {"wall_s":7.483352,"load_s":7.468489,"classify_s":0.0,"tail_s":0.013895,"minflt":7226}
+ak2-phase	2026-10-06T14:03:01Z	1791295381	lb-1-thp-empty-warm	no
+loadbench: 1-thp-empty-warm {"wall_s":0.246142,"load_s":0.232319,"classify_s":0.0,"tail_s":0.013419,"minflt":7267}
+ak2: [2026-10-06T14:03:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:02Z	1791295382	lb-1-fill-empty-cold	yes
+loadbench: 1-fill-empty-cold {"wall_s":7.488562,"load_s":7.473166,"classify_s":0.0,"tail_s":0.014323,"minflt":7240}
+ak2-phase	2026-10-06T14:03:10Z	1791295390	lb-1-fill-empty-warm	no
+loadbench: 1-fill-empty-warm {"wall_s":0.273949,"load_s":0.259992,"classify_s":0.0,"tail_s":0.013519,"minflt":7245}
+ak2: [2026-10-06T14:03:11Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:11Z	1791295391	lb-1-scan-empty-cold	yes
+loadbench: 1-scan-empty-cold {"wall_s":7.486472,"load_s":7.47195,"classify_s":0.0,"tail_s":0.01366,"minflt":7234}
+ak2-phase	2026-10-06T14:03:19Z	1791295399	lb-1-scan-empty-warm	no
+loadbench: 1-scan-empty-warm {"wall_s":0.247162,"load_s":0.234107,"classify_s":0.0,"tail_s":0.012763,"minflt":7264}
+ak2: [2026-10-06T14:03:20Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:20Z	1791295400	lb-1-recycle-empty-cold	yes
+loadbench: 1-recycle-empty-cold {"wall_s":7.485139,"load_s":7.469956,"classify_s":0.0,"tail_s":0.014223,"minflt":7260}
+ak2-phase	2026-10-06T14:03:28Z	1791295408	lb-1-recycle-empty-warm	no
+loadbench: 1-recycle-empty-warm {"wall_s":0.232767,"load_s":0.219249,"classify_s":0.0,"tail_s":0.013124,"minflt":7245}
+ak2: [2026-10-06T14:03:29Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:29Z	1791295409	lb-1-rc-empty-cold	yes
+loadbench: 1-rc-empty-cold {"wall_s":7.486974,"load_s":7.472107,"classify_s":0.0,"tail_s":0.013888,"minflt":7258}
+ak2-phase	2026-10-06T14:03:37Z	1791295417	lb-1-rc-empty-warm	no
+loadbench: 1-rc-empty-warm {"wall_s":0.242422,"load_s":0.228903,"classify_s":0.0,"tail_s":0.013214,"minflt":7234}
+ak2: [2026-10-06T14:03:38Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:38Z	1791295418	lb-1-matesize-empty-cold	yes
+loadbench: 1-matesize-empty-cold {"wall_s":7.48582,"load_s":7.471073,"classify_s":0.0,"tail_s":0.013704,"minflt":7250}
+ak2-phase	2026-10-06T14:03:47Z	1791295427	lb-1-matesize-empty-warm	no
+loadbench: 1-matesize-empty-warm {"wall_s":0.247252,"load_s":0.233658,"classify_s":0.0,"tail_s":0.013188,"minflt":7257}
+ak2: [2026-10-06T14:03:48Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:48Z	1791295428	lb-1-batch-empty-cold	yes
+loadbench: 1-batch-empty-cold {"wall_s":7.487721,"load_s":7.473411,"classify_s":0.0,"tail_s":0.01387,"minflt":7265}
+ak2-phase	2026-10-06T14:03:56Z	1791295436	lb-1-batch-empty-warm	no
+loadbench: 1-batch-empty-warm {"wall_s":0.253439,"load_s":0.239869,"classify_s":0.0,"tail_s":0.013146,"minflt":7284}
+ak2: [2026-10-06T14:03:57Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:03:57Z	1791295437	lb-1-final-empty-cold	yes
+loadbench: 1-final-empty-cold {"wall_s":7.491104,"load_s":7.476156,"classify_s":0.0,"tail_s":0.013918,"minflt":7219}
+ak2-phase	2026-10-06T14:04:05Z	1791295445	lb-1-final-empty-warm	no
+loadbench: 1-final-empty-warm {"wall_s":0.243687,"load_s":0.230383,"classify_s":0.0,"tail_s":0.012871,"minflt":7288}
+ak2: [2026-10-06T14:04:06Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:04:06Z	1791295446	lb-1-final-aa-empty-cold	yes
+loadbench: 1-final-aa-empty-cold {"wall_s":7.487568,"load_s":7.472603,"classify_s":0.0,"tail_s":0.013969,"minflt":7237}
+ak2-phase	2026-10-06T14:04:14Z	1791295454	lb-1-final-aa-empty-warm	no
+loadbench: 1-final-aa-empty-warm {"wall_s":0.240652,"load_s":0.226969,"classify_s":0.0,"tail_s":0.013243,"minflt":7294}
+ak2: [2026-10-06T14:04:15Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:04:15Z	1791295455	lb-2-base-empty-cold	yes
+loadbench: 2-base-empty-cold {"wall_s":7.827235,"load_s":7.470885,"classify_s":0.0,"tail_s":0.355543,"minflt":1956100}
+ak2-phase	2026-10-06T14:04:24Z	1791295464	lb-2-base-empty-warm	no
+loadbench: 2-base-empty-warm {"wall_s":0.828158,"load_s":0.453305,"classify_s":0.0,"tail_s":0.374537,"minflt":1956198}
+ak2: [2026-10-06T14:04:25Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:04:25Z	1791295465	lb-2-thp-empty-cold	yes
+loadbench: 2-thp-empty-cold {"wall_s":7.485864,"load_s":7.470998,"classify_s":0.0,"tail_s":0.014028,"minflt":7234}
+ak2-phase	2026-10-06T14:04:33Z	1791295473	lb-2-thp-empty-warm	no
+loadbench: 2-thp-empty-warm {"wall_s":0.251544,"load_s":0.237925,"classify_s":0.0,"tail_s":0.013212,"minflt":7266}
+ak2: [2026-10-06T14:04:34Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:04:34Z	1791295474	lb-2-fill-empty-cold	yes
+loadbench: 2-fill-empty-cold {"wall_s":7.486946,"load_s":7.472257,"classify_s":0.0,"tail_s":0.01378,"minflt":7203}
+ak2-phase	2026-10-06T14:04:43Z	1791295483	lb-2-fill-empty-warm	no
+loadbench: 2-fill-empty-warm {"wall_s":0.248017,"load_s":0.234932,"classify_s":0.0,"tail_s":0.012682,"minflt":7212}
+ak2: [2026-10-06T14:04:44Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:04:44Z	1791295484	lb-2-scan-empty-cold	yes
+loadbench: 2-scan-empty-cold {"wall_s":7.485295,"load_s":7.470821,"classify_s":0.0,"tail_s":0.013543,"minflt":7238}
+ak2-phase	2026-10-06T14:04:52Z	1791295492	lb-2-scan-empty-warm	no
+loadbench: 2-scan-empty-warm {"wall_s":0.245866,"load_s":0.232632,"classify_s":0.0,"tail_s":0.012851,"minflt":7257}
+ak2: [2026-10-06T14:04:53Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:04:53Z	1791295493	lb-2-recycle-empty-cold	yes
+loadbench: 2-recycle-empty-cold {"wall_s":7.485213,"load_s":7.470297,"classify_s":0.0,"tail_s":0.01406,"minflt":7200}
+ak2-phase	2026-10-06T14:05:01Z	1791295501	lb-2-recycle-empty-warm	no
+loadbench: 2-recycle-empty-warm {"wall_s":0.244984,"load_s":0.231159,"classify_s":0.0,"tail_s":0.013448,"minflt":7312}
+ak2: [2026-10-06T14:05:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:02Z	1791295502	lb-2-rc-empty-cold	yes
+loadbench: 2-rc-empty-cold {"wall_s":7.485816,"load_s":7.470805,"classify_s":0.0,"tail_s":0.014065,"minflt":7287}
+ak2-phase	2026-10-06T14:05:10Z	1791295510	lb-2-rc-empty-warm	no
+loadbench: 2-rc-empty-warm {"wall_s":0.241135,"load_s":0.228109,"classify_s":0.0,"tail_s":0.012676,"minflt":7275}
+ak2: [2026-10-06T14:05:11Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:11Z	1791295511	lb-2-matesize-empty-cold	yes
+loadbench: 2-matesize-empty-cold {"wall_s":7.484359,"load_s":7.46946,"classify_s":0.0,"tail_s":0.013885,"minflt":7241}
+ak2-phase	2026-10-06T14:05:19Z	1791295519	lb-2-matesize-empty-warm	no
+loadbench: 2-matesize-empty-warm {"wall_s":0.237783,"load_s":0.224678,"classify_s":0.0,"tail_s":0.012709,"minflt":7241}
+ak2: [2026-10-06T14:05:20Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:20Z	1791295520	lb-2-batch-empty-cold	yes
+loadbench: 2-batch-empty-cold {"wall_s":7.487697,"load_s":7.473445,"classify_s":0.0,"tail_s":0.013718,"minflt":7315}
+ak2-phase	2026-10-06T14:05:29Z	1791295529	lb-2-batch-empty-warm	no
+loadbench: 2-batch-empty-warm {"wall_s":0.265066,"load_s":0.25157,"classify_s":0.0,"tail_s":0.013051,"minflt":7246}
+ak2: [2026-10-06T14:05:30Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:30Z	1791295530	lb-2-final-empty-cold	yes
+loadbench: 2-final-empty-cold {"wall_s":7.488539,"load_s":7.473542,"classify_s":0.0,"tail_s":0.013949,"minflt":7222}
+ak2-phase	2026-10-06T14:05:38Z	1791295538	lb-2-final-empty-warm	no
+loadbench: 2-final-empty-warm {"wall_s":0.237728,"load_s":0.224109,"classify_s":0.0,"tail_s":0.013096,"minflt":7288}
+ak2: [2026-10-06T14:05:39Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:39Z	1791295539	lb-2-final-aa-empty-cold	yes
+loadbench: 2-final-aa-empty-cold {"wall_s":7.486004,"load_s":7.471106,"classify_s":0.0,"tail_s":0.01372,"minflt":7242}
+ak2-phase	2026-10-06T14:05:47Z	1791295547	lb-2-final-aa-empty-warm	no
+loadbench: 2-final-aa-empty-warm {"wall_s":0.276605,"load_s":0.262711,"classify_s":0.0,"tail_s":0.013422,"minflt":7246}
+ak2: [2026-10-06T14:05:48Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:48Z	1791295548	lb-2-upstream-empty-cold	yes
+loadbench: 2-upstream-empty-cold {"wall_s":7.538962,"load_s":7.5229,"classify_s":0.001,"tail_s":0.01554,"minflt":6476}
+ak2-phase	2026-10-06T14:05:56Z	1791295556	lb-2-upstream-empty-warm	no
+loadbench: 2-upstream-empty-warm {"wall_s":0.252694,"load_s":0.238925,"classify_s":0.001,"tail_s":0.013222,"minflt":6505}
+ak2: [2026-10-06T14:05:57Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:05:57Z	1791295557	lb-3-thp-empty-cold	yes
+loadbench: 3-thp-empty-cold {"wall_s":7.486036,"load_s":7.471049,"classify_s":0.0,"tail_s":0.014084,"minflt":7247}
+ak2-phase	2026-10-06T14:06:05Z	1791295565	lb-3-thp-empty-warm	no
+loadbench: 3-thp-empty-warm {"wall_s":0.245987,"load_s":0.232318,"classify_s":0.0,"tail_s":0.013212,"minflt":7270}
+ak2: [2026-10-06T14:06:07Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:06:07Z	1791295567	lb-3-fill-empty-cold	yes
+loadbench: 3-fill-empty-cold {"wall_s":7.486759,"load_s":7.471824,"classify_s":0.0,"tail_s":0.014028,"minflt":7266}
+ak2-phase	2026-10-06T14:06:15Z	1791295575	lb-3-fill-empty-warm	no
+loadbench: 3-fill-empty-warm {"wall_s":0.245944,"load_s":0.232354,"classify_s":0.0,"tail_s":0.013224,"minflt":7275}
+ak2: [2026-10-06T14:06:16Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:06:16Z	1791295576	lb-3-scan-empty-cold	yes
+loadbench: 3-scan-empty-cold {"wall_s":7.490269,"load_s":7.475135,"classify_s":0.0,"tail_s":0.01414,"minflt":7215}
+ak2-phase	2026-10-06T14:06:24Z	1791295584	lb-3-scan-empty-warm	no
+loadbench: 3-scan-empty-warm {"wall_s":0.24609,"load_s":0.232711,"classify_s":0.0,"tail_s":0.013121,"minflt":7272}
+ak2: [2026-10-06T14:06:25Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:06:25Z	1791295585	lb-3-recycle-empty-cold	yes
+loadbench: 3-recycle-empty-cold {"wall_s":7.483169,"load_s":7.468518,"classify_s":0.0,"tail_s":0.013723,"minflt":7255}
+ak2-phase	2026-10-06T14:06:33Z	1791295593	lb-3-recycle-empty-warm	no
+loadbench: 3-recycle-empty-warm {"wall_s":0.248084,"load_s":0.234415,"classify_s":0.0,"tail_s":0.013384,"minflt":7316}
+ak2: [2026-10-06T14:06:34Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:06:34Z	1791295594	lb-3-rc-empty-cold	yes
+loadbench: 3-rc-empty-cold {"wall_s":7.483767,"load_s":7.46874,"classify_s":0.0,"tail_s":0.014145,"minflt":7280}
+ak2-phase	2026-10-06T14:06:42Z	1791295602	lb-3-rc-empty-warm	no
+loadbench: 3-rc-empty-warm {"wall_s":0.243024,"load_s":0.229448,"classify_s":0.0,"tail_s":0.013159,"minflt":7279}
+ak2: [2026-10-06T14:06:43Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:06:43Z	1791295603	lb-3-matesize-empty-cold	yes
+loadbench: 3-matesize-empty-cold {"wall_s":7.48988,"load_s":7.474534,"classify_s":0.0,"tail_s":0.014216,"minflt":7222}
+ak2-phase	2026-10-06T14:06:51Z	1791295611	lb-3-matesize-empty-warm	no
+loadbench: 3-matesize-empty-warm {"wall_s":0.248093,"load_s":0.23468,"classify_s":0.0,"tail_s":0.013018,"minflt":7257}
+ak2: [2026-10-06T14:06:52Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:06:52Z	1791295612	lb-3-batch-empty-cold	yes
+loadbench: 3-batch-empty-cold {"wall_s":7.486819,"load_s":7.472819,"classify_s":0.0,"tail_s":0.013482,"minflt":7218}
+ak2-phase	2026-10-06T14:07:01Z	1791295621	lb-3-batch-empty-warm	no
+loadbench: 3-batch-empty-warm {"wall_s":0.234487,"load_s":0.221021,"classify_s":0.0,"tail_s":0.012985,"minflt":7253}
+ak2: [2026-10-06T14:07:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:07:02Z	1791295622	lb-3-final-empty-cold	yes
+loadbench: 3-final-empty-cold {"wall_s":7.492611,"load_s":7.477857,"classify_s":0.0,"tail_s":0.013674,"minflt":7278}
+ak2-phase	2026-10-06T14:07:10Z	1791295630	lb-3-final-empty-warm	no
+loadbench: 3-final-empty-warm {"wall_s":0.252595,"load_s":0.238902,"classify_s":0.0,"tail_s":0.013269,"minflt":7236}
+ak2: [2026-10-06T14:07:11Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:07:11Z	1791295631	lb-3-final-aa-empty-cold	yes
+loadbench: 3-final-aa-empty-cold {"wall_s":7.489188,"load_s":7.474326,"classify_s":0.0,"tail_s":0.013816,"minflt":7238}
+ak2-phase	2026-10-06T14:07:19Z	1791295639	lb-3-final-aa-empty-warm	no
+loadbench: 3-final-aa-empty-warm {"wall_s":0.24317,"load_s":0.229354,"classify_s":0.0,"tail_s":0.013414,"minflt":7256}
+ak2: [2026-10-06T14:07:20Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:07:20Z	1791295640	lb-3-upstream-empty-cold	yes
+loadbench: 3-upstream-empty-cold {"wall_s":7.526963,"load_s":7.510334,"classify_s":0.001,"tail_s":0.016157,"minflt":6482}
+ak2-phase	2026-10-06T14:07:28Z	1791295648	lb-3-upstream-empty-warm	no
+loadbench: 3-upstream-empty-warm {"wall_s":0.28654,"load_s":0.273025,"classify_s":0.001,"tail_s":0.012877,"minflt":6507}
+ak2: [2026-10-06T14:07:29Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:07:29Z	1791295649	lb-3-base-empty-cold	yes
+loadbench: 3-base-empty-cold {"wall_s":7.832821,"load_s":7.474254,"classify_s":0.0,"tail_s":0.357598,"minflt":1956199}
+ak2-phase	2026-10-06T14:07:38Z	1791295658	lb-3-base-empty-warm	no
+loadbench: 3-base-empty-warm {"wall_s":0.807124,"load_s":0.431031,"classify_s":0.0,"tail_s":0.375697,"minflt":1956253}
+ak2-phase	2026-10-06T14:07:39Z	1791295659	lb-4-fill-empty-warm	no
+loadbench: 4-fill-empty-warm {"wall_s":0.208893,"load_s":0.195709,"classify_s":0.0,"tail_s":0.012927,"minflt":7213}
+ak2-phase	2026-10-06T14:07:40Z	1791295660	lb-4-scan-empty-warm	no
+loadbench: 4-scan-empty-warm {"wall_s":0.213963,"load_s":0.200373,"classify_s":0.0,"tail_s":0.013159,"minflt":7253}
+ak2-phase	2026-10-06T14:07:40Z	1791295660	lb-4-recycle-empty-warm	no
+loadbench: 4-recycle-empty-warm {"wall_s":0.243148,"load_s":0.230009,"classify_s":0.0,"tail_s":0.012708,"minflt":7249}
+ak2-phase	2026-10-06T14:07:41Z	1791295661	lb-4-rc-empty-warm	no
+loadbench: 4-rc-empty-warm {"wall_s":0.215636,"load_s":0.202581,"classify_s":0.0,"tail_s":0.012719,"minflt":7259}
+ak2-phase	2026-10-06T14:07:42Z	1791295662	lb-4-matesize-empty-warm	no
+loadbench: 4-matesize-empty-warm {"wall_s":0.204106,"load_s":0.191284,"classify_s":0.0,"tail_s":0.01237,"minflt":7257}
+ak2-phase	2026-10-06T14:07:43Z	1791295663	lb-4-batch-empty-warm	no
+loadbench: 4-batch-empty-warm {"wall_s":0.219301,"load_s":0.205221,"classify_s":0.0,"tail_s":0.013538,"minflt":7285}
+ak2-phase	2026-10-06T14:07:43Z	1791295663	lb-4-final-empty-warm	no
+loadbench: 4-final-empty-warm {"wall_s":0.218549,"load_s":0.204777,"classify_s":0.0,"tail_s":0.013353,"minflt":7239}
+ak2-phase	2026-10-06T14:07:44Z	1791295664	lb-4-final-aa-empty-warm	no
+loadbench: 4-final-aa-empty-warm {"wall_s":0.183242,"load_s":0.17032,"classify_s":0.0,"tail_s":0.012499,"minflt":7238}
+ak2-phase	2026-10-06T14:07:45Z	1791295665	lb-4-upstream-empty-warm	no
+loadbench: 4-upstream-empty-warm {"wall_s":0.295567,"load_s":0.280193,"classify_s":0.001,"tail_s":0.014683,"minflt":6472}
+ak2-phase	2026-10-06T14:07:45Z	1791295665	lb-4-base-empty-warm	no
+loadbench: 4-base-empty-warm {"wall_s":0.770827,"load_s":0.389932,"classify_s":0.0,"tail_s":0.380472,"minflt":1956265}
+ak2-phase	2026-10-06T14:07:47Z	1791295667	lb-4-thp-empty-warm	no
+loadbench: 4-thp-empty-warm {"wall_s":0.246593,"load_s":0.233664,"classify_s":0.0,"tail_s":0.012556,"minflt":7237}
+ak2-phase	2026-10-06T14:07:47Z	1791295667	lb-5-scan-empty-warm	no
+loadbench: 5-scan-empty-warm {"wall_s":0.188006,"load_s":0.174324,"classify_s":0.0,"tail_s":0.01337,"minflt":7284}
+ak2-phase	2026-10-06T14:07:48Z	1791295668	lb-5-recycle-empty-warm	no
+loadbench: 5-recycle-empty-warm {"wall_s":0.186402,"load_s":0.17355,"classify_s":0.0,"tail_s":0.012568,"minflt":7306}
+ak2-phase	2026-10-06T14:07:49Z	1791295669	lb-5-rc-empty-warm	no
+loadbench: 5-rc-empty-warm {"wall_s":0.192845,"load_s":0.179167,"classify_s":0.0,"tail_s":0.01329,"minflt":7267}
+ak2-phase	2026-10-06T14:07:49Z	1791295669	lb-5-matesize-empty-warm	no
+loadbench: 5-matesize-empty-warm {"wall_s":0.187569,"load_s":0.174609,"classify_s":0.0,"tail_s":0.012506,"minflt":7276}
+ak2-phase	2026-10-06T14:07:50Z	1791295670	lb-5-batch-empty-warm	no
+loadbench: 5-batch-empty-warm {"wall_s":0.188883,"load_s":0.175135,"classify_s":0.0,"tail_s":0.013325,"minflt":7257}
+ak2-phase	2026-10-06T14:07:51Z	1791295671	lb-5-final-empty-warm	no
+loadbench: 5-final-empty-warm {"wall_s":0.184787,"load_s":0.172095,"classify_s":0.0,"tail_s":0.012244,"minflt":7253}
+ak2-phase	2026-10-06T14:07:51Z	1791295671	lb-5-final-aa-empty-warm	no
+loadbench: 5-final-aa-empty-warm {"wall_s":0.190893,"load_s":0.178402,"classify_s":0.0,"tail_s":0.012032,"minflt":7284}
+ak2-phase	2026-10-06T14:07:52Z	1791295672	lb-5-upstream-empty-warm	no
+loadbench: 5-upstream-empty-warm {"wall_s":0.230583,"load_s":0.216671,"classify_s":0.001,"tail_s":0.013247,"minflt":6498}
+ak2-phase	2026-10-06T14:07:53Z	1791295673	lb-5-base-empty-warm	no
+loadbench: 5-base-empty-warm {"wall_s":0.857954,"load_s":0.474862,"classify_s":0.0,"tail_s":0.382824,"minflt":1956147}
+ak2-phase	2026-10-06T14:07:54Z	1791295674	lb-5-thp-empty-warm	no
+loadbench: 5-thp-empty-warm {"wall_s":0.187603,"load_s":0.174039,"classify_s":0.0,"tail_s":0.013095,"minflt":7309}
+ak2-phase	2026-10-06T14:07:55Z	1791295675	lb-5-fill-empty-warm	no
+loadbench: 5-fill-empty-warm {"wall_s":0.187548,"load_s":0.174014,"classify_s":0.0,"tail_s":0.013293,"minflt":7257}
+ak2-phase	2026-10-06T14:07:56Z	1791295676	lb-6-recycle-empty-warm	no
+loadbench: 6-recycle-empty-warm {"wall_s":0.188665,"load_s":0.175792,"classify_s":0.0,"tail_s":0.012611,"minflt":7223}
+ak2-phase	2026-10-06T14:07:56Z	1791295676	lb-6-rc-empty-warm	no
+loadbench: 6-rc-empty-warm {"wall_s":0.188844,"load_s":0.175038,"classify_s":0.0,"tail_s":0.013541,"minflt":7264}
+ak2-phase	2026-10-06T14:07:57Z	1791295677	lb-6-matesize-empty-warm	no
+loadbench: 6-matesize-empty-warm {"wall_s":0.188249,"load_s":0.175335,"classify_s":0.0,"tail_s":0.012475,"minflt":7254}
+ak2-phase	2026-10-06T14:07:58Z	1791295678	lb-6-batch-empty-warm	no
+loadbench: 6-batch-empty-warm {"wall_s":0.188857,"load_s":0.176034,"classify_s":0.0,"tail_s":0.0124,"minflt":7256}
+ak2-phase	2026-10-06T14:07:58Z	1791295678	lb-6-final-empty-warm	no
+loadbench: 6-final-empty-warm {"wall_s":0.200524,"load_s":0.186765,"classify_s":0.0,"tail_s":0.013342,"minflt":7305}
+ak2-phase	2026-10-06T14:07:59Z	1791295679	lb-6-final-aa-empty-warm	no
+loadbench: 6-final-aa-empty-warm {"wall_s":0.204653,"load_s":0.191613,"classify_s":0.0,"tail_s":0.012641,"minflt":7250}
+ak2-phase	2026-10-06T14:08:00Z	1791295680	lb-6-upstream-empty-warm	no
+loadbench: 6-upstream-empty-warm {"wall_s":0.198998,"load_s":0.184796,"classify_s":0.001,"tail_s":0.013542,"minflt":6498}
+ak2-phase	2026-10-06T14:08:00Z	1791295680	lb-6-base-empty-warm	no
+loadbench: 6-base-empty-warm {"wall_s":0.791104,"load_s":0.403981,"classify_s":0.0,"tail_s":0.386785,"minflt":1956178}
+ak2-phase	2026-10-06T14:08:02Z	1791295682	lb-6-thp-empty-warm	no
+loadbench: 6-thp-empty-warm {"wall_s":0.188844,"load_s":0.175875,"classify_s":0.0,"tail_s":0.012734,"minflt":7248}
+ak2-phase	2026-10-06T14:08:02Z	1791295682	lb-6-fill-empty-warm	no
+loadbench: 6-fill-empty-warm {"wall_s":0.18656,"load_s":0.173983,"classify_s":0.0,"tail_s":0.012323,"minflt":7241}
+ak2-phase	2026-10-06T14:08:03Z	1791295683	lb-6-scan-empty-warm	no
+loadbench: 6-scan-empty-warm {"wall_s":0.185147,"load_s":0.171339,"classify_s":0.0,"tail_s":0.013519,"minflt":7272}
+ak2-phase	2026-10-06T14:08:04Z	1791295684	lb-7-rc-empty-warm	no
+loadbench: 7-rc-empty-warm {"wall_s":0.185529,"load_s":0.172772,"classify_s":0.0,"tail_s":0.012472,"minflt":7230}
+ak2-phase	2026-10-06T14:08:04Z	1791295684	lb-7-matesize-empty-warm	no
+loadbench: 7-matesize-empty-warm {"wall_s":0.225804,"load_s":0.21286,"classify_s":0.0,"tail_s":0.012494,"minflt":7231}
+ak2-phase	2026-10-06T14:08:05Z	1791295685	lb-7-batch-empty-warm	no
+loadbench: 7-batch-empty-warm {"wall_s":0.206488,"load_s":0.193352,"classify_s":0.0,"tail_s":0.012656,"minflt":7356}
+ak2-phase	2026-10-06T14:08:06Z	1791295686	lb-7-final-empty-warm	no
+loadbench: 7-final-empty-warm {"wall_s":0.190867,"load_s":0.177113,"classify_s":0.0,"tail_s":0.013228,"minflt":7284}
+ak2-phase	2026-10-06T14:08:06Z	1791295686	lb-7-final-aa-empty-warm	no
+loadbench: 7-final-aa-empty-warm {"wall_s":0.189086,"load_s":0.176252,"classify_s":0.0,"tail_s":0.012403,"minflt":7285}
+ak2-phase	2026-10-06T14:08:07Z	1791295687	lb-7-upstream-empty-warm	no
+loadbench: 7-upstream-empty-warm {"wall_s":0.204054,"load_s":0.189901,"classify_s":0.001,"tail_s":0.01344,"minflt":6504}
+ak2-phase	2026-10-06T14:08:08Z	1791295688	lb-7-base-empty-warm	no
+loadbench: 7-base-empty-warm {"wall_s":0.790582,"load_s":0.405083,"classify_s":0.0,"tail_s":0.385201,"minflt":1956201}
+ak2-phase	2026-10-06T14:08:09Z	1791295689	lb-7-thp-empty-warm	no
+loadbench: 7-thp-empty-warm {"wall_s":0.186179,"load_s":0.17216,"classify_s":0.0,"tail_s":0.013778,"minflt":7250}
+ak2-phase	2026-10-06T14:08:10Z	1791295690	lb-7-fill-empty-warm	no
+loadbench: 7-fill-empty-warm {"wall_s":0.184297,"load_s":0.171846,"classify_s":0.0,"tail_s":0.012082,"minflt":7272}
+ak2-phase	2026-10-06T14:08:10Z	1791295690	lb-7-scan-empty-warm	no
+loadbench: 7-scan-empty-warm {"wall_s":0.227262,"load_s":0.213513,"classify_s":0.0,"tail_s":0.01337,"minflt":7296}
+ak2-phase	2026-10-06T14:08:11Z	1791295691	lb-7-recycle-empty-warm	no
+loadbench: 7-recycle-empty-warm {"wall_s":0.212029,"load_s":0.198416,"classify_s":0.0,"tail_s":0.01314,"minflt":7290}
+ak2-phase	2026-10-06T14:08:12Z	1791295692	lb-8-matesize-empty-warm	no
+loadbench: 8-matesize-empty-warm {"wall_s":0.192838,"load_s":0.179995,"classify_s":0.0,"tail_s":0.012404,"minflt":7233}
+ak2-phase	2026-10-06T14:08:12Z	1791295692	lb-8-batch-empty-warm	no
+loadbench: 8-batch-empty-warm {"wall_s":0.190334,"load_s":0.177489,"classify_s":0.0,"tail_s":0.012318,"minflt":7298}
+ak2-phase	2026-10-06T14:08:13Z	1791295693	lb-8-final-empty-warm	no
+loadbench: 8-final-empty-warm {"wall_s":0.186863,"load_s":0.174014,"classify_s":0.0,"tail_s":0.012446,"minflt":7286}
+ak2-phase	2026-10-06T14:08:14Z	1791295694	lb-8-final-aa-empty-warm	no
+loadbench: 8-final-aa-empty-warm {"wall_s":0.187098,"load_s":0.173291,"classify_s":0.0,"tail_s":0.013388,"minflt":7265}
+ak2-phase	2026-10-06T14:08:15Z	1791295695	lb-8-upstream-empty-warm	no
+loadbench: 8-upstream-empty-warm {"wall_s":0.198751,"load_s":0.185287,"classify_s":0.001,"tail_s":0.012901,"minflt":6500}
+ak2-phase	2026-10-06T14:08:15Z	1791295695	lb-8-base-empty-warm	no
+loadbench: 8-base-empty-warm {"wall_s":0.783442,"load_s":0.38997,"classify_s":0.0,"tail_s":0.393225,"minflt":1956196}
+ak2-phase	2026-10-06T14:08:16Z	1791295696	lb-8-thp-empty-warm	no
+loadbench: 8-thp-empty-warm {"wall_s":0.215018,"load_s":0.201411,"classify_s":0.0,"tail_s":0.013269,"minflt":7263}
+ak2-phase	2026-10-06T14:08:17Z	1791295697	lb-8-fill-empty-warm	no
+loadbench: 8-fill-empty-warm {"wall_s":0.214466,"load_s":0.201503,"classify_s":0.0,"tail_s":0.012721,"minflt":7276}
+ak2-phase	2026-10-06T14:08:18Z	1791295698	lb-8-scan-empty-warm	no
+loadbench: 8-scan-empty-warm {"wall_s":0.192684,"load_s":0.17859,"classify_s":0.0,"tail_s":0.013822,"minflt":7260}
+ak2-phase	2026-10-06T14:08:19Z	1791295699	lb-8-recycle-empty-warm	no
+loadbench: 8-recycle-empty-warm {"wall_s":0.187441,"load_s":0.174729,"classify_s":0.0,"tail_s":0.012432,"minflt":7251}
+ak2-phase	2026-10-06T14:08:19Z	1791295699	lb-8-rc-empty-warm	no
+loadbench: 8-rc-empty-warm {"wall_s":0.184217,"load_s":0.170655,"classify_s":0.0,"tail_s":0.013289,"minflt":7246}
+ak2-phase	2026-10-06T14:08:20Z	1791295700	lb-9-batch-empty-warm	no
+loadbench: 9-batch-empty-warm {"wall_s":0.190656,"load_s":0.176866,"classify_s":0.0,"tail_s":0.013282,"minflt":7274}
+ak2-phase	2026-10-06T14:08:21Z	1791295701	lb-9-final-empty-warm	no
+loadbench: 9-final-empty-warm {"wall_s":0.183999,"load_s":0.171286,"classify_s":0.0,"tail_s":0.012256,"minflt":7287}
+ak2-phase	2026-10-06T14:08:21Z	1791295701	lb-9-final-aa-empty-warm	no
+loadbench: 9-final-aa-empty-warm {"wall_s":0.18528,"load_s":0.171767,"classify_s":0.0,"tail_s":0.013135,"minflt":7258}
+ak2-phase	2026-10-06T14:08:22Z	1791295702	lb-9-upstream-empty-warm	no
+loadbench: 9-upstream-empty-warm {"wall_s":0.197216,"load_s":0.18295,"classify_s":0.001,"tail_s":0.013773,"minflt":6497}
+ak2-phase	2026-10-06T14:08:23Z	1791295703	lb-9-base-empty-warm	no
+loadbench: 9-base-empty-warm {"wall_s":0.821192,"load_s":0.43617,"classify_s":0.0,"tail_s":0.384772,"minflt":1956223}
+ak2-phase	2026-10-06T14:08:24Z	1791295704	lb-9-thp-empty-warm	no
+loadbench: 9-thp-empty-warm {"wall_s":0.195523,"load_s":0.182807,"classify_s":0.0,"tail_s":0.01245,"minflt":7285}
+ak2-phase	2026-10-06T14:08:25Z	1791295705	lb-9-fill-empty-warm	no
+loadbench: 9-fill-empty-warm {"wall_s":0.190087,"load_s":0.177405,"classify_s":0.0,"tail_s":0.012361,"minflt":7273}
+ak2-phase	2026-10-06T14:08:25Z	1791295705	lb-9-scan-empty-warm	no
+loadbench: 9-scan-empty-warm {"wall_s":0.187125,"load_s":0.174033,"classify_s":0.0,"tail_s":0.012819,"minflt":7260}
+ak2-phase	2026-10-06T14:08:26Z	1791295706	lb-9-recycle-empty-warm	no
+loadbench: 9-recycle-empty-warm {"wall_s":0.187956,"load_s":0.174393,"classify_s":0.0,"tail_s":0.013101,"minflt":7293}
+ak2-phase	2026-10-06T14:08:27Z	1791295707	lb-9-rc-empty-warm	no
+loadbench: 9-rc-empty-warm {"wall_s":0.192021,"load_s":0.178569,"classify_s":0.0,"tail_s":0.013056,"minflt":7250}
+ak2-phase	2026-10-06T14:08:27Z	1791295707	lb-9-matesize-empty-warm	no
+loadbench: 9-matesize-empty-warm {"wall_s":0.185843,"load_s":0.17209,"classify_s":0.0,"tail_s":0.013287,"minflt":7242}
+ak2-phase	2026-10-06T14:08:28Z	1791295708	lb-10-final-empty-warm	no
+loadbench: 10-final-empty-warm {"wall_s":0.186821,"load_s":0.173788,"classify_s":0.0,"tail_s":0.012544,"minflt":7238}
+ak2-phase	2026-10-06T14:08:29Z	1791295709	lb-10-final-aa-empty-warm	no
+loadbench: 10-final-aa-empty-warm {"wall_s":0.216295,"load_s":0.202627,"classify_s":0.0,"tail_s":0.013269,"minflt":7264}
+ak2-phase	2026-10-06T14:08:29Z	1791295709	lb-10-upstream-empty-warm	no
+loadbench: 10-upstream-empty-warm {"wall_s":0.218506,"load_s":0.204818,"classify_s":0.001,"tail_s":0.013134,"minflt":6504}
+ak2-phase	2026-10-06T14:08:30Z	1791295710	lb-10-base-empty-warm	no
+loadbench: 10-base-empty-warm {"wall_s":0.779095,"load_s":0.390451,"classify_s":0.0,"tail_s":0.387811,"minflt":1956246}
+ak2-phase	2026-10-06T14:08:31Z	1791295711	lb-10-thp-empty-warm	no
+loadbench: 10-thp-empty-warm {"wall_s":0.188071,"load_s":0.174698,"classify_s":0.0,"tail_s":0.01312,"minflt":7284}
+ak2-phase	2026-10-06T14:08:32Z	1791295712	lb-10-fill-empty-warm	no
+loadbench: 10-fill-empty-warm {"wall_s":0.19055,"load_s":0.177702,"classify_s":0.0,"tail_s":0.012475,"minflt":7276}
+ak2-phase	2026-10-06T14:08:33Z	1791295713	lb-10-scan-empty-warm	no
+loadbench: 10-scan-empty-warm {"wall_s":0.186746,"load_s":0.174126,"classify_s":0.0,"tail_s":0.012369,"minflt":7269}
+ak2-phase	2026-10-06T14:08:33Z	1791295713	lb-10-recycle-empty-warm	no
+loadbench: 10-recycle-empty-warm {"wall_s":0.186529,"load_s":0.172929,"classify_s":0.0,"tail_s":0.013351,"minflt":7258}
+ak2-phase	2026-10-06T14:08:34Z	1791295714	lb-10-rc-empty-warm	no
+loadbench: 10-rc-empty-warm {"wall_s":0.189965,"load_s":0.176301,"classify_s":0.0,"tail_s":0.013417,"minflt":7266}
+ak2-phase	2026-10-06T14:08:35Z	1791295715	lb-10-matesize-empty-warm	no
+loadbench: 10-matesize-empty-warm {"wall_s":0.227613,"load_s":0.214096,"classify_s":0.0,"tail_s":0.013081,"minflt":7230}
+ak2-phase	2026-10-06T14:08:35Z	1791295715	lb-10-batch-empty-warm	no
+loadbench: 10-batch-empty-warm {"wall_s":0.195823,"load_s":0.182828,"classify_s":0.0,"tail_s":0.012515,"minflt":7273}
+ak2: [2026-10-06T14:08:36Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:08:36Z	1791295716	lb-1-upstream-pe-cold	yes
+loadbench: 1-upstream-pe-cold {"wall_s":7.787984,"load_s":7.517148,"classify_s":0.254,"tail_s":0.0172,"minflt":49894}
+ak2-phase	2026-10-06T14:08:45Z	1791295725	lb-1-upstream-pe-warm	no
+loadbench: 1-upstream-pe-warm {"wall_s":0.460457,"load_s":0.255167,"classify_s":0.19,"tail_s":0.015335,"minflt":50597}
+ak2: [2026-10-06T14:08:46Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:08:46Z	1791295726	lb-1-base-pe-cold	yes
+loadbench: 1-base-pe-cold {"wall_s":8.143829,"load_s":7.472378,"classify_s":0.302,"tail_s":0.36928,"minflt":2014258}
+ak2-phase	2026-10-06T14:08:55Z	1791295735	lb-1-base-pe-warm	no
+loadbench: 1-base-pe-warm {"wall_s":1.110862,"load_s":0.454139,"classify_s":0.258,"tail_s":0.398792,"minflt":2014890}
+ak2: [2026-10-06T14:08:57Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:08:57Z	1791295737	lb-1-thp-pe-cold	yes
+loadbench: 1-thp-pe-cold {"wall_s":7.785676,"load_s":7.470098,"classify_s":0.292,"tail_s":0.023535,"minflt":66386}
+ak2-phase	2026-10-06T14:09:05Z	1791295745	lb-1-thp-pe-warm	no
+loadbench: 1-thp-pe-warm {"wall_s":0.508599,"load_s":0.232347,"classify_s":0.254,"tail_s":0.022064,"minflt":66934}
+ak2: [2026-10-06T14:09:07Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:09:07Z	1791295747	lb-1-fill-pe-cold	yes
+loadbench: 1-fill-pe-cold {"wall_s":7.793145,"load_s":7.473869,"classify_s":0.297,"tail_s":0.021887,"minflt":65556}
+ak2-phase	2026-10-06T14:09:15Z	1791295755	lb-1-fill-pe-warm	no
+loadbench: 1-fill-pe-warm {"wall_s":0.501248,"load_s":0.229021,"classify_s":0.25,"tail_s":0.022527,"minflt":70513}
+ak2: [2026-10-06T14:09:17Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:09:17Z	1791295757	lb-1-scan-pe-cold	yes
+loadbench: 1-scan-pe-cold {"wall_s":7.739793,"load_s":7.476101,"classify_s":0.241,"tail_s":0.022017,"minflt":65882}
+ak2-phase	2026-10-06T14:09:25Z	1791295765	lb-1-scan-pe-warm	no
+loadbench: 1-scan-pe-warm {"wall_s":0.472407,"load_s":0.256319,"classify_s":0.194,"tail_s":0.021742,"minflt":65257}
+ak2: [2026-10-06T14:09:26Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:09:26Z	1791295766	lb-1-recycle-pe-cold	yes
+loadbench: 1-recycle-pe-cold {"wall_s":7.736737,"load_s":7.473506,"classify_s":0.241,"tail_s":0.022093,"minflt":66668}
+ak2-phase	2026-10-06T14:09:35Z	1791295775	lb-1-recycle-pe-warm	no
+loadbench: 1-recycle-pe-warm {"wall_s":0.449295,"load_s":0.229925,"classify_s":0.197,"tail_s":0.022481,"minflt":68146}
+ak2: [2026-10-06T14:09:36Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:09:36Z	1791295776	lb-1-rc-pe-cold	yes
+loadbench: 1-rc-pe-cold {"wall_s":7.728543,"load_s":7.472252,"classify_s":0.234,"tail_s":0.021874,"minflt":66223}
+ak2-phase	2026-10-06T14:09:44Z	1791295784	lb-1-rc-pe-warm	no
+loadbench: 1-rc-pe-warm {"wall_s":0.454398,"load_s":0.24808,"classify_s":0.184,"tail_s":0.022088,"minflt":67986}
+ak2: [2026-10-06T14:09:46Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:09:46Z	1791295786	lb-1-matesize-pe-cold	yes
+loadbench: 1-matesize-pe-cold {"wall_s":7.719509,"load_s":7.468377,"classify_s":0.229,"tail_s":0.021547,"minflt":64016}
+ak2-phase	2026-10-06T14:09:54Z	1791295794	lb-1-matesize-pe-warm	no
+loadbench: 1-matesize-pe-warm {"wall_s":0.431314,"load_s":0.233357,"classify_s":0.176,"tail_s":0.022144,"minflt":65902}
+ak2: [2026-10-06T14:09:55Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:09:55Z	1791295795	lb-1-batch-pe-cold	yes
+loadbench: 1-batch-pe-cold {"wall_s":7.724134,"load_s":7.474126,"classify_s":0.227,"tail_s":0.022137,"minflt":63846}
+ak2-phase	2026-10-06T14:10:04Z	1791295804	lb-1-batch-pe-warm	no
+loadbench: 1-batch-pe-warm {"wall_s":0.432605,"load_s":0.232265,"classify_s":0.176,"tail_s":0.023973,"minflt":66159}
+ak2: [2026-10-06T14:10:05Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:10:05Z	1791295805	lb-1-final-pe-cold	yes
+loadbench: 1-final-pe-cold {"wall_s":7.728635,"load_s":7.47805,"classify_s":0.229,"tail_s":0.020978,"minflt":56614}
+ak2-phase	2026-10-06T14:10:13Z	1791295813	lb-1-final-pe-warm	no
+loadbench: 1-final-pe-warm {"wall_s":0.423231,"load_s":0.227732,"classify_s":0.173,"tail_s":0.021895,"minflt":63035}
+ak2: [2026-10-06T14:10:15Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:10:15Z	1791295815	lb-1-final-aa-pe-cold	yes
+loadbench: 1-final-aa-pe-cold {"wall_s":7.72412,"load_s":7.475919,"classify_s":0.225,"tail_s":0.022129,"minflt":56660}
+ak2-phase	2026-10-06T14:10:23Z	1791295823	lb-1-final-aa-pe-warm	no
+loadbench: 1-final-aa-pe-warm {"wall_s":0.421486,"load_s":0.225959,"classify_s":0.174,"tail_s":0.021732,"minflt":59448}
+ak2: [2026-10-06T14:10:24Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:10:24Z	1791295824	lb-2-base-pe-cold	yes
+loadbench: 2-base-pe-cold {"wall_s":8.139521,"load_s":7.473376,"classify_s":0.3,"tail_s":0.36589,"minflt":2014529}
+ak2-phase	2026-10-06T14:10:33Z	1791295833	lb-2-base-pe-warm	no
+loadbench: 2-base-pe-warm {"wall_s":1.106856,"load_s":0.45875,"classify_s":0.258,"tail_s":0.390186,"minflt":2013787}
+ak2: [2026-10-06T14:10:35Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:10:35Z	1791295835	lb-2-thp-pe-cold	yes
+loadbench: 2-thp-pe-cold {"wall_s":7.785487,"load_s":7.471972,"classify_s":0.29,"tail_s":0.022693,"minflt":66057}
+ak2-phase	2026-10-06T14:10:43Z	1791295843	lb-2-thp-pe-warm	no
+loadbench: 2-thp-pe-warm {"wall_s":0.504522,"load_s":0.242013,"classify_s":0.239,"tail_s":0.022969,"minflt":67173}
+ak2: [2026-10-06T14:10:45Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:10:45Z	1791295845	lb-2-fill-pe-cold	yes
+loadbench: 2-fill-pe-cold {"wall_s":7.773766,"load_s":7.472293,"classify_s":0.279,"tail_s":0.021782,"minflt":65111}
+ak2-phase	2026-10-06T14:10:53Z	1791295853	lb-2-fill-pe-warm	no
+loadbench: 2-fill-pe-warm {"wall_s":0.484442,"load_s":0.229961,"classify_s":0.233,"tail_s":0.021855,"minflt":67339}
+ak2: [2026-10-06T14:10:55Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:10:55Z	1791295855	lb-2-scan-pe-cold	yes
+loadbench: 2-scan-pe-cold {"wall_s":7.731908,"load_s":7.472756,"classify_s":0.236,"tail_s":0.022185,"minflt":65725}
+ak2-phase	2026-10-06T14:11:03Z	1791295863	lb-2-scan-pe-warm	no
+loadbench: 2-scan-pe-warm {"wall_s":0.448267,"load_s":0.22797,"classify_s":0.198,"tail_s":0.022617,"minflt":70707}
+ak2: [2026-10-06T14:11:04Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:11:04Z	1791295864	lb-2-recycle-pe-cold	yes
+loadbench: 2-recycle-pe-cold {"wall_s":7.736259,"load_s":7.471624,"classify_s":0.242,"tail_s":0.022469,"minflt":67156}
+ak2-phase	2026-10-06T14:11:13Z	1791295873	lb-2-recycle-pe-warm	no
+loadbench: 2-recycle-pe-warm {"wall_s":0.455924,"load_s":0.234278,"classify_s":0.199,"tail_s":0.022094,"minflt":67632}
+ak2: [2026-10-06T14:11:14Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:11:14Z	1791295874	lb-2-rc-pe-cold	yes
+loadbench: 2-rc-pe-cold {"wall_s":7.722634,"load_s":7.471709,"classify_s":0.228,"tail_s":0.022145,"minflt":67209}
+ak2-phase	2026-10-06T14:11:22Z	1791295882	lb-2-rc-pe-warm	no
+loadbench: 2-rc-pe-warm {"wall_s":0.439378,"load_s":0.230706,"classify_s":0.187,"tail_s":0.021897,"minflt":68088}
+ak2: [2026-10-06T14:11:24Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:11:24Z	1791295884	lb-2-matesize-pe-cold	yes
+loadbench: 2-matesize-pe-cold {"wall_s":7.726035,"load_s":7.471932,"classify_s":0.23,"tail_s":0.023239,"minflt":63520}
+ak2-phase	2026-10-06T14:11:32Z	1791295892	lb-2-matesize-pe-warm	no
+loadbench: 2-matesize-pe-warm {"wall_s":0.426728,"load_s":0.228972,"classify_s":0.175,"tail_s":0.022216,"minflt":64931}
+ak2: [2026-10-06T14:11:33Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:11:33Z	1791295893	lb-2-batch-pe-cold	yes
+loadbench: 2-batch-pe-cold {"wall_s":7.724518,"load_s":7.472612,"classify_s":0.23,"tail_s":0.021666,"minflt":63705}
+ak2-phase	2026-10-06T14:11:42Z	1791295902	lb-2-batch-pe-warm	no
+loadbench: 2-batch-pe-warm {"wall_s":0.433821,"load_s":0.236375,"classify_s":0.175,"tail_s":0.022088,"minflt":66159}
+ak2: [2026-10-06T14:11:43Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:11:43Z	1791295903	lb-2-final-pe-cold	yes
+loadbench: 2-final-pe-cold {"wall_s":7.719735,"load_s":7.473004,"classify_s":0.225,"tail_s":0.02101,"minflt":56906}
+ak2-phase	2026-10-06T14:11:51Z	1791295911	lb-2-final-pe-warm	no
+loadbench: 2-final-pe-warm {"wall_s":0.42786,"load_s":0.232529,"classify_s":0.173,"tail_s":0.022118,"minflt":63221}
+ak2: [2026-10-06T14:11:53Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:11:53Z	1791295913	lb-2-final-aa-pe-cold	yes
+loadbench: 2-final-aa-pe-cold {"wall_s":7.721016,"load_s":7.47196,"classify_s":0.228,"tail_s":0.020878,"minflt":56732}
+ak2-phase	2026-10-06T14:12:01Z	1791295921	lb-2-final-aa-pe-warm	no
+loadbench: 2-final-aa-pe-warm {"wall_s":0.438997,"load_s":0.234738,"classify_s":0.182,"tail_s":0.021791,"minflt":65244}
+ak2: [2026-10-06T14:12:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:12:02Z	1791295922	lb-2-upstream-pe-cold	yes
+loadbench: 2-upstream-pe-cold {"wall_s":7.812534,"load_s":7.542166,"classify_s":0.253,"tail_s":0.017425,"minflt":50118}
+ak2-phase	2026-10-06T14:12:11Z	1791295931	lb-2-upstream-pe-warm	no
+loadbench: 2-upstream-pe-warm {"wall_s":0.447187,"load_s":0.241946,"classify_s":0.19,"tail_s":0.015318,"minflt":50630}
+ak2: [2026-10-06T14:12:13Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:12:13Z	1791295933	lb-3-thp-pe-cold	yes
+loadbench: 3-thp-pe-cold {"wall_s":7.777791,"load_s":7.472891,"classify_s":0.282,"tail_s":0.022106,"minflt":65783}
+ak2-phase	2026-10-06T14:12:22Z	1791295942	lb-3-thp-pe-warm	no
+loadbench: 3-thp-pe-warm {"wall_s":0.501087,"load_s":0.225424,"classify_s":0.253,"tail_s":0.022428,"minflt":66759}
+ak2: [2026-10-06T14:12:23Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:12:23Z	1791295943	lb-3-fill-pe-cold	yes
+loadbench: 3-fill-pe-cold {"wall_s":7.76524,"load_s":7.472173,"classify_s":0.271,"tail_s":0.021927,"minflt":65452}
+ak2-phase	2026-10-06T14:12:31Z	1791295951	lb-3-fill-pe-warm	no
+loadbench: 3-fill-pe-warm {"wall_s":0.50014,"load_s":0.227311,"classify_s":0.251,"tail_s":0.021774,"minflt":65968}
+ak2: [2026-10-06T14:12:33Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:12:33Z	1791295953	lb-3-scan-pe-cold	yes
+loadbench: 3-scan-pe-cold {"wall_s":7.731541,"load_s":7.472863,"classify_s":0.236,"tail_s":0.022339,"minflt":65883}
+ak2-phase	2026-10-06T14:12:41Z	1791295961	lb-3-scan-pe-warm	no
+loadbench: 3-scan-pe-warm {"wall_s":0.450923,"load_s":0.233649,"classify_s":0.195,"tail_s":0.02229,"minflt":69382}
+ak2: [2026-10-06T14:12:42Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:12:42Z	1791295962	lb-3-recycle-pe-cold	yes
+loadbench: 3-recycle-pe-cold {"wall_s":7.732376,"load_s":7.471841,"classify_s":0.238,"tail_s":0.022062,"minflt":67221}
+ak2-phase	2026-10-06T14:12:51Z	1791295971	lb-3-recycle-pe-warm	no
+loadbench: 3-recycle-pe-warm {"wall_s":0.445887,"load_s":0.227149,"classify_s":0.196,"tail_s":0.022409,"minflt":67859}
+ak2: [2026-10-06T14:12:52Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:12:52Z	1791295972	lb-3-rc-pe-cold	yes
+loadbench: 3-rc-pe-cold {"wall_s":7.726916,"load_s":7.473085,"classify_s":0.231,"tail_s":0.022151,"minflt":66807}
+ak2-phase	2026-10-06T14:13:00Z	1791295980	lb-3-rc-pe-warm	no
+loadbench: 3-rc-pe-warm {"wall_s":0.448968,"load_s":0.234493,"classify_s":0.192,"tail_s":0.02216,"minflt":68273}
+ak2: [2026-10-06T14:13:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:13:02Z	1791295982	lb-3-matesize-pe-cold	yes
+loadbench: 3-matesize-pe-cold {"wall_s":7.722989,"load_s":7.471288,"classify_s":0.23,"tail_s":0.0214,"minflt":63536}
+ak2-phase	2026-10-06T14:13:10Z	1791295990	lb-3-matesize-pe-warm	no
+loadbench: 3-matesize-pe-warm {"wall_s":0.464557,"load_s":0.263539,"classify_s":0.179,"tail_s":0.021624,"minflt":67217}
+ak2: [2026-10-06T14:13:11Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:13:11Z	1791295991	lb-3-batch-pe-cold	yes
+loadbench: 3-batch-pe-cold {"wall_s":7.725524,"load_s":7.473254,"classify_s":0.229,"tail_s":0.022233,"minflt":63770}
+ak2-phase	2026-10-06T14:13:20Z	1791296000	lb-3-batch-pe-warm	no
+loadbench: 3-batch-pe-warm {"wall_s":0.427425,"load_s":0.232296,"classify_s":0.173,"tail_s":0.022273,"minflt":65007}
+ak2: [2026-10-06T14:13:21Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:13:21Z	1791296001	lb-3-final-pe-cold	yes
+loadbench: 3-final-pe-cold {"wall_s":7.721808,"load_s":7.471438,"classify_s":0.229,"tail_s":0.020953,"minflt":56788}
+ak2-phase	2026-10-06T14:13:29Z	1791296009	lb-3-final-pe-warm	no
+loadbench: 3-final-pe-warm {"wall_s":0.447582,"load_s":0.252876,"classify_s":0.173,"tail_s":0.021477,"minflt":63310}
+ak2: [2026-10-06T14:13:31Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:13:31Z	1791296011	lb-3-final-aa-pe-cold	yes
+loadbench: 3-final-aa-pe-cold {"wall_s":7.729352,"load_s":7.47942,"classify_s":0.228,"tail_s":0.021422,"minflt":57218}
+ak2-phase	2026-10-06T14:13:39Z	1791296019	lb-3-final-aa-pe-warm	no
+loadbench: 3-final-aa-pe-warm {"wall_s":0.42482,"load_s":0.231033,"classify_s":0.172,"tail_s":0.021325,"minflt":59296}
+ak2: [2026-10-06T14:13:40Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:13:40Z	1791296020	lb-3-upstream-pe-cold	yes
+loadbench: 3-upstream-pe-cold {"wall_s":7.813711,"load_s":7.542946,"classify_s":0.254,"tail_s":0.017274,"minflt":49892}
+ak2-phase	2026-10-06T14:13:49Z	1791296029	lb-3-upstream-pe-warm	no
+loadbench: 3-upstream-pe-warm {"wall_s":0.44852,"load_s":0.242945,"classify_s":0.19,"tail_s":0.015137,"minflt":50598}
+ak2: [2026-10-06T14:13:50Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:13:50Z	1791296030	lb-3-base-pe-cold	yes
+loadbench: 3-base-pe-cold {"wall_s":8.129563,"load_s":7.468911,"classify_s":0.297,"tail_s":0.362775,"minflt":2014489}
+ak2-phase	2026-10-06T14:13:59Z	1791296039	lb-3-base-pe-warm	no
+loadbench: 3-base-pe-warm {"wall_s":1.080788,"load_s":0.444284,"classify_s":0.249,"tail_s":0.387661,"minflt":2016011}
+ak2-phase	2026-10-06T14:14:01Z	1791296041	lb-4-fill-pe-warm	no
+loadbench: 4-fill-pe-warm {"wall_s":0.471319,"load_s":0.20717,"classify_s":0.24,"tail_s":0.023641,"minflt":67256}
+ak2-phase	2026-10-06T14:14:02Z	1791296042	lb-4-scan-pe-warm	no
+loadbench: 4-scan-pe-warm {"wall_s":0.431853,"load_s":0.199965,"classify_s":0.204,"tail_s":0.027858,"minflt":66545}
+ak2-phase	2026-10-06T14:14:02Z	1791296042	lb-4-recycle-pe-warm	no
+loadbench: 4-recycle-pe-warm {"wall_s":0.426427,"load_s":0.20093,"classify_s":0.199,"tail_s":0.02639,"minflt":67930}
+ak2-phase	2026-10-06T14:14:03Z	1791296043	lb-4-rc-pe-warm	no
+loadbench: 4-rc-pe-warm {"wall_s":0.422669,"load_s":0.204207,"classify_s":0.193,"tail_s":0.025022,"minflt":67548}
+ak2-phase	2026-10-06T14:14:04Z	1791296044	lb-4-matesize-pe-warm	no
+loadbench: 4-matesize-pe-warm {"wall_s":0.395573,"load_s":0.197082,"classify_s":0.173,"tail_s":0.025194,"minflt":64875}
+ak2-phase	2026-10-06T14:14:05Z	1791296045	lb-4-batch-pe-warm	no
+loadbench: 4-batch-pe-warm {"wall_s":0.422324,"load_s":0.211383,"classify_s":0.185,"tail_s":0.02546,"minflt":68346}
+ak2-phase	2026-10-06T14:14:06Z	1791296046	lb-4-final-pe-warm	no
+loadbench: 4-final-pe-warm {"wall_s":0.456887,"load_s":0.244433,"classify_s":0.184,"tail_s":0.028557,"minflt":65293}
+ak2-phase	2026-10-06T14:14:07Z	1791296047	lb-4-final-aa-pe-warm	no
+loadbench: 4-final-aa-pe-warm {"wall_s":0.372416,"load_s":0.170837,"classify_s":0.176,"tail_s":0.025552,"minflt":64377}
+ak2-phase	2026-10-06T14:14:08Z	1791296048	lb-4-upstream-pe-warm	no
+loadbench: 4-upstream-pe-warm {"wall_s":0.478253,"load_s":0.266909,"classify_s":0.192,"tail_s":0.019225,"minflt":50574}
+ak2-phase	2026-10-06T14:14:09Z	1791296049	lb-4-base-pe-warm	no
+loadbench: 4-base-pe-warm {"wall_s":1.055051,"load_s":0.406013,"classify_s":0.253,"tail_s":0.396299,"minflt":2015280}
+ak2-phase	2026-10-06T14:14:10Z	1791296050	lb-4-thp-pe-warm	no
+loadbench: 4-thp-pe-warm {"wall_s":0.496099,"load_s":0.210041,"classify_s":0.259,"tail_s":0.026562,"minflt":69023}
+ak2-phase	2026-10-06T14:14:11Z	1791296051	lb-5-scan-pe-warm	no
+loadbench: 5-scan-pe-warm {"wall_s":0.394609,"load_s":0.17631,"classify_s":0.195,"tail_s":0.023278,"minflt":65050}
+ak2-phase	2026-10-06T14:14:12Z	1791296052	lb-5-recycle-pe-warm	no
+loadbench: 5-recycle-pe-warm {"wall_s":0.435898,"load_s":0.204331,"classify_s":0.207,"tail_s":0.024779,"minflt":68762}
+ak2-phase	2026-10-06T14:14:13Z	1791296053	lb-5-rc-pe-warm	no
+loadbench: 5-rc-pe-warm {"wall_s":0.389151,"load_s":0.175179,"classify_s":0.189,"tail_s":0.024441,"minflt":69553}
+ak2-phase	2026-10-06T14:14:14Z	1791296054	lb-5-matesize-pe-warm	no
+loadbench: 5-matesize-pe-warm {"wall_s":0.381018,"load_s":0.177295,"classify_s":0.176,"tail_s":0.028073,"minflt":66031}
+ak2-phase	2026-10-06T14:14:15Z	1791296055	lb-5-batch-pe-warm	no
+loadbench: 5-batch-pe-warm {"wall_s":0.375315,"load_s":0.173508,"classify_s":0.174,"tail_s":0.027249,"minflt":65301}
+ak2-phase	2026-10-06T14:14:16Z	1791296056	lb-5-final-pe-warm	no
+loadbench: 5-final-pe-warm {"wall_s":0.382878,"load_s":0.178341,"classify_s":0.177,"tail_s":0.027456,"minflt":65001}
+ak2-phase	2026-10-06T14:14:17Z	1791296057	lb-5-final-aa-pe-warm	no
+loadbench: 5-final-aa-pe-warm {"wall_s":0.375931,"load_s":0.176327,"classify_s":0.174,"tail_s":0.025544,"minflt":63397}
+ak2-phase	2026-10-06T14:14:18Z	1791296058	lb-5-upstream-pe-warm	no
+loadbench: 5-upstream-pe-warm {"wall_s":0.405178,"load_s":0.193844,"classify_s":0.195,"tail_s":0.015976,"minflt":50045}
+ak2-phase	2026-10-06T14:14:18Z	1791296058	lb-5-base-pe-warm	no
+loadbench: 5-base-pe-warm {"wall_s":1.127119,"load_s":0.460839,"classify_s":0.259,"tail_s":0.406687,"minflt":2015325}
+ak2-phase	2026-10-06T14:14:20Z	1791296060	lb-5-thp-pe-warm	no
+loadbench: 5-thp-pe-warm {"wall_s":0.461034,"load_s":0.178289,"classify_s":0.255,"tail_s":0.027312,"minflt":66992}
+ak2-phase	2026-10-06T14:14:21Z	1791296061	lb-5-fill-pe-warm	no
+loadbench: 5-fill-pe-warm {"wall_s":0.456216,"load_s":0.175947,"classify_s":0.255,"tail_s":0.025596,"minflt":66788}
+ak2-phase	2026-10-06T14:14:22Z	1791296062	lb-6-recycle-pe-warm	no
+loadbench: 6-recycle-pe-warm {"wall_s":0.403138,"load_s":0.17474,"classify_s":0.2,"tail_s":0.028313,"minflt":68726}
+ak2-phase	2026-10-06T14:14:23Z	1791296063	lb-6-rc-pe-warm	no
+loadbench: 6-rc-pe-warm {"wall_s":0.400469,"load_s":0.182925,"classify_s":0.192,"tail_s":0.025791,"minflt":68957}
+ak2-phase	2026-10-06T14:14:24Z	1791296064	lb-6-matesize-pe-warm	no
+loadbench: 6-matesize-pe-warm {"wall_s":0.414306,"load_s":0.212141,"classify_s":0.177,"tail_s":0.025227,"minflt":66160}
+ak2-phase	2026-10-06T14:14:25Z	1791296065	lb-6-batch-pe-warm	no
+loadbench: 6-batch-pe-warm {"wall_s":0.384373,"load_s":0.178565,"classify_s":0.175,"tail_s":0.030836,"minflt":66615}
+ak2-phase	2026-10-06T14:14:26Z	1791296066	lb-6-final-pe-warm	no
+loadbench: 6-final-pe-warm {"wall_s":0.38018,"load_s":0.17793,"classify_s":0.177,"tail_s":0.024693,"minflt":60270}
+ak2-phase	2026-10-06T14:14:26Z	1791296066	lb-6-final-aa-pe-warm	no
+loadbench: 6-final-aa-pe-warm {"wall_s":0.368002,"load_s":0.169017,"classify_s":0.175,"tail_s":0.023478,"minflt":62860}
+ak2-phase	2026-10-06T14:14:27Z	1791296067	lb-6-upstream-pe-warm	no
+loadbench: 6-upstream-pe-warm {"wall_s":0.39519,"load_s":0.187794,"classify_s":0.191,"tail_s":0.015884,"minflt":50699}
+ak2-phase	2026-10-06T14:14:28Z	1791296068	lb-6-base-pe-warm	no
+loadbench: 6-base-pe-warm {"wall_s":1.038038,"load_s":0.384941,"classify_s":0.251,"tail_s":0.401967,"minflt":2017214}
+ak2-phase	2026-10-06T14:14:30Z	1791296070	lb-6-thp-pe-warm	no
+loadbench: 6-thp-pe-warm {"wall_s":0.487942,"load_s":0.203758,"classify_s":0.258,"tail_s":0.026057,"minflt":70574}
+ak2-phase	2026-10-06T14:14:31Z	1791296071	lb-6-fill-pe-warm	no
+loadbench: 6-fill-pe-warm {"wall_s":0.437993,"load_s":0.177918,"classify_s":0.234,"tail_s":0.02579,"minflt":66282}
+ak2-phase	2026-10-06T14:14:32Z	1791296072	lb-6-scan-pe-warm	no
+loadbench: 6-scan-pe-warm {"wall_s":0.407854,"load_s":0.182113,"classify_s":0.197,"tail_s":0.028866,"minflt":66545}
+ak2-phase	2026-10-06T14:14:33Z	1791296073	lb-7-rc-pe-warm	no
+loadbench: 7-rc-pe-warm {"wall_s":0.398557,"load_s":0.176481,"classify_s":0.196,"tail_s":0.025605,"minflt":67925}
+ak2-phase	2026-10-06T14:14:33Z	1791296073	lb-7-matesize-pe-warm	no
+loadbench: 7-matesize-pe-warm {"wall_s":0.378539,"load_s":0.176488,"classify_s":0.178,"tail_s":0.024373,"minflt":65651}
+ak2-phase	2026-10-06T14:14:34Z	1791296074	lb-7-batch-pe-warm	no
+loadbench: 7-batch-pe-warm {"wall_s":0.380089,"load_s":0.177417,"classify_s":0.178,"tail_s":0.024522,"minflt":65924}
+ak2-phase	2026-10-06T14:14:35Z	1791296075	lb-7-final-pe-warm	no
+loadbench: 7-final-pe-warm {"wall_s":0.374348,"load_s":0.173608,"classify_s":0.177,"tail_s":0.023705,"minflt":64251}
+ak2-phase	2026-10-06T14:14:36Z	1791296076	lb-7-final-aa-pe-warm	no
+loadbench: 7-final-aa-pe-warm {"wall_s":0.413504,"load_s":0.21571,"classify_s":0.174,"tail_s":0.023805,"minflt":62892}
+ak2-phase	2026-10-06T14:14:37Z	1791296077	lb-7-upstream-pe-warm	no
+loadbench: 7-upstream-pe-warm {"wall_s":0.39984,"load_s":0.192418,"classify_s":0.192,"tail_s":0.015508,"minflt":50596}
+ak2-phase	2026-10-06T14:14:38Z	1791296078	lb-7-base-pe-warm	no
+loadbench: 7-base-pe-warm {"wall_s":1.050354,"load_s":0.391664,"classify_s":0.254,"tail_s":0.404284,"minflt":2016267}
+ak2-phase	2026-10-06T14:14:39Z	1791296079	lb-7-thp-pe-warm	no
+loadbench: 7-thp-pe-warm {"wall_s":0.440534,"load_s":0.178989,"classify_s":0.234,"tail_s":0.02754,"minflt":67858}
+ak2-phase	2026-10-06T14:14:40Z	1791296080	lb-7-fill-pe-warm	no
+loadbench: 7-fill-pe-warm {"wall_s":0.443274,"load_s":0.177082,"classify_s":0.239,"tail_s":0.026785,"minflt":66603}
+ak2-phase	2026-10-06T14:14:41Z	1791296081	lb-7-scan-pe-warm	no
+loadbench: 7-scan-pe-warm {"wall_s":0.388964,"load_s":0.167006,"classify_s":0.197,"tail_s":0.024371,"minflt":65910}
+ak2-phase	2026-10-06T14:14:42Z	1791296082	lb-7-recycle-pe-warm	no
+loadbench: 7-recycle-pe-warm {"wall_s":0.427294,"load_s":0.19854,"classify_s":0.203,"tail_s":0.025571,"minflt":69857}
+ak2-phase	2026-10-06T14:14:43Z	1791296083	lb-8-matesize-pe-warm	no
+loadbench: 8-matesize-pe-warm {"wall_s":0.375223,"load_s":0.174055,"classify_s":0.176,"tail_s":0.02503,"minflt":66109}
+ak2-phase	2026-10-06T14:14:44Z	1791296084	lb-8-batch-pe-warm	no
+loadbench: 8-batch-pe-warm {"wall_s":0.380257,"load_s":0.178778,"classify_s":0.176,"tail_s":0.024922,"minflt":65990}
+ak2-phase	2026-10-06T14:14:45Z	1791296085	lb-8-final-pe-warm	no
+loadbench: 8-final-pe-warm {"wall_s":0.378052,"load_s":0.174262,"classify_s":0.176,"tail_s":0.027938,"minflt":63780}
+ak2-phase	2026-10-06T14:14:46Z	1791296086	lb-8-final-aa-pe-warm	no
+loadbench: 8-final-aa-pe-warm {"wall_s":0.373534,"load_s":0.175656,"classify_s":0.174,"tail_s":0.024124,"minflt":59511}
+ak2-phase	2026-10-06T14:14:47Z	1791296087	lb-8-upstream-pe-warm	no
+loadbench: 8-upstream-pe-warm {"wall_s":0.385704,"load_s":0.177288,"classify_s":0.193,"tail_s":0.015158,"minflt":50599}
+ak2-phase	2026-10-06T14:14:47Z	1791296087	lb-8-base-pe-warm	no
+loadbench: 8-base-pe-warm {"wall_s":1.098857,"load_s":0.443603,"classify_s":0.25,"tail_s":0.40468,"minflt":2015040}
+ak2-phase	2026-10-06T14:14:49Z	1791296089	lb-8-thp-pe-warm	no
+loadbench: 8-thp-pe-warm {"wall_s":0.442512,"load_s":0.179109,"classify_s":0.239,"tail_s":0.024108,"minflt":66191}
+ak2-phase	2026-10-06T14:14:50Z	1791296090	lb-8-fill-pe-warm	no
+loadbench: 8-fill-pe-warm {"wall_s":0.460456,"load_s":0.178973,"classify_s":0.252,"tail_s":0.029688,"minflt":67217}
+ak2-phase	2026-10-06T14:14:51Z	1791296091	lb-8-scan-pe-warm	no
+loadbench: 8-scan-pe-warm {"wall_s":0.412148,"load_s":0.172723,"classify_s":0.212,"tail_s":0.027683,"minflt":64935}
+ak2-phase	2026-10-06T14:14:52Z	1791296092	lb-8-recycle-pe-warm	no
+loadbench: 8-recycle-pe-warm {"wall_s":0.406093,"load_s":0.181007,"classify_s":0.199,"tail_s":0.025715,"minflt":69979}
+ak2-phase	2026-10-06T14:14:53Z	1791296093	lb-8-rc-pe-warm	no
+loadbench: 8-rc-pe-warm {"wall_s":0.394516,"load_s":0.180535,"classify_s":0.188,"tail_s":0.025381,"minflt":67646}
+ak2-phase	2026-10-06T14:14:54Z	1791296094	lb-9-batch-pe-warm	no
+loadbench: 9-batch-pe-warm {"wall_s":0.409777,"load_s":0.207801,"classify_s":0.177,"tail_s":0.024539,"minflt":66823}
+ak2-phase	2026-10-06T14:14:54Z	1791296094	lb-9-final-pe-warm	no
+loadbench: 9-final-pe-warm {"wall_s":0.41076,"load_s":0.213556,"classify_s":0.174,"tail_s":0.023384,"minflt":61382}
+ak2-phase	2026-10-06T14:14:55Z	1791296095	lb-9-final-aa-pe-warm	no
+loadbench: 9-final-aa-pe-warm {"wall_s":0.368713,"load_s":0.170446,"classify_s":0.173,"tail_s":0.025545,"minflt":64782}
+ak2-phase	2026-10-06T14:14:56Z	1791296096	lb-9-upstream-pe-warm	no
+loadbench: 9-upstream-pe-warm {"wall_s":0.396501,"load_s":0.190004,"classify_s":0.191,"tail_s":0.015053,"minflt":50597}
+ak2-phase	2026-10-06T14:14:57Z	1791296097	lb-9-base-pe-warm	no
+loadbench: 9-base-pe-warm {"wall_s":1.066067,"load_s":0.404697,"classify_s":0.243,"tail_s":0.418011,"minflt":2015181}
+ak2-phase	2026-10-06T14:14:59Z	1791296099	lb-9-thp-pe-warm	no
+loadbench: 9-thp-pe-warm {"wall_s":0.453692,"load_s":0.177582,"classify_s":0.25,"tail_s":0.025705,"minflt":66805}
+ak2-phase	2026-10-06T14:15:00Z	1791296100	lb-9-fill-pe-warm	no
+loadbench: 9-fill-pe-warm {"wall_s":0.477522,"load_s":0.201605,"classify_s":0.251,"tail_s":0.025217,"minflt":66057}
+ak2-phase	2026-10-06T14:15:01Z	1791296101	lb-9-scan-pe-warm	no
+loadbench: 9-scan-pe-warm {"wall_s":0.420439,"load_s":0.197938,"classify_s":0.196,"tail_s":0.025894,"minflt":63961}
+ak2-phase	2026-10-06T14:15:02Z	1791296102	lb-9-recycle-pe-warm	no
+loadbench: 9-recycle-pe-warm {"wall_s":0.391839,"load_s":0.165518,"classify_s":0.201,"tail_s":0.025684,"minflt":67243}
+ak2-phase	2026-10-06T14:15:02Z	1791296102	lb-9-rc-pe-warm	no
+loadbench: 9-rc-pe-warm {"wall_s":0.389889,"load_s":0.174387,"classify_s":0.189,"tail_s":0.026083,"minflt":71156}
+ak2-phase	2026-10-06T14:15:03Z	1791296103	lb-9-matesize-pe-warm	no
+loadbench: 9-matesize-pe-warm {"wall_s":0.378666,"load_s":0.177543,"classify_s":0.176,"tail_s":0.024728,"minflt":65213}
+ak2-phase	2026-10-06T14:15:04Z	1791296104	lb-10-final-pe-warm	no
+loadbench: 10-final-pe-warm {"wall_s":0.372042,"load_s":0.172227,"classify_s":0.175,"tail_s":0.024657,"minflt":63112}
+ak2-phase	2026-10-06T14:15:05Z	1791296105	lb-10-final-aa-pe-warm	no
+loadbench: 10-final-aa-pe-warm {"wall_s":0.372626,"load_s":0.169831,"classify_s":0.177,"tail_s":0.025318,"minflt":64167}
+ak2-phase	2026-10-06T14:15:06Z	1791296106	lb-10-upstream-pe-warm	no
+loadbench: 10-upstream-pe-warm {"wall_s":0.435229,"load_s":0.226502,"classify_s":0.193,"tail_s":0.015981,"minflt":50595}
+ak2-phase	2026-10-06T14:15:07Z	1791296107	lb-10-base-pe-warm	no
+loadbench: 10-base-pe-warm {"wall_s":1.081553,"load_s":0.412505,"classify_s":0.257,"tail_s":0.412131,"minflt":2016264}
+ak2-phase	2026-10-06T14:15:08Z	1791296108	lb-10-thp-pe-warm	no
+loadbench: 10-thp-pe-warm {"wall_s":0.448109,"load_s":0.177529,"classify_s":0.246,"tail_s":0.024429,"minflt":63949}
+ak2-phase	2026-10-06T14:15:09Z	1791296109	lb-10-fill-pe-warm	no
+loadbench: 10-fill-pe-warm {"wall_s":0.455421,"load_s":0.181196,"classify_s":0.248,"tail_s":0.025914,"minflt":67248}
+ak2-phase	2026-10-06T14:15:10Z	1791296110	lb-10-scan-pe-warm	no
+loadbench: 10-scan-pe-warm {"wall_s":0.409595,"load_s":0.180988,"classify_s":0.2,"tail_s":0.028806,"minflt":64574}
+ak2-phase	2026-10-06T14:15:11Z	1791296111	lb-10-recycle-pe-warm	no
+loadbench: 10-recycle-pe-warm {"wall_s":0.404112,"load_s":0.178002,"classify_s":0.2,"tail_s":0.026157,"minflt":70136}
+ak2-phase	2026-10-06T14:15:12Z	1791296112	lb-10-rc-pe-warm	no
+loadbench: 10-rc-pe-warm {"wall_s":0.430564,"load_s":0.213204,"classify_s":0.187,"tail_s":0.030208,"minflt":68310}
+ak2-phase	2026-10-06T14:15:13Z	1791296113	lb-10-matesize-pe-warm	no
+loadbench: 10-matesize-pe-warm {"wall_s":0.382052,"load_s":0.177341,"classify_s":0.179,"tail_s":0.026049,"minflt":66131}
+ak2-phase	2026-10-06T14:15:14Z	1791296114	lb-10-batch-pe-warm	no
+loadbench: 10-batch-pe-warm {"wall_s":0.378584,"load_s":0.176459,"classify_s":0.176,"tail_s":0.026123,"minflt":65860}
+ak2: [2026-10-06T14:15:15Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:15:15Z	1791296115	lb-perf-upstream-pe-cold	yes
+loadbench: perf stat upstream-pe-cold rc=0
+ak2-phase	2026-10-06T14:15:23Z	1791296123	lb-perf-upstream-pe-warm	no
+loadbench: perf stat upstream-pe-warm rc=0
+ak2: [2026-10-06T14:15:24Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:15:24Z	1791296124	lb-perf-base-pe-cold	yes
+loadbench: perf stat base-pe-cold rc=0
+ak2: [2026-10-06T14:15:33Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:15:33Z	1791296133	lb-pprof-base-pe-cold	yes
+loadbench: pprof base-pe-cold rc=0
+ak2-phase	2026-10-06T14:15:49Z	1791296149	lb-perf-base-pe-warm	no
+loadbench: perf stat base-pe-warm rc=0
+ak2-phase	2026-10-06T14:15:50Z	1791296150	lb-pprof-base-pe-warm	no
+loadbench: pprof base-pe-warm rc=0
+ak2: [2026-10-06T14:15:52Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:15:52Z	1791296152	lb-perf-final-pe-cold	yes
+loadbench: perf stat final-pe-cold rc=0
+ak2: [2026-10-06T14:16:00Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-06T14:16:00Z	1791296160	lb-pprof-final-pe-cold	yes
+loadbench: pprof final-pe-cold rc=0
+ak2-phase	2026-10-06T14:16:09Z	1791296169	lb-perf-final-pe-warm	no
+loadbench: perf stat final-pe-warm rc=0
+ak2-phase	2026-10-06T14:16:10Z	1791296170	lb-pprof-final-pe-warm	no
+loadbench: pprof final-pe-warm rc=0
+ak2: [2026-10-06T14:16:11Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/runs.tsv
+ak2: [2026-10-06T14:16:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/summary.tsv
+ak2: [2026-10-06T14:16:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/timings.tsv
+ak2: [2026-10-06T14:16:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/manifest.json
+ak2: [2026-10-06T14:16:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/summary.md
+ak2: [2026-10-06T14:16:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-base-empty-cold.txt
+ak2: [2026-10-06T14:16:14Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-base-empty-warm.txt
+ak2: [2026-10-06T14:16:14Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-base-pe-cold.txt
+ak2: [2026-10-06T14:16:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-base-pe-warm.txt
+ak2: [2026-10-06T14:16:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-batch-empty-cold.txt
+ak2: [2026-10-06T14:16:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-batch-empty-warm.txt
+ak2: [2026-10-06T14:16:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-batch-pe-cold.txt
+ak2: [2026-10-06T14:16:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-batch-pe-warm.txt
+ak2: [2026-10-06T14:16:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-fill-empty-cold.txt
+ak2: [2026-10-06T14:16:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-fill-empty-warm.txt
+ak2: [2026-10-06T14:16:18Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-fill-pe-cold.txt
+ak2: [2026-10-06T14:16:18Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-fill-pe-warm.txt
+ak2: [2026-10-06T14:16:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-aa-empty-cold.txt
+ak2: [2026-10-06T14:16:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:16:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-aa-pe-cold.txt
+ak2: [2026-10-06T14:16:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:16:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-empty-cold.txt
+ak2: [2026-10-06T14:16:21Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-empty-warm.txt
+ak2: [2026-10-06T14:16:21Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-pe-cold.txt
+ak2: [2026-10-06T14:16:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-final-pe-warm.txt
+ak2: [2026-10-06T14:16:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-matesize-empty-cold.txt
+ak2: [2026-10-06T14:16:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-matesize-empty-warm.txt
+ak2: [2026-10-06T14:16:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-matesize-pe-cold.txt
+ak2: [2026-10-06T14:16:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-matesize-pe-warm.txt
+ak2: [2026-10-06T14:16:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-rc-empty-cold.txt
+ak2: [2026-10-06T14:16:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-rc-empty-warm.txt
+ak2: [2026-10-06T14:16:25Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-rc-pe-cold.txt
+ak2: [2026-10-06T14:16:25Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-rc-pe-warm.txt
+ak2: [2026-10-06T14:16:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-recycle-empty-cold.txt
+ak2: [2026-10-06T14:16:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-recycle-empty-warm.txt
+ak2: [2026-10-06T14:16:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-recycle-pe-cold.txt
+ak2: [2026-10-06T14:16:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-recycle-pe-warm.txt
+ak2: [2026-10-06T14:16:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-scan-empty-cold.txt
+ak2: [2026-10-06T14:16:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-scan-empty-warm.txt
+ak2: [2026-10-06T14:16:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-scan-pe-cold.txt
+ak2: [2026-10-06T14:16:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-scan-pe-warm.txt
+ak2: [2026-10-06T14:16:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-thp-empty-cold.txt
+ak2: [2026-10-06T14:16:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-thp-empty-warm.txt
+ak2: [2026-10-06T14:16:30Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-thp-pe-cold.txt
+ak2: [2026-10-06T14:16:30Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-thp-pe-warm.txt
+ak2: [2026-10-06T14:16:31Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-upstream-empty-cold.txt
+ak2: [2026-10-06T14:16:31Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-upstream-empty-warm.txt
+ak2: [2026-10-06T14:16:32Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-upstream-pe-cold.txt
+ak2: [2026-10-06T14:16:32Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/1-upstream-pe-warm.txt
+ak2: [2026-10-06T14:16:33Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-base-empty-warm.txt
+ak2: [2026-10-06T14:16:33Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-base-pe-warm.txt
+ak2: [2026-10-06T14:16:33Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-batch-empty-warm.txt
+ak2: [2026-10-06T14:16:34Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-batch-pe-warm.txt
+ak2: [2026-10-06T14:16:34Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-fill-empty-warm.txt
+ak2: [2026-10-06T14:16:35Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-fill-pe-warm.txt
+ak2: [2026-10-06T14:16:35Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:16:36Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:16:36Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-final-empty-warm.txt
+ak2: [2026-10-06T14:16:36Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-final-pe-warm.txt
+ak2: [2026-10-06T14:16:37Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-matesize-empty-warm.txt
+ak2: [2026-10-06T14:16:37Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-matesize-pe-warm.txt
+ak2: [2026-10-06T14:16:38Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-rc-empty-warm.txt
+ak2: [2026-10-06T14:16:38Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-rc-pe-warm.txt
+ak2: [2026-10-06T14:16:39Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-recycle-empty-warm.txt
+ak2: [2026-10-06T14:16:39Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-recycle-pe-warm.txt
+ak2: [2026-10-06T14:16:40Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-scan-empty-warm.txt
+ak2: [2026-10-06T14:16:40Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-scan-pe-warm.txt
+ak2: [2026-10-06T14:16:40Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-thp-empty-warm.txt
+ak2: [2026-10-06T14:16:41Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-thp-pe-warm.txt
+ak2: [2026-10-06T14:16:41Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-upstream-empty-warm.txt
+ak2: [2026-10-06T14:16:42Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/10-upstream-pe-warm.txt
+ak2: [2026-10-06T14:16:42Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-base-empty-cold.txt
+ak2: [2026-10-06T14:16:43Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-base-empty-warm.txt
+ak2: [2026-10-06T14:16:43Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-base-pe-cold.txt
+ak2: [2026-10-06T14:16:44Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-base-pe-warm.txt
+ak2: [2026-10-06T14:16:44Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-batch-empty-cold.txt
+ak2: [2026-10-06T14:16:44Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-batch-empty-warm.txt
+ak2: [2026-10-06T14:16:45Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-batch-pe-cold.txt
+ak2: [2026-10-06T14:16:45Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-batch-pe-warm.txt
+ak2: [2026-10-06T14:16:46Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-fill-empty-cold.txt
+ak2: [2026-10-06T14:16:46Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-fill-empty-warm.txt
+ak2: [2026-10-06T14:16:47Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-fill-pe-cold.txt
+ak2: [2026-10-06T14:16:47Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-fill-pe-warm.txt
+ak2: [2026-10-06T14:16:48Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-aa-empty-cold.txt
+ak2: [2026-10-06T14:16:48Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:16:48Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-aa-pe-cold.txt
+ak2: [2026-10-06T14:16:49Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:16:49Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-empty-cold.txt
+ak2: [2026-10-06T14:16:50Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-empty-warm.txt
+ak2: [2026-10-06T14:16:50Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-pe-cold.txt
+ak2: [2026-10-06T14:16:51Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-final-pe-warm.txt
+ak2: [2026-10-06T14:16:51Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-matesize-empty-cold.txt
+ak2: [2026-10-06T14:16:52Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-matesize-empty-warm.txt
+ak2: [2026-10-06T14:16:52Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-matesize-pe-cold.txt
+ak2: [2026-10-06T14:16:52Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-matesize-pe-warm.txt
+ak2: [2026-10-06T14:16:53Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-rc-empty-cold.txt
+ak2: [2026-10-06T14:16:53Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-rc-empty-warm.txt
+ak2: [2026-10-06T14:16:54Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-rc-pe-cold.txt
+ak2: [2026-10-06T14:16:54Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-rc-pe-warm.txt
+ak2: [2026-10-06T14:16:55Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-recycle-empty-cold.txt
+ak2: [2026-10-06T14:16:55Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-recycle-empty-warm.txt
+ak2: [2026-10-06T14:16:55Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-recycle-pe-cold.txt
+ak2: [2026-10-06T14:16:56Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-recycle-pe-warm.txt
+ak2: [2026-10-06T14:16:56Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-scan-empty-cold.txt
+ak2: [2026-10-06T14:16:57Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-scan-empty-warm.txt
+ak2: [2026-10-06T14:16:57Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-scan-pe-cold.txt
+ak2: [2026-10-06T14:16:58Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-scan-pe-warm.txt
+ak2: [2026-10-06T14:16:58Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-thp-empty-cold.txt
+ak2: [2026-10-06T14:16:59Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-thp-empty-warm.txt
+ak2: [2026-10-06T14:16:59Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-thp-pe-cold.txt
+ak2: [2026-10-06T14:16:59Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-thp-pe-warm.txt
+ak2: [2026-10-06T14:17:00Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-upstream-empty-cold.txt
+ak2: [2026-10-06T14:17:00Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-upstream-empty-warm.txt
+ak2: [2026-10-06T14:17:01Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-upstream-pe-cold.txt
+ak2: [2026-10-06T14:17:01Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/2-upstream-pe-warm.txt
+ak2: [2026-10-06T14:17:02Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-base-empty-cold.txt
+ak2: [2026-10-06T14:17:02Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-base-empty-warm.txt
+ak2: [2026-10-06T14:17:03Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-base-pe-cold.txt
+ak2: [2026-10-06T14:17:03Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-base-pe-warm.txt
+ak2: [2026-10-06T14:17:03Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-batch-empty-cold.txt
+ak2: [2026-10-06T14:17:04Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-batch-empty-warm.txt
+ak2: [2026-10-06T14:17:04Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-batch-pe-cold.txt
+ak2: [2026-10-06T14:17:05Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-batch-pe-warm.txt
+ak2: [2026-10-06T14:17:05Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-fill-empty-cold.txt
+ak2: [2026-10-06T14:17:06Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-fill-empty-warm.txt
+ak2: [2026-10-06T14:17:06Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-fill-pe-cold.txt
+ak2: [2026-10-06T14:17:07Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-fill-pe-warm.txt
+ak2: [2026-10-06T14:17:07Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-aa-empty-cold.txt
+ak2: [2026-10-06T14:17:07Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:17:08Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-aa-pe-cold.txt
+ak2: [2026-10-06T14:17:08Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:17:09Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-empty-cold.txt
+ak2: [2026-10-06T14:17:09Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-empty-warm.txt
+ak2: [2026-10-06T14:17:10Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-pe-cold.txt
+ak2: [2026-10-06T14:17:10Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-final-pe-warm.txt
+ak2: [2026-10-06T14:17:11Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-matesize-empty-cold.txt
+ak2: [2026-10-06T14:17:11Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-matesize-empty-warm.txt
+ak2: [2026-10-06T14:17:11Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-matesize-pe-cold.txt
+ak2: [2026-10-06T14:17:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-matesize-pe-warm.txt
+ak2: [2026-10-06T14:17:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-rc-empty-cold.txt
+ak2: [2026-10-06T14:17:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-rc-empty-warm.txt
+ak2: [2026-10-06T14:17:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-rc-pe-cold.txt
+ak2: [2026-10-06T14:17:14Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-rc-pe-warm.txt
+ak2: [2026-10-06T14:17:14Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-recycle-empty-cold.txt
+ak2: [2026-10-06T14:17:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-recycle-empty-warm.txt
+ak2: [2026-10-06T14:17:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-recycle-pe-cold.txt
+ak2: [2026-10-06T14:17:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-recycle-pe-warm.txt
+ak2: [2026-10-06T14:17:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-scan-empty-cold.txt
+ak2: [2026-10-06T14:17:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-scan-empty-warm.txt
+ak2: [2026-10-06T14:17:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-scan-pe-cold.txt
+ak2: [2026-10-06T14:17:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-scan-pe-warm.txt
+ak2: [2026-10-06T14:17:18Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-thp-empty-cold.txt
+ak2: [2026-10-06T14:17:18Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-thp-empty-warm.txt
+ak2: [2026-10-06T14:17:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-thp-pe-cold.txt
+ak2: [2026-10-06T14:17:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-thp-pe-warm.txt
+ak2: [2026-10-06T14:17:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-upstream-empty-cold.txt
+ak2: [2026-10-06T14:17:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-upstream-empty-warm.txt
+ak2: [2026-10-06T14:17:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-upstream-pe-cold.txt
+ak2: [2026-10-06T14:17:21Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/3-upstream-pe-warm.txt
+ak2: [2026-10-06T14:17:21Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-base-empty-warm.txt
+ak2: [2026-10-06T14:17:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-base-pe-warm.txt
+ak2: [2026-10-06T14:17:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-batch-empty-warm.txt
+ak2: [2026-10-06T14:17:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-batch-pe-warm.txt
+ak2: [2026-10-06T14:17:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-fill-empty-warm.txt
+ak2: [2026-10-06T14:17:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-fill-pe-warm.txt
+ak2: [2026-10-06T14:17:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:17:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:17:25Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-final-empty-warm.txt
+ak2: [2026-10-06T14:17:25Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-final-pe-warm.txt
+ak2: [2026-10-06T14:17:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-matesize-empty-warm.txt
+ak2: [2026-10-06T14:17:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-matesize-pe-warm.txt
+ak2: [2026-10-06T14:17:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-rc-empty-warm.txt
+ak2: [2026-10-06T14:17:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-rc-pe-warm.txt
+ak2: [2026-10-06T14:17:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-recycle-empty-warm.txt
+ak2: [2026-10-06T14:17:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-recycle-pe-warm.txt
+ak2: [2026-10-06T14:17:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-scan-empty-warm.txt
+ak2: [2026-10-06T14:17:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-scan-pe-warm.txt
+ak2: [2026-10-06T14:17:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-thp-empty-warm.txt
+ak2: [2026-10-06T14:17:30Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-thp-pe-warm.txt
+ak2: [2026-10-06T14:17:30Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-upstream-empty-warm.txt
+ak2: [2026-10-06T14:17:31Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/4-upstream-pe-warm.txt
+ak2: [2026-10-06T14:17:31Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-base-empty-warm.txt
+ak2: [2026-10-06T14:17:31Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-base-pe-warm.txt
+ak2: [2026-10-06T14:17:32Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-batch-empty-warm.txt
+ak2: [2026-10-06T14:17:32Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-batch-pe-warm.txt
+ak2: [2026-10-06T14:17:33Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-fill-empty-warm.txt
+ak2: [2026-10-06T14:17:33Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-fill-pe-warm.txt
+ak2: [2026-10-06T14:17:34Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:17:34Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:17:34Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-final-empty-warm.txt
+ak2: [2026-10-06T14:17:35Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-final-pe-warm.txt
+ak2: [2026-10-06T14:17:35Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-matesize-empty-warm.txt
+ak2: [2026-10-06T14:17:36Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-matesize-pe-warm.txt
+ak2: [2026-10-06T14:17:36Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-rc-empty-warm.txt
+ak2: [2026-10-06T14:17:37Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-rc-pe-warm.txt
+ak2: [2026-10-06T14:17:37Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-recycle-empty-warm.txt
+ak2: [2026-10-06T14:17:38Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-recycle-pe-warm.txt
+ak2: [2026-10-06T14:17:38Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-scan-empty-warm.txt
+ak2: [2026-10-06T14:17:38Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-scan-pe-warm.txt
+ak2: [2026-10-06T14:17:39Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-thp-empty-warm.txt
+ak2: [2026-10-06T14:17:39Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-thp-pe-warm.txt
+ak2: [2026-10-06T14:17:40Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-upstream-empty-warm.txt
+ak2: [2026-10-06T14:17:40Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/5-upstream-pe-warm.txt
+ak2: [2026-10-06T14:17:41Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-base-empty-warm.txt
+ak2: [2026-10-06T14:17:41Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-base-pe-warm.txt
+ak2: [2026-10-06T14:17:42Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-batch-empty-warm.txt
+ak2: [2026-10-06T14:17:42Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-batch-pe-warm.txt
+ak2: [2026-10-06T14:17:42Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-fill-empty-warm.txt
+ak2: [2026-10-06T14:17:43Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-fill-pe-warm.txt
+ak2: [2026-10-06T14:17:43Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:17:44Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:17:44Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-final-empty-warm.txt
+ak2: [2026-10-06T14:17:45Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-final-pe-warm.txt
+ak2: [2026-10-06T14:17:45Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-matesize-empty-warm.txt
+ak2: [2026-10-06T14:17:45Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-matesize-pe-warm.txt
+ak2: [2026-10-06T14:17:46Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-rc-empty-warm.txt
+ak2: [2026-10-06T14:17:46Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-rc-pe-warm.txt
+ak2: [2026-10-06T14:17:47Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-recycle-empty-warm.txt
+ak2: [2026-10-06T14:17:47Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-recycle-pe-warm.txt
+ak2: [2026-10-06T14:17:48Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-scan-empty-warm.txt
+ak2: [2026-10-06T14:17:48Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-scan-pe-warm.txt
+ak2: [2026-10-06T14:17:49Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-thp-empty-warm.txt
+ak2: [2026-10-06T14:17:49Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-thp-pe-warm.txt
+ak2: [2026-10-06T14:17:49Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-upstream-empty-warm.txt
+ak2: [2026-10-06T14:17:50Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/6-upstream-pe-warm.txt
+ak2: [2026-10-06T14:17:50Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-base-empty-warm.txt
+ak2: [2026-10-06T14:17:51Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-base-pe-warm.txt
+ak2: [2026-10-06T14:17:51Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-batch-empty-warm.txt
+ak2: [2026-10-06T14:17:52Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-batch-pe-warm.txt
+ak2: [2026-10-06T14:17:52Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-fill-empty-warm.txt
+ak2: [2026-10-06T14:17:53Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-fill-pe-warm.txt
+ak2: [2026-10-06T14:17:53Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:17:53Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:17:54Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-final-empty-warm.txt
+ak2: [2026-10-06T14:17:54Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-final-pe-warm.txt
+ak2: [2026-10-06T14:17:55Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-matesize-empty-warm.txt
+ak2: [2026-10-06T14:17:55Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-matesize-pe-warm.txt
+ak2: [2026-10-06T14:17:56Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-rc-empty-warm.txt
+ak2: [2026-10-06T14:17:56Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-rc-pe-warm.txt
+ak2: [2026-10-06T14:17:57Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-recycle-empty-warm.txt
+ak2: [2026-10-06T14:17:57Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-recycle-pe-warm.txt
+ak2: [2026-10-06T14:17:57Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-scan-empty-warm.txt
+ak2: [2026-10-06T14:17:58Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-scan-pe-warm.txt
+ak2: [2026-10-06T14:17:58Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-thp-empty-warm.txt
+ak2: [2026-10-06T14:17:59Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-thp-pe-warm.txt
+ak2: [2026-10-06T14:17:59Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-upstream-empty-warm.txt
+ak2: [2026-10-06T14:18:00Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/7-upstream-pe-warm.txt
+ak2: [2026-10-06T14:18:00Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-base-empty-warm.txt
+ak2: [2026-10-06T14:18:01Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-base-pe-warm.txt
+ak2: [2026-10-06T14:18:01Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-batch-empty-warm.txt
+ak2: [2026-10-06T14:18:01Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-batch-pe-warm.txt
+ak2: [2026-10-06T14:18:02Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-fill-empty-warm.txt
+ak2: [2026-10-06T14:18:02Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-fill-pe-warm.txt
+ak2: [2026-10-06T14:18:03Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:18:03Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:18:04Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-final-empty-warm.txt
+ak2: [2026-10-06T14:18:04Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-final-pe-warm.txt
+ak2: [2026-10-06T14:18:05Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-matesize-empty-warm.txt
+ak2: [2026-10-06T14:18:05Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-matesize-pe-warm.txt
+ak2: [2026-10-06T14:18:05Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-rc-empty-warm.txt
+ak2: [2026-10-06T14:18:06Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-rc-pe-warm.txt
+ak2: [2026-10-06T14:18:06Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-recycle-empty-warm.txt
+ak2: [2026-10-06T14:18:07Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-recycle-pe-warm.txt
+ak2: [2026-10-06T14:18:07Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-scan-empty-warm.txt
+ak2: [2026-10-06T14:18:08Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-scan-pe-warm.txt
+ak2: [2026-10-06T14:18:08Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-thp-empty-warm.txt
+ak2: [2026-10-06T14:18:09Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-thp-pe-warm.txt
+ak2: [2026-10-06T14:18:09Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-upstream-empty-warm.txt
+ak2: [2026-10-06T14:18:09Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/8-upstream-pe-warm.txt
+ak2: [2026-10-06T14:18:10Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-base-empty-warm.txt
+ak2: [2026-10-06T14:18:10Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-base-pe-warm.txt
+ak2: [2026-10-06T14:18:11Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-batch-empty-warm.txt
+ak2: [2026-10-06T14:18:11Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-batch-pe-warm.txt
+ak2: [2026-10-06T14:18:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-fill-empty-warm.txt
+ak2: [2026-10-06T14:18:12Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-fill-pe-warm.txt
+ak2: [2026-10-06T14:18:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-final-aa-empty-warm.txt
+ak2: [2026-10-06T14:18:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-final-aa-pe-warm.txt
+ak2: [2026-10-06T14:18:13Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-final-empty-warm.txt
+ak2: [2026-10-06T14:18:14Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-final-pe-warm.txt
+ak2: [2026-10-06T14:18:14Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-matesize-empty-warm.txt
+ak2: [2026-10-06T14:18:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-matesize-pe-warm.txt
+ak2: [2026-10-06T14:18:15Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-rc-empty-warm.txt
+ak2: [2026-10-06T14:18:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-rc-pe-warm.txt
+ak2: [2026-10-06T14:18:16Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-recycle-empty-warm.txt
+ak2: [2026-10-06T14:18:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-recycle-pe-warm.txt
+ak2: [2026-10-06T14:18:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-scan-empty-warm.txt
+ak2: [2026-10-06T14:18:17Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-scan-pe-warm.txt
+ak2: [2026-10-06T14:18:18Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-thp-empty-warm.txt
+ak2: [2026-10-06T14:18:18Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-thp-pe-warm.txt
+ak2: [2026-10-06T14:18:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-upstream-empty-warm.txt
+ak2: [2026-10-06T14:18:19Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/9-upstream-pe-warm.txt
+ak2: [2026-10-06T14:18:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/stderr/warmup-upstream-empty-cold.txt
+ak2: [2026-10-06T14:18:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/gctrace-base-pe-cold.txt
+ak2: [2026-10-06T14:18:20Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/gctrace-base-pe-warm.txt
+ak2: [2026-10-06T14:18:21Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/gctrace-final-pe-cold.txt
+ak2: [2026-10-06T14:18:21Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/gctrace-final-pe-warm.txt
+ak2: [2026-10-06T14:18:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-base-pe-cold.csv
+ak2: [2026-10-06T14:18:22Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-base-pe-cold.stderr
+ak2: [2026-10-06T14:18:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-base-pe-warm.csv
+ak2: [2026-10-06T14:18:23Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-base-pe-warm.stderr
+ak2: [2026-10-06T14:18:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-final-pe-cold.csv
+ak2: [2026-10-06T14:18:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-final-pe-cold.stderr
+ak2: [2026-10-06T14:18:24Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-final-pe-warm.csv
+ak2: [2026-10-06T14:18:25Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-final-pe-warm.stderr
+ak2: [2026-10-06T14:18:25Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-upstream-pe-cold.csv
+ak2: [2026-10-06T14:18:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-upstream-pe-cold.stderr
+ak2: [2026-10-06T14:18:26Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-upstream-pe-warm.csv
+ak2: [2026-10-06T14:18:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/perf-upstream-pe-warm.stderr
+ak2: [2026-10-06T14:18:27Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-base-pe-cold.cpu
+ak2: [2026-10-06T14:18:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-base-pe-cold.top.txt
+ak2: [2026-10-06T14:18:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-base-pe-warm.cpu
+ak2: [2026-10-06T14:18:28Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-base-pe-warm.top.txt
+ak2: [2026-10-06T14:18:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-final-pe-cold.cpu
+ak2: [2026-10-06T14:18:29Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-final-pe-cold.top.txt
+ak2: [2026-10-06T14:18:30Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-final-pe-warm.cpu
+ak2: [2026-10-06T14:18:30Z] pushed out/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z/profile/pprof-final-pe-warm.top.txt
+results: results/g2/loadbench-k2_standard_08_GB_20260626-t8-20261006T140216Z
+ak2: [2026-10-06T14:18:30Z] loadbench rc=0
+ak2-phase	2026-10-06T14:18:30Z	1791296310	push	no
+ak2: [2026-10-06T14:18:30Z] spec body exit rc=0
+ak2-phase	2026-10-06T14:18:30Z	1791296310	end	no

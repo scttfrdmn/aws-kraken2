@@ -47,25 +47,83 @@ func Load(path string, opt Options) (*Table, error) {
 		return nil, err
 	}
 	defer f.Close()
-	h, l, err := readHeader(f, path)
+	st, err := f.Stat()
 	if err != nil {
 		return nil, err
-	}
-	n := int(l.FileSize() - HeaderSize)
-	// Anonymous memory: no Go-side zeroing pass over a multi-GB table, and the GC never scans it.
-	buf, err := syscall.Mmap(-1, 0, n, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_ANON|syscall.MAP_PRIVATE)
-	if err != nil {
-		return nil, fmt.Errorf("chash: allocate %d bytes for %s: %w", n, path, err)
 	}
 	threads := opt.ReadThreads
 	if threads <= 0 {
 		threads = 8
 	}
-	if err := preadParallel(f, buf, HeaderSize, threads); err != nil {
-		_ = syscall.Munmap(buf)
-		return nil, fmt.Errorf("chash: read %s: %w", path, err)
+	return LoadFrom(f, st.Size(), path, ParallelPread{File: f, Streams: threads}, opt.Mode)
+}
+
+// A Filler copies the bytes of a hash.k2d image into memory: Fill writes len(dst) bytes,
+// starting at byte off of the image, into dst. LoadFrom allocates the table (off-heap, 2 MiB
+// aligned, huge-page advised) and hands it to a Filler, so every loader (the parallel pread
+// here, a later S3 ranged-GET loader) fills the same kind of buffer. Fill may write dst from
+// several goroutines, but it must not return until every write to dst has finished (the
+// table is read as soon as it returns), and it must not retain dst.
+//
+// Not yet covered (the sharded engine will need both): filling a slot range plus its
+// overlap tail with wraparound, rather than the whole image, and cancellation (a context)
+// for a load abandoned midway.
+type Filler interface {
+	Fill(dst []byte, off int64) error
+}
+
+// ParallelPread fills from File with Streams concurrent pread calls over disjoint chunks, like
+// upstream's pread_parallel. Streams < 1 means 1.
+type ParallelPread struct {
+	File    *os.File
+	Streams int
+}
+
+// Fill implements Filler.
+func (p ParallelPread) Fill(dst []byte, off int64) error {
+	return preadParallel(p.File, dst, off, max(p.Streams, 1))
+}
+
+// LoadFrom loads a hash.k2d image of size bytes: the header through r, the cells through
+// fill. name labels errors.
+func LoadFrom(r io.ReaderAt, size int64, name string, fill Filler, mode Mode) (*Table, error) {
+	h, l, err := readHeader(r, size, name)
+	if err != nil {
+		return nil, err
 	}
-	return newTable(h, l, opt.Mode, buf, buf)
+	n := int(l.FileSize() - HeaderSize)
+	buf, region, err := allocTable(n)
+	if err != nil {
+		return nil, fmt.Errorf("chash: allocate %d bytes for %s: %w", n, name, err)
+	}
+	if err := fill.Fill(buf, HeaderSize); err != nil {
+		_ = syscall.Munmap(region)
+		return nil, fmt.Errorf("chash: read %s: %w", name, err)
+	}
+	return newTable(h, l, mode, buf, region)
+}
+
+// hugePage is the alignment upstream gives the table (posix_memalign to 2 MiB) so that
+// MADV_HUGEPAGE can back it with transparent huge pages.
+const hugePage = 2 << 20
+
+// allocTable returns n bytes of anonymous memory for the cells, and the mapping that backs
+// them (what Close unmaps). Anonymous memory needs no Go-side zeroing pass over a multi-GB
+// table, and the GC never scans it. As upstream's LoadTable, the cells start on a 2 MiB
+// boundary and, where the OS has transparent huge pages, are advised MADV_HUGEPAGE before the
+// reads fault them in (adviseHuge; issue #36). Without the advice, a kernel whose THP mode is
+// "madvise" (Amazon Linux 2023's default) backs the table with 4 KiB pages: one fault per
+// 4 KiB during the load, and as many page-table entries to tear down at exit.
+func allocTable(n int) (cells, region []byte, err error) {
+	region, err = syscall.Mmap(-1, 0, n+hugePage, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_ANON|syscall.MAP_PRIVATE)
+	if err != nil {
+		return nil, nil, err
+	}
+	// The slack before and after the aligned span is never touched, so it costs no memory.
+	off := int(-uintptr(unsafe.Pointer(unsafe.SliceData(region))) & (hugePage - 1))
+	cells = region[off : off+n : off+n]
+	adviseHuge(cells)
+	return cells, region, nil
 }
 
 // Mmap maps hash.k2d read-only, as upstream's LoadTable does with memory mapping.
@@ -75,7 +133,11 @@ func Mmap(path string, opt Options) (*Table, error) {
 		return nil, err
 	}
 	defer f.Close()
-	h, l, err := readHeader(f, path)
+	st, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	h, l, err := readHeader(f, st.Size(), path)
 	if err != nil {
 		return nil, err
 	}
@@ -104,9 +166,9 @@ func FromBytes(image []byte, mode Mode) (*Table, error) {
 	return newTable(h, l, mode, cells, nil)
 }
 
-func readHeader(f *os.File, path string) (Header, Layout, error) {
+func readHeader(r io.ReaderAt, size int64, path string) (Header, Layout, error) {
 	var hb [HeaderSize]byte
-	if _, err := f.ReadAt(hb[:], 0); err != nil {
+	if _, err := r.ReadAt(hb[:], 0); err != nil {
 		return Header{}, Layout{}, fmt.Errorf("chash: read header of %s: %w", path, err)
 	}
 	h, err := ParseHeader(hb[:])
@@ -114,12 +176,8 @@ func readHeader(f *os.File, path string) (Header, Layout, error) {
 		return Header{}, Layout{}, fmt.Errorf("%s: %w", path, err)
 	}
 	l, _ := h.Layout()
-	st, err := f.Stat()
-	if err != nil {
-		return Header{}, Layout{}, err
-	}
 	// The size cross-check is kdb's (checked arithmetic), as upstream's "Capacity mismatch".
-	if _, err := kdb.CellWidth(kdb.HashHeader(h), st.Size()); err != nil {
+	if _, err := kdb.CellWidth(kdb.HashHeader(h), size); err != nil {
 		return Header{}, Layout{}, fmt.Errorf("chash: capacity mismatch in %s: %w", path, err)
 	}
 	return h, l, nil

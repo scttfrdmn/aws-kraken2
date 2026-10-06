@@ -1,0 +1,13 @@
+{
+  "gate": "g0b", "step": "scan", "run_id": "20261006-111430-af697fb",
+  "invocation": "scripts/g0b.sh scan",
+  "env": {"G0B_DBS": "viral standard8", "G0B_SCAN_READS": "SRR062634_200000 SRR5935746_200000"},
+  "commit": "af697fbdaa604b88d44d2957b9635174e3529ad4", "dirty": false,
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76", "upstream_describe": "2.17.2-20-g2731b35",
+  "host": "Darwin arm64 Mac16,6",
+  "canonical_platform": "Linux aarch64; this host is development-only",
+  "go": "go version go1.27.1 darwin/arm64",
+  "dbs": {"viral": {"source": "s3://genome-idx/kraken/k2_viral_20260626.tar.gz", "etag": "df6f9dd95095a9ea2e0cfc580b0f684a-69", "fetched": "2026-10-06T00:17:31Z"}, "standard8": {"source": "s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz", "etag": "815577bbfd245c6e337f1bea41fae968-709", "fetched": "2026-10-06T01:19:22Z"}},
+  "comparisons": 12,
+  "start": "2026-10-06T11:14:30Z", "stop": "2026-10-06T11:15:08Z", "failed": 0
+}

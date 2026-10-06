@@ -49,30 +49,33 @@ func (h *hist) mean() float64 {
 }
 
 type equivResult struct {
-	Label            string  `json:"label"`
-	Hash             string  `json:"hash"`
-	Keys             string  `json:"keys"`
-	Expect           string  `json:"expect"`
-	Mode             string  `json:"mode"`
-	Load             string  `json:"load"`
-	Capacity         uint64  `json:"capacity"`
-	Size             uint64  `json:"size"`
-	KeyBits          uint64  `json:"key_bits"`
-	ValueBits        uint64  `json:"value_bits"`
-	CellBytes        int     `json:"cell_bytes"`
-	N                uint64  `json:"n_keys"`
-	Compared         uint64  `json:"compared"`
-	UpstreamHits     uint64  `json:"upstream_hits"`
-	GoHits           uint64  `json:"go_hits"`
-	ValueMismatches  uint64  `json:"value_mismatches"`
-	ProbeMismatches  uint64  `json:"probe_mismatches"`
-	LoadSeconds      float64 `json:"load_s"`
-	GetSeconds       float64 `json:"get_s"`
-	GetNsPerKey      float64 `json:"get_ns_per_key"`
-	UpstreamHitHist  hist    `json:"upstream_probe_hist_hits"`
-	UpstreamMissHist hist    `json:"upstream_probe_hist_misses"`
-	GoHitHist        hist    `json:"go_probe_hist_hits"`
-	GoMissHist       hist    `json:"go_probe_hist_misses"`
+	Label           string `json:"label"`
+	Hash            string `json:"hash"`
+	Keys            string `json:"keys"`
+	Expect          string `json:"expect"`
+	Mode            string `json:"mode"`
+	Load            string `json:"load"`
+	Capacity        uint64 `json:"capacity"`
+	Size            uint64 `json:"size"`
+	KeyBits         uint64 `json:"key_bits"`
+	ValueBits       uint64 `json:"value_bits"`
+	CellBytes       int    `json:"cell_bytes"`
+	N               uint64 `json:"n_keys"`
+	Compared        uint64 `json:"compared"`
+	UpstreamHits    uint64 `json:"upstream_hits"`
+	GoHits          uint64 `json:"go_hits"`
+	ValueMismatches uint64 `json:"value_mismatches"`
+	ProbeMismatches uint64 `json:"probe_mismatches"`
+	// GetBatch (classify's batched lookup, 128 keys a batch) against upstream's values.
+	BatchValueMismatches uint64  `json:"batch_value_mismatches"`
+	BatchGetSeconds      float64 `json:"batch_get_s"`
+	LoadSeconds          float64 `json:"load_s"`
+	GetSeconds           float64 `json:"get_s"`
+	GetNsPerKey          float64 `json:"get_ns_per_key"`
+	UpstreamHitHist      hist    `json:"upstream_probe_hist_hits"`
+	UpstreamMissHist     hist    `json:"upstream_probe_hist_misses"`
+	GoHitHist            hist    `json:"go_probe_hist_hits"`
+	GoMissHist           hist    `json:"go_probe_hist_misses"`
 }
 
 func equivHash(args []string) error {
@@ -171,6 +174,22 @@ func equivHash(args []string) error {
 			break
 		}
 	}
+	var bs chash.BatchScratch
+	bv := make([]uint32, 0, 128)
+	t2 := time.Now()
+	for off := 0; off < len(keys); off += 128 {
+		batch := keys[off:min(off+128, len(keys))]
+		bv = tab.GetBatch(batch, bv[:0], &bs)
+		for i, v := range bv {
+			if v != exp[2*(off+i)] {
+				r.BatchValueMismatches++
+			}
+		}
+	}
+	r.BatchGetSeconds = time.Since(t2).Seconds()
+	if r.BatchValueMismatches > 0 && firstErr == nil {
+		firstErr = fmt.Errorf("GetBatch: %d value mismatches", r.BatchValueMismatches)
+	}
 	printEquiv(&r)
 	if *jsonOut != "" {
 		b, _ := json.MarshalIndent(&r, "", "  ")
@@ -209,6 +228,7 @@ func printEquiv(r *equivResult) {
 		r.Label, r.Mode, r.Load, r.Capacity, r.Size, r.KeyBits, r.ValueBits, r.CellBytes)
 	fmt.Printf("  keys %d compared %d | upstream hits %d, go hits %d | value mismatches %d, probe mismatches %d\n",
 		r.N, r.Compared, r.UpstreamHits, r.GoHits, r.ValueMismatches, r.ProbeMismatches)
+	fmt.Printf("  GetBatch value mismatches %d (%.3f s)\n", r.BatchValueMismatches, r.BatchGetSeconds)
 	// Hits found past the home cell depend on the probe sequence; a mode the table was not built
 	// with finds only false positives there.
 	fmt.Printf("  hits at the home cell: upstream %d, go %d | past it: upstream %d, go %d\n",

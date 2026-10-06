@@ -1,0 +1,47 @@
+File: aws-kraken2
+Type: cpu
+Time: 2026-10-06 03:14:38 MDT
+Duration: 509.59ms, Total samples = 840ms (164.84%)
+Showing nodes accounting for 840ms, 100% of 840ms total
+Showing top 40 nodes out of 76
+      flat  flat%   sum%        cum   cum%
+     700ms 83.33% 83.33%      700ms 83.33%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Find
+      70ms  8.33% 91.67%       70ms  8.33%  syscall.rawsyscalln
+      10ms  1.19% 92.86%       10ms  1.19%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).Next
+      10ms  1.19% 94.05%       10ms  1.19%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).Parse
+      10ms  1.19% 95.24%       10ms  1.19%  runtime.memclrNoHeapPointers
+      10ms  1.19% 96.43%       10ms  1.19%  runtime.memmove
+      10ms  1.19% 97.62%       10ms  1.19%  runtime.pthread_cond_signal
+      10ms  1.19% 98.81%       10ms  1.19%  runtime.pthread_kill
+      10ms  1.19%   100%       10ms  1.19%  runtime.scanObject
+         0     0%   100%       10ms  1.19%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%      700ms 83.33%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Get (inline)
+         0     0%   100%       30ms  3.57%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%       10ms  1.19%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Scan
+         0     0%   100%       10ms  1.19%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+         0     0%   100%       40ms  4.76%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%       40ms  4.76%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).loadMates
+         0     0%   100%       40ms  4.76%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadRecords
+         0     0%   100%       30ms  3.57%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).fill
+         0     0%   100%       10ms  1.19%  github.com/scttfrdmn/aws-kraken2/internal/seqio.PairBlocks
+         0     0%   100%       30ms  3.57%  internal/poll.(*FD).Pread
+         0     0%   100%       30ms  3.57%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%       10ms  1.19%  internal/poll.(*FD).Pwrite
+         0     0%   100%       20ms  2.38%  internal/poll.(*FD).Read
+         0     0%   100%       30ms  3.57%  internal/poll.ignoringEINTR2[go.shape.int] (inline)
+         0     0%   100%       20ms  2.38%  internal/poll.ignoringEINTRIO (inline)
+         0     0%   100%       10ms  1.19%  main.(*outputs).startWriters.func1
+         0     0%   100%       40ms  4.76%  main.(*runner).processFiles.func1
+         0     0%   100%      720ms 85.71%  main.(*runner).processFiles.func2
+         0     0%   100%      720ms 85.71%  main.(*runner).work
+         0     0%   100%       10ms  1.19%  main.classifyRun
+         0     0%   100%       10ms  1.19%  main.classifyRun.func1
+         0     0%   100%       10ms  1.19%  main.main
+         0     0%   100%       10ms  1.19%  main.run
+         0     0%   100%       20ms  2.38%  os.(*File).Read
+         0     0%   100%       30ms  3.57%  os.(*File).ReadAt
+         0     0%   100%       10ms  1.19%  os.(*File).WriteAt
+         0     0%   100%       30ms  3.57%  os.(*File).pread (inline)
+         0     0%   100%       10ms  1.19%  os.(*File).pwrite (inline)
+         0     0%   100%       20ms  2.38%  os.(*File).read (inline)
+         0     0%   100%       10ms  1.19%  runtime.gcBgMarkWorker

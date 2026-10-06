@@ -1,0 +1,48 @@
+File: aws-kraken2
+Build ID: 4e466c38eee9230bfc081f25d5f53f66ba3096de
+Type: cpu
+Time: 2026-10-06 17:09:17 UTC
+Duration: 370.66ms, Total samples = 970ms (261.70%)
+Showing nodes accounting for 970ms, 100% of 970ms total
+Showing top 40 nodes out of 79
+      flat  flat%   sum%        cum   cum%
+     420ms 43.30% 43.30%      430ms 44.33%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).AppendMinimizers
+     100ms 10.31% 53.61%      100ms 10.31%  internal/runtime/syscall/linux.Syscall6
+      70ms  7.22% 60.82%       70ms  7.22%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).GetBatch
+      70ms  7.22% 68.04%       70ms  7.22%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).replay
+      60ms  6.19% 74.23%       60ms  6.19%  runtime.memmove
+      50ms  5.15% 79.38%       70ms  7.22%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).addAll
+      30ms  3.09% 82.47%       30ms  3.09%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).Parse.func2 (inline)
+      20ms  2.06% 84.54%       20ms  2.06%  github.com/scttfrdmn/aws-kraken2/internal/chash.MurmurHash3
+      20ms  2.06% 86.60%       60ms  6.19%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).Parse
+      20ms  2.06% 88.66%       20ms  2.06%  runtime.tryDeferToSpanScan
+      10ms  1.03% 89.69%      200ms 20.62%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).Classify
+      10ms  1.03% 90.72%       50ms  5.15%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendHitlist
+      10ms  1.03% 91.75%      110ms 11.34%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendLine
+      10ms  1.03% 92.78%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+      10ms  1.03% 93.81%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/seqio.isHeaderSpace (inline)
+      10ms  1.03% 94.85%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/taxo.(*Taxonomy).IsAAncestorOfB
+      10ms  1.03% 95.88%       70ms  7.22%  internal/strconv.AppendUint
+      10ms  1.03% 96.91%       10ms  1.03%  internal/strconv.formatBase10
+      10ms  1.03% 97.94%       10ms  1.03%  runtime.(*mheap).setSpans
+      10ms  1.03% 98.97%       10ms  1.03%  runtime.findObject
+      10ms  1.03%   100%       10ms  1.03%  runtime.typePointers.fastForward
+         0     0%   100%       10ms  1.03%  gcWriteBarrier
+         0     0%   100%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%       80ms  8.25%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%       40ms  4.12%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendCode
+         0     0%   100%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).resolveTree
+         0     0%   100%      500ms 51.55%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Scan
+         0     0%   100%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).Load (inline)
+         0     0%   100%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).LoadRange (inline)
+         0     0%   100%       20ms  2.06%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%       20ms  2.06%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadBlock
+         0     0%   100%       10ms  1.03%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).fill
+         0     0%   100%       60ms  6.19%  github.com/scttfrdmn/aws-kraken2/internal/seqio.PairBlocks
+         0     0%   100%       80ms  8.25%  internal/poll.(*FD).Pread
+         0     0%   100%       80ms  8.25%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%       10ms  1.03%  internal/poll.(*FD).Read
+         0     0%   100%       80ms  8.25%  internal/poll.ignoringEINTR2[go.shape.int] (inline)
+         0     0%   100%       10ms  1.03%  internal/poll.ignoringEINTRIO (inline)
+         0     0%   100%       20ms  2.06%  main.(*runner).processFiles.func1
+         0     0%   100%      830ms 85.57%  main.(*runner).processFiles.func2

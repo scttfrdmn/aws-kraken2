@@ -1,0 +1,97 @@
+{
+  "gate": "g2",
+  "what": "make loadbench: load-path and whole-process wall, upstream vs ours (#36)",
+  "commit": "5d20b9420a2de0699c05b4fc9005a51320a53e41",
+  "dirty": false,
+  "ak2_run_id": "",
+  "upstream": {
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++-16 (Homebrew GCC 16.2.0) 16.2.0\nversion Kraken version 2.17.1\nbuilt 2026-10-06T00:14:07Z Darwin arm64\n"
+  },
+  "implementations": [
+    {
+      "label": "upstream",
+      "binary": "/Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2",
+      "source": "upstream@2731b35f7abb26ec926517274f3d87e78d42fd76",
+      "sha256": "552c39a4aa54ca56af49d5d61a7627ede37238c67978930eb020f8e7b567263f",
+      "env": ""
+    },
+    {
+      "label": "base",
+      "binary": ".cache/loadbench/bin/darwin-arm64/666459f6991cc5b99f4e7cbc278aeff866c35d7b/aws-kraken2",
+      "source": "666459f6991cc5b99f4e7cbc278aeff866c35d7b",
+      "sha256": "637a30acaa94e2ecb7cdf36a46ac39655f14147e5eb74ae7d0853b71c7b2a2b2",
+      "env": ""
+    },
+    {
+      "label": "thp",
+      "binary": ".cache/loadbench/bin/darwin-arm64/c138ab7f99e20af7dba8dc222c5b49630e4a50fb/aws-kraken2",
+      "source": "c138ab7f99e20af7dba8dc222c5b49630e4a50fb",
+      "sha256": "994b2cdbe1aec2e269432bf7fa77980eaf4e7bd3b08770f6dd6676272f904827",
+      "env": ""
+    },
+    {
+      "label": "fill",
+      "binary": ".cache/loadbench/bin/darwin-arm64/9de50376abd84d6cc4255ad45bab03f032e46bbc/aws-kraken2",
+      "source": "9de50376abd84d6cc4255ad45bab03f032e46bbc",
+      "sha256": "6913b6d2c4964f0e7ed2b697bf30d1795c320f0e134e064095fbb19c6cfa84a7",
+      "env": ""
+    },
+    {
+      "label": "fill-streams16",
+      "binary": ".cache/loadbench/bin/darwin-arm64/9de50376abd84d6cc4255ad45bab03f032e46bbc/aws-kraken2",
+      "source": "9de50376abd84d6cc4255ad45bab03f032e46bbc",
+      "sha256": "6913b6d2c4964f0e7ed2b697bf30d1795c320f0e134e064095fbb19c6cfa84a7",
+      "env": "K2_DB_READ_THREADS=16"
+    }
+  ],
+  "go": "go version go1.27.1 darwin/arm64",
+  "db": {
+    "name": "standard8",
+    "dir": "k2_standard_08_GB_20260626",
+    "files": [
+      {
+        "file": "hash.k2d",
+        "bytes": 8000000032
+      },
+      {
+        "file": "opts.k2d",
+        "bytes": 64
+      },
+      {
+        "file": "taxo.k2d",
+        "bytes": 4818575
+      }
+    ],
+    "source": "source s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz\netag \"815577bbfd245c6e337f1bea41fae968-709\"\nfetched 2026-10-06T01:19:22Z"
+  },
+  "reads_source": "accession SRR062634\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz\nsha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq\nsha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq\nfetched 2026-10-06T00:20:27Z",
+  "threads": 8,
+  "reps": 3,
+  "inputs": "empty pe",
+  "states_requested": "cold warm",
+  "states_run": "warm",
+  "extra_env": "",
+  "profile": true,
+  "cold": {
+    "available": false,
+    "method": "none"
+  },
+  "host": {
+    "os": "Darwin",
+    "arch": "arm64",
+    "kernel": "27.0.0",
+    "model": "Mac16,6",
+    "ncpu": 16,
+    "mem_bytes": 68719476736,
+    "page_size": "16384",
+    "thp_enabled": "n/a",
+    "thp_defrag": "n/a",
+    "canonical_platform": false,
+    "note": "NOT a make run on Linux aarch64 EC2: development evidence only"
+  },
+  "start": "2026-10-06T09:14:24Z",
+  "stop": "2026-10-06T09:14:38Z",
+  "failures": 0
+}

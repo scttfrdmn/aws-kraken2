@@ -1,0 +1,668 @@
+{
+  "gate": "g1",
+  "run_id": "20261006-135823-9035dd6",
+  "task_id": "ak2-g1-20261006-135823-9035dd6",
+  "spec": "runs/g1-oracle.json",
+  "spec_sha256": "2b2dfc53f31dfc29f16eb449eccbae04df08750553296fe97719f57be3014dca",
+  "commit": "9035dd6687f62bb45e82df1e0968d2d2422655d1",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "truffle": "0.57.1"
+  },
+  "region": "us-west-2",
+  "ttl": "3h",
+  "cost_limit_usd": 3.0,
+  "s3_prefix": "s3://cookbook-942542972736-us-west-2/aws-kraken2/g1/20261006-135823-9035dd6",
+  "sample_accessions": [
+    "SRR062634",
+    "ERR478965",
+    "SRR28305653"
+  ],
+  "allowed_buckets": [
+    "cookbook-942542972736-us-west-2"
+  ],
+  "payload": {
+    "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/g1/20261006-135823-9035dd6/payload.sh",
+    "sha256": "4bc96fe2b49a3a71d1c60d38a923d3d4f399a8a86845740dbaa9cd9c7458a9d8",
+    "bytes": 19197
+  },
+  "user_data": {
+    "base64_bytes": 16512,
+    "bootstrap_bytes": 38852,
+    "gzip_bytes": 12382
+  },
+  "datasets": [
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/hash.k2d",
+      "kind": "object",
+      "etag": "a2c5f4f595b45a1e716a773979364443-78",
+      "version_id": null,
+      "size": 648733288,
+      "last_modified": "2026-10-06T02:52:55+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/opts.k2d",
+      "kind": "object",
+      "etag": "9099ba3c5214a39f7f35f03e20a6a183",
+      "version_id": null,
+      "size": 64,
+      "last_modified": "2026-10-06T03:05:42+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/taxo.k2d",
+      "kind": "object",
+      "etag": "fdc3e1f723af16f77a5e1a5fe5919081",
+      "version_id": null,
+      "size": 2470742,
+      "last_modified": "2026-10-06T03:05:47+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_viral_20260626/SOURCE",
+      "kind": "object",
+      "etag": "87fb55039c7ebfe921fc5e65ed1fafd4",
+      "version_id": null,
+      "size": 127,
+      "last_modified": "2026-10-06T03:06:20+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d",
+      "kind": "object",
+      "etag": "9c11c6b05d131f2639992379c7041b93-954",
+      "version_id": null,
+      "size": 8000000032,
+      "last_modified": "2026-10-06T02:41:19+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d",
+      "kind": "object",
+      "etag": "eebfd340c759d54c82c7769b40f7a50b",
+      "version_id": null,
+      "size": 64,
+      "last_modified": "2026-10-06T04:10:02+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d",
+      "kind": "object",
+      "etag": "f5697f04a6e072bde8504ebc6c142a22",
+      "version_id": null,
+      "size": 4818575,
+      "last_modified": "2026-10-06T04:10:07+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/SOURCE",
+      "kind": "object",
+      "etag": "49b76b5fe49c1a14ad8fadfd099ff437",
+      "version_id": null,
+      "size": 137,
+      "last_modified": "2026-10-06T04:10:43+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE",
+      "kind": "object",
+      "etag": "6cea87048dd0a0d6dd4c857d83470e55",
+      "version_id": null,
+      "size": 400,
+      "last_modified": "2026-10-06T03:55:23+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq",
+      "kind": "object",
+      "etag": "cc33d8c08e80154e36cb089e2cc4f611-7",
+      "version_id": null,
+      "size": 51895574,
+      "last_modified": "2026-10-06T03:49:30+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq",
+      "kind": "object",
+      "etag": "bdd542dbe602e458d2f3701cc659df03-7",
+      "version_id": null,
+      "size": 51895574,
+      "last_modified": "2026-10-06T03:51:17+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq.gz",
+      "kind": "object",
+      "etag": "1c2112b7dc87b90a1abf7e774fd97884-2",
+      "version_id": null,
+      "size": 15955195,
+      "last_modified": "2026-10-06T03:52:56+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq.gz",
+      "kind": "object",
+      "etag": "1bbc6323d05c0078c3c2116568e95062-2",
+      "version_id": null,
+      "size": 15893511,
+      "last_modified": "2026-10-06T03:54:04+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000.SOURCE",
+      "kind": "object",
+      "etag": "1d93ff1adcb983e2211398184ff3fe57",
+      "version_id": null,
+      "size": 400,
+      "last_modified": "2026-10-06T04:01:36+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq",
+      "kind": "object",
+      "etag": "a87336ea0a091eb303cbc1c2ba3f38a6-6",
+      "version_id": null,
+      "size": 47238491,
+      "last_modified": "2026-10-06T03:55:28+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq",
+      "kind": "object",
+      "etag": "2b5a7c90d0057fdde33af7b3cc3388c0-6",
+      "version_id": null,
+      "size": 47075003,
+      "last_modified": "2026-10-06T03:57:21+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq.gz",
+      "kind": "object",
+      "etag": "e148ddce9a37fe847c39c94abc2b5056-2",
+      "version_id": null,
+      "size": 13868909,
+      "last_modified": "2026-10-06T03:59:14+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq.gz",
+      "kind": "object",
+      "etag": "86d3f66c30d291d8aa9531cf662f545c-2",
+      "version_id": null,
+      "size": 13801673,
+      "last_modified": "2026-10-06T04:00:25+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000.SOURCE",
+      "kind": "object",
+      "etag": "651a82c92ff9de6d410cba64104eff54",
+      "version_id": null,
+      "size": 422,
+      "last_modified": "2026-10-06T04:09:54+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq",
+      "kind": "object",
+      "etag": "e773eb80d22a4a009d4e44a9294aaf70-9",
+      "version_id": null,
+      "size": 72980506,
+      "last_modified": "2026-10-06T04:03:02+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq",
+      "kind": "object",
+      "etag": "9e7f56a3625c7d7d25e36ae118467f00-9",
+      "version_id": null,
+      "size": 72980506,
+      "last_modified": "2026-10-06T04:05:45+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq.gz",
+      "kind": "object",
+      "etag": "b3cba4905008d041ef31f876c3e4fd9c-2",
+      "version_id": null,
+      "size": 9836969,
+      "last_modified": "2026-10-06T04:08:08+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq.gz",
+      "kind": "object",
+      "etag": "4d1084c4acdf30aa7a28375f1bc95fc2-2",
+      "version_id": null,
+      "size": 10134869,
+      "last_modified": "2026-10-06T04:09:05+00:00"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "cookbook-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-06T13:58:26Z",
+  "launch": {
+    "requested_at": "2026-10-06T13:59:01Z",
+    "instance_id": "i-0dbec79864d5659ed",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "m7g.2xlarge",
+    "count": 1,
+    "ami": "ami-09325776a00699513",
+    "az": "us-west-2a",
+    "launch_time": "2026-10-06T13:59:07+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "terminated_at": "2026-10-06T14:05:57Z"
+  },
+  "truffle_price_usd_per_hour": 0.3264,
+  "truffle_price_note": "",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://cookbook-942542972736-us-west-2/aws-kraken2/g1/20261006-135823-9035dd6/: 22 objects, 21 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-06T13:59:22Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-06T13:59:23Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-06T13:59:23Z",
+      "seconds": 38,
+      "cold": false
+    },
+    {
+      "phase": "fetch",
+      "start": "2026-10-06T14:00:01Z",
+      "seconds": 69,
+      "cold": false
+    },
+    {
+      "phase": "build",
+      "start": "2026-10-06T14:01:10Z",
+      "seconds": 36,
+      "cold": false
+    },
+    {
+      "phase": "oracle",
+      "start": "2026-10-06T14:01:46Z",
+      "seconds": 194,
+      "cold": false
+    },
+    {
+      "phase": "push",
+      "start": "2026-10-06T14:05:00Z",
+      "seconds": 7,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 1125,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "GetObject": 1097,
+      "HeadBucket-anon": 1,
+      "HeadObject": 23,
+      "ListObjectsV2": 2
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "ListObjectsV2",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 78,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "ListObjectsV2",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 954,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 7,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 7,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 2,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 2,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 6,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 6,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 2,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 2,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 9,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 9,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 2,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 2,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-g1-20261006-135823-9035dd6",
+    "run_id": "d910e44d-8e72-4f9a-8a4d-e5f8fa836d58",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-06T13:59:22Z",
+    "ended_at": "2026-10-06T14:05:08Z",
+    "logs": [
+      "s3://cookbook-942542972736-us-west-2/aws-kraken2/g1/20261006-135823-9035dd6/spawn/ak2-g1-20261006-135823-9035dd6/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2a",
+    "instance_id": "i-0dbec79864d5659ed",
+    "instance_type": "m7g.2xlarge",
+    "ami": "ami-09325776a00699513",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "cookbook-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      }
+    ],
+    "allowed_buckets": "cookbook-942542972736-us-west-2",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-06T13:59:23Z"
+  },
+  "start": "2026-10-06T13:59:07+00:00",
+  "stop": "2026-10-06T14:05:57Z",
+  "billed_seconds": 410,
+  "cost_usd": 0.037173,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-06T14:26:37Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g1-20261006-135823-9035dd6",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-06T14:26:42Z"
+  }
+}

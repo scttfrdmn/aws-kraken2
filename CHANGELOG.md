@@ -128,6 +128,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   v3.1 (`est_abundance.py`, levels S and G, `-r 100`) on upstream's and our `--report` for
   Standard-8 on ERR478965 and SRR062634, and byte-compares the reports, Bracken's tables, its
   adjusted reports and its stdout. Writes `results/g1/bracken-<ts>-<sha>/`.
+- `make loadbench` (#36, `scripts/loadbench.sh`, `docs/loadbench.md`): load-path and
+  whole-process wall time of upstream and ours (plus a per-change ladder of our builds) on one DB
+  and thread count, cold and warm, with an optional perf/pprof profiling mode; TaskSpecs
+  `runs/loadbench.json` (m7g.2xlarge) and `runs/loadbench-g4.json` (Graviton4). `aws-kraken2`
+  writes a per-phase timing log with `AK2_TIMINGS=1` and a CPU profile with `AK2_CPUPROFILE`
+  (the default stderr is unchanged). `chash.LoadFrom` with a `Filler` interface (`ParallelPread`)
+  fills the table buffer, so a later S3 ranged-GET loader can fill the same buffer.
 - G0c (#7, #8): `make g0c PART=local|probes|runs` (`scripts/g0c.sh`, `docs/g0c.md`, specs
   `runs/g0c-{runs,probes}.json`, post scripts `scripts/post/g0c-{runs,probes}.sh`).
   `internal/runlen` measures the occupied-run structure of a hash.k2d with parallel chunk scans,
@@ -147,6 +154,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Classification speed (#39, #36). `mmscan.Scanner.AppendMinimizers` runs the scanner loop over
+  a whole sequence with its state in locals, and `classify.Tokens.Scan` uses it, with
+  MurmurHash3 called directly for the capped-database check. Its output is held to `Next`'s by
+  a test, and keeps the reverse complement incrementally. The second mate's block is sized like
+  the first's. (`seqio.Recycle`, block reuse, was measured and reverted: no gain.) `chash.GetBatch` resolves a read's lookups with their cache misses
+  overlapped. It returns the same values as `Get`, checked by a test and by `k2probe equiv-hash`
+  against upstream. `AK2_MEMPROFILE` writes an allocs profile.
+- `make loadbench`:
+  - the implementation order rotates per repetition;
+  - the manifest records the database's storage (device, model, EBS volume);
+  - the summary states the cold load rate and shows ranges in the attribution table;
+  - a per-cell noise floor from A/A control rungs (same binary, consecutive in the ladder):
+    the larger of their largest |Δ median| and half their median range width, with the number
+    of pairs stated;
+  - one verdict rule for attribution rows and the per-cell acceptance table against upstream:
+    within noise (below floor), above floor with ranges overlapping, or ranges separated;
+  - `LB_REPS_COLD` / `LB_REPS_WARM` set per-state repetitions;
+  - `LB_WARMUP` / `LB_WARMUPS` add unrecorded cold warm-up runs, kept in the manifest;
+  - `LB_READS`, `LB_PROFILE_IMPLS` and `HEAD` in the ladder are new;
+  - `runs/loadbench-g4.json` uses instance-store NVMe (r8gd/c8gd).
 - One `cmd/k2probe` dispatcher, with commands registered from `init()`. `header`/`opts` moved
   into their own files, and `equiv-scan` reads `opts.k2d` through `internal/kdb`.
 - `scripts/harness-build.sh [-v lp|dh|lp,dh] [name...]` is one interface for every caller:
@@ -169,6 +196,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `chash.Load` (#36): the table is 2 MiB-aligned and advised `MADV_HUGEPAGE`, as in upstream's
+  LoadTable. Under THP mode `madvise` (Amazon Linux 2023's default) it was on 4 KiB pages, which
+  meant one fault per 4 KiB at load and as many PTEs to tear down at exit.
 - `aws-kraken2`: an unwritable `--report` is silently not written and the run exits 0, as with
   upstream's unchecked ofstream (it exited 1). "Unable to open file" reasons are worded as C's
   strerror.

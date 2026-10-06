@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -34,6 +34,13 @@ harness:
 G0B ?= $(or $(PART),all)
 g0b:
 	scripts/g0b.sh $(G0B)
+
+# Load-path and whole-process wall, upstream vs ours, cold and warm (docs/loadbench.md, #36).
+# DB=viral|standard8|<dir> (default standard8), THREADS (8), REPS (3); LB_* pass through the env.
+loadbench:
+	LB_DB=$(if $(filter command line environment,$(origin DB)),$(DB),$(or $(LB_DB),standard8)) \
+		LB_THREADS=$(or $(THREADS),$(LB_THREADS),8) LB_REPS=$(or $(REPS),$(LB_REPS),3) \
+		scripts/loadbench.sh
 
 # G0c run lengths and probe lengths (docs/g0c.md). PART = local|probes|runs; DRY_RUN passes through.
 g0c:
