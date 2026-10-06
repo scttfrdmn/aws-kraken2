@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - helper errors and state kept in files, so subshell errors count;
   - KILL for a hung tee;
   - shim content and self-test verification.
+- Orphan check scoped per run:
+  - `run.sh` now runs `scripts/orphans.sh --own <task_id> <instance_id>`, which fails only if
+    its own instance survives;
+  - concurrent runs' instances are listed as informational;
+  - instances past their `spawn:ttl-deadline` + 15 min are flagged as probable orphans;
+  - `make orphans` stays global and strict, for when no runs are in flight.
 - Pin identity is the commit SHA: every manifest writer (`run.sh`, `oracle.sh`, `g0b.sh`,
   `equiv-seqout.sh`, `classify-oracle.sh`, `harness-build.sh`) records the full upstream SHA and
   its `git describe --tags`, computed by `scripts/pin-identity.sh` from `scripts/pin.env` and
