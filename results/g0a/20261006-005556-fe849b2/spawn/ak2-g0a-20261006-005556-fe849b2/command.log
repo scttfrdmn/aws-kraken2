@@ -1,0 +1,37 @@
+spawn: [2026-10-06T01:00:36Z] wrapper start
+spawn: [2026-10-06T01:00:36Z] stage-in start
+spawn: [2026-10-06T01:00:36Z] stage-in done rc=0
+spawn: [2026-10-06T01:00:36Z] command start
+ak2: [2026-10-06T01:00:36Z] inherited $-=hBc
+ak2: [2026-10-06T01:00:36Z] after set +e $-=hBc
+ak2: [2026-10-06T01:00:36Z] gate=g0a run=20261006-005556-fe849b2
+ak2: [2026-10-06T01:00:36Z] imds region=us-west-2 az=us-west-2c instance=i-01894a958565a7b9c type=t4g.micro ami=ami-09325776a00699513
+ak2: [2026-10-06T01:00:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-06T01:00:37Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-06T01:00:37Z] region assert passed
+ak2: [2026-10-06T01:00:38Z] preamble done; spec body starts
+ak2: [2026-10-06T01:00:38Z] ranged GET hash.k2d bytes 0-31
+ak2: [2026-10-06T01:00:39Z] rc=0 bytes=32
+ak2: [2026-10-06T01:00:40Z] pushed out/hash.k2d.head32
+ak2: [2026-10-06T01:00:40Z] pushed out/hash.k2d.head32.get.json
+ak2: [2026-10-06T01:00:40Z] GET opts.k2d
+ak2: [2026-10-06T01:00:41Z] rc=0 bytes=56
+ak2: [2026-10-06T01:00:41Z] pushed out/opts.k2d
+ak2: [2026-10-06T01:00:42Z] pushed out/opts.k2d.get.json
+ak2: [2026-10-06T01:00:42Z] list bucket recursively
+ak2: [2026-10-06T01:00:43Z] rc=0 objects=9
+ak2: [2026-10-06T01:00:44Z] pushed out/list-objects-v2.json
+ak2: [2026-10-06T01:00:45Z] list-object-versions rc=0
+ak2: [2026-10-06T01:00:46Z] pushed out/list-object-versions.json
+ak2: [2026-10-06T01:00:46Z] pushed out/list-object-versions.err
+ak2: [2026-10-06T01:00:47Z] head-object hash.k2d rc=0
+ak2: [2026-10-06T01:00:48Z] pushed out/head-hash.k2d.json
+ak2: [2026-10-06T01:00:48Z] head-object opts.k2d rc=0
+ak2: [2026-10-06T01:00:49Z] pushed out/head-opts.k2d.json
+ak2: [2026-10-06T01:00:50Z] head-object taxo.k2d rc=0
+ak2: [2026-10-06T01:00:51Z] pushed out/head-taxo.k2d.json
+ak2: [2026-10-06T01:00:52Z] get-bucket-request-payment rc=0 {"Payer":"BucketOwner"}
+ak2: [2026-10-06T01:00:52Z] pushed out/request-payment.json
+ak2: [2026-10-06T01:00:52Z] G0a probe done
+ak2: [2026-10-06T01:00:52Z] spec body exit rc=0
+spawn: [2026-10-06T01:00:53Z] command exit rc=0

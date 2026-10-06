@@ -1,0 +1,26 @@
+{
+  "task_id": "g0a",
+  "command": [
+    "bash",
+    "-c",
+    "# G0a (#3): RODA kraken2 RefSeq Complete v205 -- hash.k2d header, opts.k2d, listing, Payer.\n# Public bucket in another account: the instance role has no grant on it, so reads are\n# anonymous (--no-sign-request). Every file is pushed as soon as it exists.\nB=kraken2-ncbi-refseq-complete-v205\nP=Kraken2_RefSeqCompleteV205\nO=/tmp/g0a; mkdir -p \"$O\"\ns3a() { aws s3api --no-sign-request --region \"$AK2_REGION\" \"$@\"; }\n\nak2_say \"ranged GET hash.k2d bytes 0-31\"\ns3a get-object --bucket \"$B\" --key \"$P/hash.k2d\" --range bytes=0-31 \"$O/hash.k2d.head32\" > \"$O/hash.k2d.head32.get.json\"\nak2_say \"rc=$? bytes=$(stat -c%s \"$O/hash.k2d.head32\" 2>/dev/null)\"\nak2_push \"$O/hash.k2d.head32\"; ak2_push \"$O/hash.k2d.head32.get.json\"\n\nak2_say \"GET opts.k2d\"\ns3a get-object --bucket \"$B\" --key \"$P/opts.k2d\" \"$O/opts.k2d\" > \"$O/opts.k2d.get.json\"\nak2_say \"rc=$? bytes=$(stat -c%s \"$O/opts.k2d\" 2>/dev/null)\"\nak2_push \"$O/opts.k2d\"; ak2_push \"$O/opts.k2d.get.json\"\n\nak2_say \"list bucket recursively\"\ns3a list-objects-v2 --bucket \"$B\" --output json > \"$O/list-objects-v2.json\"\nak2_say \"rc=$? objects=$(grep -c '\"Key\"' \"$O/list-objects-v2.json\")\"\nak2_push \"$O/list-objects-v2.json\"\ns3a list-object-versions --bucket \"$B\" --output json > \"$O/list-object-versions.json\" 2> \"$O/list-object-versions.err\"\nak2_say \"list-object-versions rc=$?\"\nak2_push \"$O/list-object-versions.json\"; ak2_push \"$O/list-object-versions.err\"\n\nfor f in hash.k2d opts.k2d taxo.k2d; do\n  s3a head-object --bucket \"$B\" --key \"$P/$f\" > \"$O/head-$f.json\"\n  ak2_say \"head-object $f rc=$?\"\n  ak2_push \"$O/head-$f.json\"\ndone\n\ns3a get-bucket-request-payment --bucket \"$B\" > \"$O/request-payment.json\"\nak2_say \"get-bucket-request-payment rc=$? $(tr -d ' \\n' < \"$O/request-payment.json\")\"\nak2_push \"$O/request-payment.json\"\nak2_say \"G0a probe done\"\n"
+  ],
+  "resources": {
+    "cpu": 1,
+    "memory_gib": 1,
+    "architecture": "arm64",
+    "families": [
+      "t4g"
+    ]
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/hash.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d"
+  },
+  "lifecycle": {
+    "ttl": "15m",
+    "on_complete": "terminate",
+    "cost_limit": 0.05
+  }
+}
