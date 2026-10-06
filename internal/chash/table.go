@@ -52,8 +52,7 @@ func Load(path string, opt Options) (*Table, error) {
 		return nil, err
 	}
 	n := int(l.FileSize() - HeaderSize)
-	// Anonymous memory: no Go-side zeroing pass over a multi-GB table, and the GC never scans it.
-	buf, err := syscall.Mmap(-1, 0, n, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_ANON|syscall.MAP_PRIVATE)
+	buf, region, err := allocTable(n)
 	if err != nil {
 		return nil, fmt.Errorf("chash: allocate %d bytes for %s: %w", n, path, err)
 	}
@@ -62,10 +61,33 @@ func Load(path string, opt Options) (*Table, error) {
 		threads = 8
 	}
 	if err := preadParallel(f, buf, HeaderSize, threads); err != nil {
-		_ = syscall.Munmap(buf)
+		_ = syscall.Munmap(region)
 		return nil, fmt.Errorf("chash: read %s: %w", path, err)
 	}
-	return newTable(h, l, opt.Mode, buf, buf)
+	return newTable(h, l, opt.Mode, buf, region)
+}
+
+// hugePage is the alignment upstream gives the table (posix_memalign to 2 MiB) so that
+// MADV_HUGEPAGE can back it with transparent huge pages.
+const hugePage = 2 << 20
+
+// allocTable returns n bytes of anonymous memory for the cells, and the mapping that backs
+// them (what Close unmaps). Anonymous memory needs no Go-side zeroing pass over a multi-GB
+// table, and the GC never scans it. As upstream's LoadTable, the cells start on a 2 MiB
+// boundary and, where the OS has transparent huge pages, are advised MADV_HUGEPAGE before the
+// reads fault them in (adviseHuge; issue #36). Without the advice, a kernel whose THP mode is
+// "madvise" (Amazon Linux 2023's default) backs the table with 4 KiB pages: one fault per
+// 4 KiB during the load, and as many page-table entries to tear down at exit.
+func allocTable(n int) (cells, region []byte, err error) {
+	region, err = syscall.Mmap(-1, 0, n+hugePage, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_ANON|syscall.MAP_PRIVATE)
+	if err != nil {
+		return nil, nil, err
+	}
+	// The slack before and after the aligned span is never touched, so it costs no memory.
+	off := int(-uintptr(unsafe.Pointer(unsafe.SliceData(region))) & (hugePage - 1))
+	cells = region[off : off+n : off+n]
+	adviseHuge(cells)
+	return cells, region, nil
 }
 
 // Mmap maps hash.k2d read-only, as upstream's LoadTable does with memory mapping.
