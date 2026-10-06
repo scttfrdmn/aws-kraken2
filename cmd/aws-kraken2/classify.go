@@ -63,6 +63,7 @@ func loadIndex(c *classifyArgs) (*index, int) {
 		fmt.Fprintln(os.Stderr)
 		return nil, classifyErr(status, format, a...)
 	}
+	po := phase("opts")
 	f, err := os.Open(c.optsFile)
 	if err != nil {
 		return fail(71, "unable to get filesize of %s", c.optsFile) // EX_OSERR
@@ -76,16 +77,20 @@ func loadIndex(c *classifyArgs) (*index, int) {
 		return fail(exitFailure, "%s is a translated-search (protein) database (dna_db=0); "+
 			"aws-kraken2 does not support translated search", c.optsFile)
 	}
+	po.end()
+	pt := phase("taxo")
 	tax, err := taxo.Load(c.taxoFile)
 	if err != nil {
 		return fail(exitFailure, "%v", err)
 	}
+	pt.end()
 	// Probe mode: linear, the mode upstream's default build (-DLINEAR_PROBING) uses, confirmed
 	// for both pinned databases by make g0b (docs/g0b.md).
 	copt := chash.Options{Mode: chash.Linear}
 	if v, err := strconv.Atoi(os.Getenv("K2_DB_READ_THREADS")); err == nil && v > 0 {
 		copt.ReadThreads = v
 	}
+	ph := phase("hash")
 	var tab *chash.Table
 	if c.memoryMapping {
 		tab, err = chash.Mmap(c.hashFile, copt)
@@ -95,6 +100,7 @@ func loadIndex(c *classifyArgs) (*index, int) {
 	if err != nil {
 		return fail(exitFailure, "%v", err)
 	}
+	ph.end()
 	fmt.Fprintln(os.Stderr, " done.")
 	return &index{opts: o, tax: tax, table: tab}, 0
 }
@@ -131,7 +137,12 @@ func classifyRun(c *classifyArgs) int {
 	if idx == nil {
 		return status
 	}
-	defer idx.table.Close()
+	defer func() {
+		p := phase("unmap")
+		idx.table.Close()
+		p.end()
+	}()
+	ps := phase("setup")
 
 	comp, err := seqio.ResolveCompression(c.gzipFlag, c.bzip2Flag, c.files[0])
 	if err != nil {
@@ -163,6 +174,8 @@ func classifyRun(c *classifyArgs) int {
 
 	r := &runner{c: c, idx: idx, opt: opt, comp: comp, workers: workers, tty: isTTY(os.Stderr)}
 	defer r.out.close()
+	ps.end()
+	pc := phase("classify")
 	start := time.Now()
 	if c.paired {
 		for i := 0; i+1 < len(c.files); i += 2 {
@@ -178,12 +191,17 @@ func classifyRun(c *classifyArgs) int {
 		}
 	}
 	elapsed := time.Since(start)
+	pc.end()
+	pf := phase("close")
 	if err := r.out.close(); err != nil {
 		return classifyErr(exIOErr, "%v", err)
 	}
+	pf.end()
 	reportStats(elapsed, r.st, r.tty)
 
 	if name := c.reportName(); name != "" {
+		pr := phase("report")
+		defer pr.end()
 		counts := map[uint64]*classify.TaxonCount{}
 		for _, w := range workers {
 			classify.MergeCounts(counts, w.w.Counts)

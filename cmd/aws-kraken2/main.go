@@ -72,7 +72,12 @@ type options struct {
 func strp(s string) *string { return &s }
 
 func main() {
-	os.Exit(run(os.Args[1:]))
+	startProfile()
+	p := phase("total")
+	status := run(os.Args[1:])
+	p.end()
+	stopProfile()
+	os.Exit(status)
 }
 
 func run(args []string) int {
