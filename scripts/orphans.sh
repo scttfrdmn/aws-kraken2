@@ -1,29 +1,41 @@
 #!/usr/bin/env bash
-# make orphans -- list pending/running/stopping/stopped instances launched by this repo, in every
-# region in AK2_REGIONS. Exit 0 if none, 1 if any, 2 if a region could not be queried.
-# See docs/orphans.md.
+# make orphans -- list pending/running/shutting-down/stopping/stopped instances launched by this
+# repo in EVERY region enabled in the account. Exit 0 if none, 1 if any, 2 if a region could not
+# be queried. See docs/orphans.md.
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=/dev/null
 . "$HERE/ak2.env"
 export AWS_PROFILE
 
-STATES="Name=instance-state-name,Values=pending,running,stopping,stopped,shutting-down"
-QUERY='Reservations[].Instances[].[InstanceId,State.Name,InstanceType,LaunchTime,Tags[?Key==`spawn:task-id`]|[0].Value]'
-found=0; failed=0
-for r in $AK2_REGIONS; do
-  # Two selectors, unioned: the tag run.sh adds after launch, and the task-id prefix spawn
-  # tags at launch (covers an instance whose create-tags never happened).
-  a=$(aws ec2 describe-instances --region "$r" --filters "$STATES" "Name=tag:ak2:project,Values=$AK2_TAG_PROJECT" \
-        --query "$QUERY" --output text 2>&1) || { echo "orphans: $r: $a" >&2; failed=1; continue; }
-  b=$(aws ec2 describe-instances --region "$r" --filters "$STATES" "Name=tag:spawn:task-id,Values=${AK2_TASK_PREFIX}*" \
-        --query "$QUERY" --output text 2>&1) || { echo "orphans: $r: $b" >&2; failed=1; continue; }
-  rows=$(printf '%s\n%s\n' "$a" "$b" | grep . | sort -u)
-  if [ -n "$rows" ]; then
-    found=1
-    printf '%s\n' "$rows" | sed "s/^/$r\t/"
-  fi
+REGIONS=$(aws ec2 describe-regions --region us-west-2 --query 'Regions[].RegionName' --output text 2>&1) ||
+  { echo "orphans: describe-regions failed: $REGIONS" >&2; exit 2; }
+TMP=$(mktemp -d)
+# One call per region, in parallel. tag-key values are ORed; the jq filter then keeps instances
+# tagged ak2:project=<project> or spawn:task-id=<prefix>*, the latter catching an instance whose
+# post-launch create-tags never happened.
+for r in $REGIONS; do
+  (
+    out=$(aws ec2 describe-instances --region "$r" \
+      --filters "Name=instance-state-name,Values=pending,running,stopping,stopped,shutting-down" \
+                "Name=tag-key,Values=ak2:project,spawn:task-id" --output json 2>&1) ||
+      { echo "$out" > "$TMP/$r.err"; exit 0; }
+    echo "$out" | jq -r --arg r "$r" --arg p "$AK2_TAG_PROJECT" --arg t "$AK2_TASK_PREFIX" '
+      .Reservations[].Instances[]
+      | (reduce (.Tags // [])[] as $x ({}; .[$x.Key] = $x.Value)) as $tags
+      | select($tags["ak2:project"] == $p or (($tags["spawn:task-id"] // "") | startswith($t)))
+      | [$r, .InstanceId, .State.Name, .InstanceType, .LaunchTime, ($tags["spawn:task-id"] // "-")] | @tsv' \
+      > "$TMP/$r.out"
+  ) &
 done
+wait
+found=0; failed=0
+for r in $REGIONS; do
+  if [ -s "$TMP/$r.err" ]; then echo "orphans: $r: $(head -c 300 "$TMP/$r.err")" >&2; failed=1; fi
+  if [ -s "$TMP/$r.out" ]; then cat "$TMP/$r.out"; found=1; fi
+done
+N=$(echo "$REGIONS" | wc -w | tr -d ' ')
+rm -rf "$TMP"
 if [ "$failed" -ne 0 ]; then echo "orphans: could not query every region" >&2; exit 2; fi
 if [ "$found" -ne 0 ]; then echo "orphans: instances above are still alive" >&2; exit 1; fi
-echo "orphans: none in $AK2_REGIONS"
+echo "orphans: none in $N regions"
