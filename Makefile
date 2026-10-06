@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check tag-objects
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check tag-objects sortfuzz
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -58,6 +58,11 @@ oracle-classify:
 # Object tags on everything under the project's S3 prefix (docs/tag-objects.md).
 tag-objects:
 	scripts/tag-objects.sh $(PREFIX)
+
+# stdSort vs libstdc++ std::sort, differential fuzz (docs/sortfuzz.md, #35): SORTFUZZ=quick|full.
+SORTFUZZ ?= quick
+sortfuzz:
+	scripts/sortfuzz.sh $(SORTFUZZ)
 
 ami:
 	scripts/ami.sh

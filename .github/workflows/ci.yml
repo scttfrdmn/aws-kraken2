@@ -141,3 +141,56 @@ jobs:
           name: oracle-viral-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ steps.newres.outputs.dirs }}
           if-no-files-found: error
+
+  # #35: stdSort vs libstdc++ std::sort on the canonical platform's toolchain. amazonlinux:2023
+  # ships GCC 11.5.0 and its libstdc++, which is what upstream is built with there; the job above
+  # uses Ubuntu's g++. Runbook: docs/sortfuzz.md.
+  sortfuzz:
+    runs-on: ubuntu-24.04-arm
+    container: amazonlinux:2023
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Toolchain (Amazon Linux 2023 g++, git, perl and shasum, jq, zlib; tar/gzip for setup-go)
+        run: |
+          set +e; echo "shell flags $-"
+          dnf install -y -q gcc-c++ make git tar gzip zlib-devel perl perl-Digest-SHA jq findutils
+          st=$?
+          g++ --version | head -1; head -2 /etc/os-release; uname -sm
+          exit $st
+
+      - uses: actions/checkout@v4
+
+      # The container runs as root on a workspace the runner owns.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Upstream at the pin (scripts/oracle-build.sh; harness-build needs its source)
+        run: scripts/oracle-build.sh
+
+      - name: make sortfuzz SORTFUZZ=full
+        run: make sortfuzz SORTFUZZ=full
+
+      - name: List this run's results
+        if: always()
+        id: newres
+        run: |
+          {
+            echo 'dirs<<EOF'
+            git ls-files --others --exclude-standard -- results/g1 | grep '/sortfuzz-' | xargs -r -n1 dirname | sort -u
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload sortfuzz results
+        if: always() && steps.newres.outputs.dirs != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: sortfuzz-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ steps.newres.outputs.dirs }}
+          if-no-files-found: error
