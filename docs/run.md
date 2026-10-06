@@ -82,3 +82,6 @@ post script failed; 99 means there is no completion record.
   only after reading them.
 - `manifest.json` without `manifest_finalised_at`: run.sh was interrupted. Run `make orphans` now.
 - `ORPHANS FOUND`, exit 3: see [orphans.md](orphans.md).
+
+**Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
+rebase commits that a run under `results/` cites. Merge them as they are.
