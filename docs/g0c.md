@@ -37,19 +37,27 @@ there. The launch commit must be on GitHub, because the instance clones it.
   maximum over its N boundaries (`tables/tails.tsv`). `TestTailIsWhatProbesRead` checks this
   definition against `chash.Probe` itself, for every home slot of every shard of random tables.
   The global longest run is only an upper bound.
+  **Scope of `tails.tsv`:** only power-of-two N from 2 to 64, cut at `floor(i*C/N)`. Any other
+  shard count or cut point is not covered by it and must use the global longest-run bound: a
+  tail is at most L cells (run_past <= L-1, plus the empty cell), so 302 for RODA v205, until
+  it is measured.
 - **Theory:** in the Poisson model of linear probing at load α = occupied/C, the expected number
   of runs of length L is `(C - occupied) · e^{-α(L+1)} (α(L+1))^L / (L+1)!`, a Borel
   distribution. Starting at an empty slot, the next block is the first passage of
   `Σ(X_i − 1)`, X_i ~ Poisson(α), to −1, by the hitting-time theorem. See Flajolet, Poblete and
   Viola, *On the analysis of linear probing hashing*, Algorithmica 22 (1998), and Knuth, TAOCP
   vol. 3, §6.4. `tables/hist.tsv` gives the residual, relative residual and z = residual/√expected
-  per bucket. They are a cross-check and decide nothing.
+  per bucket. They are a cross-check and decide nothing. On RODA v205 the model **over-predicts
+  the long-run tail** (`decoded/theory-tail.json`): −4.9% at 65–128, −16% at 129–256, 35 runs
+  observed vs 82.3 expected at 257–512, and 1 run of length ≥ 302 observed vs 5.02 expected.
 - **Probe counts (#8):** the cells `chash.Probe` examines, with the empty cell that ends a miss
   included. A **hit** is a lookup whose value is nonzero (a compacted-key match, which with
-  `key_bits` = 10 includes some false positives). The expectations are Knuth's (TAOCP 3 §6.4,
-  Algorithm L): hit `½(1 + 1/(1−α))`, miss `½(1 + 1/(1−α)²)`. `miss_probes_from_runs` in
-  G0c-a is the exact mean miss length implied by the measured runs:
-  `(#empty + Σ_runs (L(L+1)/2 + L)) / C`.
+  `key_bits` = 10 includes some false positives). Knuth (TAOCP 3 §6.4, Algorithm L) gives hit
+  `½(1 + 1/(1−α))` and miss `½(1 + 1/(1−α)²)`. The hit value is the **uniform-key null**: it
+  averages over stored keys chosen uniformly, while real lookups are content-weighted, so it is
+  a reference rather than an expectation for them (`knuth_hit_probes_uniform_key_null`). Misses
+  are compared with Knuth and with `miss_probes_from_runs` from G0c-a, the exact mean miss length
+  the measured runs imply: `(#empty + Σ_runs (L(L+1)/2 + L)) / C` (5.995 for RODA v205).
 
 ## PART=local
 
@@ -77,11 +85,17 @@ This runs on a small Graviton instance (spawn sizing, families c8g/m8g/c7g/m7g).
    10,000 lookups uniformly from that stream (Algorithm R, seed 1 mixed with the accession), then
    resolves each with `chash.Probe` over point GETs. The first GET is a 64 KiB window starting at
    the home slot. A probe that runs past the window fetches the next window, and one that passes
-   slot C-1 fetches a window at slot 0.
+   slot C-1 fetches a window at slot 0. All workers share one source, so `get_requests` counts
+   every GET (the header, each window and extension, every retry attempt), and `get_retries`
+   counts the retries. `-runs-summary` takes G0c-a's `out/pass/summary.json` from the cloned
+   commit (its ETag must match) for `miss_probes_from_runs`.
 
 Outputs: `out/probes/lookups-<acc>.tsv` (one row per lookup), `probe-summary.tsv`,
-`probe-hist.tsv` and `summary.json`. The post script writes `decoded/{probes,opts,rules}.json`,
-`tables/{checks,probe-summary,probe-bands}.tsv`.
+`probe-hist.tsv` and `summary.json`. In `probe-summary.tsv`, `knuth` and `mean_minus_knuth`
+are against Knuth (for hits, the uniform-key null), and `measured_runs` and
+`mean_minus_measured_runs` are against `miss_probes_from_runs` (misses only). The post script
+writes `decoded/{probes,opts,rules}.json` and `tables/{checks,probe-summary,probe-bands}.tsv`.
+Its checks include that `get_requests` equals 1 + the per-sample GETs + retries.
 
 ## PART=runs (runs/g0c-runs.json)
 
@@ -107,9 +121,12 @@ Outputs: `out/pass/{summary.json,hist.tsv,hist-raw.tsv,boundaries.tsv,tails.tsv}
 per boundary of N = 64 (`first_N` is the smallest N that has it), with `run_past`, `tail` and
 the run containing slot b-1. The post script checks that the ETag is the same at launch, before,
 via If-Match and after; that bytes streamed equals the size; that cells equals capacity; and
-that occupied equals the header size. It then records the SHA-256 in `manifest.json` next to the
-dataset's ETag/VersionId (`datasets[].sha256`, `sha256_source`). It writes
-`decoded/{object,pass,rules}.json` and `tables/{checks,rates,tails,hist,boundaries}.tsv`.
+that occupied equals the header size. The ETag row is enforced in code: `internal/rangeread`
+sends If-Match on every GET and checks each response's ETag and Content-Range. It then records
+the SHA-256 in `manifest.json` next to the dataset's ETag/VersionId (`datasets[].sha256`,
+`sha256_source`, `sha256_check`), the one manifest write [run.md](run.md) allows a post script.
+It writes `decoded/{object,pass,rules,theory-tail}.json` and
+`tables/{checks,rates,tails,hist,boundaries}.tsv`.
 
 ## Failure looks like
 

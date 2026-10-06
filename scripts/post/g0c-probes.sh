@@ -24,7 +24,9 @@ row() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$([ "$2" = "$3" ] && echo yes 
 {
   printf 'check\tobserved\texpected\tok\n'
   row "ETag: instance head-object" "$(jq -r '.ETag | gsub("\"";"")' "$O/head-hash.k2d.json")" "$L_ETAG"
-  row "ETag: k2probe If-Match (every GET)" "$(jq -r .etag "$S")" "$L_ETAG"
+  row "ETag: k2probe -etag, enforced in internal/rangeread as If-Match on every GET plus a check of each response's ETag and Content-Range" "$(jq -r .etag "$S")" "$L_ETAG"
+  row "miss_probes_from_runs taken from a G0c-a pass (same ETag, checked by k2probe)" "$(jq -r 'has("miss_probes_from_runs")' "$S")" true
+  row "get_requests == 1 header GET + the per-sample GETs + retries" "$(jq -r .get_requests "$S")" "$(jq -r '1 + ([to_entries[] | select(.key|endswith("_gets")) | .value] | add) + .get_retries' "$S")"
   row "opts.k2d bytes == launch size" "$(jq -r .file_size "$D/decoded/opts.json")" "$(ds opts.k2d size)"
   row "k, l from opts.k2d == used" "$(jq -r '"\(.k),\(.l)"' "$D/decoded/opts.json")" "$(jq -r '"\(.k),\(.l)"' "$S")"
   row "minimum_acceptable_hash_value" "$(jq -r .minimum_acceptable_hash_value "$S")" 0
@@ -36,7 +38,7 @@ row() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$([ "$2" = "$3" ] && echo yes 
 if grep -q 'NO$' "$D/tables/checks.tsv"; then cat "$D/tables/checks.tsv" >&2; fail "a check failed"; fi
 
 jq 'del(.knuth_formulas)' "$S" > "$D/decoded/probes.json"
-jq '{knuth_formulas, hit:"value != 0: chash.Probe found a cell whose compacted key matches (with key_bits bits, some are false positives)", probes:"cells chash.Probe examined, the empty cell that ends a miss included"}' "$S" > "$D/decoded/rules.json"
+jq '{knuth_formulas, miss_probes_from_runs_source, hit:"value != 0: chash.Probe found a cell whose compacted key matches (with key_bits bits, some are false positives)", probes:"cells chash.Probe examined, the empty cell that ends a miss included"}' "$S" > "$D/decoded/rules.json"
 cp "$O/probes/probe-summary.tsv" "$D/tables/probe-summary.tsv"
 # Probe-count distribution in bands (the exact counts are out/probes/probe-hist.tsv).
 awk -F'\t' 'BEGIN{n=split("1 2 3 4 5 6-10 11-20 21-50 51-100 101+",B," ")}

@@ -43,7 +43,10 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
 - Optional `scripts/post/<name>.sh` (same basename as the spec): run locally after fetch as
   `scripts/post/<name>.sh <run-dir>`. It may read only the run dir, taking object identities from
   `manifest.json`, and writes `decoded/` and `tables/`. It can be re-run on an existing run dir
-  and records the commit it ran at.
+  and records the commit it ran at. Its one permitted write to `manifest.json` is adding a
+  **verified digest** to an existing `datasets[]` entry: `sha256`, `sha256_source` (the run-dir
+  file it came from) and `sha256_check` (the checks it passed, e.g. the ETag held for the whole
+  read). Nothing else in the manifest may change (`scripts/post/g0c-runs.sh` is the one user).
 
 ## The bucket allow-list
 

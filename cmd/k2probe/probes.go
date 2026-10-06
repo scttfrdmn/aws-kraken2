@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -112,6 +113,7 @@ func probes(args []string) error {
 	etag := fs.String("etag", "", "with -url: the object's ETag (If-Match on every GET)")
 	size := fs.Int64("size", 0, "with -url: the object's size")
 	optsPath := fs.String("opts", "", "the database's opts.k2d (required)")
+	runsSummary := fs.String("runs-summary", "", "optional: `k2probe runs` summary.json for the same object; its miss_probes_from_runs (the mean miss length the measured runs imply) becomes a second miss expectation")
 	var samples sampleFlag
 	fs.Var(&samples, "sample", "ACC=reads_1.fq[,reads_2.fq] (repeatable; plain FASTQ/FASTA)")
 	n := fs.Int("n", 10000, "lookups to sample per workload")
@@ -136,22 +138,21 @@ func probes(args []string) error {
 	if err != nil {
 		return err
 	}
-	newSrc := func() (rangeread.Source, *rangeread.Counters, error) {
-		if *file != "" {
-			f, err := os.Open(*file)
-			if err != nil {
-				return nil, nil, err
-			}
-			s := &rangeread.FileSource{F: f}
-			return s, &s.Counters, nil
+	// One source, shared by every worker (FileSource and HTTPSource are safe for concurrent use),
+	// so its Counters see every GET and every retry of the run.
+	var src rangeread.Source
+	var counters *rangeread.Counters
+	if *file != "" {
+		f, err := os.Open(*file)
+		if err != nil {
+			return err
 		}
-		s := &rangeread.HTTPSource{URL: *url, ETag: *etag, Size: *size, Client: client}
-		return s, &s.Counters, nil
-	}
-	client = rangeread.NewHTTPClient(*workers)
-	src, counters, err := newSrc()
-	if err != nil {
-		return err
+		defer f.Close()
+		s := &rangeread.FileSource{F: f}
+		src, counters = s, &s.Counters
+	} else {
+		s := &rangeread.HTTPSource{URL: *url, ETag: *etag, Size: *size, Client: rangeread.NewHTTPClient(*workers)}
+		src, counters = s, &s.Counters
 	}
 	var hb [chash.HeaderSize]byte
 	if err := src.ReadRange(context.Background(), 0, hb[:]); err != nil {
@@ -177,11 +178,33 @@ func probes(args []string) error {
 	summary := map[string]any{
 		"object": firstNonEmpty(*url, *file), "etag": *etag, "capacity": hdr.Capacity, "header_size": hdr.Size,
 		"key_bits": hdr.KeyBits, "load_factor": alpha, "k": o.K, "l": o.L,
-		"minimum_acceptable_hash_value": o.MinimumAcceptableHashValue,
-		"knuth_hit_probes":              knuthHit, "knuth_miss_probes": knuthMiss,
-		"knuth_formulas": "hit 1/2(1+1/(1-a)), miss 1/2(1+1/(1-a)^2) (Knuth TAOCP vol. 3, 6.4, Algorithm L)",
+		"minimum_acceptable_hash_value":     o.MinimumAcceptableHashValue,
+		"knuth_hit_probes_uniform_key_null": knuthHit, "knuth_miss_probes": knuthMiss,
+		"knuth_formulas": "hit 1/2(1+1/(1-a)): the uniform-key null (a stored key chosen uniformly); real lookups are content-weighted, so it is not an expectation for them. miss 1/2(1+1/(1-a)^2) (Knuth TAOCP vol. 3, 6.4, Algorithm L); misses are also compared with miss_probes_from_runs, the mean miss length the measured runs imply",
 		"n_per_sample":   *n, "seed": *seed, "window_bytes": *windowKiB << 10, "workers": *workers,
 		"go_version": runtime.Version(),
+	}
+	// The measured-runs miss expectation, if given: only from a pass over the same object (ETag).
+	missRuns := math.NaN()
+	if *runsSummary != "" {
+		var rs struct {
+			ETag     string  `json:"etag"`
+			Complete bool    `json:"complete"`
+			Miss     float64 `json:"miss_probes_from_runs"`
+		}
+		b, err := os.ReadFile(*runsSummary)
+		if err != nil {
+			return err
+		}
+		if err := json.Unmarshal(b, &rs); err != nil {
+			return fmt.Errorf("%s: %w", *runsSummary, err)
+		}
+		if !rs.Complete || rs.Miss <= 0 || rs.ETag != *etag {
+			return fmt.Errorf("%s: not a complete pass over ETag %q (complete %v, etag %q)", *runsSummary, *etag, rs.Complete, rs.ETag)
+		}
+		missRuns = rs.Miss
+		summary["miss_probes_from_runs"] = missRuns
+		summary["miss_probes_from_runs_source"] = *runsSummary
 	}
 	var sumRows, histRows [][]any
 	start := time.Now()
@@ -193,7 +216,7 @@ func probes(args []string) error {
 		}
 		logf("%s: %d reads, %d lookups in the population; sampled %d (%.1f s)", sp.acc, reads, pop, len(sample), time.Since(t0).Seconds())
 		t1 := time.Now()
-		if err := resolve(sample, lay, newSrc, *windowKiB<<8, *workers); err != nil {
+		if err := resolve(sample, lay, src, *windowKiB<<8, *workers); err != nil {
 			return fmt.Errorf("%s: %w", sp.acc, err)
 		}
 		el := time.Since(t1).Seconds()
@@ -217,17 +240,17 @@ func probes(args []string) error {
 					ps = append(ps, l.probes)
 				}
 			}
-			expect := math.NaN()
+			knuth, measured := math.NaN(), math.NaN()
 			switch class {
 			case "hit":
-				expect = knuthHit
+				knuth = knuthHit // the uniform-key null: real lookups are content-weighted
 			case "miss":
-				expect = knuthMiss
+				knuth, measured = knuthMiss, missRuns
 			}
 			r := probeStats(ps)
 			frac := float64(len(ps)) / float64(len(sample))
-			sumRows = append(sumRows, []any{sp.acc, class, len(ps), g(frac), g(r.mean), g(expect), g(r.mean - expect),
-				r.p50, r.p90, r.p99, r.max})
+			sumRows = append(sumRows, []any{sp.acc, class, len(ps), g(frac), g(r.mean), g(knuth), g(r.mean - knuth),
+				g(measured), g(r.mean - measured), r.p50, r.p90, r.p99, r.max})
 			summary[sp.acc+"_"+class+"_fraction"] = frac
 			summary[sp.acc+"_"+class+"_mean_probes"] = r.mean
 			summary[sp.acc+"_"+class+"_max_probes"] = r.max
@@ -238,10 +261,13 @@ func probes(args []string) error {
 			}
 		}
 	}
+	// Every ranged GET this run made (header, windows, extensions), retries included.
 	summary["get_requests"] = counters.Requests.Load()
+	summary["get_retries"] = counters.Retries.Load()
 	summary["wall_seconds"] = time.Since(start).Seconds()
 	if err := writeTSV(filepath.Join(*out, "probe-summary.tsv"),
-		[]string{"sample", "class", "lookups", "fraction", "mean_probes", "expected", "mean_minus_expected", "p50", "p90", "p99", "max"},
+		[]string{"sample", "class", "lookups", "fraction", "mean_probes", "knuth", "mean_minus_knuth",
+			"measured_runs", "mean_minus_measured_runs", "p50", "p90", "p99", "max"},
 		func(w func(...any)) {
 			for _, r := range sumRows {
 				w(r...)
@@ -259,8 +285,6 @@ func probes(args []string) error {
 	}
 	return writeJSON(filepath.Join(*out, "summary.json"), summary)
 }
-
-var client = rangeread.NewHTTPClient(1)
 
 func firstNonEmpty(a ...string) string {
 	for _, s := range a {
@@ -349,7 +373,7 @@ func sampleLookups(sp sampleSpec, o kdb.Options, n int, seed uint64) ([]*lookup,
 	return res, pop, reads, nil
 }
 
-func resolve(ls []*lookup, lay chash.Layout, newSrc func() (rangeread.Source, *rangeread.Counters, error), windowCells, workers int) error {
+func resolve(ls []*lookup, lay chash.Layout, src rangeread.Source, windowCells, workers int) error {
 	jobs := make(chan *lookup)
 	errs := make(chan error, workers)
 	var wg sync.WaitGroup
@@ -357,13 +381,6 @@ func resolve(ls []*lookup, lay chash.Layout, newSrc func() (rangeread.Source, *r
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			src, _, err := newSrc()
-			if err != nil {
-				errs <- err
-				for range jobs {
-				}
-				return
-			}
 			for l := range jobs {
 				ws := &windowSource{src: src, layout: lay, cells: uint64(windowCells)}
 				hc := chash.MurmurHash3(l.key)

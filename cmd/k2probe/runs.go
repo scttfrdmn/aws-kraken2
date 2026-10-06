@@ -65,7 +65,7 @@ type runsSummary struct {
 	TheoryMeanRun      float64 `json:"theory_mean_run,omitempty"`
 	MissProbesFromRuns float64 `json:"miss_probes_from_runs,omitempty"`
 	KnuthMiss          float64 `json:"knuth_miss_probes"`
-	KnuthHit           float64 `json:"knuth_hit_probes"`
+	KnuthHit           float64 `json:"knuth_hit_probes_uniform_key_null"`
 	ShardRule          string  `json:"shard_rule"`
 	TailRule           string  `json:"tail_rule"`
 	ChunkBytes         int64   `json:"chunk_bytes"`

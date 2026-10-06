@@ -2,7 +2,8 @@
 # Local post-processing for runs/g0c-runs.json (G0c-a, #7), run by scripts/run.sh as
 # scripts/post/g0c-runs.sh <run-dir>; re-runnable by hand. Reads only <run-dir>; writes decoded/
 # and tables/, and records the pass's SHA-256 next to the ETag/VersionId of hash.k2d in
-# manifest.json (datasets[].sha256, with sha256_source naming the file it came from).
+# manifest.json (datasets[].sha256, with sha256_source naming the file it came from and
+# sha256_check the checks it passed; docs/run.md allows post scripts only this manifest write).
 # Object identities come from manifest.json (the launch-time head-object), never from here.
 set -uo pipefail
 D=${1:?run dir}
@@ -32,7 +33,7 @@ row() { printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "$([ "$2" = "$3" ] && echo yes 
 {
   printf 'check\tobserved\texpected\tok\n'
   row "ETag: instance head-object before the pass" "$I_ETAG" "$L_ETAG"
-  row "ETag: k2probe If-Match (every GET)" "$P_ETAG" "$L_ETAG"
+  row "ETag: k2probe -etag, enforced in internal/rangeread as If-Match on every GET plus a check of each response's ETag and Content-Range" "$P_ETAG" "$L_ETAG"
   row "ETag: instance head-object after the pass" "$A_ETAG" "$L_ETAG"
   row "bytes streamed" "$(jq -r .bytes_streamed "$S")" "$L_SIZE"
   row "complete pass" "$(jq -r .complete "$S")" true
@@ -45,15 +46,31 @@ if grep -q 'NO$' "$D/tables/checks.tsv"; then cat "$D/tables/checks.tsv" >&2; fa
 SHA=$(jq -r .sha256 "$S")
 [[ $SHA =~ ^[0-9a-f]{64}$ ]] || fail "no sha256 in $S"
 jq -n --arg u "$HURI" --arg e "$L_ETAG" --arg v "$L_VER" --argjson s "$L_SIZE" --arg h "$SHA" \
-  '{uri:$u, etag:$e, version_id:$v, size:$s, sha256:$h, sha256_source:"out/pass/summary.json"}' > "$D/decoded/object.json"
+  '{uri:$u, etag:$e, version_id:$v, size:$s, sha256:$h, sha256_source:"out/pass/summary.json", sha256_check:"tables/checks.tsv all yes: ETag equal at launch, before, on every GET (If-Match + response ETag/Content-Range) and after; bytes streamed == object size; complete pass"}' > "$D/decoded/object.json"
 # Record the digest in the manifest beside the ETag/VersionId it was computed under.
 T=$(mktemp) || fail "mktemp"
 jq --arg u "$HURI" --arg h "$SHA" \
-  '(.datasets[] | select(.uri==$u)) += {sha256:$h, sha256_source:"out/pass/summary.json (k2probe runs, one streaming pass, If-Match etag)"}' \
+  '(.datasets[] | select(.uri==$u)) += {sha256:$h, sha256_source:"out/pass/summary.json (k2probe runs, one streaming pass)", sha256_check:"tables/checks.tsv all yes: ETag equal at launch, before, on every GET (If-Match + response ETag/Content-Range) and after; bytes streamed == object size; complete pass"}' \
   "$M" > "$T" && mv "$T" "$M" || { rm -f "$T"; fail "could not record sha256 in $M"; }
 
 # ---- decoded: the pass summary without the long prose fields; rules separately ----
-jq 'del(.shard_rule, .tail_rule)' "$S" > "$D/decoded/pass.json"
+# The Knuth hit value is the uniform-key null (older summaries called it knuth_hit_probes).
+jq 'del(.shard_rule, .tail_rule) | if has("knuth_hit_probes") then .knuth_hit_probes_uniform_key_null = .knuth_hit_probes | del(.knuth_hit_probes) else . end' \
+  "$S" > "$D/decoded/pass.json"
+# How the Borel model does on the long-run tail, from hist.tsv and the summary only.
+H="$O/pass/hist.tsv"
+bucket() { awk -F'\t' -v lo="$1" -v hi="$2" -v c="$3" '$1==lo && $2==hi {print $c}' "$H"; }
+LONG=$(jq -r .longest_run "$S")
+GE_OBS=$(awk -F'\t' -v l="$LONG" 'NR>1 && $1>=l {s+=$2} END{print s+0}' "$O/pass/hist-raw.tsv")
+jq -n --arg r65 "$(bucket 65 128 6)" --arg r129 "$(bucket 129 256 6)" \
+  --arg o257 "$(bucket 257 512 3)" --arg t257 "$(bucket 257 512 4)" \
+  --argjson long "$LONG" --argjson geo "$GE_OBS" --argjson get "$(jq .theory_runs_ge_longest "$S")" \
+  '{rel_residual_65_128:($r65|tonumber), rel_residual_129_256:($r129|tonumber),
+    observed_257_512:($o257|tonumber), theory_257_512:($t257|tonumber),
+    longest_run:$long, observed_runs_ge_longest:$geo, theory_runs_ge_longest:$get,
+    borel_over_predicts_long_tail:(($r65|tonumber) < 0 and ($r129|tonumber) < 0 and ($o257|tonumber) < ($t257|tonumber) and $geo < $get),
+    source:"out/pass/hist.tsv, out/pass/hist-raw.tsv, out/pass/summary.json"}' > "$D/decoded/theory-tail.json" \
+  || fail "theory-tail summary failed"
 jq '{shard_rule, tail_rule, theory:"expected runs of length L = (C - occupied) * e^{-a(L+1)} (a(L+1))^L / (L+1)!, a = occupied/C (Borel; Poisson model of linear probing: Flajolet, Poblete & Viola 1998; Knuth TAOCP 3, 6.4)", knuth:"hit 1/2(1+1/(1-a)), miss 1/2(1+1/(1-a)^2)"}' "$S" > "$D/decoded/rules.json"
 
 # ---- tables ----

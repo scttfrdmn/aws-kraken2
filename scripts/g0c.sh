@@ -16,7 +16,9 @@ echo "g0c: shell flags $-"
 PART=${1:-}
 case "$PART" in
   probes|runs) exec scripts/run.sh g0c "runs/g0c-$PART.json" ;;
-  local) ;;
+  local)
+    . scripts/pin-identity.sh
+    pin_identity || { echo "g0c: cannot establish the upstream pin identity" >&2; exit 1; } ;;
   *) echo "usage: make g0c PART=local|probes|runs" >&2; exit 2 ;;
 esac
 
@@ -54,9 +56,9 @@ for db in k2_viral_20260626 k2_standard_08_GB_20260626; do
   echo "g0c: $db: sha256 streamed $got, local $want; ok=$ok"
 done
 printf '%s\n' "${ROWS[@]}" | jq -s --arg c "$(git rev-parse HEAD)" --arg dirty "$([ -n "$(git status --porcelain -- cmd internal scripts)" ] && echo true || echo false)" \
-  --arg pin "$UPSTREAM_PIN" --arg t "$(date -u +%FT%TZ)" --arg host "$(uname -sm)" \
+  --arg repo "$UPSTREAM_REPO" --arg pin "$UPSTREAM_SHA" --arg describe "$UPSTREAM_DESCRIBE" --arg t "$(date -u +%FT%TZ)" --arg host "$(uname -sm)" \
   --arg go "$(go version)" --arg shatool "$(command -v sha256sum || echo 'shasum -a 256')" \
-  '{gate:"g0c", part:"local", commit:$c, tree_dirty:($dirty=="true"), upstream_pin:$pin, finished:$t,
+  '{gate:"g0c", part:"local", commit:$c, tree_dirty:($dirty=="true"), upstream:{repo:$repo, pin:$pin, sha:$pin, describe:$describe}, finished:$t,
     host:$host, go:$go, sha256_tool:$shatool, invocation:"make g0c PART=local", databases:.}' > "$OUT/manifest.json"
 echo "results: $OUT"
 [ "$FAILED" = 0 ] || { echo "g0c: FAILED" >&2; exit 1; }
