@@ -38,3 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - placement/spot refused, an env-key allow-list, and a wider dirty-tree check;
   - in-flight phases recorded on a kill;
   - `readonly -f` on the helpers.
+- Follow-ups:
+  - a shell-aware errexit check (`scripts/lib/errexit_check.py`, self-tested in `make test`),
+    backed by runtime `$-` checks;
+  - a PIPE trap;
+  - `ak2_req` bucket validation;
+  - helper errors and state kept in files, so subshell errors count;
+  - KILL for a hung tee;
+  - shim content and self-test verification.
