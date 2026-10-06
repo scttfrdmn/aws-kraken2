@@ -232,8 +232,8 @@ mset --arg state "$STATE" --arg end "$END_ISO" --argjson rec "$REC" --argjson pr
   | .manifest_finalised_at = $fin'
 EXIT=$(jq -r '.task.exit_code // 99' "$M")
 
-# ---- gate-specific local post-processing, if checked in alongside the spec ----
-POST="${SPEC%.json}.post.sh"
+# ---- spec-specific local post-processing: scripts/post/<spec name>.sh, if it exists ----
+POST="scripts/post/$(basename "$SPEC" .json).sh"
 if [ -f "$POST" ]; then
   say "post: $POST $RUN_DIR"
   bash "$POST" "$RUN_DIR" || { say "post-processing failed"; [ "$EXIT" = 0 ] && EXIT=98; }

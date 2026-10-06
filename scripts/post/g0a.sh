@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Local post-processing for runs/g0a.json, run by scripts/run.sh as: g0a.post.sh <run-dir>.
+# Local post-processing for runs/g0a.json, run by scripts/run.sh as: scripts/post/g0a.sh <run-dir>.
+# Re-runnable by hand on an existing run dir; it records the commit it decoded at.
 # Decodes the raw bytes the instance fetched with cmd/k2probe and derives the tables that
 # `make report` renders. Reads only files in <run-dir>; writes decoded/ and tables/ there.
 set -uo pipefail

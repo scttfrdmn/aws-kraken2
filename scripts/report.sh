@@ -14,7 +14,7 @@ M="$D/manifest.json"
 jq -e . "$M" >/dev/null || die "$M is not valid JSON"
 [ -n "$(jq -r '.manifest_finalised_at // empty' "$M")" ] || die "$M was never finalised (run still in progress or aborted)"
 
-m() { jq -r "$1 // \"—\"" "$M"; }
+m() { jq -r "($1) | if . == null then \"—\" else tostring end" "$M"; }
 tsv_md() { # tsv file -> markdown table, at most 60 rows
   awk -F'\t' 'NR==1{h="|"; s="|"; for(i=1;i<=NF;i++){h=h" "$i" |"; s=s"---|"}; print h; print s; next}
     NR<=61{r="|"; for(i=1;i<=NF;i++){r=r" "$i" |"}; print r}

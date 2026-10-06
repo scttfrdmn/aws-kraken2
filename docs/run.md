@@ -24,8 +24,9 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
     manifest and whose buckets are region- and Payer-checked;
   - `env.BUCKET_REGION` (optional): declare the bucket region explicitly; it must still match;
   - `outputs[].destination` may use `${AK2_OUT}`, which becomes `<run prefix>/out`.
-- Optional `runs/<name>.post.sh`: run locally after fetch as `post.sh <run-dir>`. It may read
-  only the run dir and write `decoded/` and `tables/` there.
+- Optional `scripts/post/<name>.sh` (same basename as the spec): run locally after fetch as
+  `scripts/post/<name>.sh <run-dir>`. It may read only the run dir and write `decoded/` and
+  `tables/` there, and can be re-run on an existing run dir (it records the commit it ran at).
 - The spec body may use `ak2_say MSG`, `ak2_push FILE [NAME]` (stream a result now) and
   `ak2_drop_caches` (required before every cold rung), plus `$AK2_REGION` and `$AK2_S3_PREFIX`.
   It must not replace the EXIT trap.
@@ -40,7 +41,9 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
 3. Writes `manifest.json` with: commit (and dirty flag), upstream pin, spec sha256, tool versions,
    TTL and cost limit, accessions, head-object of each dataset (ETag, VersionId, size), and the
    Payer of each bucket.
-4. Runs `spawn task run --dry-run` (saved as `spawn-plan.txt`), then launches with `-o json`
+4. Runs `spawn task run --dry-run` (saved as `spawn-plan.txt`) and pins the planned type into
+   `spec.resolved.json` as `resources.instance_type`. spawn sizing takes about 4 minutes per
+   call, and the launch must be the box the plan priced. It then launches with `-o json`
    (`launch.json`), tags the instance `ak2:project/gate/run-id`, and adds instance type and
    count, AMI, AZ, launch time and the truffle on-demand price to the manifest.
 5. Tails `<run prefix>/log/run.log` every 15 s until `completion.json` appears, the instance
@@ -49,7 +52,7 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
 6. Finalises the manifest with the completion record, the instance preflight, stop time
    (from `StateTransitionReason`), billed seconds and `cost_usd`. `cost_usd` is the truffle
    price × (terminate − launch) with a 60 s minimum: compute only, an estimate rather than a bill.
-7. Runs `<spec>.post.sh` if present, then `scripts/orphans.sh`.
+7. Runs `scripts/post/<name>.sh` if present, then `scripts/orphans.sh`.
 
 On the instance, `preamble.sh` runs first: `$-` before and after `set +e`, IMDSv2
 region/AZ/type/AMI, the region assert against every bucket, the Payer of each bucket,

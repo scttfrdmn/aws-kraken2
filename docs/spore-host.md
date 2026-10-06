@@ -109,4 +109,5 @@ means wrong region.
 | strict parse | unknown TaskSpec key fails validation | metadata in `env` |
 | IAM scope | instance can read only `inputs[]` buckets | `--no-sign-request` for public data |
 | tmpfs | `/tmp` is about RAM/2 whatever `disk_gib` says | size `memory_gib` or stage to a non-`/tmp` path |
+| slow sizing | `task run` sizing (truffle search + live price per candidate) took ~4 min per call in 0.121.0 | `run.sh` sizes once (`--dry-run`) and pins `instance_type` for the launch |
 | local Docker | macOS lies about sticky bits, cgroup memory and CPU features | the AWS run is the only verdict |
