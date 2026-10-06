@@ -11,11 +11,15 @@ echo "ak2-stub: inherited \$-=$AK2_STUB_FLAGS"
 AK2_T=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 300')
 AK2_R=$(curl -sf -m 5 -H "X-aws-ec2-metadata-token: $AK2_T" http://169.254.169.254/latest/meta-data/placement/region)
 AK2_PB=${AK2_PAYLOAD_URI#s3://}; AK2_PB=${AK2_PB%%/*}
-AK2_PBR=$(curl -sI -m 10 "https://$AK2_PB.s3.amazonaws.com/" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-amz-bucket-region"{print $2}')
+AK2_PBR=$(curl -sI -m 10 "https://$AK2_PB.s3.$AK2_R.amazonaws.com/" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-amz-bucket-region"{print $2}')
 echo "ak2-stub: imds region=$AK2_R expected=$AK2_EXPECT_REGION payload bucket $AK2_PB region=$AK2_PBR"
 if [ -z "$AK2_R" ] || [ "$AK2_R" != "$AK2_EXPECT_REGION" ] || [ "$AK2_PBR" != "$AK2_R" ]; then
   echo "ak2-stub: FATAL: region assert failed before any I/O"; exit 97
 fi
+case "$AK2_PAYLOAD_URL" in
+  "https://$AK2_PB.s3.$AK2_R.amazonaws.com/"*) ;;
+  *) echo "ak2-stub: FATAL: payload URL is not the in-region endpoint of $AK2_PB"; exit 97 ;;
+esac
 curl -sf -m 60 --retry 3 -o /tmp/ak2-payload.sh "$AK2_PAYLOAD_URL" ||
   { echo "ak2-stub: FATAL: could not fetch $AK2_PAYLOAD_URI"; exit 97; }
 AK2_SUM=$(sha256sum /tmp/ak2-payload.sh | cut -d' ' -f1)
@@ -23,5 +27,6 @@ AK2_SUM=$(sha256sum /tmp/ak2-payload.sh | cut -d' ' -f1)
   { echo "ak2-stub: FATAL: payload sha256 $AK2_SUM != $AK2_PAYLOAD_SHA256"; exit 97; }
 echo "ak2-stub: payload verified (sha256 $AK2_SUM); exec"
 export AK2_STUB_FLAGS
+unset AK2_PAYLOAD_URL   # a credential for one object; the payload has no use for it
 # bash -c, exactly as spawn ran the inlined script before (same parsing, same $- semantics).
 exec bash -c "$(cat /tmp/ak2-payload.sh)"

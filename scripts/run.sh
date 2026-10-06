@@ -191,8 +191,18 @@ say "run $RUN_ID  task $TASK_ID  ->  $PREFIX"
 # command[2] becomes scripts/stub.sh, which asserts the region, fetches the payload, checks its
 # sha256 and execs it. EC2's 16384-byte user-data cap cannot hold the payload inline.
 RESOLVED="$RUN_DIR/spec.resolved.json"
+# The spec spawn reads carries the presigned URL, so it lives outside results/ and is removed on
+# any exit; $RESOLVED under results/ is only ever written redacted (by write_resolved).
+LIVE_SPEC=$(mktemp "${TMPDIR:-/tmp}/ak2-spec.XXXXXX") || die "mktemp failed"
+trap 'rm -f "$LIVE_SPEC"' EXIT
+write_resolved() {
+  jq '.env.AK2_PAYLOAD_URL = "<presigned GET of env.AK2_PAYLOAD_URI; redacted>"' "$LIVE_SPEC" > "$RESOLVED"
+}
 PAYLOAD="$RUN_DIR/payload.sh"
 { cat scripts/preamble.sh; printf '\n'; q '.command[2]'; } > "$PAYLOAD" || die "could not write $PAYLOAD"
+PAYLOAD_BYTES=$(wc -c < "$PAYLOAD" | tr -d ' ')
+# The stub execs it as one `bash -c` argument; Linux caps a single argument at 128 KiB.
+[ "$PAYLOAD_BYTES" -lt 122880 ] || { rm -rf "$RUN_DIR"; die "payload is $PAYLOAD_BYTES bytes; the limit is 120 KiB (one bash -c argument)"; }
 PAYLOAD_SHA=$(shasum -a 256 "$PAYLOAD" | cut -d' ' -f1)
 PAYLOAD_URI="$PREFIX/payload.sh"
 # A presigned GET for this one object, so the instance needs no extra IAM grant on the (shared)
@@ -211,13 +221,20 @@ jq --rawfile stub scripts/stub.sh --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
              AK2_S3_PREFIX: $prefix, AK2_RUN_ID: $run, AK2_GATE: $gate,
              AK2_PAYLOAD_URI: $puri, AK2_PAYLOAD_URL: $purl, AK2_PAYLOAD_SHA256: $psha}
   | if .outputs then .outputs |= map(.destination |= gsub("\\$\\{AK2_OUT\\}"; $prefix + "/out")) else . end
-' "$SPEC" > "$RESOLVED" || die "could not resolve spec"
+' "$SPEC" > "$LIVE_SPEC" && write_resolved || die "could not resolve spec"
 cp "$SPEC" "$RUN_DIR/spec.json"
 
 # ---- user-data size, measured with spawn v0.121.0's own builders (scripts/udsize) ----
 UDSIZE_BIN="$ROOT/bin/udsize"
+SPAWN_V=$(spawn version 2>/dev/null | awk '/Version:/{print $2}')
+UDSIZE_V=$(awk '$1=="require" && $2=="github.com/spore-host/spawn"{sub(/^v/,"",$3); print $3}' scripts/udsize/go.mod)
+if [ -z "$SPAWN_V" ] || [ "$SPAWN_V" != "$UDSIZE_V" ]; then
+  rm -rf "$RUN_DIR"
+  die "spawn on PATH is ${SPAWN_V:-unknown} but scripts/udsize measures user data with spawn $UDSIZE_V.
+Bump github.com/spore-host/spawn in scripts/udsize/go.mod to v$SPAWN_V (then go mod tidy there) so the size check models the spawn that launches."
+fi
 go build -C scripts/udsize -o "$UDSIZE_BIN" . || { rm -rf "$RUN_DIR"; die "could not build scripts/udsize"; }
-UD=$("$UDSIZE_BIN" -region "$REGION" -account "$AK2_ACCOUNT" "$RESOLVED") || { rm -rf "$RUN_DIR"; die "udsize failed on $RESOLVED"; }
+UD=$("$UDSIZE_BIN" -region "$REGION" -account "$AK2_ACCOUNT" "$LIVE_SPEC") || { rm -rf "$RUN_DIR"; die "udsize failed on the resolved spec"; }
 UD_GZ=$(echo "$UD" | jq -r .gzip_bytes)
 UD_MAX=$((16384 - AK2_USERDATA_MARGIN))
 say "user data: $UD_GZ of 16384 bytes after base64 decoding (refuse above $UD_MAX)"
@@ -254,15 +271,15 @@ mset() {
 }
 
 # ---- plan, then launch ----
-spawn task run --spec "$RESOLVED" --region "$REGION" --dry-run > "$RUN_DIR/spawn-plan.txt" 2>&1 ||
+spawn task run --spec "$LIVE_SPEC" --region "$REGION" --dry-run > "$RUN_DIR/spawn-plan.txt" 2>&1 ||
   { cat "$RUN_DIR/spawn-plan.txt" >&2; die "spawn dry-run failed"; }
 say "plan: $(grep -E 'Instance|Max cost' "$RUN_DIR/spawn-plan.txt" | tr -s ' ' | paste -sd ';' -)"
 # Pin the planned type for the real launch: spawn's sizing takes minutes per call (truffle
 # search + live price per candidate), and the launch must be the box the plan priced.
 PLANNED=$(awk '/^Instance:/{print $2; exit}' "$RUN_DIR/spawn-plan.txt")
 [ -n "$PLANNED" ] || die "could not read the planned instance type from spawn-plan.txt"
-TMP_SPEC=$(mktemp) && jq --arg t "$PLANNED" '.resources.instance_type = $t' "$RESOLVED" > "$TMP_SPEC" &&
-  mv "$TMP_SPEC" "$RESOLVED" || die "could not pin instance type"
+TMP_SPEC=$(mktemp) && jq --arg t "$PLANNED" '.resources.instance_type = $t' "$LIVE_SPEC" > "$TMP_SPEC" &&
+  mv "$TMP_SPEC" "$LIVE_SPEC" && write_resolved || die "could not pin instance type"
 if [ "${DRY_RUN:-}" = 1 ]; then
   say "DRY_RUN=1: stopping before launch; removing $RUN_DIR"
   cat "$RUN_DIR/spawn-plan.txt" >&2
@@ -273,11 +290,9 @@ aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD" "$PAYLOAD_URI" || die
 GOT=$(aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD_URI" - | shasum -a 256 | cut -d' ' -f1)
 [ "$GOT" = "$PAYLOAD_SHA" ] || die "uploaded payload sha256 $GOT != $PAYLOAD_SHA"
 LAUNCH_AT=$(now)
-spawn task run --spec "$RESOLVED" --region "$REGION" -o json > "$RUN_DIR/launch.json" 2> "$RUN_DIR/launch.err"
+spawn task run --spec "$LIVE_SPEC" --region "$REGION" -o json > "$RUN_DIR/launch.json" 2> "$RUN_DIR/launch.err"
 LRC=$?
-# The presigned URL is a short-lived credential for one object; keep it out of results/.
-TMP_SPEC=$(mktemp) && jq '.env.AK2_PAYLOAD_URL = "<presigned GET of env.AK2_PAYLOAD_URI; redacted>"' "$RESOLVED" > "$TMP_SPEC" &&
-  mv "$TMP_SPEC" "$RESOLVED" || say "WARNING: could not redact the presigned URL in $RESOLVED"
+rm -f "$LIVE_SPEC"
 if [ $LRC -ne 0 ] || ! jq -e .instance_id "$RUN_DIR/launch.json" >/dev/null 2>&1; then
   cat "$RUN_DIR/launch.err" >&2
   mset --arg t "$LAUNCH_AT" '.launch = {at:$t, error:"spawn task run failed"}'
