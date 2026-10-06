@@ -36,6 +36,7 @@ LIBSTDCXX=$("$CXX" -print-file-name=libstdc++.so 2>/dev/null)
 OSREL=$( (. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME") || sw_vers -productVersion 2>/dev/null || echo unknown)
 CXXV=$("$CXX" --version | head -1)
 CANON=false
+INCONT=false; { [ -f /.dockerenv ] || [ -f /run/.containerenv ]; } && INCONT=true
 case "$(uname -sm)" in "Linux aarch64") case "$OSREL" in "Amazon Linux 2023"*) CANON=true ;; esac ;; esac
 SUMMARY="$RES/summary.json"; [ -s "$SUMMARY" ] || SUMMARY=/dev/null
 DIRTY=false; [ -n "$(git status --porcelain --untracked-files=no)" ] && DIRTY=true
@@ -47,7 +48,7 @@ jq -n \
   --arg cxx "$CXX" --arg cxxv "$CXXV" --arg oracle "$ORACLE_VERSION" --arg lib "$LIBSTDCXX" \
   --arg build "$(cat "$BIN.BUILD")" --arg bin_sha "$(shasum -a 256 "$BIN" | cut -d' ' -f1)" \
   --arg go "$(go version)" --arg host "$(uname -n)" --arg os "$(uname -s)" --arg arch "$(uname -m)" \
-  --arg kernel "$(uname -r)" --arg osrel "$OSREL" --argjson canon "$CANON" \
+  --arg kernel "$(uname -r)" --arg osrel "$OSREL" --argjson canon "$CANON" --argjson incont "$INCONT" \
   --arg start "$start" --arg stop "$stop" --argjson status "$st" \
   --slurpfile s "$SUMMARY" \
   '($s[0] // null) as $sum |
@@ -57,8 +58,8 @@ jq -n \
               harness_build:$build, sortfuzz_sha256:$bin_sha},
     go:$go,
     host:{name:$host, os:$os, arch:$arch, kernel:$kernel, os_release:$osrel,
-          canonical_platform:$canon,
-          note:(if $canon then "canonical platform (Amazon Linux 2023, Linux aarch64)" else "NOT the canonical platform (amazonlinux:2023 on Linux aarch64): development evidence only" end)},
+          container:$incont, canonical_platform:$canon,
+          note:(if $canon then "canonical toolchain: Amazon Linux 2023 g++ and libstdc++ on Linux aarch64" else "NOT the canonical platform (amazonlinux:2023 on Linux aarch64): development evidence only" end)},
     corpus:{mode:$mode, seed:$seed, sizes:($sum.sizes // null)},
     results:(if $sum == null then null else
       {cases:$sum.cases, elements:$sum.elements, mismatches:$sum.mismatches,

@@ -105,6 +105,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   upstream and by `internal/chash`, so the 40-bit cell path is checked against upstream.
 - `docs/harness.md` runbook; `scripts/cxx.sh` is the compiler choice shared by the upstream build
   and the harnesses.
+- `make sortfuzz [SORTFUZZ=quick|full]` (`scripts/sortfuzz.sh`, `docs/sortfuzz.md`): a
+  differential fuzz of `internal/report`'s `stdSort` against libstdc++'s `std::sort`
+  (`upstream/sortfuzz.cc`, `internal/report/sortfuzz_test.go`) with upstream's report comparator.
+  The full corpus has about 10^6 heavy-tie cases, every n from 0 to 2048, and McIlroy
+  median-of-3 killers. Each case reports whether the heapsort fallback ran, detected by a
+  `std::__partial_sort` specialization on the harness's own iterator type. A CI job runs the full
+  corpus in `amazonlinux:2023` (GCC 11.5.0) (#35).
 
 ### Changed
 

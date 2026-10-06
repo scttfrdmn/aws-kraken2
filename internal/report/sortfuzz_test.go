@@ -465,7 +465,7 @@ func fuzzEnv(t *testing.T) (bin, mode string, seed uint64, outDir string) {
 
 // TestSortFuzzHeapProbe shows the heapsort detection works both ways: a McIlroy adversary
 // input enters the fallback (and stays O(n log n) in comparisons, where without it the adversary
-// forces about n²/4), while inputs that cannot reach the depth limit do not.
+// forces a quadratic count), while inputs that cannot reach the depth limit do not.
 func TestSortFuzzHeapProbe(t *testing.T) {
 	bin, _, _, _ := fuzzEnv(t)
 	o, err := startOracle(bin)
