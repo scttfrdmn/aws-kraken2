@@ -1,0 +1,36 @@
+{
+  "what": "local oracle equivalence: internal/taxo (#11) and internal/report (#15) vs upstream",
+  "commit": "d74b1ba (code under test; results committed on top)",
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+  "upstream_describe": "2.17.2-20-g2731b35",
+  "upstream_build": ".oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/BUILD: g++-16 (Homebrew GCC 16.2.0), Kraken version 2.17.1, built 2026-10-06T00:14:07Z Darwin arm64",
+  "host": "local macOS 27.0.1 arm64 (not AWS: no instance, AMI, price or region apply)",
+  "go": "go1.27.1 darwin/arm64",
+  "datasets": [
+    {
+      "name": "k2_viral_20260626",
+      "source": "s3://genome-idx/kraken/k2_viral_20260626.tar.gz",
+      "etag": "\"df6f9dd95095a9ea2e0cfc580b0f684a-69\"",
+      "fetched": "2026-10-06T00:17:31Z",
+      "taxo_k2d_sha256": "681162e42813064ebe74d55950cf53da33157d28db3ef4e4ad378af007384d24"
+    },
+    {
+      "name": "k2_standard_08_GB_20260626",
+      "source": "s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz",
+      "etag": "\"815577bbfd245c6e337f1bea41fae968-709\"",
+      "fetched": "2026-10-06T01:19:22Z",
+      "taxo_k2d_sha256": "65f9dd8c9a859dc613db5444160e989d275b386475486a013c6ca7f4dd09bc2e"
+    }
+  ],
+  "samples": [
+    {
+      "accession": "SRR062634",
+      "records_per_mate": 200000,
+      "sha256": {
+        "SRR062634_200000_1.fq": "7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5",
+        "SRR062634_200000_2.fq": "e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"
+      }
+    }
+  ],
+  "run": "2026-10-05 local (America/Denver), log: go-test-v.log"
+}

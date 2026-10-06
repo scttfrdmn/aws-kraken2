@@ -1,0 +1,113 @@
+=== RUN   TestOracleTaxoDump
+=== RUN   TestOracleTaxoDump/k2_viral_20260626
+    oracle_test.go:92: k2_viral_20260626: 30895 nodes, 10456975 dump bytes identical
+=== RUN   TestOracleTaxoDump/k2_standard_08_GB_20260626
+    oracle_test.go:92: k2_standard_08_GB_20260626: 59403 nodes, 16099711 dump bytes identical
+--- PASS: TestOracleTaxoDump (0.35s)
+    --- PASS: TestOracleTaxoDump/k2_viral_20260626 (0.16s)
+    --- PASS: TestOracleTaxoDump/k2_standard_08_GB_20260626 (0.19s)
+=== RUN   TestParseSynthetic
+--- PASS: TestParseSynthetic (0.00s)
+=== RUN   TestParseErrors
+--- PASS: TestParseErrors (0.00s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/taxo	0.722s
+=== RUN   TestOracleReport
+=== RUN   TestOracleReport/k2_viral_20260626
+=== RUN   TestOracleReport/k2_viral_20260626/se
+    oracle_test.go:175: k2_viral_20260626/se: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_viral_20260626/se: 200000 seqs, 198901 unclassified, 211 taxa in counters, report 67 lines / 3577 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/se-zero
+    oracle_test.go:175: k2_viral_20260626/se-zero: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_viral_20260626/se-zero: 200000 seqs, 198901 unclassified, 211 taxa in counters, report 30895 lines / 1970194 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/se-mpa
+    oracle_test.go:175: k2_viral_20260626/se-mpa: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_viral_20260626/se-mpa: 200000 seqs, 198901 unclassified, 211 taxa in counters, report 42 lines / 3201 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/se-mpa-zero
+    oracle_test.go:175: k2_viral_20260626/se-mpa-zero: controls: stable-sort detected=true drop-zero-counters detected=false
+    oracle_test.go:177: k2_viral_20260626/se-mpa-zero: 200000 seqs, 198901 unclassified, 211 taxa in counters, report 17547 lines / 1874456 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/pe
+    oracle_test.go:175: k2_viral_20260626/pe: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_viral_20260626/pe: 200000 seqs, 197833 unclassified, 371 taxa in counters, report 131 lines / 7311 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/pe-zero
+    oracle_test.go:175: k2_viral_20260626/pe-zero: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_viral_20260626/pe-zero: 200000 seqs, 197833 unclassified, 371 taxa in counters, report 30895 lines / 1970225 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/pe-mpa
+    oracle_test.go:175: k2_viral_20260626/pe-mpa: controls: stable-sort detected=true drop-zero-counters detected=false
+    oracle_test.go:177: k2_viral_20260626/pe-mpa: 200000 seqs, 197833 unclassified, 371 taxa in counters, report 86 lines / 7398 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/pe-conf0.1
+    oracle_test.go:175: k2_viral_20260626/pe-conf0.1: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_viral_20260626/pe-conf0.1: 200000 seqs, 199554 unclassified, 371 taxa in counters, report 51 lines / 2656 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/pe-conf0.1-zero
+    oracle_test.go:175: k2_viral_20260626/pe-conf0.1-zero: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_viral_20260626/pe-conf0.1-zero: 200000 seqs, 199554 unclassified, 371 taxa in counters, report 30895 lines / 1970196 bytes identical
+=== RUN   TestOracleReport/k2_viral_20260626/pe-conf0.1-mpa
+    oracle_test.go:175: k2_viral_20260626/pe-conf0.1-mpa: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_viral_20260626/pe-conf0.1-mpa: 200000 seqs, 199554 unclassified, 371 taxa in counters, report 33 lines / 2409 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/se
+    oracle_test.go:175: k2_standard_08_GB_20260626/se: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_standard_08_GB_20260626/se: 200000 seqs, 108710 unclassified, 56 taxa in counters, report 91 lines / 5026 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/se-zero
+    oracle_test.go:175: k2_standard_08_GB_20260626/se-zero: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_standard_08_GB_20260626/se-zero: 200000 seqs, 108710 unclassified, 56 taxa in counters, report 59403 lines / 3862781 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/se-mpa
+    oracle_test.go:175: k2_standard_08_GB_20260626/se-mpa: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_standard_08_GB_20260626/se-mpa: 200000 seqs, 108710 unclassified, 56 taxa in counters, report 56 lines / 4784 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/se-mpa-zero
+    oracle_test.go:175: k2_standard_08_GB_20260626/se-mpa-zero: controls: stable-sort detected=true drop-zero-counters detected=false
+    oracle_test.go:177: k2_standard_08_GB_20260626/se-mpa-zero: 200000 seqs, 108710 unclassified, 56 taxa in counters, report 39112 lines / 4936598 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/pe
+    oracle_test.go:175: k2_standard_08_GB_20260626/pe: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_standard_08_GB_20260626/pe: 200000 seqs, 40121 unclassified, 106 taxa in counters, report 143 lines / 7963 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/pe-zero
+    oracle_test.go:175: k2_standard_08_GB_20260626/pe-zero: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_standard_08_GB_20260626/pe-zero: 200000 seqs, 40121 unclassified, 106 taxa in counters, report 59403 lines / 3862818 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/pe-mpa
+    oracle_test.go:175: k2_standard_08_GB_20260626/pe-mpa: controls: stable-sort detected=true drop-zero-counters detected=false
+    oracle_test.go:177: k2_standard_08_GB_20260626/pe-mpa: 200000 seqs, 40121 unclassified, 106 taxa in counters, report 100 lines / 9934 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/pe-conf0.1
+    oracle_test.go:175: k2_standard_08_GB_20260626/pe-conf0.1: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_standard_08_GB_20260626/pe-conf0.1: 200000 seqs, 158132 unclassified, 106 taxa in counters, report 51 lines / 2983 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/pe-conf0.1-zero
+    oracle_test.go:175: k2_standard_08_GB_20260626/pe-conf0.1-zero: controls: stable-sort detected=true drop-zero-counters detected=true
+    oracle_test.go:177: k2_standard_08_GB_20260626/pe-conf0.1-zero: 200000 seqs, 158132 unclassified, 106 taxa in counters, report 59403 lines / 3862765 bytes identical
+=== RUN   TestOracleReport/k2_standard_08_GB_20260626/pe-conf0.1-mpa
+    oracle_test.go:175: k2_standard_08_GB_20260626/pe-conf0.1-mpa: controls: stable-sort detected=false drop-zero-counters detected=false
+    oracle_test.go:177: k2_standard_08_GB_20260626/pe-conf0.1-mpa: 200000 seqs, 158132 unclassified, 106 taxa in counters, report 22 lines / 1417 bytes identical
+--- PASS: TestOracleReport (9.82s)
+    --- PASS: TestOracleReport/k2_viral_20260626 (4.61s)
+        --- PASS: TestOracleReport/k2_viral_20260626/se (0.33s)
+        --- PASS: TestOracleReport/k2_viral_20260626/se-zero (0.36s)
+        --- PASS: TestOracleReport/k2_viral_20260626/se-mpa (0.29s)
+        --- PASS: TestOracleReport/k2_viral_20260626/se-mpa-zero (0.36s)
+        --- PASS: TestOracleReport/k2_viral_20260626/pe (0.53s)
+        --- PASS: TestOracleReport/k2_viral_20260626/pe-zero (0.59s)
+        --- PASS: TestOracleReport/k2_viral_20260626/pe-mpa (0.52s)
+        --- PASS: TestOracleReport/k2_viral_20260626/pe-conf0.1 (0.52s)
+        --- PASS: TestOracleReport/k2_viral_20260626/pe-conf0.1-zero (0.59s)
+        --- PASS: TestOracleReport/k2_viral_20260626/pe-conf0.1-mpa (0.52s)
+    --- PASS: TestOracleReport/k2_standard_08_GB_20260626 (5.20s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/se (0.40s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/se-zero (0.52s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/se-mpa (0.39s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/se-mpa-zero (0.50s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/pe (0.52s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/pe-zero (0.65s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/pe-mpa (0.52s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/pe-conf0.1 (0.52s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/pe-conf0.1-zero (0.66s)
+        --- PASS: TestOracleReport/k2_standard_08_GB_20260626/pe-conf0.1-mpa (0.52s)
+=== RUN   TestKrakenStyleSynthetic
+--- PASS: TestKrakenStyleSynthetic (0.00s)
+=== RUN   TestMpaStyleSynthetic
+--- PASS: TestMpaStyleSynthetic (0.00s)
+=== RUN   TestPct
+--- PASS: TestPct (0.00s)
+=== RUN   TestOracleStdSort
+    stdsort_test.go:114: 2190 sort cases identical to libstdc++
+--- PASS: TestOracleStdSort (0.33s)
+=== RUN   TestStdSortSorts
+--- PASS: TestStdSortSorts (0.01s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/report	10.526s
