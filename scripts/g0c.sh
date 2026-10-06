@@ -43,11 +43,12 @@ for db in k2_viral_20260626 k2_standard_08_GB_20260626; do
   ok=yes
   [ "$got" = "$want" ] || ok=NO
   [ "$(jq -r '.occupied_equals_header_size and .cells_equal_capacity and .complete' "$D/summary.json")" = true ] || ok=NO
-  grep -q 'brute: identical' "$D/k2probe.log" || ok=NO
+  brute=false; grep -q 'brute: identical' "$D/k2probe.log" && brute=true
+  [ "$brute" = true ] || ok=NO
   [ "$ok" = yes ] || FAILED=1
-  ROWS+=("$(jq -nc --arg db "$db" --arg w "$want" --arg ok "$ok" --slurpfile s "$D/summary.json" \
+  ROWS+=("$(jq -nc --arg db "$db" --arg w "$want" --arg ok "$ok" --argjson brute "$brute" --slurpfile s "$D/summary.json" \
     --arg src "$(tr '\n' ' ' < "$K2_DB_ROOT/$db/SOURCE" 2>/dev/null)" \
-    '{db:$db, source:$src, sha256_streamed:$s[0].sha256, sha256_local_tool:$w, brute_identical:true,
+    '{db:$db, source:$src, sha256_streamed:$s[0].sha256, sha256_local_tool:$w, brute_identical:$brute,
       cells:$s[0].cells, capacity:$s[0].capacity, occupied:$s[0].occupied, header_size:$s[0].header_size,
       runs:$s[0].runs, longest_run:$s[0].longest_run, ok:$ok}')")
   echo "g0c: $db: sha256 streamed $got, local $want; ok=$ok"
