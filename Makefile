@@ -13,6 +13,7 @@ build:
 
 test:
 	$(GO) test $(PKGS)
+	python3 scripts/lib/errexit_check.py --self-test
 
 lint:
 	$(GO) vet $(PKGS)

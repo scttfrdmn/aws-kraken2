@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - placement/spot refused, an env-key allow-list, and a wider dirty-tree check;
   - in-flight phases recorded on a kill;
   - `readonly -f` on the helpers.
+- Follow-ups:
+  - a shell-aware errexit check (`scripts/lib/errexit_check.py`, self-tested in `make test`),
+    backed by runtime `$-` checks;
+  - a PIPE trap;
+  - `ak2_req` bucket validation;
+  - helper errors and state kept in files, so subshell errors count;
+  - KILL for a hung tee;
+  - shim content and self-test verification.
 - `internal/chash`: port of upstream's compact hash lookup path (fmix64, 32- and 40-bit cells, linear and double probing, RAM and mmap loaders, `CellSource` probe over `io.ReaderAt`); `upstream/chash_dump.cc` and `upstream/chash_keys.cc` oracle harnesses; `k2probe equiv-hash`; `make harness` and `make g0b` (#4).
 - `internal/mmscan`: port of upstream's `MinimizerScanner` (DNA and protein, both revcom versions,
   `LoadSequence` intervals, zero allocations per minimizer). It is checked against upstream by

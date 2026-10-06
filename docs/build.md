@@ -1,7 +1,7 @@
 # make build / make test / make lint
 
 **What:** `build` compiles every `cmd/` binary into `bin/` (`-trimpath`, no cgo in the core path).
-`test` runs the Go unit tests. `lint` runs `go vet` and `staticcheck`.
+`test` runs the Go unit tests and the self-test of `scripts/lib/errexit_check.py`. `lint` runs `go vet` and `staticcheck`.
 
 **Inputs:** the Go toolchain named in `go.mod`; `staticcheck` on `PATH`.
 
