@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -66,3 +66,7 @@ orphans:
 
 report:
 	scripts/report.sh "$(GATE)" "$(RUN)"
+
+# Bracken spot-check (issue #19, docs/bracken-check.md): Bracken on upstream's vs our --report.
+bracken-check:
+	scripts/bracken-check.sh
