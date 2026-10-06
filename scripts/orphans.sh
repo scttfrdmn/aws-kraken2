@@ -48,6 +48,10 @@ write_json() {
   return "$rc"
 }
 trap write_json EXIT
+# A signal must not reach the EXIT trap as $?=0 (which would record own_gone:true).
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 REGIONS=$(aws ec2 describe-regions --region us-west-2 --query 'Regions[].RegionName' --output text 2>&1) ||
   { echo "orphans: describe-regions failed: $REGIONS" >&2; REGIONS=""; exit 2; }

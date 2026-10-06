@@ -48,6 +48,7 @@ cat <<EOF
 | post-run orphan check | $(jq -r 'if .orphan_check == null then "—" else .orphan_check
     | "rc=\(.rc), own instance gone: \(.own_gone), \(.checked_regions // "?") regions checked"
       + (if (.failed_regions // []) | length > 0 then ", failed regions: \(.failed_regions | join(" "))" else "" end)
+      + (if .error then ", ERROR: \(.error)" else "" end)
       + ", other live ak2 instances: " + (if (.others // []) | length == 0 then "none"
           else ((.others | map("\(.task_id) (\(.region) \(.id), \(.flag))") | join("; "))) end) end' "$M") |
 | S3 requests (spec-recorded) | $(m '.requests.total') |

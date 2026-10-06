@@ -427,8 +427,13 @@ say "run dir: $RUN_DIR  (task exit $EXIT, state $STATE, cost \$$(jq -r .cost_usd
 # global, strict check, for when nothing is in flight).
 AK2_ORPHANS_JSON="$RUN_DIR/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" "$IID" 2>&1 | tee "$RUN_DIR/orphans.txt"
 ORC=${PIPESTATUS[0]}
-OC=$(jq -c . "$RUN_DIR/orphan_check.json" 2>/dev/null) ||
-  OC=$(jq -n -c --argjson rc "$ORC" '{mode:"own", rc:$rc, own_gone:false, error:"orphans.sh wrote no summary"}')
+# orphans.sh's exit code is authoritative: the summary can only confirm own_gone, never assert it.
+if [ -s "$RUN_DIR/orphan_check.json" ] &&
+   OC=$(jq -e -c --argjson rc "$ORC" 'if type == "object" and .mode == "own" then . + {rc: $rc, own_gone: (.own_gone == true and $rc == 0)} else null end' "$RUN_DIR/orphan_check.json" 2>/dev/null); then
+  :
+else
+  OC=$(jq -n -c --argjson rc "$ORC" '{mode:"own", rc:$rc, own_gone:false, error:"orphans.sh wrote no usable summary"}')
+fi
 rm -f "$RUN_DIR/orphan_check.json"
 mset --argjson oc "$OC" '.orphan_check = $oc' || say "WARNING: could not record the orphan check in the manifest"
 [ "$ORC" -eq 0 ] || { say "THIS RUN'S INSTANCE IS STILL ALIVE (or a region could not be checked)"; exit 3; }
