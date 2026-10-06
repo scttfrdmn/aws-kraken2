@@ -1,4 +1,7 @@
-# aws-kraken2 hygiene preamble (Law 4). scripts/run.sh prepends this to every spec's
+DRY RUN — nothing will be launched.
+
+Task:         ak2-g0a-20261006-015556-7c8d3f4
+Command:      bash -c # aws-kraken2 hygiene preamble (Law 4). scripts/run.sh prepends this to every spec's
 # `bash -c` script; a spec cannot opt out. It runs on the instance, as the instance user,
 # before any line of the spec. run.sh injects (and refuses specs that set) AK2_EXPECT_REGION,
 # AK2_BUCKETS, AK2_ALLOWED_BUCKETS, AK2_S3_PREFIX, AK2_RUN_ID, AK2_GATE.
@@ -225,3 +228,61 @@ readonly -f ak2_say ak2_phase ak2_req ak2_put ak2_finish ak2_fatal ak2_push ak2_
 ak2_say "preamble done; spec body starts"
 ak2_phase body
 # ---- spec body follows ----
+
+# G0a (#3): RODA kraken2 RefSeq Complete v205 -- hash.k2d header, opts.k2d, listing, Payer.
+# The bucket and prefix come from the first AK2_DATASETS entry (the declared hash.k2d).
+# Public bucket in another account: the instance role has no grant on it, so reads are
+# anonymous (--no-sign-request). Every file is pushed as soon as it exists, and every S3
+# request is counted with ak2_req (one CLI call below = one request unless noted).
+set -- $AK2_DATASETS
+U=${1#s3://}; B=${U%%/*}; K=${U#*/}; P=${K%/*}
+O=/tmp/g0a; mkdir -p "$O"
+s3a() { aws s3api --no-sign-request --region "$AK2_REGION" "$@"; }
+
+ak2_phase hash-header
+s3a get-object --bucket "$B" --key "$P/hash.k2d" --range bytes=0-31 "$O/hash.k2d.head32" > "$O/hash.k2d.head32.get.json"
+ak2_say "ranged GET hash.k2d 0-31 rc=$? bytes=$(stat -c%s "$O/hash.k2d.head32" 2>/dev/null)"; ak2_req GetObject-range 1 "$B"
+ak2_push "$O/hash.k2d.head32"; ak2_push "$O/hash.k2d.head32.get.json"
+
+ak2_phase opts
+s3a get-object --bucket "$B" --key "$P/opts.k2d" "$O/opts.k2d" > "$O/opts.k2d.get.json"
+ak2_say "GET opts.k2d rc=$? bytes=$(stat -c%s "$O/opts.k2d" 2>/dev/null)"; ak2_req GetObject 1 "$B"
+ak2_push "$O/opts.k2d"; ak2_push "$O/opts.k2d.get.json"
+
+ak2_phase listing
+s3a list-objects-v2 --bucket "$B" --output json > "$O/list-objects-v2.json"
+N=$(grep -c '"Key"' "$O/list-objects-v2.json")
+# The CLI pages at 1000 keys: one ListObjectsV2 request per page.
+ak2_say "list-objects-v2 rc=$? objects=$N"; ak2_req ListObjectsV2 $(( N / 1000 + 1 )) "$B"
+ak2_push "$O/list-objects-v2.json"
+s3a list-object-versions --bucket "$B" --output json > "$O/list-object-versions.json" 2> "$O/list-object-versions.err"
+ak2_say "list-object-versions rc=$?"; ak2_req ListObjectVersions $(( N / 1000 + 1 )) "$B"
+ak2_push "$O/list-object-versions.json"; ak2_push "$O/list-object-versions.err"
+
+ak2_phase head
+for f in hash.k2d opts.k2d taxo.k2d; do
+  s3a head-object --bucket "$B" --key "$P/$f" > "$O/head-$f.json"
+  ak2_say "head-object $f rc=$?"; ak2_req HeadObject 1 "$B"
+  ak2_push "$O/head-$f.json"
+done
+
+ak2_phase payer
+s3a get-bucket-request-payment --bucket "$B" > "$O/request-payment.json"
+ak2_say "get-bucket-request-payment rc=$? $(tr -d ' \n' < "$O/request-payment.json")"; ak2_req GetBucketRequestPayment 1 "$B"
+ak2_push "$O/request-payment.json"
+ak2_say "G0a probe done"
+
+Region:       us-west-2
+Instance:     t4g.micro  (2 vCPU, 1 GiB, $0.0084/hr on-demand)
+              chosen as cheapest of 6 matching type(s)
+AMI:          AL2023 default — arm64 (auto-selected)
+Root disk:    AMI default (resources.disk_gib not set; see --volume-size in 'spawn launch --help')
+Purchase:     on_demand
+TTL:          15m   on-complete: terminate
+Cost limit:   $0.05 (lifecycle.cost_limit)
+Max cost:     ~$0.00 (on-demand rate × TTL; a completed task usually costs far less)
+
+Re-run without --dry-run to launch this task.
+
+A newer version of spawn is available: 0.121.0 → 0.123.0
+  https://github.com/spore-host/spawn/releases/tag/v0.123.0
