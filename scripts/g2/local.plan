@@ -1,0 +1,7 @@
+# make g2 PART=local: smoke test of the driver on the viral DB (not a measurement).
+note local smoke test: viral DB, SRR062634 200k pairs; checks the driver, not a result
+run mmap SRR062634_200000-gz warm 1 4 2
+run mmap SRR062634_200000-fq warm 1 4 2
+run madv SRR062634_200000-gz warm 1 2
+run load empty warm 1 2
+run load SRR062634_200000-gz cold 1 4

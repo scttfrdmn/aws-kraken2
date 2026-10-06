@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -41,6 +41,12 @@ loadbench:
 	LB_DB=$(if $(filter command line environment,$(origin DB)),$(DB),$(or $(LB_DB),standard8)) \
 		LB_THREADS=$(or $(THREADS),$(LB_THREADS),8) LB_REPS=$(or $(REPS),$(LB_REPS),3) \
 		scripts/loadbench.sh
+
+# G2 baselines and H-knee sweep (docs/g2.md, #21-#23). PART=local (smoke test on the viral DB) or
+# PART=summary DIR=results/g2/<run>/out/g2 (rebuild summary.md). The measurements are AWS runs:
+# make run GATE=g2 SPEC=runs/g2-nvme.json | runs/g2-ram.json | runs/g2-c8gd.json | runs/g2-c9gd.json.
+g2:
+	scripts/g2.sh $(or $(PART),local) $(DIR)
 
 # G0c run lengths and probe lengths (docs/g0c.md). PART = local|probes|runs; DRY_RUN passes through.
 g0c:

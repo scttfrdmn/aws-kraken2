@@ -1,0 +1,13 @@
+--- a/src/mmap_file.cc
++++ b/src/mmap_file.cc
+@@ -58,6 +58,10 @@
+   if (fptr_ == MAP_FAILED) {
+     err(EX_OSERR, "unable to mmap %s", filename);
+   }
++  // aws-kraken2 #23 diagnostic build (kraken2-madvrandom): no read-around on page faults.
++  // Never the oracle and never the baseline.
++  if (madvise(fptr_, filesize_, MADV_RANDOM) != 0)
++    err(EX_OSERR, "madvise(MADV_RANDOM) failed on %s", filename);
+   valid_ = true;
+ }
+ 
