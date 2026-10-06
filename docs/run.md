@@ -1,7 +1,7 @@
 # make run GATE=… SPEC=…
 
 **What:** launches one checked-in TaskSpec from `runs/` through `spawn task run`. It enforces
-Law 4 so that no spec can skip it, records `results/<gate>/<run-id>/`, and runs `make orphans`
+Law 4 so that no spec can skip it, records `results/<gate>/<run-id>/`, and checks that its own instance is gone (`scripts/orphans.sh --own`)
 at the end. Backed by `scripts/run.sh`, `scripts/preamble.sh` and `scripts/ak2.env`. The
 spore.host details are in [spore-host.md](spore-host.md).
 
@@ -201,7 +201,7 @@ refuses if the result exceeds
    billed seconds and `cost_usd`. `cost_usd` is the truffle price × (terminate − launch) with a
    60 s minimum: compute only, an estimate rather than a bill. If any manifest update fails after
    launch, the run continues and exits 4.
-7. Runs `scripts/post/<name>.sh` if present, then `scripts/orphans.sh`.
+7. Runs `scripts/post/<name>.sh` if present, then the scoped `scripts/orphans.sh --own <task_id> <instance_id>`: it fails only if this run's instance survives; concurrent runs' instances are listed for information. `make orphans` stays global and strict.
 
 On the instance, `preamble.sh` runs first:
 1. `$-` before and after `set +e`.
@@ -227,7 +227,7 @@ Exit status: the task's exit code, or one of these harness codes:
 | code | meaning |
 |---|---|
 | 2 | spec refused, launch failed, or launched in the wrong region (instance terminated) |
-| 3 | orphans found, or a region could not be checked |
+| 3 | this run's own instance is still alive after the run, or a region could not be checked (other live ak2 instances are listed, not counted) |
 | 4 | a manifest update failed |
 | 95 | `ak2_drop_caches` could not drop caches (a cold rung was impossible) |
 | 96 | the body exited 0 but a helper call was invalid, or errexit was on at exit |
@@ -250,7 +250,7 @@ Exit status: the task's exit code, or one of these harness codes:
   `spawn/<task_id>/command.log` (from spored's pre-stop flush) show how far it got. Raise the TTL
   only after reading them.
 - `manifest.json` without `manifest_finalised_at`: run.sh was interrupted. Run `make orphans` now.
-- `ORPHANS FOUND`, exit 3: see [orphans.md](orphans.md).
+- `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
 rebase commits that a run under `results/` cites. Merge them as they are.
