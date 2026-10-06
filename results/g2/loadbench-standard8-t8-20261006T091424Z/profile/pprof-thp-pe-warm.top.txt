@@ -1,0 +1,47 @@
+File: aws-kraken2
+Type: cpu
+Time: 2026-10-06 03:14:36 MDT
+Duration: 509.85ms, Total samples = 820ms (160.83%)
+Showing nodes accounting for 820ms, 100% of 820ms total
+Showing top 40 nodes out of 74
+      flat  flat%   sum%        cum   cum%
+     730ms 89.02% 89.02%      730ms 89.02%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Find
+      30ms  3.66% 92.68%       30ms  3.66%  syscall.rawsyscalln
+      10ms  1.22% 93.90%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).Next
+      10ms  1.22% 95.12%       10ms  1.22%  runtime.(*mspan).init
+      10ms  1.22% 96.34%       10ms  1.22%  runtime.pthread_cond_wait
+      10ms  1.22% 97.56%       20ms  2.44%  runtime.scanObject
+      10ms  1.22% 98.78%       10ms  1.22%  runtime.tryDeferToSpanScan
+      10ms  1.22%   100%       10ms  1.22%  runtime.write1
+         0     0%   100%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%      730ms 89.02%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Get (inline)
+         0     0%   100%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Scan
+         0     0%   100%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+         0     0%   100%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%       10ms  1.22%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadBlock
+         0     0%   100%       10ms  1.22%  internal/poll.(*FD).Pread
+         0     0%   100%       10ms  1.22%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%       10ms  1.22%  internal/poll.ignoringEINTR2[go.shape.int] (inline)
+         0     0%   100%       10ms  1.22%  main.(*outputs).initialize
+         0     0%   100%       10ms  1.22%  main.(*outputs).openStream
+         0     0%   100%       10ms  1.22%  main.(*runner).processFiles
+         0     0%   100%       10ms  1.22%  main.(*runner).processFiles.func1
+         0     0%   100%      740ms 90.24%  main.(*runner).processFiles.func2
+         0     0%   100%      740ms 90.24%  main.(*runner).work
+         0     0%   100%       20ms  2.44%  main.classifyRun
+         0     0%   100%       10ms  1.22%  main.classifyRun.func1
+         0     0%   100%       20ms  2.44%  main.main
+         0     0%   100%       20ms  2.44%  main.run
+         0     0%   100%       10ms  1.22%  os.(*File).ReadAt
+         0     0%   100%       10ms  1.22%  os.(*File).pread (inline)
+         0     0%   100%       10ms  1.22%  os.Create (inline)
+         0     0%   100%       10ms  1.22%  os.OpenFile
+         0     0%   100%       10ms  1.22%  os.ignoringEINTR (inline)
+         0     0%   100%       10ms  1.22%  os.open (inline)
+         0     0%   100%       10ms  1.22%  os.openFileNolog
+         0     0%   100%       10ms  1.22%  os.openFileNolog.func1 (inline)
+         0     0%   100%       10ms  1.22%  runtime.(*mcache).allocLarge
+         0     0%   100%       10ms  1.22%  runtime.(*mheap).alloc
+         0     0%   100%       10ms  1.22%  runtime.(*mheap).alloc.func1
+         0     0%   100%       10ms  1.22%  runtime.(*mheap).allocSpan
