@@ -36,10 +36,13 @@ compiler, flags and pin.
 For each database:
 
 1. `chash_keys opts.k2d ...` runs upstream's `MinimizerScanner`, configured from `opts.k2d` as
-   classify does, over SRR062634 (both mates). It writes every non-ambiguous minimizer above
-   `minimum_acceptable_hash_value` (consecutive repeats kept) to `keys-real.u64`, and the same
-   number of uniform random uint64 keys (splitmix64, fixed seed) to `keys-random.u64` as a
-   miss-heavy control.
+   classify does, over SRR062634 (both mates). Three populations, in separate files:
+   `keys-real.u64`, every non-ambiguous minimizer classify would look up (at or above
+   `minimum_acceptable_hash_value`; consecutive repeats kept); `keys-subthreshold.u64`, the
+   real minimizers that filter drops (non-empty only for downsampled databases such as
+   Standard-8, where it is ~93% of them); `keys-random.u64`, as many uniform random uint64
+   keys as `real` (splitmix64, fixed seed), a miss-heavy control. An empty population is
+   skipped.
 2. `chash_dump{,.dh} hash.k2d` looks every key up with upstream's `Get`, `GetBatch` and
    `FindIndex`, writing value and probe count (cells examined) per key.
 3. `k2probe equiv-hash` looks the same keys up in Go and compares per key:

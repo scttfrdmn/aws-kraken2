@@ -4,15 +4,19 @@
 // Copyright 2026 aws-kraken2 contributors. MIT License.
 // Upstream code used here: Copyright 2013-2023, Derrick Wood <dwood@cs.jhu.edu>. MIT License.
 //
-// Usage: chash_keys opts.k2d real.u64 random.u64 SEED reads.fq [reads.fq ...]
+// Usage: chash_keys opts.k2d PREFIX SEED reads.fq [reads.fq ...]
 //
-// real.u64: every minimizer classify would hand to the hash table, in read order: for each record
+// Writes three key populations, uint64 LE, kept in separate files so they are never mixed up:
+// PREFIX-real.u64: every minimizer classify would hand to the hash table, in read order: for each record
 //   (upstream BatchSequenceReader), MinimizerScanner configured from opts.k2d exactly as classify
 //   does, skipping ambiguous minimizers and those under minimum_acceptable_hash_value. Unlike
 //   classify, consecutive repeats are NOT collapsed: this is the raw (non-ambiguous) stream, so
-//   every lookup classify makes appears here at least once. uint64 LE.
-// random.u64: the same number of keys, uniform over uint64 from splitmix64(SEED): a miss-heavy
-//   control. Kept in a separate file so the two populations are never mixed up.
+//   every lookup classify makes appears here at least once.
+// PREFIX-subthreshold.u64: the non-ambiguous minimizers that the minimum_acceptable_hash_value
+//   filter drops (empty unless the database is downsampled, e.g. Standard-8). classify never looks
+//   these up; they are still real keys, and exercise the table as misses.
+// PREFIX-random.u64: as many keys as PREFIX-real.u64, uniform over uint64 from splitmix64(SEED):
+//   a miss-heavy synthetic control.
 // stderr gets key=value counts.
 
 #include "kraken2_headers.h"
@@ -54,8 +58,9 @@ class Writer {
 };
 
 int main(int argc, char **argv) {
-  if (argc < 6)
-    errx(2, "usage: chash_keys opts.k2d real.u64 random.u64 SEED reads.fq [reads.fq ...]");
+  if (argc < 5)
+    errx(2, "usage: chash_keys opts.k2d PREFIX SEED reads.fq [reads.fq ...]");
+  const std::string prefix = argv[2];
 
   // Read opts.k2d exactly as classify's load_index does.
   IndexOptions idx_opts = {0};
@@ -67,14 +72,15 @@ int main(int argc, char **argv) {
   }
   if (! idx_opts.dna_db)
     errx(1, "protein databases are not supported by this harness");
-  uint64_t seed = strtoull(argv[4], nullptr, 0);
+  uint64_t seed = strtoull(argv[3], nullptr, 0);
 
   MinimizerScanner scanner(idx_opts.k, idx_opts.l, idx_opts.spaced_seed_mask,
                            idx_opts.dna_db, idx_opts.toggle_mask,
                            idx_opts.revcom_version);
-  Writer real(argv[2]);
+  Writer real((prefix + "-real.u64").c_str());
+  Writer sub((prefix + "-subthreshold.u64").c_str());
   uint64_t records = 0, minimizers = 0, ambiguous = 0, skipped = 0, emitted = 0, lookups = 0;
-  for (int a = 5; a < argc; a++) {
+  for (int a = 4; a < argc; a++) {
     BatchSequenceReader reader(argv[a]);
     Sequence seq;
     while (reader.NextSequence(seq)) {
@@ -90,6 +96,7 @@ int main(int argc, char **argv) {
         if (idx_opts.minimum_acceptable_hash_value &&
             MurmurHash3(*mp) < idx_opts.minimum_acceptable_hash_value) {
           skipped++;
+          sub.put(*mp);
           continue;
         }
         if (! repeat) lookups++;
@@ -99,8 +106,9 @@ int main(int argc, char **argv) {
     }
   }
   real.close();
+  sub.close();
 
-  Writer rnd(argv[3]);
+  Writer rnd((prefix + "-random.u64").c_str());
   uint64_t s = seed;
   for (uint64_t i = 0; i < emitted; i++)
     rnd.put(splitmix64(s));

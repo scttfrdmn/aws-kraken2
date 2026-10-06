@@ -209,6 +209,11 @@ func printEquiv(r *equivResult) {
 		r.Label, r.Mode, r.Load, r.Capacity, r.Size, r.KeyBits, r.ValueBits, r.CellBytes)
 	fmt.Printf("  keys %d compared %d | upstream hits %d, go hits %d | value mismatches %d, probe mismatches %d\n",
 		r.N, r.Compared, r.UpstreamHits, r.GoHits, r.ValueMismatches, r.ProbeMismatches)
+	// Hits found past the home cell depend on the probe sequence; a mode the table was not built
+	// with finds only false positives there.
+	fmt.Printf("  hits at the home cell: upstream %d, go %d | past it: upstream %d, go %d\n",
+		r.UpstreamHitHist.Buckets[1], r.GoHitHist.Buckets[1],
+		r.UpstreamHits-r.UpstreamHitHist.Buckets[1], r.GoHits-r.GoHitHist.Buckets[1])
 	fmt.Printf("  go load %.3fs, get %.3fs (%.1f ns/key, 1 thread)\n", r.LoadSeconds, r.GetSeconds, r.GetNsPerKey)
 	for _, h := range []struct {
 		name string

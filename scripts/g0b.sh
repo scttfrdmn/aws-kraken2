@@ -65,12 +65,13 @@ run_hash() {
   mkdir -p "$out" "$cache"
   cp "$dir/SOURCE" "$out/db-SOURCE.txt"
   echo "== g0b hash $db"
-  "$HARNESS/chash_keys" "$dir/opts.k2d" "$cache/keys-real.u64" "$cache/keys-random.u64" "$SEED" \
+  "$HARNESS/chash_keys" "$dir/opts.k2d" "$cache/keys" "$SEED" \
     "$K2_READS/${READS}_1.fq" "$K2_READS/${READS}_2.fq" 2> "$out/keys.txt" \
     || { fail "$db: chash_keys"; return 1; }
   cat "$out/keys.txt"
   local pop v
-  for pop in real random; do
+  for pop in real subthreshold random; do
+    if [ ! -s "$cache/keys-$pop.u64" ]; then echo "-- no $pop keys for $db"; continue; fi
     for v in "" .dh; do
       "$HARNESS/chash_dump$v" "$dir/hash.k2d" < "$cache/keys-$pop.u64" > "$cache/up$v-$pop.bin" \
         2> "$out/upstream$v-$pop.txt" || { fail "$db: chash_dump$v $pop"; return 1; }
@@ -104,7 +105,8 @@ step_hash() {
     manifest "$RES" hash "$start"
     {
       echo "scripts/g0b.sh hash  (G0B_DBS=\"$DBS\" G0B_RUN_ID=$RUN_ID)"
-      echo "per db: chash_keys opts.k2d keys-real.u64 keys-random.u64 $SEED ${READS}_1.fq ${READS}_2.fq"
+      echo "per db: chash_keys opts.k2d keys $SEED ${READS}_1.fq ${READS}_2.fq"
+      echo "        (pop = real, subthreshold, random; keys-<pop>.u64)"
       echo "        chash_dump{,.dh} hash.k2d < keys-<pop>.u64 > up{,.dh}-<pop>.bin"
       echo "        k2probe equiv-hash -mode linear -load ram|mmap -expect up-<pop>.bin"
       echo "        k2probe equiv-hash -mode double -expect up.dh-<pop>.bin"
