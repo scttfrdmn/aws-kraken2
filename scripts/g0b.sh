@@ -79,9 +79,9 @@ manifest() {
     echo "  \"upstream_pin\": \"$UPSTREAM_PIN\","
     echo "  \"host\": \"$(uname -sm) $(sysctl -n hw.model 2>/dev/null || hostname)\","
     echo "  \"canonical_platform\": \"Linux aarch64; this host is $( [ "$(uname -s)/$(uname -m)" = Linux/aarch64 ] && echo canonical || echo development-only)\","
-    echo "  \"go\": \"$(go version)\",
+    echo "  \"go\": \"$(go version)\","
     echo "  \"dbs\": $(db_json),"
-    echo "  \"comparisons\": ${COMPARISONS:-0},""
+    echo "  \"comparisons\": ${COMPARISONS:-0},"
     echo "  \"start\": \"$3\", \"stop\": \"${4:-}\", \"failed\": $FAILED"
     echo "}"
   } > "$out/manifest.json"

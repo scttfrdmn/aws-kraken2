@@ -77,22 +77,24 @@ mkdir -p "$VAR"
 #           paired ones end at the mate border ("|:|").
 #   mates:  ERR478965 with the last 10 records of mate 2 removed (unequal mate files: upstream
 #           writes every pair it can, then exits 65 without the report).
+#   empty:  empty files (no input: upstream opens no output file until an input holds data).
 for m in 1 2; do
   awk -v m="$m" 'NR%4==1{sp=index($0," "); if(sp==0){print $0 "/" m} else {print substr($0,1,sp-1) "/" m substr($0,sp)}; next} {print}' \
     "$K2_READS/SRR062634_${N}_$m.fq" > "$VAR/slash_$m.fq"
   awk -v m="$m" 'NR%4==1{i++} (NR%4==2||NR%4==0){L=-1; if(i%13==0)L=0; else if(m==1&&i%5==0)L=20; else if(m==2&&i%3==0)L=30; if(L>=0)$0=substr($0,1,L)} {print}' \
     "$K2_READS/ERR478965_${N}_$m.fq" > "$VAR/short_$m.fq"
 done
+: > "$VAR/empty_1.fq"; : > "$VAR/empty_2.fq"
 cp "$K2_READS/ERR478965_${N}_1.fq" "$VAR/mates_1.fq"
 head -n $((4 * (N - 10))) "$K2_READS/ERR478965_${N}_2.fq" > "$VAR/mates_2.fq"
-for v in slash short mates; do
+for v in slash short mates empty; do
   for m in 1 2; do gzip -nc "$VAR/${v}_$m.fq" > "$VAR/${v}_$m.fq.gz"; done
 done
 
 # ---- the matrix ---------------------------------------------------------------------------------
 # name|sample|layout|form|expected upstream exit|outputs|extra arguments[|control arguments]
 #   sample: S1 SRR062634 (human WGS, 100 bp), S2 ERR478965 (trimmed, 45-94 bp),
-#           S3 SRR28305653 (150 bp), or a variant above
+#           S3 SRR28305653 (150 bp), or a variant above; "A,B" = several inputs in one run
 #   layout: se | pe (--paired, two files);  form: fq (plain) | gz (gzip, auto-detected)
 #   outputs: o --output, r --report, c --classified-out/--unclassified-out (with # when paired),
 #            n --classified-out without # (an error when paired). Without o, --output - .
@@ -137,6 +139,11 @@ CASES=(
   "pe-short|short|pe|fq|0|orc|"
   "pe-short-q20-gz|short|pe|gz|0|orc|--minimum-base-quality 20"
   "pe-short-quick|short|pe|fq|0|or|--quick"
+  "se-multi|S1,S2|se|fq|0|orc|"
+  "pe-multi-gz|S2,S3|pe|gz|0|orc|--report-zero-counts"
+  "se-empty|empty|se|fq|0|orc|"
+  "se-empty-zero|empty|se|fq|0|or|--report-zero-counts"
+  "pe-empty-then-S1|empty,S1|pe|fq|0|orc|"
   "pe-mates-differ|mates|pe|fq|65|orc|"
   "pe-cls-nohash|S1|pe|fq|65|on|"
   "pe-conf-range|S1|pe|fq|255|or|--confidence 1.5"
@@ -223,10 +230,15 @@ run_db() {
     local cname="$name-$sample"
     if [ -n "$FILTER" ] && ! [[ $cname =~ $FILTER ]]; then continue; fi
     local d="$W/$cname"; rm -rf "$d"; mkdir -p "$d"
-    local st; st=$(stem "$sample")
     local sfx=.fq; [ "$form" = gz ] && sfx=.fq.gz
-    local inputs=("${st}_1$sfx"); local lay=()
-    if [ "$layout" = pe ]; then inputs+=("${st}_2$sfx"); lay=(--paired); fi
+    local inputs=() lay=() one st
+    # A sample list "A,B" is several inputs (pairs when paired), classified in one run.
+    for one in ${sample//,/ }; do
+      st=$(stem "$one")
+      inputs+=("${st}_1$sfx")
+      [ "$layout" = pe ] && inputs+=("${st}_2$sfx")
+    done
+    [ "$layout" = pe ] && lay=(--paired)
     # shellcheck disable=SC2206
     local xa=($extra)
     local base=(--db "$dbdir" --threads "$TH" "${lay[@]}" "${xa[@]}")

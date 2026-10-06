@@ -62,6 +62,7 @@ never reach:
 | `slash` | S1 | the mate number is moved into the identifier (`ID/1 comment`) | paired `--output` trims `/1` and `/2`; the sequence outputs keep them; single-end does not trim |
 | `short` | S2 | every 5th mate 1 is cut to 20 bases, every 3rd mate 2 to 30, every 13th of both to 0 | the empty hit list `0:0` (single-end), and hit lists ending at, or consisting only of, the mate border `\|:\|` (paired); the empty-record path |
 | `mates` | S2 | the last 10 records of mate 2 are removed | unequal mate files: upstream writes every pair it can, then exits 65 without the report |
+| `empty` | none | empty files | no input: upstream opens no output until an input holds data |
 
 **Databases:**
 - **Viral** has `minimum_acceptable_hash_value` 0.
@@ -89,6 +90,8 @@ least one sample, and the main options on more than one sample, layout or compre
 | `--minimum-base-quality 20` | S1 single-end; S2 paired gzip; the `short` variant |
 | `--memory-mapping` | S1 paired; S3 single-end with one thread |
 | `--threads` 1 and 8 | single-thread cases on S1 paired, S3 single-end gzip, S3 with mmap; 8 elsewhere |
+| several inputs in one run | `S1,S2` single-end and `S2,S3` paired gzip (outputs, stats and report span the files) |
+| empty input | an empty file alone (no output file is created), with `--report-zero-counts` (percentages `nan`), and an empty pair before S1 (outputs open at the first input with data) |
 | exit statuses | mates differ (65); paired `--classified-out` without `#` (65); `--confidence 1.5` (255); `--use-mpa-style` without `--report` (64); `--threads 0` (64) |
 | controls | two cases add one option on our side only (`--confidence 0.05`, `--minimum-hit-groups 3`). They must come out different, which shows the comparison is not blind. |
 
