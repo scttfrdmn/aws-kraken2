@@ -22,3 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `LoadSequence` intervals, zero allocations per minimizer). It is checked against upstream by
   `upstream/mm_dump.cc`, `k2probe equiv-scan` and `make g0b PART=scan`. `scripts/harness-build.sh`
   builds the oracle harnesses (#5).
+- `internal/taxo`: `taxo.k2d` reader ported from upstream `taxonomy.{h,cc}` (node fields, names,
+  ranks, external-ID map, `IsAAncestorOfB`, `LowestCommonAncestor`, the `taxo.Tree` interface),
+  checked against upstream's own `Taxonomy` class via `upstream/taxo_dump.cc` (#11).
+- `internal/report`: kraken-style `--report` and `--use-mpa-style` ported from upstream
+  `reports.{h,cc}`, including `--report-zero-counts` and libstdc++'s `std::sort` tie order for
+  siblings; byte-identical to upstream's reports on real reads (#15).
+- `scripts/harness-build.sh`: builds `upstream/<name>.cc` oracle harnesses against the pinned
+  sources with upstream's compiler flags.
