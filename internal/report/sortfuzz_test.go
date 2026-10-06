@@ -122,7 +122,7 @@ func (g *fuzzGen) finish(cat string, keys []int32) fuzzCase {
 // tiedKeys draws n keys with a random tie density: alphabet size, shape and absent rate vary.
 func (g *fuzzGen) tiedKeys(n int) []int32 {
 	r := g.r
-	alpha := []int{1, 2, 2, 3, 3, 4, 4, 5, 6, 8, 12, 16, 32, 64, n/16 + 1, n/4 + 1, n + 1, 1 << 30}
+	alpha := []int{1, 2, 2, 3, 3, 4, 4, 5, 6, 8, 12, 16, 32, 64, n/16 + 1, n/4 + 1} // heavy ties only; distinct keys come from the structured cases
 	k := alpha[r.IntN(len(alpha))]
 	absent := []float64{0, 0, 0, 0, 0.02, 0.1, 0.3, 0.6, 0.9, 1}[r.IntN(10)]
 	scale, off := 1, 0

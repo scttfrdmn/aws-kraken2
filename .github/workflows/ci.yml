@@ -174,6 +174,8 @@ jobs:
       - name: Upstream at the pin (scripts/oracle-build.sh; harness-build needs its source)
         run: scripts/oracle-build.sh
 
+      - name: assert the canonical toolchain (GCC 11.5.0)
+        run: test "$(g++ -dumpfullversion)" = 11.5.0
       - name: make sortfuzz SORTFUZZ=full
         run: make sortfuzz SORTFUZZ=full
 

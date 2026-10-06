@@ -98,6 +98,7 @@ targets; ad hoc commands only during exploration.
 | `make oracle-classify` | [docs/oracle-classify.md](docs/oracle-classify.md) |
 | `make bracken-check` | [docs/bracken-check.md](docs/bracken-check.md) |
 | `make tag-objects [PREFIX=…]` | [docs/tag-objects.md](docs/tag-objects.md) |
+| `make sortfuzz [SORTFUZZ=quick\|full]` | [docs/sortfuzz.md](docs/sortfuzz.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make run GATE=… SPEC=…` | [docs/run.md](docs/run.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |

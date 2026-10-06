@@ -95,7 +95,7 @@ struct Comp {
     g_comps++;
     if (!g_present[a - g_base]) return false;
     if (!g_present[b - g_base]) return true;
-    return (uint64_t)g_key[a - g_base] > (uint64_t)g_key[b - g_base];
+    return (int64_t)g_key[a - g_base] > (int64_t)g_key[b - g_base];  // readCount() is int64_t
   }
 };
 
