@@ -143,6 +143,12 @@ mset() { local tmp; tmp=$(mktemp) && jq "$@" "$M" > "$tmp" && mv "$tmp" "$M"; }
 spawn task run --spec "$RESOLVED" --region "$REGION" --dry-run > "$RUN_DIR/spawn-plan.txt" 2>&1 ||
   { cat "$RUN_DIR/spawn-plan.txt" >&2; die "spawn dry-run failed"; }
 say "plan: $(grep -E 'Instance|Max cost' "$RUN_DIR/spawn-plan.txt" | tr -s ' ' | paste -sd ';' -)"
+# Pin the planned type for the real launch: spawn's sizing takes minutes per call (truffle
+# search + live price per candidate), and the launch must be the box the plan priced.
+PLANNED=$(awk '/^Instance:/{print $2; exit}' "$RUN_DIR/spawn-plan.txt")
+[ -n "$PLANNED" ] || die "could not read the planned instance type from spawn-plan.txt"
+TMP_SPEC=$(mktemp) && jq --arg t "$PLANNED" '.resources.instance_type = $t' "$RESOLVED" > "$TMP_SPEC" &&
+  mv "$TMP_SPEC" "$RESOLVED" || die "could not pin instance type"
 if [ "${DRY_RUN:-}" = 1 ]; then
   say "DRY_RUN=1: stopping before launch; removing $RUN_DIR"
   cat "$RUN_DIR/spawn-plan.txt" >&2

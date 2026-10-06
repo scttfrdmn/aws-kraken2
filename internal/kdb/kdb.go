@@ -126,6 +126,29 @@ type Options struct {
 	// Absent names the fields that lay wholly or partly beyond FileSize and so read as
 	// zero (or as a partial little-endian value) exactly as upstream would see them.
 	Absent []string `json:"absent_fields"`
+	// Layout names the upstream IndexOptions revision whose sizeof equals FileSize.
+	Layout string `json:"layout"`
+	// Padding names fields that the pin reads but that were struct padding (uninitialised
+	// bytes) in the writer's layout. Their values are what upstream sees, and meaningless.
+	Padding []string `json:"padding_fields"`
+}
+
+// Known on-disk sizes of IndexOptions. The struct grew twice; each older build wrote its own
+// sizeof, padding included:
+//
+//	48: before v2.0.8-beta (5a2a996, 2019-02-04, added revcom_version). Ends at
+//	    minimum_acceptable_hash_value; no tail padding.
+//	56: v2.0.8-beta to v2.0.9 (5cde83a, 2020-07-13, first in v2.1.0, added db_version and
+//	    db_type). Ends at revcom_version plus 4 bytes of tail padding, which the pin reads as
+//	    db_version.
+//	64: v2.1.0 and later, including the pin.
+var layouts = map[int]struct {
+	name    string
+	padding []string
+}{
+	48: {"pre-v2.0.8", []string{}},
+	56: {"v2.0.8-v2.0.9", []string{"db_version"}},
+	64: {"v2.1.0+", []string{}},
 }
 
 var optionFields = []struct {
@@ -174,6 +197,11 @@ func ParseOptions(data []byte) (Options, error) {
 		DBType:                     int32(le.Uint32(b[offDBType:])),
 		FileSize:                   len(data),
 		Absent:                     []string{},
+	}
+	if l, ok := layouts[len(data)]; ok {
+		o.Layout, o.Padding = l.name, l.padding
+	} else {
+		o.Layout, o.Padding = "unrecognised", []string{}
 	}
 	for _, f := range optionFields {
 		if f.off+f.len > len(data) {

@@ -92,7 +92,7 @@ func TestParseOptionsFull(t *testing.T) {
 	}
 	want := Options{K: 35, L: 31, SpacedSeedMask: 0x3FFFFFFFFFFFFFFF, ToggleMask: 0xe37e28c4271b5a2d,
 		DNADB: true, DNADBByte: 1, MinimumAcceptableHashValue: 7, RevcomVersion: 1, DBVersion: 2, DBType: 3,
-		FileSize: 64, Absent: []string{}}
+		FileSize: 64, Absent: []string{}, Layout: "v2.1.0+", Padding: []string{}}
 	if !reflect.DeepEqual(o, want) {
 		t.Fatalf("got %+v\nwant %+v", o, want)
 	}
@@ -101,19 +101,22 @@ func TestParseOptionsFull(t *testing.T) {
 func TestParseOptionsLegacy(t *testing.T) {
 	// 56 bytes: no db_type. 52: no db_version either. 48: no revcom_version (pre-2.0.8).
 	for _, c := range []struct {
-		n      int
-		absent []string
+		n       int
+		absent  []string
+		layout  string
+		padding []string
 	}{
-		{56, []string{"db_type"}},
-		{52, []string{"db_version", "db_type"}},
-		{48, []string{"revcom_version", "db_version", "db_type"}},
+		{56, []string{"db_type"}, "v2.0.8-v2.0.9", []string{"db_version"}},
+		{52, []string{"db_version", "db_type"}, "unrecognised", []string{}},
+		{48, []string{"revcom_version", "db_version", "db_type"}, "pre-v2.0.8", []string{}},
 	} {
 		o, err := ParseOptions(opts()[:c.n])
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !reflect.DeepEqual(o.Absent, c.absent) || o.FileSize != c.n {
-			t.Fatalf("n=%d: absent %v size %d", c.n, o.Absent, o.FileSize)
+		if !reflect.DeepEqual(o.Absent, c.absent) || o.FileSize != c.n || o.Layout != c.layout ||
+			!reflect.DeepEqual(o.Padding, c.padding) {
+			t.Fatalf("n=%d: absent %v size %d layout %q padding %v", c.n, o.Absent, o.FileSize, o.Layout, o.Padding)
 		}
 		if c.n <= 56 && o.DBType != 0 {
 			t.Fatalf("n=%d: db_type %d, want zero as upstream", c.n, o.DBType)
@@ -124,6 +127,20 @@ func TestParseOptionsLegacy(t *testing.T) {
 		if o.K != 35 || o.L != 31 || !o.DNADB {
 			t.Fatalf("n=%d: leading fields wrong: %+v", c.n, o)
 		}
+	}
+}
+
+// A 56-byte file from a v2.0.8-v2.0.9 build: the 4 tail-padding bytes after revcom_version
+// are uninitialised and the pin reads them as db_version, exactly as here.
+func TestParseOptionsLegacyPadding(t *testing.T) {
+	b := opts()[:56]
+	copy(b[52:], []byte{0xd0, 0x7f, 0, 0})
+	o, err := ParseOptions(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if o.DBVersion != 0x7fd0 || o.DBType != 0 || o.RevcomVersion != 1 {
+		t.Fatalf("got db_version %d db_type %d revcom %d", o.DBVersion, o.DBType, o.RevcomVersion)
 	}
 }
 

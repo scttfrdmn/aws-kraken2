@@ -11,6 +11,9 @@ for f in hash.k2d.head32 opts.k2d list-objects-v2.json head-hash.k2d.json head-o
 done
 make -s build || fail "make build failed"
 mkdir -p "$D/decoded" "$D/tables"
+# Decoding is local and may be re-run at a later commit than the launch; record which.
+jq -n --arg c "$(git rev-parse HEAD)" --arg t "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  '{decoded_at_commit:$c, decoded_at:$t, decoder:"cmd/k2probe + internal/kdb"}' > "$D/decoded/provenance.json"
 
 HSIZE=$(jq -r .ContentLength "$O/head-hash.k2d.json")
 LSIZE=$(jq -r '.Contents[] | select(.Key|endswith("/hash.k2d")) | .Size' "$O/list-objects-v2.json")
