@@ -95,7 +95,8 @@ func (p *PairedReader) LoadBlocks(targetBytes int) (b1, b2 *Block, ok bool) {
 }
 
 func (p *PairedReader) loadMates(b1 *Block) (*Block, *Block, bool) {
-	b2 := p.r2.LoadRecords(b1.Records())
+	// Mates are usually about the same size: size the second block like the first, plus 1/8.
+	b2 := p.r2.LoadRecordsSized(b1.Records(), b1.Bytes()+b1.Bytes()/8)
 	// A second file that runs out first leaves first mates unpaired.
 	if b2 == nil || b2.Records() != b1.Records() {
 		p.mismatch = true

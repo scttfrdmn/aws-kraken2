@@ -320,7 +320,8 @@ func (r *Reader) reset(extra int) *Block {
 	if b != nil && cap(b.buf) >= need {
 		*b = Block{buf: b.buf[:0], nl: b.nl[:0]}
 	} else {
-		b = &Block{buf: make([]byte, 0, need)}
+		// About one newline per 64 bytes for short-read FASTQ; nl grows if there are more.
+		b = &Block{buf: make([]byte, 0, need), nl: make([]int, 0, need/64)}
 	}
 	b.buf = append(b.buf, r.carry...)
 	r.carry = r.carry[:0]
@@ -509,14 +510,19 @@ func (r *Reader) LoadBlock(targetBytes, recordMultiple int) *Block {
 // the end of the input), for the second mate of a pair so the two files stay in step. It
 // returns nil when nothing is left. A non-nil Block may hold zero records (only blank or
 // comment lines remained).
-func (r *Reader) LoadRecords(n int) *Block {
+func (r *Reader) LoadRecords(n int) *Block { return r.LoadRecordsSized(n, 0) }
+
+// LoadRecordsSized is LoadRecords with a hint of the bytes the n records will take (for the
+// second mate, the first mate's block size). The hint only sizes the buffer up front, which
+// saves regrowing it; what is read and kept is the same.
+func (r *Reader) LoadRecordsSized(n, sizeHint int) *Block {
 	if _, err := r.Prime(); err != nil {
 		return nil
 	}
 	if r.err != nil || n <= 0 {
 		return nil
 	}
-	b := r.reset(0)
+	b := r.reset(max(sizeHint, 0))
 	live := true
 	scan := recordScan{limit: n, limitSet: true}
 	b.scanNewlines()
