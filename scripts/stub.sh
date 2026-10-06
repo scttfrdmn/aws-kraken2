@@ -23,4 +23,5 @@ AK2_SUM=$(sha256sum /tmp/ak2-payload.sh | cut -d' ' -f1)
   { echo "ak2-stub: FATAL: payload sha256 $AK2_SUM != $AK2_PAYLOAD_SHA256"; exit 97; }
 echo "ak2-stub: payload verified (sha256 $AK2_SUM); exec"
 export AK2_STUB_FLAGS
-exec bash /tmp/ak2-payload.sh
+# bash -c, exactly as spawn ran the inlined script before (same parsing, same $- semantics).
+exec bash -c "$(cat /tmp/ak2-payload.sh)"
