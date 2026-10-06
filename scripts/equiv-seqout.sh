@@ -109,7 +109,7 @@ run() {
   "${cmd[@]}" 2> "$W/$name.stderr"
   local st=$?
   log "$name: upstream exit $st (expected $want); $(tr '\r' '\n' < "$W/$name.stderr" | grep -E 'processed|classified|records' | tr -s ' ' | paste -sd' ' - | head -c 400)"
-  if [ "$st" != "$want" ]; then
+  if [[ ",$want," != *",$st,"* ]]; then  # want may list alternatives, e.g. 0,65
     log "FAIL $name: upstream exit $st, case expects $want"; FAILED=1; return
   fi
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$name" "$paired" "$comp" "$minq" "$st" \
@@ -135,7 +135,12 @@ run se_fq_gz_multimember    0  0 none 0  "$W/r_1.multi.fq.gz"
 run pe_fq_gz_multimember    0  1 none 0  "$W/r_1.multi.fq.gz" "$W/r_2.multi.fq.gz"
 run se_fq_gz_zeropad        0  0 none 0  "$W/r_1.zeropad.fq.gz"
 run se_fq_gz_garbage        0  0 none 0  "$W/r_1.garbage.fq.gz"
-run se_fq_gz_truncated      0  0 none 0  "$W/r_1.trunc.fq.gz"
+# Where half of the .gz bytes falls in the decompressed stream depends on how the local gzip
+# compressed the reads (fetch-reads.sh runs gzip -9 on each host). If it falls inside a quality
+# string, the last record is malformed and upstream exits 65 (seen on Linux aarch64); otherwise
+# it exits 0 (seen on macOS). Either is upstream's answer for that input, and the Go test then
+# requires our exit status to equal it.
+run se_fq_gz_truncated      0,65 0 none 0  "$W/r_1.trunc.fq.gz"
 run se_fq_gzflag_on_plain   0  0 gz   0  "$R1"
 run se_fq_bz2_auto          0  0 none 0  "$W/r_1.fq.bz2"
 run se_fq_bz2_flag          0  0 bz2  0  "$W/r_1.fq.bz2"
