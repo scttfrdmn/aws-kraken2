@@ -1,4 +1,13 @@
 // Copyright 2026 aws-kraken2 contributors. MIT License.
+//
+// Provenance: stdSort is a structural transliteration of libstdc++'s std::sort and its heap
+// helpers (bits/stl_algo.h: __introsort_loop, __move_median_to_first,
+// __unguarded_partition(_pivot), __final_insertion_sort, __insertion_sort,
+// __unguarded_linear_insert, __partial_sort; bits/stl_heap.h: __make_heap, __adjust_heap,
+// __push_heap, __pop_heap, __sort_heap), which derive from the HP STL (Copyright 1994
+// Hewlett-Packard Company) and the SGI STL (Copyright 1996 Silicon Graphics Computer Systems,
+// Inc.). It is reproduced only so that ties between equal elements land in the order upstream's
+// GCC builds leave them (report sibling order); it is not used for anything else.
 
 package report
 

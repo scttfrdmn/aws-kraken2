@@ -9,7 +9,7 @@ make g0b                 # all steps (scan, then hash)
 make g0b G0B=hash        # one step (PART=... is accepted too)
 G0B_DBS=viral make g0b   # restrict hash databases (default "viral standard8")
 G0B_SCAN_READS="SRR062634_200000" make g0b G0B=scan   # scan read sets
-G0B_RUN_ID=x make g0b    # results dir suffix (default: UTC timestamp; re-runs never overwrite)
+G0B_RUN_ID=x make g0b    # results dir suffix (default: UTC time + short commit, as g0a)
 ```
 
 | step | issue | compares |
@@ -19,27 +19,20 @@ G0B_RUN_ID=x make g0b    # results dir suffix (default: UTC timestamp; re-runs n
 
 Every step writes `results/g0b/<step>-<run-id>/manifest.json` with the commit, a dirty flag
 (tracked or untracked changes outside `results/`), the invocation and its environment, the pin,
-host, Go version, start/stop and outcome.
+host, Go version, each database's source and ETag inline, the number of comparisons made,
+start/stop and outcome. An existing results directory is never overwritten: the script refuses.
 
 **Inputs:** the upstream checkout and the pinned databases and reads, from `make oracle`,
 `scripts/fetch-db.sh` and `scripts/fetch-reads.sh`. Scripts find them in the main checkout
 through git's common dir, so worktrees share them (`scripts/paths.sh`; override with
-`K2_SHARED_ROOT`). A database whose download is incomplete (no `SOURCE` file) is skipped and
-says so.
+`K2_SHARED_ROOT`). A requested database whose download is incomplete (no `SOURCE` file), a
+requested read set that is absent, an empty key population, or a step that made zero comparisons
+is a failure, not a skip.
 
-## Harnesses (`scripts/harness-build.sh`)
+## Harnesses
 
-`scripts/harness-build.sh [--dh] [name...]` (`make harness [NAME=...] [DH=1]`) compiles
-`upstream/<name>.cc` (default: all of them) against the pinned sources with upstream's compiler
-choice (`scripts/cxx.sh`: system g++ on Linux, Homebrew g++ on macOS, as `oracle-build.sh`) and
-the `CXXFLAGS` read out of upstream's own `src/Makefile`, which at the pin include
-`-DLINEAR_PROBING`. It refuses an upstream checkout that is not at the pin or has tracked
-modifications. Upstream's library sources (every `src/*.cc` without a `main`, minus the libtax
-shim) are compiled out of tree into one archive, `.oracle/harness/obj-<key>/libk2.a`, keyed by
-pin, compiler version and flags, so it is rebuilt whenever any of them change; the shared
-checkout is never written. `--dh` also builds `<name>.dh` without `-DLINEAR_PROBING` (upstream's
-double-hashing build). Binaries go to this checkout's `.oracle/harness/`, each with a
-`<name>.BUILD` provenance file; the script prints one path per binary.
+Built by `scripts/harness-build.sh`; see [harness.md](harness.md). `hash` uses `chash_keys` and
+`chash_dump` (both variants, `-v lp,dh`), `scan` uses `mm_dump`.
 
 ## Step `hash`
 
@@ -50,9 +43,12 @@ For each database:
    `keys-real.u64`, every non-ambiguous minimizer classify would look up (at or above
    `minimum_acceptable_hash_value`; consecutive repeats kept); `keys-subthreshold.u64`, the
    real minimizers that filter drops (non-empty only for downsampled databases such as
-   Standard-8, where it is ~93% of them); `keys-random.u64`, as many uniform random uint64
-   keys as `real` (splitmix64, fixed seed), a miss-heavy control. An empty population is
-   skipped.
+   Standard-8; `keys.txt` records the counts); `keys-random.u64`, as many uniform random uint64
+   keys as `real` (splitmix64, fixed seed), a miss-heavy control. An empty population fails the
+   run, except `subthreshold` on a database whose `minimum_acceptable_hash_value` is 0.
+   The subthreshold set checks lookups and probe counts on keys classify never asks for; it is
+   **not** a false-positive control (those keys were never inserted, so neither side can say
+   whether a hit would be "false").
 2. `chash_dump{,.dh} hash.k2d` looks every key up with upstream's `Get`, `GetBatch` and
    `FindIndex`, writing value and probe count (cells examined) per key.
 3. `k2probe equiv-hash` looks the same keys up in Go and compares per key:
@@ -117,4 +113,4 @@ The dump streams over a pipe.
 **Unit tests** (`go test ./internal/mmscan`) need no data. They check golden streams in
 `internal/mmscan/testdata/` (a missing golden stream is a failure, not a skip) that upstream's scanner produced from synthetic sequences only, a
 brute-force reference on clean DNA, and zero allocations. Regenerate the golden streams with
-`go test ./internal/mmscan -run TestGolden -update -mm-dump=<abs path to .oracle/harness/mm_dump>`.
+`go test ./internal/mmscan -run TestGolden -update $(scripts/harness-build.sh mm_dump)`.

@@ -119,6 +119,21 @@ func TestOracleReport(t *testing.T) {
 				t.Fatal(err)
 			}
 			tax.BuildExternalMap()
+			// Each resolution control must fire in at least one case, or the case set could
+			// not tell a port with the wrong tie order or without zero-read counters from a
+			// correct one.
+			var stableDetected, zeroDetected, ran int
+			t.Cleanup(func() {
+				if t.Failed() || ran != len(oracleCases) {
+					return
+				}
+				if stableDetected == 0 {
+					t.Errorf("%s: no case detects a stable-sort port (tie order unresolved)", db)
+				}
+				if zeroDetected == 0 {
+					t.Errorf("%s: no case detects dropped zero-read counters", db)
+				}
+			})
 			for _, c := range oracleCases {
 				t.Run(c.name, func(t *testing.T) {
 					tmp := t.TempDir()
@@ -172,8 +187,16 @@ func TestOracleReport(t *testing.T) {
 							nz[id] = n
 						}
 					}
+					sd, zd := !bytes.Equal(stable, want), !bytes.Equal(render(nz), want)
+					ran++
+					if sd {
+						stableDetected++
+					}
+					if zd {
+						zeroDetected++
+					}
 					t.Logf("%s/%s: controls: stable-sort detected=%v drop-zero-counters detected=%v",
-						db, c.name, !bytes.Equal(stable, want), !bytes.Equal(render(nz), want))
+						db, c.name, sd, zd)
 					t.Logf("%s/%s: %d seqs, %d unclassified, %d taxa in counters, report %d lines / %d bytes identical",
 						db, c.name, total, uncl, len(calls), bytes.Count(want, []byte("\n")), len(want))
 				})

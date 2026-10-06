@@ -21,9 +21,10 @@ lint:
 oracle:
 	scripts/oracle.sh
 
-# Oracle harnesses (docs/g0b.md): NAME="a b" builds those (default all), DH=1 adds .dh variants.
+# Oracle harnesses (docs/harness.md): NAME="a b" builds those (default all); VARIANTS=lp|dh|lp,dh.
+VARIANTS ?= lp
 harness:
-	scripts/harness-build.sh $(if $(DH),--dh) $(NAME)
+	scripts/harness-build.sh -v $(VARIANTS) $(NAME)
 
 # G0b equivalence (docs/g0b.md). G0B (or PART) = hash|scan|all; G0B_DBS, G0B_SCAN_READS and
 # G0B_RUN_ID pass through the env.

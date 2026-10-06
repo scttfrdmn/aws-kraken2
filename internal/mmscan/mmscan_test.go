@@ -22,7 +22,7 @@ import (
 // over synthetic sequences only. Regenerate with
 //
 //	scripts/harness-build.sh mm_dump
-//	go test ./internal/mmscan -run TestGolden -update -mm-dump=$PWD/.oracle/harness/mm_dump
+//	go test ./internal/mmscan -run TestGolden -update -mm-dump=$(scripts/harness-build.sh mm_dump)
 var (
 	update = flag.Bool("update", false, "regenerate testdata/*.mmdump.gz with the upstream harness")
 	mmDump = flag.String("mm-dump", "", "path to the built upstream/mm_dump harness (with -update)")

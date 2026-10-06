@@ -4,8 +4,9 @@
 //   - shared artifacts (the upstream checkout and build in .oracle/, pinned databases and real
 //     reads in .cache/) live once in the main checkout, which git worktrees reach through git's
 //     common dir. AWS_KRAKEN2_ROOT (or K2_SHARED_ROOT, as the scripts use) overrides.
-//   - harness binaries (scripts/harness-build.sh) are per checkout, in <module root>/.oracle/harness,
-//     because harness sources differ per branch.
+//   - harness binaries (scripts/harness-build.sh) are per checkout and per pin, in
+//     <module root>/.oracle/harness/<pin>/, because harness sources differ per branch and a pin
+//     bump must never compare against stale binaries.
 //
 // Tests that need an artifact t.Skip when it is absent (docs/build.md), unless
 // AWS_KRAKEN2_REQUIRE_ORACLE=1, which turns every skip here into a failure.
@@ -19,8 +20,33 @@ import (
 	"testing"
 )
 
-// Pin is the upstream commit the oracle is built at (scripts/pin.env).
-const Pin = "2731b35f7abb26ec926517274f3d87e78d42fd76"
+// Pin returns the upstream commit the oracle is built at, read from scripts/pin.env (where it
+// is defined once), or "" if that cannot be read.
+func Pin() string {
+	mod := ModuleRoot()
+	if mod == "" {
+		return ""
+	}
+	b, err := os.ReadFile(filepath.Join(mod, "scripts", "pin.env"))
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(b), "\n") {
+		if v, ok := strings.CutPrefix(strings.TrimSpace(line), "UPSTREAM_PIN="); ok {
+			return strings.Trim(v, `"'`)
+		}
+	}
+	return ""
+}
+
+func pin(t testing.TB) string {
+	t.Helper()
+	p := Pin()
+	if p == "" {
+		t.Fatal("oracletest: cannot read UPSTREAM_PIN from scripts/pin.env")
+	}
+	return p
+}
 
 // Database directory names under .cache/db/ (scripts/fetch-db.sh).
 const (
@@ -93,18 +119,18 @@ func Need(t testing.TB, rel string) string {
 // Upstream returns the path of a binary in the pinned upstream install (scripts/oracle-build.sh).
 func Upstream(t testing.TB, name string) string {
 	t.Helper()
-	return Need(t, filepath.Join(".oracle", Pin, name))
+	return Need(t, filepath.Join(".oracle", pin(t), name))
 }
 
-// Harness returns the path of a built oracle harness in this checkout
-// (scripts/harness-build.sh <name>).
+// Harness returns the path of a built oracle harness in this checkout,
+// .oracle/harness/<pin>/<name> (scripts/harness-build.sh <name>; name may end in .dh).
 func Harness(t testing.TB, name string) string {
 	t.Helper()
 	mod := ModuleRoot()
 	if mod == "" {
 		skip(t, "module root not found")
 	}
-	return need(t, filepath.Join(mod, ".oracle", "harness", name))
+	return need(t, filepath.Join(mod, ".oracle", "harness", pin(t), name))
 }
 
 // Reads returns the path of a cached read file, e.g. Reads(t, "SRR062634_200000_1.fq").

@@ -507,3 +507,14 @@ func (c *Classifier) appendCode(b []byte, code, count uint64, more bool) []byte 
 	b = strconv.AppendUint(b, count, 10)
 	return append(b, ' ')
 }
+
+// Calls is the report input (internal/report's calls: internal taxid -> reads called there)
+// built from merged counters. Every key is copied, including taxa that a lookup hit but no read
+// was called at (0 reads): upstream's report orders tied siblings by their presence.
+func Calls(counts map[uint64]*TaxonCount) map[uint64]uint64 {
+	calls := make(map[uint64]uint64, len(counts))
+	for t, c := range counts {
+		calls[t] = c.Reads
+	}
+	return calls
+}

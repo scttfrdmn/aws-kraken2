@@ -3,6 +3,7 @@ package chash
 import (
 	"bytes"
 	"encoding/binary"
+	"io"
 	"math/rand/v2"
 	"os"
 	"path/filepath"
@@ -85,6 +86,11 @@ func populate(l Layout, compacted uint64, val uint32) uint64 {
 	a := uint32((compacted&(uint64(1)<<aBits-1))<<l.ValueBits) | (val & l.valueMask())
 	return uint64(a) | b<<32
 }
+
+// synth and refGet below are transcriptions of upstream code:
+// Ported from DerrickWood/kraken2 src/compact_hash.cc (CompareAndSet, Get) at 2731b35f7abb26ec926517274f3d87e78d42fd76.
+// Original: Copyright 2013-2023, Derrick Wood <dwood@cs.jhu.edu>. MIT License.
+// Go port: Copyright 2026 aws-kraken2 contributors. MIT License.
 
 // synth builds a hash.k2d image by inserting keys the way upstream's CompareAndSet does.
 // Returns the image and the inserted key -> value map.
@@ -307,6 +313,9 @@ func TestHeaderErrors(t *testing.T) {
 		{"value31", mk(10, 1, 1, 31), ">= 31"},
 		{"capacity", mk(0, 0, 16, 16), "capacity is zero"},
 		{"size", mk(10, 11, 16, 16), "exceeds capacity"},
+		// 32 + capacity*5 wraps to a small number: must be refused, not sliced.
+		{"overflow40", mk(1<<62, 0, 25, 15), "overflows"},
+		{"overflow32", mk(1<<63, 0, 16, 16), "overflows"},
 	} {
 		if _, err := ParseHeader(c.b); err == nil || !strings.Contains(err.Error(), c.want) {
 			t.Errorf("%s: err = %v, want %q", c.name, err, c.want)
@@ -370,5 +379,44 @@ func TestRealDBLoadVsMmap(t *testing.T) {
 		if av != bv || ap != bp {
 			t.Fatalf("key %#x: Load (%d, %d) != Mmap (%d, %d)", k, av, ap, bv, bp)
 		}
+	}
+}
+
+// eofAtEnd is an io.ReaderAt that returns io.EOF together with a full read that reaches the end
+// of its data, as io.ReaderAt permits.
+type eofAtEnd struct{ b []byte }
+
+func (r eofAtEnd) ReadAt(p []byte, off int64) (int, error) {
+	if off >= int64(len(r.b)) {
+		return 0, io.EOF
+	}
+	n := copy(p, r.b[off:])
+	if off+int64(n) == int64(len(r.b)) {
+		return n, io.EOF
+	}
+	return n, nil
+}
+
+func TestReaderAtSourceEOF(t *testing.T) {
+	img, _ := synth(t, 101, 25, 15, 5, Linear, 50, 2)
+	h, err := ParseHeader(img)
+	if err != nil {
+		t.Fatal(err)
+	}
+	l, _ := h.Layout()
+	src := &ReaderAtSource{R: eofAtEnd{img}, Layout: l}
+	last := l.Capacity - 1
+	got, err := src.Cell(last)
+	if err != nil {
+		t.Fatalf("last cell with io.EOF: %v", err)
+	}
+	var tmp [8]byte
+	copy(tmp[:], img[HeaderSize+int(last)*5:])
+	if want := binary.LittleEndian.Uint64(tmp[:]); got != want {
+		t.Fatalf("last cell = %#x, want %#x", got, want)
+	}
+	short := &ReaderAtSource{R: eofAtEnd{img[:len(img)-1]}, Layout: l}
+	if _, err := short.Cell(last); err == nil {
+		t.Fatal("short last cell: no error")
 	}
 }

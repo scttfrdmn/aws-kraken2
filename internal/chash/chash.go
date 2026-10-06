@@ -11,10 +11,15 @@
 package chash
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
 	"io"
+	"math"
+	"math/bits"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/kdb"
 )
 
 // MurmurHash3 is upstream's MurmurHash3 (kv_store.h): the 64-bit fmix finalizer.
@@ -81,17 +86,16 @@ type Header struct {
 	ValueBits uint64
 }
 
-// ParseHeader decodes and validates a hash.k2d header.
+// ParseHeader decodes (with internal/kdb, the one header parser) and validates a hash.k2d header.
 func ParseHeader(b []byte) (Header, error) {
 	if len(b) < HeaderSize {
 		return Header{}, fmt.Errorf("chash: header is %d bytes, want %d", len(b), HeaderSize)
 	}
-	h := Header{
-		Capacity:  binary.LittleEndian.Uint64(b[0:]),
-		Size:      binary.LittleEndian.Uint64(b[8:]),
-		KeyBits:   binary.LittleEndian.Uint64(b[16:]),
-		ValueBits: binary.LittleEndian.Uint64(b[24:]),
+	kh, err := kdb.ReadHashHeader(bytes.NewReader(b[:HeaderSize]))
+	if err != nil {
+		return Header{}, err
 	}
+	h := Header(kh)
 	if _, err := h.Layout(); err != nil {
 		return Header{}, err
 	}
@@ -135,10 +139,18 @@ func (h Header) Layout() (Layout, error) {
 	if h.Size > h.Capacity {
 		return Layout{}, fmt.Errorf("chash: size %d exceeds capacity %d", h.Size, h.Capacity)
 	}
+	// 32 + capacity*cellBytes must not overflow, and must fit an int (slices, mmap length):
+	// a crafted capacity would otherwise wrap past the size check into an out-of-bounds slice.
+	hi, cells := bits.Mul64(h.Capacity, uint64(l.CellBytes))
+	total, carry := bits.Add64(cells, HeaderSize, 0)
+	if hi != 0 || carry != 0 || total > math.MaxInt {
+		return Layout{}, fmt.Errorf("chash: capacity %d x %d-byte cells overflows", h.Capacity, l.CellBytes)
+	}
 	return l, nil
 }
 
-// FileSize is the exact hash.k2d size this header implies.
+// FileSize is the exact hash.k2d size this header implies. Layout values from Header.Layout
+// are checked not to overflow.
 func (l Layout) FileSize() uint64 { return HeaderSize + l.Capacity*uint64(l.CellBytes) }
 
 // valueMask is upstream's (1 << value_bits) - 1 (value_bits < 31 is validated).
@@ -215,7 +227,11 @@ func (s *ReaderAtSource) Cell(idx uint64) (uint64, error) {
 	n := s.Layout.CellBytes
 	off := int64(HeaderSize + idx*uint64(n))
 	s.buf = [8]byte{}
-	if _, err := s.R.ReadAt(s.buf[:n], off); err != nil {
+	// io.ReaderAt may return io.EOF with a full read of the last cell.
+	if got, err := s.R.ReadAt(s.buf[:n], off); got < n {
+		if err == nil || errors.Is(err, io.EOF) {
+			err = io.ErrUnexpectedEOF
+		}
 		return 0, fmt.Errorf("chash: read cell %d at %d: %w", idx, off, err)
 	}
 	return binary.LittleEndian.Uint64(s.buf[:]), nil

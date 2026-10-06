@@ -7,8 +7,8 @@
 # Env:   G0B_DBS         databases for hash (default "viral standard8"; an incomplete download is
 #                        skipped)
 #        G0B_SCAN_READS  read stems for scan (default "SRR062634_200000 SRR5935746_200000")
-#        G0B_RUN_ID      results directory suffix (default: UTC timestamp, so re-runs never
-#                        overwrite)
+#        G0B_RUN_ID      results directory suffix (default: UTC time plus short commit, as g0a;
+#                        an existing results directory is never overwritten)
 # Writes results/g0b/<step>-<run-id>/ (manifest.json and small summaries) and .cache/g0b/ (key and
 # output dumps, not committed). Exits non-zero on any mismatch.
 set +e
@@ -20,7 +20,7 @@ echo "g0b: shell flags $-"
 INVOCATION="scripts/g0b.sh $*"
 
 STEP=${1:-all}
-RUN_ID=${G0B_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
+RUN_ID=${G0B_RUN_ID:-$(date -u +%Y%m%d-%H%M%S)-$(git rev-parse --short HEAD)}
 DBS=${G0B_DBS:-viral standard8}
 SCAN_READS=${G0B_SCAN_READS:-SRR062634_200000 SRR5935746_200000}
 READS=SRR062634_200000
@@ -39,6 +39,29 @@ db_dir() {
 # fail MSG: record a failed acceptance check and keep going (the summary says which).
 fail() { echo "g0b: FAIL: $*" >&2; FAILED=1; }
 
+# newdir DIR: create a results directory, refusing one that already exists.
+newdir() {
+  if [ -e "$1" ]; then echo "g0b: $1 exists; refusing to overwrite (set another G0B_RUN_ID)" >&2; exit 1; fi
+  mkdir -p "$1"
+}
+
+# db_json: the databases' SOURCE lines (source, etag, fetched) as a JSON object.
+db_json() {
+  local db dir first=1
+  printf '{'
+  for db in viral standard8; do
+    dir=$(db_dir "$db")
+    [ -s "$dir/SOURCE" ] || continue
+    [ $first = 1 ] || printf ', '
+    first=0
+    printf '"%s": {"source": "%s", "etag": "%s", "fetched": "%s"}' "$db" \
+      "$(awk '$1=="source"{print $2}' "$dir/SOURCE")" \
+      "$(awk '$1=="etag"{print $2}' "$dir/SOURCE" | tr -d '"')" \
+      "$(awk '$1=="fetched"{print $2}' "$dir/SOURCE")"
+  done
+  printf '}'
+}
+
 dirty() { git diff --quiet HEAD -- . ':!results' && [ -z "$(git ls-files --others --exclude-standard -- . ':!results')" ] && echo false || echo true; }
 
 go_build() { make -s build || { echo "g0b: go build failed" >&2; exit 1; }; }
@@ -56,7 +79,9 @@ manifest() {
     echo "  \"upstream_pin\": \"$UPSTREAM_PIN\","
     echo "  \"host\": \"$(uname -sm) $(sysctl -n hw.model 2>/dev/null || hostname)\","
     echo "  \"canonical_platform\": \"Linux aarch64; this host is $( [ "$(uname -s)/$(uname -m)" = Linux/aarch64 ] && echo canonical || echo development-only)\","
-    echo "  \"go\": \"$(go version)\","
+    echo "  \"go\": \"$(go version)\",
+    echo "  \"dbs\": $(db_json),"
+    echo "  \"comparisons\": ${COMPARISONS:-0},""
     echo "  \"start\": \"$3\", \"stop\": \"${4:-}\", \"failed\": $FAILED"
     echo "}"
   } > "$out/manifest.json"
@@ -68,8 +93,8 @@ manifest() {
 run_hash() {
   local db=$1 dir; dir=$(db_dir "$db") || return 1
   if [ ! -s "$dir/SOURCE" ] || [ ! -s "$dir/opts.k2d" ]; then
-    echo "g0b hash: $db not fully fetched ($dir); skipping"
-    return 0
+    fail "hash: requested db $db not fully fetched ($dir; scripts/fetch-db.sh)"
+    return 1
   fi
   local out="$RES/$db" cache=".cache/g0b/$db"
   mkdir -p "$out" "$cache"
@@ -81,7 +106,14 @@ run_hash() {
   cat "$out/keys.txt"
   local pop v
   for pop in real subthreshold random; do
-    if [ ! -s "$cache/keys-$pop.u64" ]; then echo "-- no $pop keys for $db"; continue; fi
+    if [ ! -s "$cache/keys-$pop.u64" ]; then
+      # A database that is not downsampled (minimum_acceptable_hash_value 0, e.g. Viral) has
+      # no subthreshold minimizers; any other empty population is a failure.
+      if [ "$pop" = subthreshold ] && grep -qx 'minimum_acceptable_hash_value=0' "$out/keys.txt"; then
+        echo "-- no $pop keys for $db (not downsampled)"; continue
+      fi
+      fail "hash: $db has no $pop keys"; continue
+    fi
     for v in "" .dh; do
       "$H/chash_dump$v" "$dir/hash.k2d" < "$cache/keys-$pop.u64" > "$cache/up$v-$pop.bin" \
         2> "$out/upstream$v-$pop.txt" || { fail "$db: chash_dump$v $pop"; return 1; }
@@ -92,6 +124,7 @@ run_hash() {
     $K -expect "$cache/up-$pop.bin" -mode linear -load ram -label "$db-$pop" \
       -json "$out/go-linear-ram-$pop.json" | tee "$out/go-linear-ram-$pop.txt" \
       || fail "$db $pop: linear/ram mismatch"
+    COMPARISONS=$((COMPARISONS + 1))
     $K -expect "$cache/up-$pop.bin" -mode linear -load mmap -label "$db-$pop" \
       -json "$out/go-linear-mmap-$pop.json" | tee "$out/go-linear-mmap-$pop.txt" \
       || fail "$db $pop: linear/mmap mismatch"
@@ -132,10 +165,11 @@ summarize_hash() {
 
 step_hash() {
   RES="results/g0b/chash-$RUN_ID"
-  mkdir -p "$RES"
+  newdir "$RES"
+  COMPARISONS=0
   local start b; start=$(date -u +%FT%TZ)
   manifest "$RES" hash "$start"
-  scripts/harness-build.sh --dh chash_keys chash_dump > "$RES/harness-paths.txt" \
+  scripts/harness-build.sh -v lp,dh chash_keys chash_dump > "$RES/harness-paths.txt" \
     || { fail "harness build"; manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"; return 1; }
   H=$(dirname "$(head -1 "$RES/harness-paths.txt")")
   rm -f "$RES/harness-paths.txt"
@@ -152,6 +186,7 @@ step_hash() {
   } > "$RES/commands.txt"
   local db
   for db in $DBS; do run_hash "$db"; done
+  [ "$COMPARISONS" -gt 0 ] || fail "hash: zero comparisons made"
   manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"
   summarize_hash > "$RES/summary.md"
 }
@@ -161,7 +196,7 @@ step_hash() {
 step_scan() {
   local out="results/g0b/scan-$RUN_ID" log sum fails=0 start
   start=$(date -u +%FT%TZ)
-  mkdir -p "$out"; log="$out/scan.log"; sum="$out/summary.txt"; : > "$log"; : > "$sum"
+  newdir "$out"; COMPARISONS=0; log="$out/scan.log"; sum="$out/summary.txt"; : > "$log"; : > "$sum"
   manifest "$out" scan "$start"
   { echo "shell flags: $-"; echo "invocation: $INVOCATION"; echo "G0B_SCAN_READS=$SCAN_READS"; } >> "$log"
   {
@@ -182,7 +217,8 @@ step_scan() {
     if [ -s "$K2_READS/${st}_1.fq" ] && [ -s "$K2_READS/${st}_2.fq" ]; then
       sets+=("$st")
     else
-      echo "skip reads $st (absent; scripts/fetch-reads.sh)" | tee -a "$sum"
+      echo "missing reads $st (scripts/fetch-reads.sh)" | tee -a "$sum"
+      fail "scan: requested read set $st absent"
     fi
   done
   [ ${#sets[@]} -gt 0 ] || { fail "scan: no read sets"; return 1; }
@@ -199,7 +235,8 @@ step_scan() {
   if [ -s "$std8/opts.k2d" ]; then
     for st in "${sets[@]}"; do cases+=("standard-8|$std8/opts.k2d|$st|"); done
   else
-    echo "skip standard-8 (no $std8/opts.k2d)" | tee -a "$sum"
+    echo "missing standard-8 (no $std8/opts.k2d)" | tee -a "$sum"
+    fail "scan: Standard-8 opts.k2d absent (scripts/fetch-db.sh standard8)"
   fi
   # Scanner-path coverage on real reads with synthetic options (not DB configurations):
   # sub-intervals, pre-2.0.8 revcom, the k == l short circuit, other k/l/masks, protein.
@@ -221,10 +258,12 @@ step_scan() {
     printf '%s\n' "$o" >> "$log"
     line=$(printf '%s\n' "$o" | grep -E '^(opts k=|MATCH|k2probe)' | tr '\n' ' ')
     [ $rc -eq 0 ] || fails=$((fails + 1))
+    COMPARISONS=$((COMPARISONS + 1))
     echo "case $label reads=$st flags='${flags}' rc=$rc :: $line" | tee -a "$sum"
   done
   echo "failures $fails" | tee -a "$sum"
   [ $fails -eq 0 ] || fail "scan: $fails case(s) mismatched"
+  [ "$COMPARISONS" -gt 0 ] || fail "scan: zero comparisons made"
   manifest "$out" scan "$start" "$(date -u +%FT%TZ)"
   echo "$out"
 }

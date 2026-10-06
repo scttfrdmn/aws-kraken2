@@ -27,7 +27,7 @@ func init() {
 // the same identifiers and bases as upstream's FastReader.
 func equivScan(args []string) error {
 	fs := flag.NewFlagSet("equiv-scan", flag.ExitOnError)
-	harness := fs.String("harness", ".oracle/harness/mm_dump", "path to the built mm_dump harness")
+	harness := fs.String("harness", "", "path to the built mm_dump harness (scripts/harness-build.sh mm_dump; required)")
 	ok := fs.Int("k", -1, "override k (synthetic probes only)")
 	ol := fs.Int("l", -1, "override l")
 	os_ := fs.String("s", "", "override spaced_seed_mask")
@@ -40,7 +40,7 @@ func equivScan(args []string) error {
 		fs.PrintDefaults()
 	}
 	fs.Parse(args)
-	if fs.NArg() < 2 {
+	if fs.NArg() < 2 || *harness == "" {
 		fs.Usage()
 		os.Exit(2)
 	}

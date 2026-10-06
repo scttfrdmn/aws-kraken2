@@ -13,6 +13,8 @@ import (
 	"sync"
 	"syscall"
 	"unsafe"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/kdb"
 )
 
 // Options configure a table load.
@@ -116,9 +118,9 @@ func readHeader(f *os.File, path string) (Header, Layout, error) {
 	if err != nil {
 		return Header{}, Layout{}, err
 	}
-	if uint64(st.Size()) != l.FileSize() {
-		return Header{}, Layout{}, fmt.Errorf("chash: capacity mismatch in %s: file is %d bytes, header (capacity %d x %d-byte cells) implies %d",
-			path, st.Size(), l.Capacity, l.CellBytes, l.FileSize())
+	// The size cross-check is kdb's (checked arithmetic), as upstream's "Capacity mismatch".
+	if _, err := kdb.CellWidth(kdb.HashHeader(h), st.Size()); err != nil {
+		return Header{}, Layout{}, fmt.Errorf("chash: capacity mismatch in %s: %w", path, err)
 	}
 	return h, l, nil
 }
@@ -193,7 +195,8 @@ func (t *Table) Cell(idx uint64) (uint64, error) {
 	return uint64(binary.LittleEndian.Uint32(c)) | uint64(c[4])<<32, nil
 }
 
-// Get is upstream's Get with the number of cells examined: 0 on a miss.
+// Get is upstream's Get: the stored value (0 on a miss) and the number of cells examined, which
+// is at least 1 on a hit or a miss.
 func (t *Table) Get(key uint64) (value uint32, probes int) {
 	value, probes, _ = t.Find(key)
 	return value, probes
