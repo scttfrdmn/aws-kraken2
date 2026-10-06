@@ -28,7 +28,9 @@ fi
 # DECOMP_BIN: a directory holding the gzip/bzip2 to use (both here and in upstream's wrapper,
 # which finds them on PATH). The canonical platform's are GNU gzip and bzip2 1.0.x; on macOS,
 # /usr/bin/gzip is Apple's, which truncates its output differently on a damaged stream.
-[ -n "$DECOMP_BIN" ] && export PATH="$DECOMP_BIN:$PATH"
+# Default, as make oracle: a GNU gzip build at /tmp/gnugzip/inst/bin when present.
+if [ -n "${DECOMP_BIN:-}" ]; then export PATH="$DECOMP_BIN:$PATH"
+elif [ -x /tmp/gnugzip/inst/bin/gzip ]; then export PATH="/tmp/gnugzip/inst/bin:$PATH"; fi
 THREADS=${THREADS:-4}
 DATE=$(date -u +%Y%m%dT%H%M%SZ)  # UTC timestamp: re-runs never overwrite
 WORK="$MAIN/.cache/equiv-seqout/$DATE"

@@ -38,7 +38,7 @@ in a worktree. Usage: `scripts/equiv-seqout.sh [stem [extra-stem…]]`. The defa
 macOS's `/usr/bin/gzip` is Apple's. On a truncated stream it drops its last partial 64 KiB of
 output, so `se_fq_gz_truncated` fails against it. On macOS, set `DECOMP_BIN` to a directory holding
 GNU gzip, for example one built from `gzip-1.12.tar.gz` with `./configure --prefix=…; make install`:
-`DECOMP_BIN=/path/to/bin make equiv-seqout`. The script uses that directory both for its own
+`DECOMP_BIN=/path/to/bin make equiv-seqout`. Without `DECOMP_BIN`, a build at `/tmp/gnugzip/inst/bin` is used if present (as `make oracle` does). The script uses that directory both for its own
 reference outputs and for upstream's wrapper, which finds gzip on `PATH`. The manifest records the
 gzip and bzip2 versions used.
 

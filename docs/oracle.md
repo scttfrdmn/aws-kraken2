@@ -54,7 +54,7 @@ Real public reads only (Law 3), 200,000 records per mate:
 | S2 | ERR478965 | trimmed reads, 45 to 94 bp |
 | S3 | SRR28305653 | NovaSeq, 150 bp |
 
-None of the raw samples has a mate shorter than k, so three awk variants cover the paths they
+None of the raw samples has a mate shorter than k, so variants cover the paths they
 never reach:
 
 | variant | made from | change | covers |
