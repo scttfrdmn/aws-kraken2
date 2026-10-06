@@ -135,6 +135,41 @@ exits 96.
 
 Every spec must count its requests with `ak2_req`; `run.sh` warns if none were recorded.
 
+## User data: the stub and the payload
+
+EC2 caps user data at **16384 bytes after base64 decoding**. spawn 0.121.0 sends
+`base64(gzip(bootstrap))`, where the bootstrap embeds the task wrapper, which embeds
+`command[2]`. spawn's own bootstrap already takes about 10.4 KB of the gzip budget. Inlining the
+preamble and the spec body overran it: g1 measured 17781 bytes and failed at RunInstances, and
+g0a measured 15211 bytes and passed. Precompressing the inline text does not help, because spawn
+gzips it again; it measured 1–1.5 KB *worse*.
+
+So `command[2]` is `scripts/stub.sh`, about 1.9 KB, and the **payload** (`scripts/preamble.sh` +
+`\n` + the spec body, byte for byte what used to be inlined) goes to `<run prefix>/payload.sh`.
+- `run.sh` uploads the payload before launch and checks the uploaded sha256.
+- It passes the stub `AK2_PAYLOAD_URI`, `AK2_PAYLOAD_SHA256`, and `AK2_PAYLOAD_URL`, a presigned
+  GET for that one object valid for TTL + 1 h. The instance needs no extra IAM grant on the
+  shared bucket.
+- The URL is redacted from `spec.resolved.json` after launch.
+
+The stub keeps Law 4's order:
+1. It records `$-` first, then runs `set +e`.
+2. It does the IMDSv2 region assert, plus the payload bucket's region, before any I/O (exit 97).
+3. It makes one curl GET, checks the sha256 (exit 97 on mismatch), and runs
+   `exec bash -c "<payload>"`, the same parsing and `$-` semantics as the inline script.
+4. The preamble then runs unchanged. It logs both its own `$-` and the stub's, and
+   `preflight.inherited_flags` is the stub's, i.e. what spawn started.
+
+A stub failure appears in `spawn/<task_id>/command.log`, because the preamble's log streaming
+has not started yet.
+
+**Size check.** Before the plan, and so in `DRY_RUN=1` too, `run.sh` builds `scripts/udsize`. This
+is a separate Go module that links spawn v0.121.0's own `taskproto.GenerateWrapper`,
+`GenerateFlushScript`, `launcher.BuildLinuxBootstrap` and `EncodeLinuxUserData`. It measures the
+exact user data for the resolved spec. `run.sh` refuses if the result exceeds
+16384 − `AK2_USERDATA_MARGIN` (1024, in `ak2.env`). The manifest records `user_data` and
+`payload` (URI, sha256, bytes).
+
 ## What it does
 
 1. Validates the spec as above. Then it checks the region of each declared bucket
