@@ -139,13 +139,15 @@ g2_main() {
   local -a ARGV
   local -A SKIP=()
   local push_ok=false; declare -F ak2_push >/dev/null && push_ok=true
-  local lineno=0
+  local lineno=0 LINE_ENV=""
   while IFS= read -r line || [ -n "$line" ]; do
     lineno=$((lineno + 1))
     line=${line%%#*}
     read -r kind regime input state reps ths <<< "$line"
     case "$kind" in
       ''|note) continue ;;
+      env) LINE_ENV=$(sed -E 's/^[[:space:]]*env[[:space:]]*//; s/^-$//' <<< "$line" | xargs)
+           echo "g2: plan line $lineno: classifier env for the following lines: '${LINE_ENV}'"; continue ;;
       run|profile) ;;
       *) echo "g2: plan line $lineno: unknown directive '$kind'" >&2; FAILS=$((FAILS + 1)); continue ;;
     esac
@@ -185,7 +187,7 @@ g2_main() {
         declare -F ak2_phase >/dev/null && ak2_phase "g2-$RUNG-$regime-$input-$state-t$th-r$rep"
         if [ "$kind" = profile ]; then
           # shellcheck disable=SC2086
-          env $EXTRA_ENV $PERF record -F 199 -g -o "$WORK/perf.data" -- "${ARGV[@]}" \
+          env $EXTRA_ENV $LINE_ENV $PERF record -F 199 -g -o "$WORK/perf.data" -- "${ARGV[@]}" < /dev/null \
             > /dev/null 2> "$RES/profile/$tag.stderr"
           $PERF report -i "$WORK/perf.data" --stdio --no-children --sort dso,sym --percent-limit 0.5 \
             2>/dev/null | grep -v '^$' | head -150 > "$RES/profile/$tag.txt"
@@ -197,7 +199,7 @@ g2_main() {
           continue
         fi
         # shellcheck disable=SC2086
-        j=$(env $EXTRA_ENV python3 scripts/lib/g2run.py --out "$RES/stderr/$tag" --threads "$th" \
+        j=$(env $EXTRA_ENV $LINE_ENV python3 scripts/lib/g2run.py --out "$RES/stderr/$tag" --threads "$th" \
               --devs "$DEVS" --perf-events "$EVENTS" --perf "$PERF" --hz "$HZ" --timeout "$TMO" -- "${ARGV[@]}")
         [ -n "$j" ] || { echo "g2: $tag: no measurement" >&2; FAILS=$((FAILS + 1)); continue; }
         [ -f "$RES/stderr/$tag.perf.csv" ] && mv "$RES/stderr/$tag.perf.csv" "$RES/perf/$tag.csv"
@@ -207,8 +209,8 @@ g2_main() {
         seqs=$(grep -oE '^[0-9]+ sequences \(' "$RES/stderr/$tag.stderr" | grep -oE '^[0-9]+' | head -1)
         jq -c --arg tag "$tag" --argjson l "$lineno" --arg rg "$regime" --arg i "$input" --arg s "$state" \
           --argjson r "$rep" --argjson osha "$osha" --argjson rsha "$rsha" --arg seqs "${seqs:-}" \
-          --arg at "$(date -u +%FT%TZ)" \
-          '{tag:$tag,line:$l,kind:"run",regime:$rg,input:$i,state:$s,rep:$r,finished_at:$at,
+          --arg at "$(date -u +%FT%TZ)" --arg env "$LINE_ENV" \
+          '{tag:$tag,line:$l,kind:"run",regime:$rg,input:$i,state:$s,rep:$r,finished_at:$at,env:$env,
             sequences:(if $seqs=="" then null else ($seqs|tonumber) end),
             output_sha256:$osha,report_sha256:$rsha} + .' <<< "$j" >> "$JL"
         echo "g2: $tag $(jq -c '{exit,timed_out,wall_s,load_s,classify_s,offcpu_frac,ipc,aqu:([.disks[]?.aqu_sz]|max),majflt}' <<< "$j")"

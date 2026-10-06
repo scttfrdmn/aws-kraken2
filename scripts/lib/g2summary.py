@@ -116,6 +116,8 @@ def main():
     skipped = [r for r in runs if r.get("skipped")]
     cells = {}
     for r in done:
+        if r.get("env"):  # a plan `env` line makes its own cells, e.g. load[K2_DB_READ_THREADS=32]
+            r["regime"] = "%s[%s]" % (r["regime"], r["env"])
         cells.setdefault((r["regime"], r["input"], r["state"], r["threads"]), []).append(r)
 
     rows = []
