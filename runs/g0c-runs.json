@@ -1,0 +1,27 @@
+{
+  "task_id": "g0c-runs",
+  "command": [
+    "bash",
+    "-c",
+    "# G0c-a (#7): one streaming pass over RODA v205 hash.k2d (us-west-2, Payer BucketOwner, public):\n# SHA-256 of the whole object, occupied count (== header size), cells (== capacity), the exact\n# run-length histogram (wrap run joined), the longest run and its start slot, and the overlap\n# tail per shard count N = 2..64. Anonymous HTTPS ranged GETs (64 MiB, 48 in flight, If-Match the\n# ETag) feed an in-order reader: each chunk is scanned in parallel as it lands, the SHA-256 and\n# the run merge run in slot order. Code: the launch commit, cloned from GitHub. k2probe streams\n# progress to stderr (the run log) every 32 GiB; results are pushed when the pass ends.\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nhex64() { [[ $1 =~ ^[0-9a-f]{64}$ ]]; }\n# AK2_DATASETS: RODA hash.k2d first, then RODA opts.k2d, then (probes only) the staged reads.\nset -- $AK2_DATASETS\nU=${1#s3://}; RB=${U%%/*}; HK=${U#*/}\nU=${2#s3://}; OK=${U#*/}\nURL=\"https://$RB.s3.$AK2_REGION.amazonaws.com/$HK\"\ns3a() { aws s3api --no-sign-request --region \"$AK2_REGION\" \"$@\"; }\n\nak2_phase setup\nsudo -n dnf install -y -q git tar gzip jq > \"$W/dnf.log\" 2>&1 || { tail -20 \"$W/dnf.log\"; fail \"dnf install failed\"; }\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\nak2_say \"checkout $SHA head=$(git -C \"$W/repo\" rev-parse HEAD)\"\nGOV=$(awk '$1==\"go\"{print $2}' \"$W/repo/go.mod\")\ncurl -fsSL --retry 5 --retry-delay 5 \"https://go.dev/dl/go$GOV.linux-arm64.tar.gz\" -o \"$W/go.tgz\" || fail \"Go download failed\"\ntar -xzf \"$W/go.tgz\" -C \"$W\" || fail \"Go unpack failed\"\nexport PATH=\"$W/go/bin:$PATH\"\n(cd \"$W/repo\" && go build -trimpath -o bin/ ./cmd/k2probe) > \"$W/build.out\" 2>&1 || { tail -30 \"$W/build.out\"; fail \"build failed\"; }\nK2P=\"$W/repo/bin/k2probe\"\nak2_say \"go: $(go version); k2probe built; nproc $(nproc); $(free -g | awk '/Mem:/{print \"mem_gib \" $2}')\"\n\n# The object the instance reads: ETag and size from its own head-object (the post script checks\n# them against the manifest's launch-time head-object). Every ranged GET sends If-Match: ETag.\nak2_phase head\ns3a head-object --bucket \"$RB\" --key \"$HK\" > \"$W/head-hash.k2d.json\" || fail \"head-object hash.k2d failed\"\nak2_req HeadObject 1 \"$RB\"\nak2_push \"$W/head-hash.k2d.json\"\nETAG=$(jq -r '.ETag | gsub(\"\\\"\";\"\")' \"$W/head-hash.k2d.json\")\nSIZE=$(jq -r .ContentLength \"$W/head-hash.k2d.json\")\nak2_say \"hash.k2d etag=$ETAG size=$SIZE version=$(jq -r '.VersionId // \"null\"' \"$W/head-hash.k2d.json\")\"\n[ -n \"$ETAG\" ] && [ \"$SIZE\" -gt 0 ] || fail \"no ETag/size for hash.k2d\"\n\n# Rung 1 (cheap): in-memory SHA-256 ceiling, plus the first 32 GiB through the same reader, to\n# show the rates before the full pass. Rung 2: the whole object. Nothing is read from a local\n# disk or page cache (the object is streamed from S3 into reused buffers), so there is no cold or\n# warm distinction and no drop_caches.\nak2_phase pilot\n\"$K2P\" runs -url \"$URL\" -etag \"$ETAG\" -size \"$SIZE\" -limit 34359738368 -sha-bench-mib 8192 \\\n  -chunk-mib 64 -workers 48 -progress-gib 8 -out \"$W/pilot\"\nRC=$?\nak2_say \"pilot rc=$RC\"\nak2_req GetObject-range \"$(jq -r '.get_requests // 0' \"$W/pilot/summary.json\" 2>/dev/null || echo 0)\" \"$RB\"\nak2_push \"$W/pilot/summary.json\" pilot/summary.json\n[ \"$RC\" = 0 ] || fail \"pilot failed\"\n\nak2_phase pass\n\"$K2P\" runs -url \"$URL\" -etag \"$ETAG\" -size \"$SIZE\" -chunk-mib 64 -workers 48 -progress-gib 32 -out \"$W/pass\"\nRC=$?\nak2_say \"pass rc=$RC\"\nak2_req GetObject-range \"$(jq -r '.get_requests // 0' \"$W/pass/summary.json\" 2>/dev/null || echo 0)\" \"$RB\"\n\nak2_phase head-after\ns3a head-object --bucket \"$RB\" --key \"$HK\" > \"$W/head-hash.k2d.after.json\"\nak2_say \"head-object after rc=$? etag=$(jq -r .ETag \"$W/head-hash.k2d.after.json\")\"\nak2_req HeadObject 1 \"$RB\"\n\nak2_phase push\nPF=0\nak2_push \"$W/head-hash.k2d.after.json\" || PF=$((PF + 1))\nfor f in \"$W\"/pass/*; do [ -e \"$f\" ] && { ak2_push \"$f\" \"pass/$(basename \"$f\")\" || PF=$((PF + 1)); }; done\nak2_say \"G0c-a done rc=$RC push_failures=$PF\"\n[ \"$RC\" != 0 ] && exit \"$RC\"\n[ \"$PF\" = 0 ] || exit 1\nexit 0\n"
+  ],
+  "resources": {
+    "cpu": 8,
+    "memory_gib": 16,
+    "architecture": "arm64",
+    "families": [
+      "c8gn"
+    ],
+    "disk_gib": 20
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/hash.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d"
+  },
+  "lifecycle": {
+    "ttl": "50m",
+    "on_complete": "terminate",
+    "cost_limit": 1.0
+  }
+}

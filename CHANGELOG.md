@@ -109,6 +109,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   v3.1 (`est_abundance.py`, levels S and G, `-r 100`) on upstream's and our `--report` for
   Standard-8 on ERR478965 and SRR062634, and byte-compares the reports, Bracken's tables, its
   adjusted reports and its stdout. Writes `results/g1/bracken-<ts>-<sha>/`.
+- G0c (#7, #8): `make g0c PART=local|probes|runs` (`scripts/g0c.sh`, `docs/g0c.md`, specs
+  `runs/g0c-{runs,probes}.json`, post scripts `scripts/post/g0c-{runs,probes}.sh`).
+  `internal/runlen` measures the occupied-run structure of a hash.k2d with parallel chunk scans,
+  an in-order merge, and a brute-force reference: the run histogram (wrap run joined), the
+  longest run, the overlap tail per shard count, and Borel theory. `internal/rangeread` is an
+  in-order streaming reader over parallel ranged reads (file, or anonymous HTTPS with If-Match).
+  `k2probe runs` does one pass, SHA-256 included, and `k2probe probes` samples classify's
+  lookups from real reads and resolves them with point GETs through `chash.Probe`.
+  `make stage-reads` now also stages ERR598966.
 
 ### Changed
 
