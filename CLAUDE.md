@@ -37,12 +37,44 @@ Its numbers *and* its process failures apply here.
 - SemVer 2.0.0, but never create tags or releases and never choose version numbers.
 - CHANGELOG follows Keep a Changelog 1.1.0; only `[Unreleased]` until Scott says otherwise.
 - **Upstream pin:** `DerrickWood/kraken2` @ `2731b35f7abb26ec926517274f3d87e78d42fd76`
-  (2026-10-01; `git describe` = `2.17.2-20-g2731b35`). Oracle *and* baseline. Defined once in
-  `scripts/pin.env`.
+  (2026-10-01; `git describe` = `2.17.2-20-g2731b35`; the upstream tag has no `v`). Oracle
+  *and* baseline. Defined once in `scripts/pin.env`. **Pin identity is the commit SHA**: every
+  manifest records the full SHA and `git describe`. The `VERSION` file's `2.17.1` is not the
+  identity.
+- Oracle and baseline are built from source at the pin, and go into the shared AMI when that
+  lever lands. The aarch.bio kraken2 image (2.17.1) is not used for either.
 - All AWS runs go through spore.host (`spawn`, `truffle`, `lagotto`, `spored`, `cohort`), via
   `make run`. Every run has a TTL and a `cost_limit`, and `make orphans` afterwards (nf-spawn#96).
 - Containers come from aarch.bio, pinned by digest, with a flat `/tmp` layout (spawn#555).
 - AWS account: `AWS_PROFILE=aws`.
+
+## Format facts (verified at the pin)
+
+- `hash.k2d` starts with four `size_t`: capacity, size, key_bits, value_bits. Then come
+  `capacity` cells, each holding the value in its low bits and the compacted key in its high bits.
+  Cells are 32-bit (`CompactHashCell`) or 40-bit (`CompactHashCell40`). Detect the width from
+  key_bits+value_bits and from the file size, and fail loudly on anything else.
+- Hash: MurmurHash3 fmix64. Compacted key = `hc >> (64 − key_bits)`. Home slot =
+  `hc % capacity`.
+- **Probing is linear.** Upstream builds with `-DLINEAR_PROBING` (`src/Makefile:4`,
+  `CMakeLists.txt:13`), so `second_hash()` returns 1 and probe chains are contiguous runs of
+  occupied cells. Probing stops at an empty cell, a key match, or a full wrap. Both pinned DBs
+  were measured to be linear-probed (#4). An earlier statement that probing is double hashing
+  was wrong.
+- Capped DBs: skip any minimizer whose hash is below `minimum_acceptable_hash_value`.
+- `opts.k2d` comes in 48-, 56- and 64-byte layouts. RODA v205's is 56 bytes (v2.0.8–2.0.9).
+- Load factor is about 0.7.
+
+## Engine
+
+- The sharded resident table. N = 1 is a single big-RAM node.
+- Each of N nodes loads its contiguous slot range, **plus an overlap tail** at least as long as
+  the longest occupied run in the table, with wraparound at the end, using parallel ranged GETs.
+  A probe never leaves its shard. The tail size comes from G0c's run-length measurement.
+- Each node scans its own reads and routes `(slot, key, read, pos)` to the shard owning the home
+  slot. Results return to the read's home node, which runs the ported classification.
+- Each sample's output is one S3 multipart upload, with part numbers in read order. Reports are
+  a sum-reduce. No global locks.
 
 ## Planning lives on GitHub, not here
 
