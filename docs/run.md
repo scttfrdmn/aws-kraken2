@@ -116,6 +116,13 @@ and separators are understood, and it inspects every simple command's option wor
 - `eval`: its arguments are re-checked, so `eval "set -e"` is caught.
 - A `-e` shebang.
 
+Before reading the command name, the checker skips assignments and keywords. It also skips the
+wrappers `exec`, `env` (options and `VAR=val` words), `sudo` (options), `timeout [opts] N`,
+`nohup`, `nice [-n N]`, `xargs [opts]`, `stdbuf [opts]` and `command`. So `sudo -u x bash -e` and
+`timeout 5 sh -e` are both caught. Arithmetic (`$((a << 2))`, `((x <<= 1))`) is data, not a
+heredoc. If the checker itself throws, it exits 2, and `run.sh` reports "errexit check crashed"
+instead of passing or failing the spec.
+
 Quoted text and heredoc bodies are data, so `echo "set -e"` is allowed. Static parsing does not
 see:
 - code inside `"$( … )"` within double quotes;
