@@ -20,14 +20,20 @@ left alone. Backed by `scripts/tag-objects.sh` and `scripts/lib/tags.sh`.
 - `run.sh` tags the payload as `payload` right after uploading it.
 - The instance role has `PutObject` but not `PutObjectTagging`. So what the preamble and spawn
   write under a run prefix is tagged by `run.sh` after the run, using
-  `scripts/tag-objects.sh <run prefix>/`, which logs one line.
+  `scripts/tag-objects.sh <run prefix>/`. It prints one line and records it in the manifest as
+  `.object_tags = {ok, line}`; `make report` shows it.
 
-**Inputs:** `PREFIX` (optional; must lie under `aws-kraken2/`); `AWS_PROFILE`; `scripts/ak2.env`.
+**Inputs:**
+- `PREFIX` (optional). Its bucket must be one of the configured `AK2_RESULTS_BUCKET_<region>`,
+  and its key must lie under `aws-kraken2/`.
+- The region of every call is the `<region>` of that configured bucket, never hard-coded.
+- `AWS_PROFILE` and `scripts/ak2.env`.
 
 **Outputs:** one line, `tag-objects: <prefix>: N objects, T tagged now, A already tagged, F failed`.
 The first run over the whole prefix (2026-10-06) tagged 134 of 134 objects, and a second run
 tagged 0. It takes about 3 minutes for 134 objects (two API calls each, sequential).
 
-**Failure looks like:** exit 2 if the prefix is outside `aws-kraken2/` or cannot be listed. Exit 1
+**Failure looks like:** exit 2 if the bucket is not a configured results bucket, if the prefix is
+outside `aws-kraken2/`, or if it cannot be listed. Exit 1
 with `FAILED <key>` lines if an object could not be read or tagged (permissions, or the object
 was deleted mid-run). Re-run; it only touches what is still missing.

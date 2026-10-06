@@ -14,7 +14,9 @@ export AWS_PROFILE
 PREFIX=${1:-s3://$AK2_RESULTS_BUCKET_us_west_2/$AK2_RESULTS_ROOT/}
 U=${PREFIX#s3://}; BUCKET=${U%%/*}; KP=${U#*/}; [ "$KP" = "$U" ] && KP=""
 case "$KP" in "$AK2_RESULTS_ROOT"/*) ;; *) echo "tag-objects: refusing a prefix outside $AK2_RESULTS_ROOT/: $PREFIX" >&2; exit 2 ;; esac
-KEYS=$(aws s3api list-objects-v2 --region us-west-2 --bucket "$BUCKET" --prefix "$KP" \
+REGION=$(ak2_bucket_region "$BUCKET") ||
+  { echo "tag-objects: $BUCKET is not a configured results bucket (AK2_RESULTS_BUCKET_* in scripts/ak2.env)" >&2; exit 2; }
+KEYS=$(aws s3api list-objects-v2 --region "$REGION" --bucket "$BUCKET" --prefix "$KP" \
          --query 'Contents[].Key' --output json) || { echo "tag-objects: listing $PREFIX failed" >&2; exit 2; }
 n=0 tagged=0 ok=0 failed=0
 while IFS= read -r k; do

@@ -364,8 +364,8 @@ done
 aws s3 cp --only-show-errors --recursive "$PREFIX/" "$RUN_DIR/" || say "WARNING: fetch of $PREFIX failed"
 # The instance role has PutObject but not PutObjectTagging, so what the preamble and spawn wrote
 # under the run prefix is tagged here, after the run.
-TAGLINE=$(scripts/tag-objects.sh "$PREFIX/" 2>&1) || say "WARNING: $TAGLINE"
-say "$TAGLINE"
+TAGLINE=$(scripts/tag-objects.sh "$PREFIX/" 2>&1); TAG_OK=$?
+if [ "$TAG_OK" = 0 ]; then say "$TAGLINE"; else say "WARNING: object tagging failed: $TAGLINE"; fi
 DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json)
 # StateTransitionReason carries the termination time: "User initiated (2026-10-05 18:40:12 GMT)".
 END_AT=$(echo "$DESC" | jq -r '.StateTransitionReason' | sed -n 's/.*(\([0-9-]* [0-9:]*\) GMT).*/\1/p')
@@ -396,6 +396,8 @@ if [ -s "$RUN_DIR/out/requests.tsv" ]; then
        by_op:(group_by(.op) | map({key:.[0].op, value:(map(.count // 0)|add)}) | from_entries), rows:.}') || REQS='null'
 fi
 
+mset --argjson ok "$([ "$TAG_OK" = 0 ] && echo true || echo false)" --arg line "$TAGLINE" \
+  '.object_tags = {ok: $ok, line: $line}' || say "WARNING: could not record object tags in the manifest"
 # Derived tables first and separately: a bad table must never block finalisation below.
 mset --argjson phases "${PHASES:-null}" --argjson reqs "${REQS:-null}" '.phases = $phases | .requests = $reqs' ||
   say "WARNING: could not record phases/requests in the manifest"
