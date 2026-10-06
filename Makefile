@@ -6,11 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-<<<<<<< HEAD
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check
-=======
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify tag-objects
->>>>>>> harness-rulings
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check tag-objects
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
