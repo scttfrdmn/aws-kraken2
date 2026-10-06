@@ -475,9 +475,6 @@ func (r *runner) work(ws *workerState, j job, printing bool) *result {
 	res.st.classified = ws.w.Classified - before
 	res.kraken = ws.w.Out
 	ws.w.Out = nil
-	// res holds copies of everything it needs from the records (Batch.Add appends them).
-	seqio.Recycle(j.b1)
-	seqio.Recycle(j.b2)
 	return res
 }
 
