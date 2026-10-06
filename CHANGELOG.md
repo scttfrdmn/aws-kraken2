@@ -56,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   us-west-2. Prepared, not launched.
 - `classify.Calls`: report input from merged counters, keeping zero-read taxa, with an end-to-end
   counters-to-report test.
+- `upstream/chash_build.cc` and a g0b `hash` sub-step: a synthetic 40-bit table built by
+  upstream's own `CompareAndSet`/`WriteTable` (linear and double-hashing builds), looked up by
+  upstream and by `internal/chash`, so the 40-bit cell path is checked against upstream.
 - `docs/harness.md` runbook; `scripts/cxx.sh` is the compiler choice shared by the upstream build
   and the harnesses.
 

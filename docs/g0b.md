@@ -57,6 +57,18 @@ For each database:
    - double mode vs the shipped build, counted (`-stop=false`): evidence for which probe mode
      the database was built with.
 
+4. **Synthetic 40-bit table.** Neither pinned database uses 40-bit cells (`CompactHashCell40`),
+   so a table is built by upstream itself. `upstream/chash_build.cc` calls `CompareAndSet` and
+   `WriteTable` with capacity 1,000,003, key_bits 18, value_bits 22, 700,000 keys and a fixed
+   seed. It builds the table once with the shipped flags (linear) and once as `.dh`
+   (double hashing). The key file holds the inserted keys plus as many random keys. Both
+   `chash_dump` and `k2probe equiv-hash` look every key up:
+   - linear, RAM and mmap, against the linear table;
+   - double against the `.dh` table.
+
+   All comparisons must show 0 mismatches. This is synthetic data, used only as a port check of
+   the cell format; it is not a measurement. It lands in `synthetic40/`.
+
 **Outputs:** `results/g0b/chash-<run-id>/`: `manifest.json`, `summary.md`, `commands.txt`,
 `harness-<bin>.BUILD`, and per database `db-SOURCE.txt`, `keys.txt` (scanner counts),
 `upstream*-<pop>.txt` (upstream counts and timings), `go-*.{txt,json}` (comparison, probe

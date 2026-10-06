@@ -138,6 +138,36 @@ run_hash() {
   done
 }
 
+# run_synth40: the 40-bit cell path (CompactHashCell40), which neither pinned database uses. A
+# synthetic table is built by upstream itself (upstream/chash_build.cc: CompareAndSet, WriteTable),
+# once per probe build, then looked up by upstream (chash_dump) and by Go. Synthetic data: a port
+# check of the cell format, not a measurement.
+SYN_CAP=1000003; SYN_KB=18; SYN_VB=22; SYN_N=700000
+run_synth40() {
+  local out="$RES/synthetic40" cache=".cache/g0b/synthetic40" v mode
+  mkdir -p "$out" "$cache"
+  echo "== g0b hash synthetic 40-bit (capacity $SYN_CAP, key_bits $SYN_KB, value_bits $SYN_VB, $SYN_N keys)"
+  for v in "" .dh; do
+    "$H/chash_build$v" "$cache/hash$v.k2d" "$SYN_CAP" "$SYN_KB" "$SYN_VB" "$SYN_N" "$SEED" "$cache/keys$v.u64" \
+      2> "$out/build$v.txt" || { fail "synthetic40: chash_build$v"; return 1; }
+    "$H/chash_dump$v" "$cache/hash$v.k2d" < "$cache/keys$v.u64" > "$cache/up$v.bin" \
+      2> "$out/upstream$v.txt" || { fail "synthetic40: chash_dump$v"; return 1; }
+  done
+  cat "$out/build.txt"
+  local K="$BIN/k2probe equiv-hash"
+  for mode in ram mmap; do
+    $K -hash "$cache/hash.k2d" -keys "$cache/keys.u64" -expect "$cache/up.bin" -mode linear -load $mode \
+      -label "synthetic40-linear-$mode" -json "$out/go-linear-$mode.json" | tee "$out/go-linear-$mode.txt" \
+      || fail "synthetic40: linear/$mode mismatch"
+    COMPARISONS=$((COMPARISONS + 1))
+  done
+  $K -hash "$cache/hash.dh.k2d" -keys "$cache/keys.dh.u64" -expect "$cache/up.dh.bin" -mode double -load ram \
+    -label "synthetic40-double-vs-dh" -json "$out/go-double-vs-dh.json" | tee "$out/go-double-vs-dh.txt" \
+    || fail "synthetic40: double vs upstream double-hashing build mismatch"
+  COMPARISONS=$((COMPARISONS + 1))
+  grep -q '^cell_bytes=5$' "$out/build.txt" || fail "synthetic40: the table is not 40-bit"
+}
+
 # summarize_hash: one readable page assembled from the files in $RES (nothing computed here).
 summarize_hash() {
   echo "# g0b hash equivalence, run $RUN_ID"
@@ -148,9 +178,14 @@ summarize_hash() {
   echo '```'; cat "$RES/commands.txt"; echo; cat "$RES"/harness-*.BUILD; echo '```'
   local d f
   for d in "$RES"/*/; do
-    [ -f "$d/db-SOURCE.txt" ] || continue
-    echo; echo "## $(basename "$d")"; echo
-    echo '```'; cat "$d/db-SOURCE.txt"; echo; cat "$d/keys.txt"; echo '```'
+    if [ -f "$d/build.txt" ]; then
+      echo; echo "## $(basename "$d") (synthetic table built by upstream; cell-format port check)"; echo
+      echo '```'; cat "$d/build.txt"; echo '```'
+    else
+      [ -f "$d/db-SOURCE.txt" ] || continue
+      echo; echo "## $(basename "$d")"; echo
+      echo '```'; cat "$d/db-SOURCE.txt"; echo; cat "$d/keys.txt"; echo '```'
+    fi
     for f in "$d"/upstream-*.txt "$d"/upstream.dh-*.txt; do
       [ -f "$f" ] || continue
       echo; echo "### $(basename "$f" .txt)"; echo; echo '```'
@@ -169,11 +204,11 @@ step_hash() {
   COMPARISONS=0
   local start b; start=$(date -u +%FT%TZ)
   manifest "$RES" hash "$start"
-  scripts/harness-build.sh -v lp,dh chash_keys chash_dump > "$RES/harness-paths.txt" \
+  scripts/harness-build.sh -v lp,dh chash_keys chash_dump chash_build > "$RES/harness-paths.txt" \
     || { fail "harness build"; manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"; return 1; }
   H=$(dirname "$(head -1 "$RES/harness-paths.txt")")
   rm -f "$RES/harness-paths.txt"
-  for b in chash_keys chash_dump chash_dump.dh; do cp "$H/$b.BUILD" "$RES/harness-$b.BUILD"; done
+  for b in chash_keys chash_dump chash_dump.dh chash_build chash_build.dh; do cp "$H/$b.BUILD" "$RES/harness-$b.BUILD"; done
   cp "$K2_READS/$READS.SOURCE" "$RES/reads-SOURCE.txt" 2>/dev/null
   {
     echo "$INVOCATION  (G0B_DBS=\"$DBS\" G0B_RUN_ID=$RUN_ID)"
@@ -183,9 +218,13 @@ step_hash() {
     echo "        k2probe equiv-hash -mode linear -load ram|mmap -expect up-<pop>.bin"
     echo "        k2probe equiv-hash -mode double -expect up.dh-<pop>.bin"
     echo "        k2probe equiv-hash -mode double -stop=false -expect up-<pop>.bin"
+    echo "synthetic 40-bit: chash_build{,.dh} hash{,.dh}.k2d $SYN_CAP $SYN_KB $SYN_VB $SYN_N $SEED keys{,.dh}.u64"
+    echo "        chash_dump{,.dh} hash{,.dh}.k2d < keys{,.dh}.u64 > up{,.dh}.bin"
+    echo "        k2probe equiv-hash -mode linear -load ram|mmap (vs up.bin); -mode double (vs up.dh.bin)"
   } > "$RES/commands.txt"
   local db
   for db in $DBS; do run_hash "$db"; done
+  run_synth40
   [ "$COMPARISONS" -gt 0 ] || fail "hash: zero comparisons made"
   manifest "$RES" hash "$start" "$(date -u +%FT%TZ)"
   summarize_hash > "$RES/summary.md"
