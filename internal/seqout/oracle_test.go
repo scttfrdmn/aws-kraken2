@@ -1,15 +1,19 @@
 package seqout
 
 // Oracle equivalence for seqio + seqout, independent of the classifier port: the class and
-// taxid of each read come from upstream's --output, the reads from seqio, the bytes from
+// taxid of each read come from upstream's --output, the reads from seqio's production path
+// (LoadBlock / LoadBlocks at DefaultBlockBytes, then Parse / PairBlocks), the bytes from
 // seqout, and the result is compared with upstream's --classified-out / --unclassified-out.
-// scripts/equiv-seqout.sh produces the upstream side and runs this; without it the test skips.
+// The run's end state (clean, malformed records, unequal mates, empty input) must give
+// upstream's exit status and message. scripts/equiv-seqout.sh produces the upstream side and
+// runs this; without it the test skips.
 
 import (
 	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -23,13 +27,13 @@ import (
 )
 
 type oracleCase struct {
-	name, gzipFlag, krakenOut, cls, uncls string
-	paired                                bool
-	minQ                                  int
-	inputs                                []string
+	name, comp, krakenOut, cls, uncls, stderr string
+	paired                                    bool
+	minQ, upstreamExit                        int
+	inputs                                    []string
 }
 
-// cases.tsv: name paired(0/1) gzip_flag(0/1) minq kraken_out cls_pattern uncls_pattern input1 [input2]
+// cases.tsv: name paired comp(none|gz|bz2) minq upstream_exit kraken_out cls uncls stderr inputs...
 func loadCases(t *testing.T, dir string) []oracleCase {
 	data, err := os.ReadFile(filepath.Join(dir, "cases.tsv"))
 	if err != nil {
@@ -38,12 +42,13 @@ func loadCases(t *testing.T, dir string) []oracleCase {
 	var cs []oracleCase
 	for _, line := range strings.Split(strings.TrimSpace(string(data)), "\n") {
 		f := strings.Split(line, "\t")
-		if len(f) < 8 || strings.HasPrefix(line, "#") {
-			continue
+		if len(f) < 10 {
+			t.Fatalf("bad cases.tsv line %q", line)
 		}
 		q, _ := strconv.Atoi(f[3])
-		cs = append(cs, oracleCase{name: f[0], paired: f[1] == "1", gzipFlag: f[2], minQ: q,
-			krakenOut: f[4], cls: f[5], uncls: f[6], inputs: f[7:]})
+		ex, _ := strconv.Atoi(f[4])
+		cs = append(cs, oracleCase{name: f[0], paired: f[1] == "1", comp: f[2], minQ: q, upstreamExit: ex,
+			krakenOut: f[5], cls: f[6], uncls: f[7], stderr: f[8], inputs: f[9:]})
 	}
 	return cs
 }
@@ -53,9 +58,17 @@ func TestOracleSeqout(t *testing.T) {
 	if dir == "" {
 		t.Skip("K2_SEQOUT_ORACLE not set (scripts/equiv-seqout.sh sets it)")
 	}
+	cases := loadCases(t, dir)
+	if len(cases) == 0 {
+		t.Fatal("no oracle cases")
+	}
+	if want := os.Getenv("K2_SEQOUT_EXPECTED_CASES"); want != "" && want != strconv.Itoa(len(cases)) {
+		t.Fatalf("%d oracle cases, expected %s", len(cases), want)
+	}
+	seqio.DecompressLog = io.Discard // upstream's gzip -dc complaints go to its stderr only
 	var summary bytes.Buffer
-	summary.WriteString("case\trecords\tclassified\tid_len_mismatches\tfile\tbytes\tsha256_upstream\tsha256_go\tidentical\n")
-	for _, c := range loadCases(t, dir) {
+	summary.WriteString("case\trecords\tclassified\tid_len_mismatches\texit_upstream\texit_go\tfile\tbytes\tsha256_upstream\tsha256_go\tidentical\n")
+	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) { runOracleCase(t, c, &summary) })
 	}
 	if out := os.Getenv("K2_SEQOUT_SUMMARY"); out != "" {
@@ -78,9 +91,24 @@ func trimPairInfo(id []byte) []byte {
 	return id
 }
 
+func exists(p string) bool { _, err := os.Stat(p); return err == nil }
+
+func outputPairs(c oracleCase, clsGo, unclsGo string) [][2]string {
+	if !c.paired {
+		return [][2]string{{c.cls, clsGo}, {c.uncls, unclsGo}}
+	}
+	var pairs [][2]string
+	for _, p := range [][2]string{{c.cls, clsGo}, {c.uncls, unclsGo}} {
+		a1, a2, _ := PairedNames(p[0])
+		b1, b2, _ := PairedNames(p[1])
+		pairs = append(pairs, [2]string{a1, b1}, [2]string{a2, b2})
+	}
+	return pairs
+}
+
 func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 	out := t.TempDir()
-	comp, err := seqio.ResolveCompression(c.gzipFlag == "1", false, c.inputs[0])
+	comp, err := seqio.ResolveCompression(c.comp == "gz", c.comp == "bz2", c.inputs[0])
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,20 +122,34 @@ func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 		readers = append(readers, r)
 	}
 	var pr *seqio.PairedReader
+	var has bool
 	if c.paired {
 		pr = seqio.NewPairedReader(readers[0], readers[1])
-	}
-	var has bool
-	if pr != nil {
 		has, err = pr.Prime()
 	} else {
 		has, err = readers[0].Prime()
 	}
-	if err != nil || !has {
-		t.Fatalf("prime: %v %v", has, err)
+	if err != nil {
+		t.Fatalf("prime: %v", err)
 	}
 	clsGo := filepath.Join(out, filepath.Base(c.cls))
 	unclsGo := filepath.Join(out, filepath.Base(c.uncls))
+	upstreamStderr, _ := os.ReadFile(c.stderr)
+
+	if !has {
+		// Upstream opens no output at all for an empty first input; neither do we.
+		for _, p := range append(outputPairs(c, clsGo, unclsGo), [2]string{c.krakenOut, ""}) {
+			if exists(p[0]) {
+				t.Errorf("upstream created %s for empty input", filepath.Base(p[0]))
+			}
+		}
+		if c.upstreamExit != 0 {
+			t.Errorf("empty input: upstream exit %d, ours 0", c.upstreamExit)
+		}
+		fmt.Fprintf(summary, "%s\t0\t0\t0\t%d\t0\t(no output files, both)\t0\t-\t-\ttrue\n", c.name, c.upstreamExit)
+		return
+	}
+
 	w, err := Open(clsGo, unclsGo, c.paired)
 	if err != nil {
 		t.Fatal(err)
@@ -137,21 +179,30 @@ func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 	}
 
 	var records, classified, mismatches int
+	var fault seqio.Fault
 	var seq uint64
 	var wg sync.WaitGroup
 	for {
+		// The production path: the sequential cut, then the parse (here on this goroutine).
 		var m1, m2 []seqio.Record
+		var f seqio.Fault
 		if pr != nil {
-			m1, m2, err = pr.NextBatch(4096)
+			b1, b2, ok := pr.LoadBlocks(seqio.DefaultBlockBytes)
+			if !ok {
+				break
+			}
+			m1, m2, f = seqio.PairBlocks(b1, b2)
 		} else {
-			m1, err = readers[0].NextBatch(4096)
+			b := readers[0].LoadBlock(seqio.DefaultBlockBytes, 1)
+			if b == nil {
+				break
+			}
+			m1, f = b.Parse()
 		}
-		if err == io.EOF {
-			break
+		if f.Count > 0 && fault.First == "" {
+			fault.First = f.First
 		}
-		if err != nil {
-			t.Fatalf("read: %v", err)
-		}
+		fault.Count += f.Count
 		lines := make([]krakenLine, len(m1))
 		for i := range m1 {
 			kl, ok := nextLine()
@@ -204,16 +255,38 @@ func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 		t.Fatal(err)
 	}
 
-	pairs := [][2]string{{c.cls, clsGo}, {c.uncls, unclsGo}}
-	if c.paired {
-		pairs = nil
-		for _, p := range [][2]string{{c.cls, clsGo}, {c.uncls, unclsGo}} {
-			a1, a2, _ := PairedNames(p[0])
-			b1, b2, _ := PairedNames(p[1])
-			pairs = append(pairs, [2]string{a1, b1}, [2]string{a2, b2})
+	// End state: upstream exits 65 (EX_DATAERR) for malformed records or unequal mates.
+	var endErr error
+	if pr != nil {
+		endErr = pr.Err()
+	} else if endErr = readers[0].Err(); endErr == nil {
+		endErr = io.EOF
+	}
+	goExit := 0
+	switch {
+	case errors.Is(endErr, seqio.ErrMateCountMismatch):
+		goExit = 65
+		if !bytes.Contains(upstreamStderr, []byte(seqio.ErrMateCountMismatch.Error())) {
+			t.Errorf("upstream stderr lacks the mate-count message")
+		}
+	case endErr != io.EOF:
+		t.Fatalf("read error: %v", endErr)
+	}
+	if fault.Count > 0 {
+		goExit = 65
+		msg := fault.First
+		if fault.Count > 1 {
+			msg += fmt.Sprintf(", and %d further malformed records", fault.Count-1)
+		}
+		if !bytes.Contains(upstreamStderr, []byte(msg)) {
+			t.Errorf("upstream stderr lacks %q", msg)
 		}
 	}
-	for _, p := range pairs {
+	if goExit != c.upstreamExit {
+		t.Errorf("exit: ours %d, upstream %d", goExit, c.upstreamExit)
+	}
+
+	for _, p := range outputPairs(c, clsGo, unclsGo) {
 		up, err1 := os.ReadFile(p[0])
 		got, err2 := os.ReadFile(p[1])
 		if err1 != nil || err2 != nil {
@@ -224,8 +297,8 @@ func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 			t.Errorf("%s differs from upstream (%d vs %d bytes)", filepath.Base(p[0]), len(got), len(up))
 		}
 		hu, hg := sha256.Sum256(up), sha256.Sum256(got)
-		fmt.Fprintf(summary, "%s\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%v\n", c.name, records, classified, mismatches,
-			filepath.Base(p[0]), len(up), hex.EncodeToString(hu[:]), hex.EncodeToString(hg[:]), same)
+		fmt.Fprintf(summary, "%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d\t%s\t%s\t%v\n", c.name, records, classified, mismatches,
+			c.upstreamExit, goExit, filepath.Base(p[0]), len(up), hex.EncodeToString(hu[:]), hex.EncodeToString(hg[:]), same)
 	}
-	t.Logf("%s: %d records, %d classified, %d id/len mismatches", c.name, records, classified, mismatches)
+	t.Logf("%s: %d records, %d classified, %d id/len mismatches, %d malformed, exit %d", c.name, records, classified, mismatches, fault.Count, goExit)
 }

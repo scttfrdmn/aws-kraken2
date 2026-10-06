@@ -225,16 +225,17 @@ func MatesAgree(a, b *Record) bool {
 // '!' is below Q is overwritten with 'x' in place, before classification and therefore also in
 // the classified/unclassified output. It applies to any record that carries quality values,
 // bounded by the shorter of sequence and quality (a malformed record is masked over the part
-// its quality covers). Quality bytes are treated as C signed char, as on x86-64 and Apple
-// arm64 (bytes >= 0x80 are negative and always masked); on Linux arm64, where char is
-// unsigned, upstream would not mask them. Real FASTQ never contains such bytes.
+// its quality covers). Quality bytes are compared as C char on the canonical oracle platform,
+// Linux aarch64, where char is unsigned: a byte >= 0x80 is a high quality, never masked. (On
+// x86-64 or Apple arm64, where char is signed, upstream would mask it; real FASTQ never
+// contains such bytes.)
 func MaskLowQuality(r *Record, minQ int) {
 	if minQ <= 0 || r.Qual == nil {
 		return
 	}
 	n := min(len(r.Seq), len(r.Qual))
 	for i := 0; i < n; i++ {
-		if int(int8(r.Qual[i]))-'!' < minQ {
+		if int(r.Qual[i])-'!' < minQ {
 			r.Seq[i] = 'x'
 		}
 	}

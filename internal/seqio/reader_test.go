@@ -340,8 +340,13 @@ func TestMatesAgree(t *testing.T) {
 func TestMaskLowQuality(t *testing.T) {
 	r := Record{Seq: []byte("ACGTA"), Qual: []byte("!+5I\x90")}
 	MaskLowQuality(&r, 10)
-	if string(r.Seq) != "xCGTx" {
+	if string(r.Seq) != "xCGTA" { // 0x90 is unsigned (Linux aarch64): high quality, kept
 		t.Fatalf("got %s", r.Seq)
+	}
+	r = Record{Seq: []byte("AC"), Qual: []byte{0xff, 0x80}}
+	MaskLowQuality(&r, 93)
+	if string(r.Seq) != "AC" {
+		t.Fatalf("high bytes masked: %s", r.Seq)
 	}
 	r = Record{Seq: []byte("ACGT"), Qual: []byte("!!")} // malformed: masks the covered part
 	MaskLowQuality(&r, 1)
@@ -401,13 +406,52 @@ func TestOpenCompression(t *testing.T) {
 			t.Fatalf("%s: %s", path, ids(got))
 		}
 	}
-	// Plain input forced through gzip fails loudly; gzip input read raw is refused by Prime.
-	r, _ := Open(plain, CompressionGzip)
-	if _, err := r.NextBatch(1); err == nil || err == io.EOF {
-		t.Fatalf("plain as gzip: %v", err)
+	// As with the wrapper's gzip -dc, a decompression error ends the input cleanly after the
+	// bytes decoded so far, and is only logged.
+	var logged bytes.Buffer
+	DecompressLog = &logged
+	defer func() { DecompressLog = os.Stderr }()
+	readIDs := func(path string, c Compression) string {
+		r, err := Open(path, c)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer r.Close()
+		var got []Record
+		for {
+			b, err := r.NextBatch(2)
+			if err == io.EOF {
+				return ids(got)
+			} else if err != nil {
+				t.Fatalf("%s: %v", path, err)
+			}
+			got = append(got, b...)
+		}
 	}
-	r.Close()
-	r, _ = Open(gz, CompressionNone)
+	if got := readIDs(plain, CompressionGzip); got != "" || logged.Len() == 0 {
+		t.Fatalf("plain as gzip: %q, log %q", got, logged.String())
+	}
+	for name, tail := range map[string][]byte{"zeros": make([]byte, 1000), "garbage": []byte("not gzip\n")} {
+		logged.Reset()
+		p := filepath.Join(dir, name+".gz")
+		os.WriteFile(p, append(append([]byte(nil), buf.Bytes()...), tail...), 0o644)
+		if got := readIDs(p, CompressionGzip); got != "a,b,c" || logged.Len() == 0 {
+			t.Fatalf("trailing %s: %q, log %q", name, got, logged.String())
+		}
+	}
+	var big bytes.Buffer
+	w := gzip.NewWriter(&big)
+	for i := 0; i < 5000; i++ {
+		fmt.Fprintf(w, "@r%d\nACGTACGTAC\n+\nIIIIIIIIII\n", i)
+	}
+	w.Close()
+	trunc := filepath.Join(dir, "trunc.gz")
+	os.WriteFile(trunc, big.Bytes()[:big.Len()/2], 0o644)
+	logged.Reset()
+	if got := readIDs(trunc, CompressionGzip); !strings.HasPrefix(got, "r0,r1,") || strings.Contains(got, "r4999") || logged.Len() == 0 {
+		t.Fatalf("truncated: %d ids, log %q", strings.Count(got, ","), logged.String())
+	}
+	r, _ := Open(gz, CompressionNone)
 	if _, err := r.NextBatch(1); err == nil || !strings.Contains(err.Error(), "gzip-compressed") {
 		t.Fatalf("gzip as plain: %v", err)
 	}

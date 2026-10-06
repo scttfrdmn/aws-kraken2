@@ -1,5 +1,7 @@
 package seqout
 
+import "fmt"
+
 // Ordered delivers items to a sink in sequence order (0, 1, 2, …) from any number of
 // goroutines, in place of upstream's priority queue and output lock. Producers never wait on
 // each other: Submit only sends on a channel, and one goroutine reorders and writes.
@@ -38,6 +40,9 @@ func NewOrdered[T any](sink func(T) error, buffer int) *Ordered[T] {
 				}
 			}
 		}
+		if err == nil && len(pending) > 0 {
+			err = fmt.Errorf("seqout: %d items never written: sequence number %d was not submitted", len(pending), next)
+		}
 		o.done <- err
 	}()
 	return o
@@ -47,7 +52,7 @@ func NewOrdered[T any](sink func(T) error, buffer int) *Ordered[T] {
 func (o *Ordered[T]) Submit(seq uint64, v T) { o.in <- item[T]{seq, v} }
 
 // Close waits until every submitted item has been written and returns the sink's first error.
-// Items after a gap in the sequence are never written.
+// Items after a gap in the sequence are never written, and Close then reports the gap.
 func (o *Ordered[T]) Close() error {
 	close(o.in)
 	return <-o.done

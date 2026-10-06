@@ -9,6 +9,7 @@ import (
 	"bufio"
 	"compress/bzip2"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 
@@ -77,11 +78,14 @@ func ResolveCompression(gzipFlag, bzip2Flag bool, firstPath string) (Compression
 }
 
 // Open opens path with compression c. Compressed input is decompressed on its own goroutine,
-// ahead of the reader, so the two files of a pair decompress in parallel. Upstream pipes
-// through `gzip -dc` / `bzip2 -dc`; concatenated gzip members are read as one stream, as
-// gzip -dc does. Unlike upstream, where a failed gzip leaves classify an empty stream and the
-// run "succeeds" with no records from that file, a decompression error is returned as a read
-// error.
+// ahead of the reader, so the two files of a pair decompress in parallel.
+//
+// Upstream's wrapper pipes each file through `gzip -dc` / `bzip2 -dc` and ignores their exit
+// status, so classify sees every byte the tool managed to decompress followed by a clean end
+// of input. Open does the same: concatenated members are one stream; a decompression error
+// (trailing zero padding or garbage after a member, a truncated member, or a file that is not
+// compressed at all, which then reads as empty) ends the stream cleanly after the bytes
+// decoded so far, and is only logged to DecompressLog.
 func Open(path string, c Compression) (*Reader, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -89,18 +93,22 @@ func Open(path string, c Compression) (*Reader, error) {
 	}
 	switch c {
 	case CompressionGzip:
-		a := newAsyncReader(f, func(r io.Reader) (io.Reader, error) {
+		a := newAsyncReader(f, path, c, func(r io.Reader) (io.Reader, error) {
 			return gzip.NewReader(r)
 		})
 		return &Reader{src: a, closer: a}, nil
 	case CompressionBzip2:
-		a := newAsyncReader(f, func(r io.Reader) (io.Reader, error) {
+		a := newAsyncReader(f, path, c, func(r io.Reader) (io.Reader, error) {
 			return bzip2.NewReader(r), nil
 		})
 		return &Reader{src: a, closer: a}, nil
 	}
 	return &Reader{src: f, closer: f}, nil
 }
+
+// DecompressLog receives decompression errors, which (as with the wrapper's gzip -dc) end the
+// input rather than failing the run.
+var DecompressLog io.Writer = os.Stderr
 
 const (
 	asyncChunk = 1 << 20
@@ -115,6 +123,8 @@ type chunk struct {
 // asyncReader runs a decompressor on its own goroutine, handing over 1 MiB chunks.
 type asyncReader struct {
 	f    *os.File
+	path string
+	comp Compression
 	ch   chan chunk
 	free chan []byte
 	stop chan struct{}
@@ -123,9 +133,11 @@ type asyncReader struct {
 	err  error
 }
 
-func newAsyncReader(f *os.File, wrap func(io.Reader) (io.Reader, error)) *asyncReader {
+func newAsyncReader(f *os.File, path string, c Compression, wrap func(io.Reader) (io.Reader, error)) *asyncReader {
 	a := &asyncReader{
 		f:    f,
+		path: path,
+		comp: c,
 		ch:   make(chan chunk, asyncDepth),
 		free: make(chan []byte, asyncDepth+2),
 		stop: make(chan struct{}),
@@ -134,11 +146,23 @@ func newAsyncReader(f *os.File, wrap func(io.Reader) (io.Reader, error)) *asyncR
 	return a
 }
 
+// end turns a decompression error into a clean end of input, logging it.
+func (a *asyncReader) end(err error) {
+	if err != io.EOF {
+		select {
+		case <-a.stop: // closed early; the error is our own doing
+		default:
+			fmt.Fprintf(DecompressLog, "seqio: %s: %s -dc: %v (input ends here)\n", a.path, a.comp, err)
+		}
+	}
+	a.send(chunk{err: io.EOF})
+}
+
 func (a *asyncReader) produce(wrap func(io.Reader) (io.Reader, error)) {
 	defer close(a.ch)
 	src, err := wrap(bufio.NewReaderSize(a.f, 1<<20))
 	if err != nil {
-		a.send(chunk{err: err})
+		a.end(err)
 		return
 	}
 	for {
@@ -148,15 +172,18 @@ func (a *asyncReader) produce(wrap func(io.Reader) (io.Reader, error)) {
 		default:
 			b = make([]byte, asyncChunk)
 		}
-		n, err := io.ReadFull(src, b[:cap(b)])
-		if err == io.ErrUnexpectedEOF {
-			err = io.EOF
+		b = b[:cap(b)]
+		n := 0
+		for n < len(b) && err == nil {
+			var m int
+			m, err = src.Read(b[n:])
+			n += m
 		}
 		if n > 0 && !a.send(chunk{b: b[:n]}) {
 			return
 		}
 		if err != nil {
-			a.send(chunk{err: err})
+			a.end(err)
 			return
 		}
 	}

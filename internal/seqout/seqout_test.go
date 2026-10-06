@@ -94,4 +94,10 @@ func TestOrdered(t *testing.T) {
 	if err := o2.Close(); err != boom {
 		t.Fatal(err)
 	}
+	o3 := NewOrdered(func(int) error { return nil }, 1)
+	o3.Submit(0, 0)
+	o3.Submit(2, 2)
+	if err := o3.Close(); err == nil || !strings.Contains(err.Error(), "sequence number 1") {
+		t.Fatalf("gap: %v", err)
+	}
 }
