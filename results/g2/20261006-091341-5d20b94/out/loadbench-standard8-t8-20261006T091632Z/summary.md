@@ -2,6 +2,7 @@
 
 Commit `5d20b9420a2de0699c05b4fc9005a51320a53e41`; upstream `2731b35f7abb26ec926517274f3d87e78d42fd76` (2.17.2-20-g2731b35). Host: Linux aarch64 6.18.51-120.163.amzn2023.aarch64, m7g.2xlarge, 8 CPUs, 31 GiB, page size 4096, THP enabled `always [madvise] never`, defrag `always defer defer+madvise [madvise] never`. Linux aarch64 on EC2 (make run).
 Repetitions: 3; states run: cold warm (requested: cold warm; cold available: True, via ak2_drop_caches); 2026-10-06T09:16:32Z to 2026-10-06T09:57:34Z.
+Cold load rate (hash.k2d bytes / median cold load s): 126–127 MiB/s over every implementation and input. They agree within 5%: the cold rungs are capped by the storage, so they cannot resolve a difference in the load path itself.
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
 
@@ -67,12 +68,12 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 
 ## Attribution (one row per change, Law 5)
 
-Median wall seconds before → after each change, and the difference; ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where the two min–max ranges overlap. Ladder order is `LB_LADDER`'s.
 
 | change | empty cold | empty warm | pe cold | pe warm |
 |---|---|---|---|---|
-| base → thp | 60.700 → 60.340 (-0.359) | 0.839 → 0.196 (-0.643) | 61.687 → 61.305 (-0.381) | 1.139 → 0.504 (-0.636) |
-| thp → fill | 60.340 → 60.347 (+0.006) | 0.196 → 0.194 (-0.001) | 61.305 → 61.328 (+0.023) | 0.504 → 0.474 (-0.030) |
-| fill → fill-streams16 | 60.347 → 60.341 (-0.006) | 0.194 → 0.205 (+0.010) | 61.328 → 61.317 (-0.011) | 0.474 → 0.484 (+0.010) |
+| base → thp | 60.700 [60.637–60.794] → 60.340 [60.262–60.488] (-0.359) | 0.839 [0.826–0.866] → 0.196 [0.193–0.209] (-0.643) | 61.687 [61.605–61.693] → 61.305 [61.227–61.318] (-0.381) | 1.139 [1.094–1.158] → 0.504 [0.475–0.504] (-0.636) |
+| thp → fill | 60.340 [60.262–60.488] → 60.347 [60.337–60.389] (+0.006, within noise) | 0.196 [0.193–0.209] → 0.194 [0.194–0.196] (-0.001, within noise) | 61.305 [61.227–61.318] → 61.328 [61.325–61.377] (+0.023) | 0.504 [0.475–0.504] → 0.474 [0.469–0.507] (-0.030, within noise) |
+| fill → fill-streams16 | 60.347 [60.337–60.389] → 60.341 [60.336–60.387] (-0.006, within noise) | 0.194 [0.194–0.196] → 0.205 [0.194–0.210] (+0.010, within noise) | 61.328 [61.325–61.377] → 61.317 [61.204–61.339] (-0.011, within noise) | 0.474 [0.469–0.507] → 0.484 [0.470–0.487] (+0.010, within noise) |
 
 Output check: every run of an input wrote the same --output bytes.

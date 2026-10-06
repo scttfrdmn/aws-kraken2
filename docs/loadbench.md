@@ -12,7 +12,7 @@ make loadbench                                   # Standard-8, 8 threads, 3 reps
 make loadbench DB=viral THREADS=4 REPS=5
 LB_LADDER=scripts/loadbench.ladder LB_PROFILE=1 make loadbench   # + attribution, + profiles
 make run GATE=g2 SPEC=runs/loadbench.json        # canonical: m7g.2xlarge, us-west-2
-make run GATE=g2 SPEC=runs/loadbench-g4.json     # the same on Graviton4 (c8g or r8g)
+make run GATE=g2 SPEC=runs/loadbench-g4.json     # Graviton4 with instance-store NVMe (r8gd/c8gd)
 ```
 
 ## What is measured
@@ -40,7 +40,8 @@ start, duration and getrusage deltas (fault counts, user and sys time). These go
 
 **Inputs** (`LB_INPUTS`, cheapest first): `empty` is a zero-byte FASTQ, so the run is startup,
 load and teardown only. `se` is SRR062634 mate 1 (200 000 reads). `pe` is SRR062634 paired
-(`--paired`). The reads are the oracle's (`make stage-reads` or `scripts/fetch-reads.sh`).
+(`--paired`). The reads are the oracle's (`make stage-reads` or `scripts/fetch-reads.sh`), from
+`.cache/reads` unless `LB_READS` names another directory.
 
 **States** (`LB_STATES`): `cold` drops the page cache before the run: `ak2_drop_caches` on AWS,
 `echo 3 > /proc/sys/vm/drop_caches` (root or `sudo -n`) on Linux, and `sudo -n purge` on macOS.
@@ -50,16 +51,34 @@ are skipped, and the manifest records `cold.available=false`. A warm run is neve
 and the reads. Without a cold state, one unrecorded priming run warms the cache first. Every
 binary runs once (`--version`) before the matrix, so no rung pays for a first exec.
 
-**Order:** input, then repetition, then implementation, then state. Implementations interleave
-within each repetition, so drift over the run affects them all alike.
+**Order:** input, then repetition, then implementation, then state. The implementation order
+rotates by one each repetition (repetition r starts with the implementation at position r−1),
+so no implementation always runs first, or always right after the same neighbour. With 3
+repetitions and more than 3 implementations, not every position is covered; drift that is
+slow next to one repetition still lands on all implementations alike.
 
-**Ladder** (`LB_LADDER`, Law 5): a file of `LABEL COMMIT [NAME=VALUE...]` lines. Each commit's
+**Storage caps cold rungs.** A cold rung reads all of `hash.k2d` from the device, so its load
+time is at least size ÷ device throughput, the same for every implementation. On an EBS gp3
+root volume at its baseline (125 MiB/s), Standard-8's 8 GB takes about 60 s, and every cold
+rung on m7g.2xlarge measured 126–127 MiB/s: those cold rungs can resolve teardown and
+classification differences, but not a difference in the load itself. `summary.md` computes
+this rate (hash bytes ÷ median cold load) and says when all implementations agree within 5%.
+The manifest records where the database lives (`db.storage`: device, filesystem, disk model and
+serial, and, for EBS, the volume type, IOPS and throughput when the instance may describe it).
+For cold numbers that measure the load path, use instance-store NVMe (Law 2), as
+`runs/loadbench-g4.json` does.
+
+**Ladder** (`LB_LADDER`, Law 5): a file of `LABEL COMMIT [NAME=VALUE...]` lines (`COMMIT` may
+be `HEAD`). Each commit's
 `cmd/aws-kraken2` is built into `.cache/loadbench/bin/<goos>-<goarch>/<commit>/` and benchmarked
 as `LABEL`, with that environment (`@NCPU` is replaced by the online CPU count). Consecutive
-lines form one row of the attribution table. `scripts/loadbench.ladder` is the #36 ladder.
+lines form one row of the attribution table: median [min–max] before and after, the difference
+of the medians, and "within noise" where the two min–max ranges overlap.
+`scripts/loadbench.ladder` is the #36/#39 ladder. Pread streams are 8 for both implementations;
+a streams change would apply to upstream too (`K2_DB_READ_THREADS`).
 
-**Profiling** (`LB_PROFILE=1`): after the matrix, on the last input, for each implementation and
-state, it runs `perf stat` (Linux, when `perf` exists; `sudo -n perf` when possible) with
+**Profiling** (`LB_PROFILE=1`): after the matrix, on the last input, for each implementation
+(or only those in `LB_PROFILE_IMPLS`) and state, it runs `perf stat` (Linux, when `perf` exists; `sudo -n perf` when possible) with
 `task-clock`, `page-faults`, `minor-faults`, `major-faults`, `context-switches`, `cpu-migrations`
 and `dTLB-load-misses`. For ours it also runs `AK2_CPUPROFILE` with `GODEBUG=gctrace=1` (the
 `pprof -top` text is written as well when `go` is on PATH). None of these runs count toward the
@@ -86,13 +105,17 @@ spec body, `runs.tsv` is pushed after every rung, and the whole directory at the
 
 ## On AWS
 
-`runs/loadbench.json` (m7g.2xlarge, us-west-2) and `runs/loadbench-g4.json` (Graviton4; truffle
-picks c8g or r8g) have the same body. It installs the toolchain (with `perf`), logs the THP mode,
-kernel, CPU count and root volume, and clones the launch commit. It stages Standard-8 and the
-SRR062634 reads with `ak2_stage` from
+`runs/loadbench.json` (m7g.2xlarge, us-west-2; database on the EBS root volume, so cold rungs
+are disk-capped) and `runs/loadbench-g4.json` (Graviton4 with instance-store NVMe; truffle picks
+r8gd or c8gd) have the same body. It installs the toolchain (with `perf`), and logs the THP
+mode, kernel, CPU count and disks. If an instance-store NVMe device exists, it formats it (xfs),
+mounts it at `/mnt/nvme` (mode 1777) and stages there; otherwise it stages into the checkout's
+`.cache`. It clones the launch commit and stages Standard-8 and the SRR062634 reads with
+`ak2_stage` from
 `s3://cookbook-942542972736-us-west-2/aws-kraken2/data/`, checking each file against its sha256
 metadata. Then it builds upstream and ours and *sources* `scripts/loadbench.sh` with
-`LB_LADDER=scripts/loadbench.ladder LB_PROFILE=1`, so cold rungs use `ak2_drop_caches` and each
+`LB_DB`/`LB_READS` pointing at the staged copies,
+`LB_LADDER=scripts/loadbench.ladder LB_PROFILE=1 LB_PROFILE_IMPLS="upstream base final"`, so cold rungs use `ak2_drop_caches` and each
 rung is an `ak2_phase` (so `tables/phases.tsv` shows which were cold). The ladder's commits must
 be on GitHub, because the instance clones from there.
 

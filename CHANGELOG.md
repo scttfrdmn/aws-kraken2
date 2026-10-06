@@ -154,6 +154,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Classification speed (#39, #36). `mmscan.Scanner.AppendMinimizers` runs the scanner loop over
+  a whole sequence with its state in locals, and `classify.Tokens.Scan` uses it, with
+  MurmurHash3 called directly for the capped-database check. Its output is held to `Next`'s by
+  a test. `seqio.Recycle` lets input blocks reuse their memory, as upstream's per-thread reader
+  does.
+- `make loadbench`:
+  - the implementation order rotates per repetition;
+  - the manifest records the database's storage (device, model, EBS volume);
+  - the summary states the cold load rate, shows ranges in the attribution table, and marks
+    rows within noise;
+  - `LB_READS`, `LB_PROFILE_IMPLS` and `HEAD` in the ladder are new;
+  - `runs/loadbench-g4.json` uses instance-store NVMe (r8gd/c8gd).
 - One `cmd/k2probe` dispatcher, with commands registered from `init()`. `header`/`opts` moved
   into their own files, and `equiv-scan` reads `opts.k2d` through `internal/kdb`.
 - `scripts/harness-build.sh [-v lp|dh|lp,dh] [name...]` is one interface for every caller:

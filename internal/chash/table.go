@@ -62,7 +62,12 @@ func Load(path string, opt Options) (*Table, error) {
 // starting at byte off of the image, into dst. LoadFrom allocates the table (off-heap, 2 MiB
 // aligned, huge-page advised) and hands it to a Filler, so every loader (the parallel pread
 // here, a later S3 ranged-GET loader) fills the same kind of buffer. Fill may write dst from
-// several goroutines; it must not retain dst.
+// several goroutines, but it must not return until every write to dst has finished (the
+// table is read as soon as it returns), and it must not retain dst.
+//
+// Not yet covered (the sharded engine will need both): filling a slot range plus its
+// overlap tail with wraparound, rather than the whole image, and cancellation (a context)
+// for a load abandoned midway.
 type Filler interface {
 	Fill(dst []byte, off int64) error
 }

@@ -2,6 +2,7 @@
 
 Commit `95111e64afe4e234b2e1ab35c9a3316c5b609ec3`; upstream `2731b35f7abb26ec926517274f3d87e78d42fd76` (2.17.2-20-g2731b35). Host: Linux aarch64 6.12.13-200.fc41.aarch64, Apple Virtualization Generic Platform, 8 CPUs, 8 GiB, page size 4096, THP enabled `always [madvise] never`, defrag `always defer defer+madvise [madvise] never`. NOT a make run on Linux aarch64 EC2: development evidence only.
 Repetitions: 3; states run: cold warm (requested: cold warm; cold available: True, via drop_caches-root); 2026-10-06T09:15:57Z to 2026-10-06T09:16:18Z.
+Cold load rate (hash.k2d bytes / median cold load s): 16731–29691 MiB/s over every implementation and input.
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
 
@@ -67,12 +68,12 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 
 ## Attribution (one row per change, Law 5)
 
-Median wall seconds before → after each change, and the difference; ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where the two min–max ranges overlap. Ladder order is `LB_LADDER`'s.
 
 | change | empty cold | empty warm | pe cold | pe warm |
 |---|---|---|---|---|
-| base → thp | 0.051 → 0.023 (-0.028) | 0.045 → 0.015 (-0.030) | 0.403 → 0.352 (-0.051) | 0.397 → 0.344 (-0.053) |
-| thp → fill | 0.023 → 0.023 (-0.000) | 0.015 → 0.014 (-0.001) | 0.352 → 0.381 (+0.029) | 0.344 → 0.358 (+0.014) |
-| fill → fill-streams16 | 0.023 → 0.023 (+0.000) | 0.014 → 0.015 (+0.001) | 0.381 → 0.363 (-0.018) | 0.358 → 0.360 (+0.002) |
+| base → thp | 0.051 [0.049–0.056] → 0.023 [0.022–0.024] (-0.028) | 0.045 [0.044–0.051] → 0.015 [0.015–0.015] (-0.030) | 0.403 [0.403–0.408] → 0.352 [0.348–0.369] (-0.051) | 0.397 [0.388–0.413] → 0.344 [0.342–0.362] (-0.053) |
+| thp → fill | 0.023 [0.022–0.024] → 0.023 [0.022–0.023] (-0.000, within noise) | 0.015 [0.015–0.015] → 0.014 [0.014–0.015] (-0.001) | 0.352 [0.348–0.369] → 0.381 [0.367–0.393] (+0.029, within noise) | 0.344 [0.342–0.362] → 0.358 [0.346–0.358] (+0.014, within noise) |
+| fill → fill-streams16 | 0.023 [0.022–0.023] → 0.023 [0.023–0.024] (+0.000, within noise) | 0.014 [0.014–0.015] → 0.015 [0.014–0.015] (+0.001, within noise) | 0.381 [0.367–0.393] → 0.363 [0.355–0.371] (-0.018, within noise) | 0.358 [0.346–0.358] → 0.360 [0.344–0.366] (+0.002, within noise) |
 
 Output check: every run of an input wrote the same --output bytes.

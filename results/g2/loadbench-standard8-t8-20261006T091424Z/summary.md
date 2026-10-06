@@ -37,12 +37,12 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 
 ## Attribution (one row per change, Law 5)
 
-Median wall seconds before → after each change, and the difference; ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where the two min–max ranges overlap. Ladder order is `LB_LADDER`'s.
 
 | change | empty warm | pe warm |
 |---|---|---|
-| base → thp | 0.219 → 0.219 (+0.000) | 0.378 → 0.373 (-0.005) |
-| thp → fill | 0.219 → 0.225 (+0.006) | 0.373 → 0.378 (+0.005) |
-| fill → fill-streams16 | 0.225 → 0.236 (+0.011) | 0.378 → 0.387 (+0.010) |
+| base → thp | 0.219 [0.217–0.224] → 0.219 [0.217–0.224] (+0.000, within noise) | 0.378 [0.377–0.381] → 0.373 [0.372–0.379] (-0.005, within noise) |
+| thp → fill | 0.219 [0.217–0.224] → 0.225 [0.220–0.226] (+0.006, within noise) | 0.373 [0.372–0.379] → 0.378 [0.374–0.379] (+0.005, within noise) |
+| fill → fill-streams16 | 0.225 [0.220–0.226] → 0.236 [0.230–0.240] (+0.011) | 0.378 [0.374–0.379] → 0.387 [0.387–0.389] (+0.010) |
 
 Output check: every run of an input wrote the same --output bytes.

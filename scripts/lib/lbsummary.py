@@ -80,6 +80,28 @@ def main():
              f"(requested: {man['states_requested']}; cold available: "
              f"{man['cold']['available']}, via {man['cold']['method']}); "
              f"{man['start']} to {man['stop']}.")
+    st_ = man.get("db", {}).get("storage") or {}
+    if st_:
+        ebs = st_.get("ebs") or {}
+        desc = ", ".join(f"{k} {v}" for k, v in [("device", st_.get("device")), ("disk model", st_.get("model")),
+                                                  ("EBS", json.dumps(ebs) if ebs else None)] if v)
+        L.append(f"Database storage: {desc}.")
+    hb = next((f["bytes"] for f in man["db"]["files"] if f["file"] == "hash.k2d"), None)
+    if hb and "cold" in states:
+        rates = []
+        for im in impls:
+            for inp in inputs:
+                s2 = stats([num(r["load_s"]) for r in groups.get((inp, "cold", im), [])])
+                if s2:
+                    rates.append(hb / s2[0] / 2**20)
+        if rates:
+            lo, hi = min(rates), max(rates)
+            note = (f"Cold load rate (hash.k2d bytes / median cold load s): {lo:.0f}–{hi:.0f} MiB/s "
+                    f"over every implementation and input.")
+            if hi <= lo * 1.05:
+                note += (" They agree within 5%: the cold rungs are capped by the storage, so they "
+                         "cannot resolve a difference in the load path itself.")
+            L.append(note)
     L.append("")
     L.append("Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "
              "\"Loading database information... done.\" on stderr (startup, including upstream's "
@@ -112,7 +134,8 @@ def main():
         L.append("")
         L.append("## Attribution (one row per change, Law 5)")
         L.append("")
-        L.append("Median wall seconds before → after each change, and the difference; ladder "
+        L.append("Median [min–max] wall seconds before → after each change, and the difference "
+                 "of the medians; \"within noise\" where the two min–max ranges overlap. Ladder "
                  "order is `LB_LADDER`'s.")
         L.append("")
         hdr = "| change |"
@@ -127,8 +150,14 @@ def main():
             line = f"| {a} → {b} |"
             for inp in inputs:
                 for st in states:
-                    x, y = med(inp, st, a), med(inp, st, b)
-                    line += " - |" if x is None or y is None else f" {x:.3f} → {y:.3f} ({y - x:+.3f}) |"
+                    x = stats([num(r["wall_s"]) for r in groups.get((inp, st, a), [])])
+                    y = stats([num(r["wall_s"]) for r in groups.get((inp, st, b), [])])
+                    if x is None or y is None:
+                        line += " - |"
+                        continue
+                    noise = x[1] <= y[2] and y[1] <= x[2]  # the min–max ranges overlap
+                    line += (f" {x[0]:.3f} [{x[1]:.3f}–{x[2]:.3f}] → {y[0]:.3f} [{y[1]:.3f}–{y[2]:.3f}]"
+                             f" ({y[0] - x[0]:+.3f}{', within noise' if noise else ''}) |")
             L.append(line)
     # Sanity: every implementation wrote the same --output for an input (Law 1 is make oracle's).
     L.append("")

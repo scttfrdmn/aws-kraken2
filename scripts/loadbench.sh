@@ -14,13 +14,15 @@
 #        LB_INPUTS   inputs, cheapest first: empty (no reads: startup + load + teardown),
 #                    se (SRR062634 200k mate 1), pe (SRR062634 200k, --paired) (default "empty pe")
 #        LB_IMPLS    implementations: upstream, ours, and LABEL=BINARY      (default "upstream ours")
-#        LB_LADDER   a file of "LABEL COMMIT [NAME=VALUE...]" lines; each COMMIT's cmd/aws-kraken2
+#        LB_LADDER   a file of "LABEL COMMIT [NAME=VALUE...]" lines (COMMIT may be HEAD); each COMMIT's cmd/aws-kraken2
 #                    is built and benchmarked as LABEL, with that environment (@NCPU is replaced
 #                    by the online CPU count): the per-change attribution, Law 5   (default none)
 #        LB_PROFILE  1 = afterwards, perf stat (Linux, if perf exists) of every implementation,
 #                    cold and warm, and a pprof CPU profile plus gctrace of ours  (default 0)
 #        LB_GATE     results/<gate>/                                    (default g2)
 #        LB_ENV      extra NAME=VALUE words for every classifier run (e.g. K2_DB_READ_THREADS=8)
+#        LB_READS    directory holding SRR062634_200000_{1,2}.fq        (default .cache/reads)
+#        LB_PROFILE_IMPLS  with LB_PROFILE=1, profile only these labels   (default all)
 # Writes results/<gate>/loadbench-<db>-<UTC timestamp>/: manifest.json, runs.tsv (one row per
 # run), timings.tsv (ours' AK2_TIMINGS phases), summary.tsv, summary.md, stderr/, profile/.
 # Cold: before every cold rung the page cache is dropped (Linux drop_caches, macOS purge). If
@@ -41,7 +43,7 @@ lb_main() {
   local DBSEL=${LB_DB:-standard8} TH=${LB_THREADS:-8} REPS=${LB_REPS:-3}
   local STATES=${LB_STATES:-cold warm} INPUTS=${LB_INPUTS:-empty pe}
   local IMPLS=${LB_IMPLS:-upstream ours} LADDER=${LB_LADDER:-} PROFILE=${LB_PROFILE:-0}
-  local GATE=${LB_GATE:-g2} EXTRA_ENV=${LB_ENV:-}
+  local GATE=${LB_GATE:-g2} EXTRA_ENV=${LB_ENV:-} PROFILE_IMPLS=${LB_PROFILE_IMPLS:-}
   local t
   for t in jq python3 awk; do
     command -v "$t" >/dev/null || { echo "loadbench: need $t" >&2; return 1; }
@@ -60,7 +62,8 @@ lb_main() {
     [ -s "$DBDIR/$t" ] || { echo "loadbench: $DBDIR/$t missing (make stage-db or fetch-db)" >&2; return 1; }
   done
   local DBNAME; DBNAME=$(basename "$DBDIR")
-  local S1="$K2_READS/SRR062634_200000"
+  local READS=${LB_READS:-$K2_READS}
+  local S1="$READS/SRR062634_200000"
   case " $INPUTS " in *" se "*|*" pe "*)
     for t in "${S1}_1.fq" "${S1}_2.fq"; do
       [ -s "$t" ] || { echo "loadbench: $t missing (make stage-reads / fetch-reads)" >&2; return 1; }
@@ -88,6 +91,8 @@ lb_main() {
     local label commit dst lenv
     while read -r label commit lenv; do
       case "$label" in ''|'#'*) continue ;; esac
+      commit=$(git rev-parse --verify -q "$commit^{commit}") ||
+        { echo "loadbench: ladder $label: no such commit" >&2; return 1; }
       dst="$ROOT/.cache/loadbench/bin/$(go env GOOS)-$(go env GOARCH)/$commit"
       if [ ! -x "$dst/aws-kraken2" ]; then
         rm -rf "$dst.src" && mkdir -p "$dst.src" "$dst" &&
@@ -97,7 +102,7 @@ lb_main() {
           { echo "loadbench: cannot build ladder $label at $commit" >&2; return 1; }
         rm -rf "$dst.src"
       fi
-      LABELS+=("$label"); BINS+=("$dst/aws-kraken2"); SRCS+=("$(git rev-parse "$commit")")
+      LABELS+=("$label"); BINS+=("$dst/aws-kraken2"); SRCS+=("$commit")
       ENVS+=("${lenv//@NCPU/$NCPU}")
     done < "$LADDER"
   fi
@@ -197,14 +202,18 @@ lb_main() {
 
   # Matrix: input (cheapest first) > rep > implementation > state. Warm follows the same
   # implementation's cold run, so the cache then holds the database and the reads. Without a cold
-  # state, one unrecorded priming run per input warms the cache first.
+  # state, one unrecorded priming run per input warms the cache first. The implementation order
+  # rotates by one each repetition (rep r starts with implementation r-1 mod n), so no
+  # implementation always runs first or always follows the same neighbour.
   local input rep i st
   for input in $INPUTS; do
     case " ${RSTATES[*]} " in *" cold "*) ;; *)
       j=$(python3 scripts/lib/lbrun.py "$WORK/prime.txt" -- "${BINS[0]}" $(lb_args "$WORK/prime.out" "$input")) ;;
     esac
+    local nimpl=${#LABELS[@]} o
     for rep in $(seq 1 "$REPS"); do
-      for i in "${!LABELS[@]}"; do
+      for o in $(seq 0 $((nimpl - 1))); do
+        i=$(( (o + rep - 1) % nimpl ))
         for st in "${RSTATES[@]}"; do lb_rung "$rep" "$i" "$input" "$st"; done
       done
     done
@@ -217,6 +226,9 @@ lb_main() {
       PERF=perf; sudo -n true 2>/dev/null && PERF="sudo -n perf"
     fi
     for i in "${!LABELS[@]}"; do
+      if [ -n "$PROFILE_IMPLS" ]; then
+        case " $PROFILE_IMPLS " in *" ${LABELS[$i]} "*) ;; *) continue ;; esac
+      fi
       for st in "${RSTATES[@]}"; do
         local label=${LABELS[$i]} bin=${BINS[$i]} ptag
         ptag="${LABELS[$i]}-$pin-$st"
@@ -259,6 +271,34 @@ lb_main() {
   for t in hash.k2d opts.k2d taxo.k2d; do
     dbfiles=$(jq -c --arg f "$t" --argjson s "$(wc -c < "$DBDIR/$t" | tr -d ' ')" '. + [{file:$f, bytes:$s}]' <<< "$dbfiles")
   done
+  # Where the database lives: the device, its filesystem, the disk model and serial (an EBS
+  # volume's serial is its volume ID; instance store reads "Amazon EC2 NVMe Instance Storage"),
+  # and for EBS the volume type, IOPS and throughput when the instance may describe it.
+  local storage='{}'
+  if [ "$(uname -s)" = Linux ]; then
+    local src fst disk dmodel dserial ebs='null'
+    src=$(df --output=source "$DBDIR" 2>/dev/null | tail -1)
+    fst=$(df --output=fstype "$DBDIR" 2>/dev/null | tail -1)
+    disk=$(lsblk -no PKNAME "$src" 2>/dev/null | head -1); [ -n "$disk" ] || disk=$(basename "$src")
+    dmodel=$(lsblk -dno MODEL "/dev/$disk" 2>/dev/null | sed 's/ *$//')
+    dserial=$(lsblk -dno SERIAL "/dev/$disk" 2>/dev/null | sed 's/ *$//')
+    case "$dserial" in vol*)
+      local vid="vol-${dserial#vol}" vreg
+      vreg=$(curl -sf -m 2 -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token 2>/dev/null |
+        { read -r tok; curl -sf -m 2 -H "X-aws-ec2-metadata-token: $tok" http://169.254.169.254/latest/meta-data/placement/region; } 2>/dev/null)
+      [ -n "$vreg" ] && ebs=$(aws ec2 describe-volumes --region "$vreg" --volume-ids "$vid" \
+        --query 'Volumes[0].{id:VolumeId,type:VolumeType,iops:Iops,throughput_mibps:Throughput,size_gib:Size}' \
+        --output json 2>/dev/null || echo null)
+      [ -n "$ebs" ] || ebs=null
+      [ "$ebs" = null ] && ebs=$(jq -nc --arg id "$vid" '{id:$id, note:"describe-volumes not permitted; type and throughput unknown"}')
+      ;;
+    esac
+    storage=$(jq -nc --arg src "$src" --arg fs "$fst" --arg disk "$disk" --arg model "$dmodel" \
+      --arg serial "$dserial" --argjson ebs "$ebs" \
+      '{device:$src, fstype:$fs, disk:$disk, model:$model, serial:$serial, ebs:$ebs}')
+  elif [ "$(uname -s)" = Darwin ]; then
+    storage=$(jq -nc --arg src "$(df "$DBDIR" | tail -1 | awk '{print $1}')" '{device:$src}')
+  fi
   local model; model=$(sysctl -n hw.model 2>/dev/null || cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null || echo unknown)
   local mem; mem=$(awk '/MemTotal/{print $2*1024}' /proc/meminfo 2>/dev/null); [ -n "$mem" ] || mem=$(sysctl -n hw.memsize 2>/dev/null || echo 0)
   # Canonical: Linux aarch64 on EC2 through make run (AK2_RUN_ID is set by the harness only).
@@ -277,10 +317,13 @@ lb_main() {
     --arg os "$(uname -s)" --arg arch "$(uname -m)" --arg kernel "$(uname -r)" --arg model "$model" \
     --argjson ncpu "$NCPU" --argjson mem "$mem" --arg pagesize "$(getconf PAGESIZE)" \
     --arg thp_en "$thp_en" --arg thp_df "$thp_df" --argjson canonical "$canon" \
+    --argjson storage "$storage" --arg reads_dir "$READS" \
     --arg run_id "${AK2_RUN_ID:-}" --arg start "$start" --arg stop "$stop" --argjson fails "$FAILS" \
     '{gate:$gate, what:$what, commit:$commit, dirty:$dirty, ak2_run_id:$run_id,
       upstream:{pin:$pin, describe:$describe, build:$upbuild}, implementations:$impls, go:$go,
-      db:{name:$db, dir:$dbname, files:$dbfiles, source:$dbsource}, reads_source:$reads,
+      db:{name:$db, dir:$dbname, files:$dbfiles, source:$dbsource, storage:$storage},
+      reads_source:$reads, reads_dir:$reads_dir,
+      order:"implementations rotate by one per repetition",
       threads:$threads, reps:$reps, inputs:$inputs, states_requested:$requested_states,
       states_run:$states, extra_env:$extra_env, profile:$profile,
       cold:{available:$cold_ok, method:$drop},
