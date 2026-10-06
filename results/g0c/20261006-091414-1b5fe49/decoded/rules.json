@@ -1,0 +1,6 @@
+{
+  "shard_rule": "shard i of N (N = 2, 4, ..., 64) owns slots [floor(i*C/N), floor((i+1)*C/N)), C = capacity; its boundary is floor((i+1)*C/N), and i = N-1 ends at the wrap (slot C-1 then slot 0)",
+  "tail_rule": "tail(b) = 0 if slot b-1 is empty, else run_past(b) + 1: the occupied cells from b on (mod C) plus the empty cell that stops a miss probing from b-1; tail(N) = max over its N boundaries",
+  "theory": "expected runs of length L = (C - occupied) * e^{-a(L+1)} (a(L+1))^L / (L+1)!, a = occupied/C (Borel; Poisson model of linear probing: Flajolet, Poblete & Viola 1998; Knuth TAOCP 3, 6.4)",
+  "knuth": "hit 1/2(1+1/(1-a)), miss 1/2(1+1/(1-a)^2)"
+}

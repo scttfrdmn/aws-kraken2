@@ -1,0 +1,6 @@
+{
+  "knuth_formulas": "hit 1/2(1+1/(1-a)): the uniform-key null (a stored key chosen uniformly); real lookups are content-weighted, so it is not an expectation for them. miss 1/2(1+1/(1-a)^2) (Knuth TAOCP vol. 3, 6.4, Algorithm L); misses are also compared with miss_probes_from_runs, the mean miss length the measured runs imply",
+  "miss_probes_from_runs_source": "/home/ec2-user/ak2/repo/results/g0c/20261006-091414-1b5fe49/out/pass/summary.json",
+  "hit": "value != 0: chash.Probe found a cell whose compacted key matches (with key_bits bits, some are false positives)",
+  "probes": "cells chash.Probe examined, the empty cell that ends a miss included"
+}

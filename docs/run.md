@@ -1,7 +1,7 @@
 # make run GATE=… SPEC=…
 
 **What:** launches one checked-in TaskSpec from `runs/` through `spawn task run`. It enforces
-Law 4 so that no spec can skip it, records `results/<gate>/<run-id>/`, and runs `make orphans`
+Law 4 so that no spec can skip it, records `results/<gate>/<run-id>/`, and checks that its own instance is gone (`scripts/orphans.sh --own`)
 at the end. Backed by `scripts/run.sh`, `scripts/preamble.sh` and `scripts/ak2.env`. The
 spore.host details are in [spore-host.md](spore-host.md).
 
@@ -43,7 +43,10 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
 - Optional `scripts/post/<name>.sh` (same basename as the spec): run locally after fetch as
   `scripts/post/<name>.sh <run-dir>`. It may read only the run dir, taking object identities from
   `manifest.json`, and writes `decoded/` and `tables/`. It can be re-run on an existing run dir
-  and records the commit it ran at.
+  and records the commit it ran at. Its one permitted write to `manifest.json` is adding a
+  **verified digest** to an existing `datasets[]` entry: `sha256`, `sha256_source` (the run-dir
+  file it came from) and `sha256_check` (the checks it passed, e.g. the ETag held for the whole
+  read). Nothing else in the manifest may change (`scripts/post/g0c-runs.sh` is the one user).
 
 ## The bucket allow-list
 
@@ -201,7 +204,7 @@ refuses if the result exceeds
    billed seconds and `cost_usd`. `cost_usd` is the truffle price × (terminate − launch) with a
    60 s minimum: compute only, an estimate rather than a bill. If any manifest update fails after
    launch, the run continues and exits 4.
-7. Runs `scripts/post/<name>.sh` if present, then `scripts/orphans.sh`.
+7. Runs `scripts/post/<name>.sh` if present, then the scoped `scripts/orphans.sh --own <task_id> <instance_id>`: it fails only if this run's instance survives; concurrent runs' instances are listed for information. `make orphans` stays global and strict.
 
 On the instance, `preamble.sh` runs first:
 1. `$-` before and after `set +e`.
@@ -218,7 +221,7 @@ On the instance, `preamble.sh` runs first:
 `results/<gate>/<run-id>/`: `manifest.json`, `spec.json`, `spec.resolved.json`,
 `spawn-plan.txt`, `launch.json`, `launch.err`, `preflight.json`, `log/run.log`, `out/` (what the
 spec pushed, plus `requests.tsv`), `spawn/<task_id>/{completion.json,command.log,.exitcode}`,
-`completion.json`, `tables/phases.tsv`, `tables/requests.tsv`, plus `decoded/` and `tables/` from
+`completion.json`, `orphans.txt` (the post-run orphan check), `tables/phases.tsv`, `tables/requests.tsv`, plus `decoded/` and `tables/` from
 a post script. In S3, the same tree is under
 `s3://cookbook-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>/`.
 
@@ -227,7 +230,7 @@ Exit status: the task's exit code, or one of these harness codes:
 | code | meaning |
 |---|---|
 | 2 | spec refused, launch failed, or launched in the wrong region (instance terminated) |
-| 3 | orphans found, or a region could not be checked |
+| 3 | this run's own instance is still alive after the run, or a region could not be checked (other live ak2 instances are listed, not counted) |
 | 4 | a manifest update failed |
 | 95 | `ak2_drop_caches` could not drop caches (a cold rung was impossible) |
 | 96 | the body exited 0 but a helper call was invalid, or errexit was on at exit |
@@ -250,7 +253,7 @@ Exit status: the task's exit code, or one of these harness codes:
   `spawn/<task_id>/command.log` (from spored's pre-stop flush) show how far it got. Raise the TTL
   only after reading them.
 - `manifest.json` without `manifest_finalised_at`: run.sh was interrupted. Run `make orphans` now.
-- `ORPHANS FOUND`, exit 3: see [orphans.md](orphans.md).
+- `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
 rebase commits that a run under `results/` cites. Merge them as they are.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # make stage-reads (docs/oracle.md, "Canonical run"): copy the real-read subsets the oracles use
 # (.cache/reads/<run>_200000_{1,2}.fq[.gz] and <run>_200000.SOURCE, for SRR062634, ERR478965,
-# SRR28305653 and SRR5935746) to the in-region results bucket,
+# SRR28305653, SRR5935746 and ERR598966) to the in-region results bucket,
 # s3://<AK2_RESULTS_BUCKET_us_west_2>/<AK2_RESULTS_ROOT>/data/reads/, so a run in us-west-2 does
 # not depend on ENA (CI keeps fetching from ENA with scripts/fetch-reads.sh). Each object carries
 # its sha256 as metadata, checked with head-object after upload; the SOURCE files (ENA URLs and
@@ -18,7 +18,7 @@ cd "$(dirname "$0")/.." || exit 1
 export AWS_PROFILE
 echo "stage-reads: shell flags $-"
 N=200000
-RUNS=(SRR062634 ERR478965 SRR28305653 SRR5935746)
+RUNS=(SRR062634 ERR478965 SRR28305653 SRR5935746 ERR598966)
 BUCKET=$AK2_RESULTS_BUCKET_us_west_2
 KEY="$AK2_RESULTS_ROOT/data/reads"
 if command -v sha256sum >/dev/null; then sha() { sha256sum "$1" | cut -d' ' -f1; }

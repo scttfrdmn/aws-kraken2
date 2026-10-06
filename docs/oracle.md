@@ -180,7 +180,7 @@ Prerequisites, run once from a machine that has the fetched inputs:
   genome-idx origin and ETag.
 - `make stage-reads` (`scripts/stage-reads.sh`) copies the read subsets
   (`<run>_200000_{1,2}.fq`, the `.fq.gz` copies and `<run>_200000.SOURCE` for SRR062634, ERR478965,
-  SRR28305653 and SRR5935746) to `…/aws-kraken2/data/reads/`. It first checks every plain FASTQ,
+  SRR28305653, SRR5935746 and ERR598966; ERR598966 is G0c-b's environmental class) to `…/aws-kraken2/data/reads/`. It first checks every plain FASTQ,
   and what every gzip copy decompresses to, against the sha256 its SOURCE recorded when ENA served
   it.
 - Both scripts store each object's sha256 as metadata and check it with head-object after the
@@ -192,7 +192,7 @@ On the instance:
    dnf, clones the commit and installs Go at the version in `go.mod`. Each step stops the run on
    failure.
 2. **fetch** stages both databases (one prefix each) and, one file at a time, only the read
-   files the run declares (the prefix also holds SRR5935746, which the oracle does not use), with
+   files the run declares (the prefix also holds SRR5935746 and ERR598966, which the oracle does not use), with
    `ak2_stage`. For every file, both its sha256 and the object's sha256 metadata must be 64 hex
    digits and equal, and the file non-empty. The plain FASTQs, and what their gzip copies
    decompress to, must also match their SOURCE. Only a verified database copy has

@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify bracken-check tag-objects loadbench
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -42,6 +42,10 @@ loadbench:
 		LB_THREADS=$(or $(THREADS),$(LB_THREADS),8) LB_REPS=$(or $(REPS),$(LB_REPS),3) \
 		scripts/loadbench.sh
 
+# G0c run lengths and probe lengths (docs/g0c.md). PART = local|probes|runs; DRY_RUN passes through.
+g0c:
+	scripts/g0c.sh "$(PART)"
+
 # In-region copy of a pinned database for runs in us-west-2 (docs/oracle.md, "Canonical run").
 stage-db:
 	scripts/stage-db.sh $(DB)
@@ -65,6 +69,11 @@ oracle-classify:
 # Object tags on everything under the project's S3 prefix (docs/tag-objects.md).
 tag-objects:
 	scripts/tag-objects.sh $(PREFIX)
+
+# stdSort vs libstdc++ std::sort, differential fuzz (docs/sortfuzz.md, #35): SORTFUZZ=quick|full.
+SORTFUZZ ?= quick
+sortfuzz:
+	scripts/sortfuzz.sh $(SORTFUZZ)
 
 ami:
 	scripts/ami.sh

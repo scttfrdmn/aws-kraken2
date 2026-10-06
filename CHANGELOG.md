@@ -46,6 +46,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - helper errors and state kept in files, so subshell errors count;
   - KILL for a hung tee;
   - shim content and self-test verification.
+- `run.sh` records its post-run orphan check: `<run dir>/orphans.txt`, plus
+  `manifest.orphan_check` (rc, own_gone, other live instances with flags, regions checked and
+  failed). `make report` shows it as a row.
+- Orphan check scoped per run:
+  - `run.sh` now runs `scripts/orphans.sh --own <task_id> <instance_id>`, which fails only if
+    its own instance survives;
+  - concurrent runs' instances are listed as informational;
+  - instances past their `spawn:ttl-deadline` + 15 min are flagged as probable orphans;
+  - `make orphans` stays global and strict, for when no runs are in flight.
 - Pin identity is the commit SHA: every manifest writer (`run.sh`, `oracle.sh`, `g0b.sh`,
   `equiv-seqout.sh`, `classify-oracle.sh`, `harness-build.sh`) records the full upstream SHA and
   its `git describe --tags`, computed by `scripts/pin-identity.sh` from `scripts/pin.env` and
@@ -126,6 +135,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   writes a per-phase timing log with `AK2_TIMINGS=1` and a CPU profile with `AK2_CPUPROFILE`
   (the default stderr is unchanged). `chash.LoadFrom` with a `Filler` interface (`ParallelPread`)
   fills the table buffer, so a later S3 ranged-GET loader can fill the same buffer.
+- G0c (#7, #8): `make g0c PART=local|probes|runs` (`scripts/g0c.sh`, `docs/g0c.md`, specs
+  `runs/g0c-{runs,probes}.json`, post scripts `scripts/post/g0c-{runs,probes}.sh`).
+  `internal/runlen` measures the occupied-run structure of a hash.k2d with parallel chunk scans,
+  an in-order merge, and a brute-force reference: the run histogram (wrap run joined), the
+  longest run, the overlap tail per shard count, and Borel theory. `internal/rangeread` is an
+  in-order streaming reader over parallel ranged reads (file, or anonymous HTTPS with If-Match).
+  `k2probe runs` does one pass, SHA-256 included, and `k2probe probes` samples classify's
+  lookups from real reads and resolves them with point GETs through `chash.Probe`.
+  `make stage-reads` now also stages ERR598966.
+- `make sortfuzz [SORTFUZZ=quick|full]` (`scripts/sortfuzz.sh`, `docs/sortfuzz.md`): a
+  differential fuzz of `internal/report`'s `stdSort` against libstdc++'s `std::sort`
+  (`upstream/sortfuzz.cc`, `internal/report/sortfuzz_test.go`) with upstream's report comparator.
+  The full corpus has about 10^6 heavy-tie cases, every n from 0 to 2048, and McIlroy
+  median-of-3 killers. Each case reports whether the heapsort fallback ran, detected by a
+  `std::__partial_sort` specialization on the harness's own iterator type. A CI job runs the full
+  corpus in `amazonlinux:2023` (GCC 11.5.0) (#35).
 
 ### Changed
 
