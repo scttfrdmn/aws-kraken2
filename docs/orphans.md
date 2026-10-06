@@ -8,6 +8,9 @@
 - An instance counts as ours if it is tagged `ak2:project=aws-kraken2` (added by `run.sh` after
   launch) or `spawn:task-id=ak2-*` (set by spawn at launch, so this also catches an instance whose
   `create-tags` never happened).
+- **An instance with neither tag is invisible to this check.** Both tags are set at or right after
+  launch, and the scoped check also matches this run's instance id. But an instance launched
+  outside `make run`, or one whose tags were removed, will not be found.
 - Backed by `scripts/orphans.sh`.
 
 **It is global and strict:** every live ak2 instance counts, including other agents' runs that
@@ -26,7 +29,9 @@ after every run; nf-spawn#96):
 **Probable orphans (both modes):** an instance more than 15 minutes past its
 `spawn:ttl-deadline` tag is flagged `PROBABLE ORPHAN`, since spored terminates a healthy run at
 its TTL. In the scoped check this is reported, not failed. Follow it up with `make orphans` once
-nothing is in flight.
+nothing is in flight. A `spawn:ttl-deadline` that does not parse (empty, malformed, or not in
+UTC) keeps the row and flags it `deadline unparseable (…)`. Such an instance is never dropped:
+dropping it would make the check fail open.
 
 **Inputs:** `AWS_PROFILE` (default `aws`); `AK2_TAG_PROJECT` and `AK2_TASK_PREFIX` from
 `scripts/ak2.env`.
@@ -40,6 +45,8 @@ Otherwise `orphans: none in <N> regions`, or in scoped mode
 - Global mode: 0 if none; 1 if any are alive; 2 if describe-regions or any region's query failed.
   Treat 2 as "unknown", not as clean.
 - Scoped mode: 0 if this run's instance is gone; 1 if it is alive; 2 if a region failed.
+- Both modes exit 2 if any jq stage fails (e.g. malformed describe-instances output) and on
+  `--own` with no task id.
 
 **Failure looks like:** exit 1 with rows listed. For each row, check whether a `make run` is still
 in progress, by looking at its run dir for a missing `manifest_finalised_at` or at the task id's
