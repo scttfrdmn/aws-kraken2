@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify
+.PHONY: build test lint oracle stage-db stage-reads ami run orphans report harness g0b equiv-seqout oracle-classify sortfuzz
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -54,6 +54,11 @@ oracle-classify:
 	K2_CLASSIFY_ORACLE="$(abspath $(CLASSIFY_ORACLE))" $(GO) test -count=1 -v -run Equiv \
 		./internal/classify/ > "$(CLASSIFY_ORACLE)/equiv.log" 2>&1; s=$$?; \
 		cat "$(CLASSIFY_ORACLE)/equiv.log"; exit $$s
+
+# stdSort vs libstdc++ std::sort, differential fuzz (docs/sortfuzz.md, #35): SORTFUZZ=quick|full.
+SORTFUZZ ?= quick
+sortfuzz:
+	scripts/sortfuzz.sh $(SORTFUZZ)
 
 ami:
 	scripts/ami.sh
