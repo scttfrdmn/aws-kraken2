@@ -1,5 +1,6 @@
-# aws-kraken2 hygiene preamble (Law 4). scripts/run.sh prepends this to every spec's
-# `bash -c` script; a spec cannot opt out. It runs on the instance, as the instance user,
+# aws-kraken2 hygiene preamble (Law 4). scripts/run.sh prepends this to every spec's script
+# to form the payload, which scripts/stub.sh fetches (after its own region assert), verifies
+# by sha256 and execs; a spec cannot opt out. It runs on the instance, as the instance user,
 # before any line of the spec. run.sh injects (and refuses specs that set) AK2_EXPECT_REGION,
 # AK2_BUCKETS, AK2_ALLOWED_BUCKETS, AK2_S3_PREFIX, AK2_RUN_ID, AK2_GATE.
 #
@@ -93,7 +94,7 @@ ak2_req() {
   printf '%s\t%s\t%s\t%s\n' "$(cat "$AK2_STATE/phase" 2>/dev/null)" "$op" "$n" "$b" >> "$AK2_REQS"
 }
 ak2_phase preamble
-ak2_say "inherited \$-=$AK2_INHERITED_FLAGS"
+ak2_say "inherited \$-=$AK2_INHERITED_FLAGS (stub, as spawn started it: \$-=${AK2_STUB_FLAGS:-none})"
 ak2_say "after set +e \$-=$-"
 ak2_say "gate=$AK2_GATE run=$AK2_RUN_ID"
 
@@ -229,8 +230,8 @@ if sudo -n true 2>/dev/null && sudo -n test -w /proc/sys/vm/drop_caches; then AK
 readonly AK2_DC_OK
 ak2_say "drop_caches_ok=$AK2_DC_OK"
 
-printf '{"inherited_flags":"%s","flags_after_set":"%s","region":"%s","az":"%s","instance_id":"%s","instance_type":"%s","ami":"%s","drop_caches_ok":%s,"buckets":[%s],"allowed_buckets":"%s","aws_guard":"%s","preflight_at":"%s"}\n' \
-  "$AK2_INHERITED_FLAGS" "$-" "$AK2_REGION" "$AK2_AZ" "$AK2_INSTANCE_ID" "$AK2_INSTANCE_TYPE" "$AK2_AMI" \
+printf '{"inherited_flags":"%s","payload_inherited_flags":"%s","flags_after_set":"%s","region":"%s","az":"%s","instance_id":"%s","instance_type":"%s","ami":"%s","drop_caches_ok":%s,"buckets":[%s],"allowed_buckets":"%s","aws_guard":"%s","preflight_at":"%s"}\n' \
+  "${AK2_STUB_FLAGS:-$AK2_INHERITED_FLAGS}" "$AK2_INHERITED_FLAGS" "$-" "$AK2_REGION" "$AK2_AZ" "$AK2_INSTANCE_ID" "$AK2_INSTANCE_TYPE" "$AK2_AMI" \
   "$AK2_DC_OK" "${AK2_PAYERS%,}" "$AK2_ALLOWED_BUCKETS" "$AK2_BIN/aws" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/ak2-preflight.json
 ak2_put /tmp/ak2-preflight.json preflight.json || ak2_say "WARN: preflight push failed"
 
