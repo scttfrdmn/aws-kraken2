@@ -1,0 +1,31 @@
+pin 2731b35f7abb26ec926517274f3d87e78d42fd76
+pin 2731b35f7abb26ec926517274f3d87e78d42fd76
+describe 2.17.2-20-g2731b35
+cxx g++-16 (Homebrew GCC 16.2.0) 16.2.0
+version Kraken version 2.17.1
+built 2026-10-06T00:14:07Z Darwin arm64
+db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626
+source s3://genome-idx/kraken/k2_viral_20260626.tar.gz
+etag "df6f9dd95095a9ea2e0cfc580b0f684a-69"
+fetched 2026-10-06T00:17:31Z
+reads /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_200000
+accession SRR062634
+records_per_mate 200000
+urls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz
+sha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq
+sha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq
+fetched 2026-10-06T00:20:27Z
+harness /Users/scttfrdmn/src/aws-kraken2/.oracle/harness/classify_trace/classify_trace
+pin 2731b35f7abb26ec926517274f3d87e78d42fd76 cxx g++-16 (Homebrew GCC 16.2.0) 16.2.0 flags -fopenmp -Wall -std=c++11 -O3 -fPIC -g -DLINEAR_PROBING
+configs
+  default|
+  conf0.1|--confidence 0.1
+  conf0.5|--confidence 0.5
+  mhg1|--minimum-hit-groups 1
+  mhg3|--minimum-hit-groups 3
+  quick|--quick
+  quick-mhg1|--quick --minimum-hit-groups 1
+  quick-conf0.5|--quick --confidence 0.5
+  names|--use-names
+  names-conf0.5|--use-names --confidence 0.5
+  flagunique|classify -F -g 2

@@ -235,9 +235,9 @@ func TestGolden(t *testing.T) {
 func TestBruteForceCleanDNA(t *testing.T) {
 	r := rand.New(rand.NewPCG(1, 2))
 	for _, c := range []struct {
-		k, l     int
-		ssm, tm  uint64
-		revcom   int
+		k, l    int
+		ssm, tm uint64
+		revcom  int
 	}{
 		{35, 31, viralSSM, mmscan.DefaultToggleMask, 1},
 		{35, 31, viralSSM, mmscan.DefaultToggleMask, 0},

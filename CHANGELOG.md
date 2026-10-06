@@ -35,3 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   streams, quality masking with Linux aarch64 unsigned-char semantics) and `internal/seqout`
   (`--classified-out`/`--unclassified-out` writers, ordered batch output). `make equiv-seqout`
   checks both byte-for-byte against upstream on Viral (#12, #16).
+- `internal/classify`: per-read classification (ClassifySequence's minimizer loop, ResolveTree,
+  `--quick`, `--confidence`, `--minimum-hit-groups`, `-F`) and the `--output` line (#13, #14), with
+  the `upstream/classify_trace.cc` oracle harness, `make harness` and `make oracle-classify`.
