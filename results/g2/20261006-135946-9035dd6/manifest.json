@@ -1,0 +1,2116 @@
+{
+  "gate": "g2",
+  "run_id": "20261006-135946-9035dd6",
+  "task_id": "ak2-g2-20261006-135946-9035dd6",
+  "spec": "runs/loadbench-g4.json",
+  "spec_sha256": "d2e22401b0fbfd46a253a9918705bbc201a01cba3b887c8ef08689a9987d0bec",
+  "commit": "9035dd6687f62bb45e82df1e0968d2d2422655d1",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "truffle": "0.57.1"
+  },
+  "region": "us-west-2",
+  "ttl": "2h30m",
+  "cost_limit_usd": 3.0,
+  "s3_prefix": "s3://cookbook-942542972736-us-west-2/aws-kraken2/g2/20261006-135946-9035dd6",
+  "sample_accessions": [
+    "SRR062634"
+  ],
+  "allowed_buckets": [
+    "cookbook-942542972736-us-west-2"
+  ],
+  "payload": {
+    "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/g2/20261006-135946-9035dd6/payload.sh",
+    "sha256": "c42691d9d7efad411d405f30c293b372e2d27754bbb5e0d0f0ee2ed296ae54f8",
+    "bytes": 19831
+  },
+  "user_data": {
+    "base64_bytes": 16356,
+    "bootstrap_bytes": 37492,
+    "gzip_bytes": 12265
+  },
+  "datasets": [
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d",
+      "kind": "object",
+      "etag": "9c11c6b05d131f2639992379c7041b93-954",
+      "version_id": null,
+      "size": 8000000032,
+      "last_modified": "2026-10-06T02:41:19+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d",
+      "kind": "object",
+      "etag": "eebfd340c759d54c82c7769b40f7a50b",
+      "version_id": null,
+      "size": 64,
+      "last_modified": "2026-10-06T04:10:02+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d",
+      "kind": "object",
+      "etag": "f5697f04a6e072bde8504ebc6c142a22",
+      "version_id": null,
+      "size": 4818575,
+      "last_modified": "2026-10-06T04:10:07+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/SOURCE",
+      "kind": "object",
+      "etag": "49b76b5fe49c1a14ad8fadfd099ff437",
+      "version_id": null,
+      "size": 137,
+      "last_modified": "2026-10-06T04:10:43+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE",
+      "kind": "object",
+      "etag": "6cea87048dd0a0d6dd4c857d83470e55",
+      "version_id": null,
+      "size": 400,
+      "last_modified": "2026-10-06T03:55:23+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq",
+      "kind": "object",
+      "etag": "cc33d8c08e80154e36cb089e2cc4f611-7",
+      "version_id": null,
+      "size": 51895574,
+      "last_modified": "2026-10-06T03:49:30+00:00"
+    },
+    {
+      "uri": "s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq",
+      "kind": "object",
+      "etag": "bdd542dbe602e458d2f3701cc659df03-7",
+      "version_id": null,
+      "size": 51895574,
+      "last_modified": "2026-10-06T03:51:17+00:00"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "cookbook-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-06T13:59:48Z",
+  "launch": {
+    "requested_at": "2026-10-06T14:00:21Z",
+    "instance_id": "i-07f63f0f88d5a49af",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "r8gd.2xlarge",
+    "count": 1,
+    "ami": "ami-09325776a00699513",
+    "az": "us-west-2b",
+    "launch_time": "2026-10-06T14:00:24+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "terminated_at": "2026-10-06T14:20:13Z"
+  },
+  "truffle_price_usd_per_hour": 0.58784,
+  "truffle_price_note": "",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://cookbook-942542972736-us-west-2/aws-kraken2/g2/20261006-135946-9035dd6/: 323 objects, 322 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-06T14:00:39Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-06T14:00:40Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-06T14:00:40Z",
+      "seconds": 35,
+      "cold": false
+    },
+    {
+      "phase": "fetch",
+      "start": "2026-10-06T14:01:15Z",
+      "seconds": 29,
+      "cold": false
+    },
+    {
+      "phase": "build",
+      "start": "2026-10-06T14:01:44Z",
+      "seconds": 41,
+      "cold": false
+    },
+    {
+      "phase": "lb-warmup-upstream-empty",
+      "start": "2026-10-06T14:02:25Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-upstream-empty-cold",
+      "start": "2026-10-06T14:02:33Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-upstream-empty-warm",
+      "start": "2026-10-06T14:02:41Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-base-empty-cold",
+      "start": "2026-10-06T14:02:42Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-base-empty-warm",
+      "start": "2026-10-06T14:02:51Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-thp-empty-cold",
+      "start": "2026-10-06T14:02:52Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-thp-empty-warm",
+      "start": "2026-10-06T14:03:01Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-fill-empty-cold",
+      "start": "2026-10-06T14:03:02Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-fill-empty-warm",
+      "start": "2026-10-06T14:03:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-scan-empty-cold",
+      "start": "2026-10-06T14:03:11Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-scan-empty-warm",
+      "start": "2026-10-06T14:03:19Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-recycle-empty-cold",
+      "start": "2026-10-06T14:03:20Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-recycle-empty-warm",
+      "start": "2026-10-06T14:03:28Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-rc-empty-cold",
+      "start": "2026-10-06T14:03:29Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-rc-empty-warm",
+      "start": "2026-10-06T14:03:37Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-matesize-empty-cold",
+      "start": "2026-10-06T14:03:38Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-matesize-empty-warm",
+      "start": "2026-10-06T14:03:47Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-batch-empty-cold",
+      "start": "2026-10-06T14:03:48Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-batch-empty-warm",
+      "start": "2026-10-06T14:03:56Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-final-empty-cold",
+      "start": "2026-10-06T14:03:57Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-final-empty-warm",
+      "start": "2026-10-06T14:04:05Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-final-aa-empty-cold",
+      "start": "2026-10-06T14:04:06Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-final-aa-empty-warm",
+      "start": "2026-10-06T14:04:14Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-base-empty-cold",
+      "start": "2026-10-06T14:04:15Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-base-empty-warm",
+      "start": "2026-10-06T14:04:24Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-thp-empty-cold",
+      "start": "2026-10-06T14:04:25Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-thp-empty-warm",
+      "start": "2026-10-06T14:04:33Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-fill-empty-cold",
+      "start": "2026-10-06T14:04:34Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-fill-empty-warm",
+      "start": "2026-10-06T14:04:43Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-scan-empty-cold",
+      "start": "2026-10-06T14:04:44Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-scan-empty-warm",
+      "start": "2026-10-06T14:04:52Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-recycle-empty-cold",
+      "start": "2026-10-06T14:04:53Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-recycle-empty-warm",
+      "start": "2026-10-06T14:05:01Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-rc-empty-cold",
+      "start": "2026-10-06T14:05:02Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-rc-empty-warm",
+      "start": "2026-10-06T14:05:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-matesize-empty-cold",
+      "start": "2026-10-06T14:05:11Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-matesize-empty-warm",
+      "start": "2026-10-06T14:05:19Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-batch-empty-cold",
+      "start": "2026-10-06T14:05:20Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-batch-empty-warm",
+      "start": "2026-10-06T14:05:29Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-final-empty-cold",
+      "start": "2026-10-06T14:05:30Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-final-empty-warm",
+      "start": "2026-10-06T14:05:38Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-final-aa-empty-cold",
+      "start": "2026-10-06T14:05:39Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-final-aa-empty-warm",
+      "start": "2026-10-06T14:05:47Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-upstream-empty-cold",
+      "start": "2026-10-06T14:05:48Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-upstream-empty-warm",
+      "start": "2026-10-06T14:05:56Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-thp-empty-cold",
+      "start": "2026-10-06T14:05:57Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-thp-empty-warm",
+      "start": "2026-10-06T14:06:05Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-fill-empty-cold",
+      "start": "2026-10-06T14:06:07Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-fill-empty-warm",
+      "start": "2026-10-06T14:06:15Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-scan-empty-cold",
+      "start": "2026-10-06T14:06:16Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-scan-empty-warm",
+      "start": "2026-10-06T14:06:24Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-recycle-empty-cold",
+      "start": "2026-10-06T14:06:25Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-recycle-empty-warm",
+      "start": "2026-10-06T14:06:33Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-rc-empty-cold",
+      "start": "2026-10-06T14:06:34Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-rc-empty-warm",
+      "start": "2026-10-06T14:06:42Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-matesize-empty-cold",
+      "start": "2026-10-06T14:06:43Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-matesize-empty-warm",
+      "start": "2026-10-06T14:06:51Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-batch-empty-cold",
+      "start": "2026-10-06T14:06:52Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-batch-empty-warm",
+      "start": "2026-10-06T14:07:01Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-final-empty-cold",
+      "start": "2026-10-06T14:07:02Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-final-empty-warm",
+      "start": "2026-10-06T14:07:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-final-aa-empty-cold",
+      "start": "2026-10-06T14:07:11Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-final-aa-empty-warm",
+      "start": "2026-10-06T14:07:19Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-upstream-empty-cold",
+      "start": "2026-10-06T14:07:20Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-upstream-empty-warm",
+      "start": "2026-10-06T14:07:28Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-base-empty-cold",
+      "start": "2026-10-06T14:07:29Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-base-empty-warm",
+      "start": "2026-10-06T14:07:38Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-fill-empty-warm",
+      "start": "2026-10-06T14:07:39Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-scan-empty-warm",
+      "start": "2026-10-06T14:07:40Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-recycle-empty-warm",
+      "start": "2026-10-06T14:07:40Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-rc-empty-warm",
+      "start": "2026-10-06T14:07:41Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-matesize-empty-warm",
+      "start": "2026-10-06T14:07:42Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-batch-empty-warm",
+      "start": "2026-10-06T14:07:43Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-final-empty-warm",
+      "start": "2026-10-06T14:07:43Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-final-aa-empty-warm",
+      "start": "2026-10-06T14:07:44Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-upstream-empty-warm",
+      "start": "2026-10-06T14:07:45Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-base-empty-warm",
+      "start": "2026-10-06T14:07:45Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-thp-empty-warm",
+      "start": "2026-10-06T14:07:47Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-scan-empty-warm",
+      "start": "2026-10-06T14:07:47Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-recycle-empty-warm",
+      "start": "2026-10-06T14:07:48Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-rc-empty-warm",
+      "start": "2026-10-06T14:07:49Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-matesize-empty-warm",
+      "start": "2026-10-06T14:07:49Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-batch-empty-warm",
+      "start": "2026-10-06T14:07:50Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-final-empty-warm",
+      "start": "2026-10-06T14:07:51Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-final-aa-empty-warm",
+      "start": "2026-10-06T14:07:51Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-upstream-empty-warm",
+      "start": "2026-10-06T14:07:52Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-base-empty-warm",
+      "start": "2026-10-06T14:07:53Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-thp-empty-warm",
+      "start": "2026-10-06T14:07:54Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-fill-empty-warm",
+      "start": "2026-10-06T14:07:55Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-recycle-empty-warm",
+      "start": "2026-10-06T14:07:56Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-rc-empty-warm",
+      "start": "2026-10-06T14:07:56Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-matesize-empty-warm",
+      "start": "2026-10-06T14:07:57Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-batch-empty-warm",
+      "start": "2026-10-06T14:07:58Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-final-empty-warm",
+      "start": "2026-10-06T14:07:58Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-final-aa-empty-warm",
+      "start": "2026-10-06T14:07:59Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-upstream-empty-warm",
+      "start": "2026-10-06T14:08:00Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-base-empty-warm",
+      "start": "2026-10-06T14:08:00Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-thp-empty-warm",
+      "start": "2026-10-06T14:08:02Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-fill-empty-warm",
+      "start": "2026-10-06T14:08:02Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-scan-empty-warm",
+      "start": "2026-10-06T14:08:03Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-rc-empty-warm",
+      "start": "2026-10-06T14:08:04Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-matesize-empty-warm",
+      "start": "2026-10-06T14:08:04Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-batch-empty-warm",
+      "start": "2026-10-06T14:08:05Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-final-empty-warm",
+      "start": "2026-10-06T14:08:06Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-final-aa-empty-warm",
+      "start": "2026-10-06T14:08:06Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-upstream-empty-warm",
+      "start": "2026-10-06T14:08:07Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-base-empty-warm",
+      "start": "2026-10-06T14:08:08Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-thp-empty-warm",
+      "start": "2026-10-06T14:08:09Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-fill-empty-warm",
+      "start": "2026-10-06T14:08:10Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-scan-empty-warm",
+      "start": "2026-10-06T14:08:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-recycle-empty-warm",
+      "start": "2026-10-06T14:08:11Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-matesize-empty-warm",
+      "start": "2026-10-06T14:08:12Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-batch-empty-warm",
+      "start": "2026-10-06T14:08:12Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-final-empty-warm",
+      "start": "2026-10-06T14:08:13Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-final-aa-empty-warm",
+      "start": "2026-10-06T14:08:14Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-upstream-empty-warm",
+      "start": "2026-10-06T14:08:15Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-base-empty-warm",
+      "start": "2026-10-06T14:08:15Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-thp-empty-warm",
+      "start": "2026-10-06T14:08:16Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-fill-empty-warm",
+      "start": "2026-10-06T14:08:17Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-scan-empty-warm",
+      "start": "2026-10-06T14:08:18Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-recycle-empty-warm",
+      "start": "2026-10-06T14:08:19Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-rc-empty-warm",
+      "start": "2026-10-06T14:08:19Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-batch-empty-warm",
+      "start": "2026-10-06T14:08:20Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-final-empty-warm",
+      "start": "2026-10-06T14:08:21Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-final-aa-empty-warm",
+      "start": "2026-10-06T14:08:21Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-upstream-empty-warm",
+      "start": "2026-10-06T14:08:22Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-base-empty-warm",
+      "start": "2026-10-06T14:08:23Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-thp-empty-warm",
+      "start": "2026-10-06T14:08:24Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-fill-empty-warm",
+      "start": "2026-10-06T14:08:25Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-scan-empty-warm",
+      "start": "2026-10-06T14:08:25Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-recycle-empty-warm",
+      "start": "2026-10-06T14:08:26Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-rc-empty-warm",
+      "start": "2026-10-06T14:08:27Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-matesize-empty-warm",
+      "start": "2026-10-06T14:08:27Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-final-empty-warm",
+      "start": "2026-10-06T14:08:28Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-final-aa-empty-warm",
+      "start": "2026-10-06T14:08:29Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-upstream-empty-warm",
+      "start": "2026-10-06T14:08:29Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-base-empty-warm",
+      "start": "2026-10-06T14:08:30Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-thp-empty-warm",
+      "start": "2026-10-06T14:08:31Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-fill-empty-warm",
+      "start": "2026-10-06T14:08:32Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-scan-empty-warm",
+      "start": "2026-10-06T14:08:33Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-recycle-empty-warm",
+      "start": "2026-10-06T14:08:33Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-rc-empty-warm",
+      "start": "2026-10-06T14:08:34Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-matesize-empty-warm",
+      "start": "2026-10-06T14:08:35Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-batch-empty-warm",
+      "start": "2026-10-06T14:08:35Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-upstream-pe-cold",
+      "start": "2026-10-06T14:08:36Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-upstream-pe-warm",
+      "start": "2026-10-06T14:08:45Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-base-pe-cold",
+      "start": "2026-10-06T14:08:46Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-base-pe-warm",
+      "start": "2026-10-06T14:08:55Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-thp-pe-cold",
+      "start": "2026-10-06T14:08:57Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-thp-pe-warm",
+      "start": "2026-10-06T14:09:05Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-fill-pe-cold",
+      "start": "2026-10-06T14:09:07Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-fill-pe-warm",
+      "start": "2026-10-06T14:09:15Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-scan-pe-cold",
+      "start": "2026-10-06T14:09:17Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-scan-pe-warm",
+      "start": "2026-10-06T14:09:25Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-recycle-pe-cold",
+      "start": "2026-10-06T14:09:26Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-recycle-pe-warm",
+      "start": "2026-10-06T14:09:35Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-rc-pe-cold",
+      "start": "2026-10-06T14:09:36Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-rc-pe-warm",
+      "start": "2026-10-06T14:09:44Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-matesize-pe-cold",
+      "start": "2026-10-06T14:09:46Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-matesize-pe-warm",
+      "start": "2026-10-06T14:09:54Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-batch-pe-cold",
+      "start": "2026-10-06T14:09:55Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-batch-pe-warm",
+      "start": "2026-10-06T14:10:04Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-final-pe-cold",
+      "start": "2026-10-06T14:10:05Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-final-pe-warm",
+      "start": "2026-10-06T14:10:13Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-1-final-aa-pe-cold",
+      "start": "2026-10-06T14:10:15Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-1-final-aa-pe-warm",
+      "start": "2026-10-06T14:10:23Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-base-pe-cold",
+      "start": "2026-10-06T14:10:24Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-base-pe-warm",
+      "start": "2026-10-06T14:10:33Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-thp-pe-cold",
+      "start": "2026-10-06T14:10:35Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-thp-pe-warm",
+      "start": "2026-10-06T14:10:43Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-fill-pe-cold",
+      "start": "2026-10-06T14:10:45Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-fill-pe-warm",
+      "start": "2026-10-06T14:10:53Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-scan-pe-cold",
+      "start": "2026-10-06T14:10:55Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-scan-pe-warm",
+      "start": "2026-10-06T14:11:03Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-recycle-pe-cold",
+      "start": "2026-10-06T14:11:04Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-recycle-pe-warm",
+      "start": "2026-10-06T14:11:13Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-rc-pe-cold",
+      "start": "2026-10-06T14:11:14Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-rc-pe-warm",
+      "start": "2026-10-06T14:11:22Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-matesize-pe-cold",
+      "start": "2026-10-06T14:11:24Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-matesize-pe-warm",
+      "start": "2026-10-06T14:11:32Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-batch-pe-cold",
+      "start": "2026-10-06T14:11:33Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-batch-pe-warm",
+      "start": "2026-10-06T14:11:42Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-final-pe-cold",
+      "start": "2026-10-06T14:11:43Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-final-pe-warm",
+      "start": "2026-10-06T14:11:51Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-final-aa-pe-cold",
+      "start": "2026-10-06T14:11:53Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-final-aa-pe-warm",
+      "start": "2026-10-06T14:12:01Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-2-upstream-pe-cold",
+      "start": "2026-10-06T14:12:02Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-2-upstream-pe-warm",
+      "start": "2026-10-06T14:12:11Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-thp-pe-cold",
+      "start": "2026-10-06T14:12:13Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-thp-pe-warm",
+      "start": "2026-10-06T14:12:22Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-fill-pe-cold",
+      "start": "2026-10-06T14:12:23Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-fill-pe-warm",
+      "start": "2026-10-06T14:12:31Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-scan-pe-cold",
+      "start": "2026-10-06T14:12:33Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-scan-pe-warm",
+      "start": "2026-10-06T14:12:41Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-recycle-pe-cold",
+      "start": "2026-10-06T14:12:42Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-recycle-pe-warm",
+      "start": "2026-10-06T14:12:51Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-rc-pe-cold",
+      "start": "2026-10-06T14:12:52Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-rc-pe-warm",
+      "start": "2026-10-06T14:13:00Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-matesize-pe-cold",
+      "start": "2026-10-06T14:13:02Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-matesize-pe-warm",
+      "start": "2026-10-06T14:13:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-batch-pe-cold",
+      "start": "2026-10-06T14:13:11Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-batch-pe-warm",
+      "start": "2026-10-06T14:13:20Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-final-pe-cold",
+      "start": "2026-10-06T14:13:21Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-final-pe-warm",
+      "start": "2026-10-06T14:13:29Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-final-aa-pe-cold",
+      "start": "2026-10-06T14:13:31Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-final-aa-pe-warm",
+      "start": "2026-10-06T14:13:39Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-upstream-pe-cold",
+      "start": "2026-10-06T14:13:40Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-upstream-pe-warm",
+      "start": "2026-10-06T14:13:49Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-3-base-pe-cold",
+      "start": "2026-10-06T14:13:50Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-3-base-pe-warm",
+      "start": "2026-10-06T14:13:59Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-fill-pe-warm",
+      "start": "2026-10-06T14:14:01Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-scan-pe-warm",
+      "start": "2026-10-06T14:14:02Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-recycle-pe-warm",
+      "start": "2026-10-06T14:14:02Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-rc-pe-warm",
+      "start": "2026-10-06T14:14:03Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-matesize-pe-warm",
+      "start": "2026-10-06T14:14:04Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-batch-pe-warm",
+      "start": "2026-10-06T14:14:05Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-final-pe-warm",
+      "start": "2026-10-06T14:14:06Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-final-aa-pe-warm",
+      "start": "2026-10-06T14:14:07Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-upstream-pe-warm",
+      "start": "2026-10-06T14:14:08Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-base-pe-warm",
+      "start": "2026-10-06T14:14:09Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-4-thp-pe-warm",
+      "start": "2026-10-06T14:14:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-scan-pe-warm",
+      "start": "2026-10-06T14:14:11Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-recycle-pe-warm",
+      "start": "2026-10-06T14:14:12Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-rc-pe-warm",
+      "start": "2026-10-06T14:14:13Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-matesize-pe-warm",
+      "start": "2026-10-06T14:14:14Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-batch-pe-warm",
+      "start": "2026-10-06T14:14:15Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-final-pe-warm",
+      "start": "2026-10-06T14:14:16Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-final-aa-pe-warm",
+      "start": "2026-10-06T14:14:17Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-upstream-pe-warm",
+      "start": "2026-10-06T14:14:18Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-base-pe-warm",
+      "start": "2026-10-06T14:14:18Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-thp-pe-warm",
+      "start": "2026-10-06T14:14:20Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-5-fill-pe-warm",
+      "start": "2026-10-06T14:14:21Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-recycle-pe-warm",
+      "start": "2026-10-06T14:14:22Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-rc-pe-warm",
+      "start": "2026-10-06T14:14:23Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-matesize-pe-warm",
+      "start": "2026-10-06T14:14:24Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-batch-pe-warm",
+      "start": "2026-10-06T14:14:25Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-final-pe-warm",
+      "start": "2026-10-06T14:14:26Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-final-aa-pe-warm",
+      "start": "2026-10-06T14:14:26Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-upstream-pe-warm",
+      "start": "2026-10-06T14:14:27Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-base-pe-warm",
+      "start": "2026-10-06T14:14:28Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-thp-pe-warm",
+      "start": "2026-10-06T14:14:30Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-fill-pe-warm",
+      "start": "2026-10-06T14:14:31Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-6-scan-pe-warm",
+      "start": "2026-10-06T14:14:32Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-rc-pe-warm",
+      "start": "2026-10-06T14:14:33Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-matesize-pe-warm",
+      "start": "2026-10-06T14:14:33Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-batch-pe-warm",
+      "start": "2026-10-06T14:14:34Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-final-pe-warm",
+      "start": "2026-10-06T14:14:35Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-final-aa-pe-warm",
+      "start": "2026-10-06T14:14:36Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-upstream-pe-warm",
+      "start": "2026-10-06T14:14:37Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-base-pe-warm",
+      "start": "2026-10-06T14:14:38Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-thp-pe-warm",
+      "start": "2026-10-06T14:14:39Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-fill-pe-warm",
+      "start": "2026-10-06T14:14:40Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-scan-pe-warm",
+      "start": "2026-10-06T14:14:41Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-7-recycle-pe-warm",
+      "start": "2026-10-06T14:14:42Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-matesize-pe-warm",
+      "start": "2026-10-06T14:14:43Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-batch-pe-warm",
+      "start": "2026-10-06T14:14:44Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-final-pe-warm",
+      "start": "2026-10-06T14:14:45Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-final-aa-pe-warm",
+      "start": "2026-10-06T14:14:46Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-upstream-pe-warm",
+      "start": "2026-10-06T14:14:47Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-base-pe-warm",
+      "start": "2026-10-06T14:14:47Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-thp-pe-warm",
+      "start": "2026-10-06T14:14:49Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-fill-pe-warm",
+      "start": "2026-10-06T14:14:50Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-scan-pe-warm",
+      "start": "2026-10-06T14:14:51Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-recycle-pe-warm",
+      "start": "2026-10-06T14:14:52Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-8-rc-pe-warm",
+      "start": "2026-10-06T14:14:53Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-batch-pe-warm",
+      "start": "2026-10-06T14:14:54Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-final-pe-warm",
+      "start": "2026-10-06T14:14:54Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-final-aa-pe-warm",
+      "start": "2026-10-06T14:14:55Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-upstream-pe-warm",
+      "start": "2026-10-06T14:14:56Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-base-pe-warm",
+      "start": "2026-10-06T14:14:57Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-thp-pe-warm",
+      "start": "2026-10-06T14:14:59Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-fill-pe-warm",
+      "start": "2026-10-06T14:15:00Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-scan-pe-warm",
+      "start": "2026-10-06T14:15:01Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-recycle-pe-warm",
+      "start": "2026-10-06T14:15:02Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-rc-pe-warm",
+      "start": "2026-10-06T14:15:02Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-9-matesize-pe-warm",
+      "start": "2026-10-06T14:15:03Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-final-pe-warm",
+      "start": "2026-10-06T14:15:04Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-final-aa-pe-warm",
+      "start": "2026-10-06T14:15:05Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-upstream-pe-warm",
+      "start": "2026-10-06T14:15:06Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-base-pe-warm",
+      "start": "2026-10-06T14:15:07Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-thp-pe-warm",
+      "start": "2026-10-06T14:15:08Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-fill-pe-warm",
+      "start": "2026-10-06T14:15:09Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-scan-pe-warm",
+      "start": "2026-10-06T14:15:10Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-recycle-pe-warm",
+      "start": "2026-10-06T14:15:11Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-rc-pe-warm",
+      "start": "2026-10-06T14:15:12Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-matesize-pe-warm",
+      "start": "2026-10-06T14:15:13Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-10-batch-pe-warm",
+      "start": "2026-10-06T14:15:14Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-perf-upstream-pe-cold",
+      "start": "2026-10-06T14:15:15Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-perf-upstream-pe-warm",
+      "start": "2026-10-06T14:15:23Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-perf-base-pe-cold",
+      "start": "2026-10-06T14:15:24Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-pprof-base-pe-cold",
+      "start": "2026-10-06T14:15:33Z",
+      "seconds": 16,
+      "cold": true
+    },
+    {
+      "phase": "lb-perf-base-pe-warm",
+      "start": "2026-10-06T14:15:49Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-pprof-base-pe-warm",
+      "start": "2026-10-06T14:15:50Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "lb-perf-final-pe-cold",
+      "start": "2026-10-06T14:15:52Z",
+      "seconds": 8,
+      "cold": true
+    },
+    {
+      "phase": "lb-pprof-final-pe-cold",
+      "start": "2026-10-06T14:16:00Z",
+      "seconds": 9,
+      "cold": true
+    },
+    {
+      "phase": "lb-perf-final-pe-warm",
+      "start": "2026-10-06T14:16:09Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "lb-pprof-final-pe-warm",
+      "start": "2026-10-06T14:16:10Z",
+      "seconds": 140,
+      "cold": false
+    },
+    {
+      "phase": "push",
+      "start": "2026-10-06T14:18:30Z",
+      "seconds": 0,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 983,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "GetObject": 972,
+      "HeadBucket-anon": 1,
+      "HeadObject": 7,
+      "ListObjectsV2": 1
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "ListObjectsV2",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 954,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 7,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 7,
+        "bucket": "cookbook-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "cookbook-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-g2-20261006-135946-9035dd6",
+    "run_id": "16cbc2de-e949-4762-bf3a-528118386021",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-06T14:00:39Z",
+    "ended_at": "2026-10-06T14:18:31Z",
+    "logs": [
+      "s3://cookbook-942542972736-us-west-2/aws-kraken2/g2/20261006-135946-9035dd6/spawn/ak2-g2-20261006-135946-9035dd6/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2b",
+    "instance_id": "i-07f63f0f88d5a49af",
+    "instance_type": "r8gd.2xlarge",
+    "ami": "ami-09325776a00699513",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "cookbook-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      }
+    ],
+    "allowed_buckets": "cookbook-942542972736-us-west-2",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-06T14:00:40Z"
+  },
+  "start": "2026-10-06T14:00:24+00:00",
+  "stop": "2026-10-06T14:20:13Z",
+  "billed_seconds": 1189,
+  "cost_usd": 0.19415,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-06T15:02:43Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g2-20261006-135946-9035dd6",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-06T15:02:45Z"
+  }
+}

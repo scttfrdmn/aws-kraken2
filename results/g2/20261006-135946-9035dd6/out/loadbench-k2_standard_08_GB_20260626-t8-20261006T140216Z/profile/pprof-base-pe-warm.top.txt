@@ -1,0 +1,48 @@
+File: aws-kraken2
+Build ID: 73a9d79a1414ec6539fccac4da7ed7e1fc219e2b
+Type: cpu
+Time: 2026-10-06 14:15:50 UTC
+Duration: 1.18s, Total samples = 1.26s (107.03%)
+Showing nodes accounting for 1.26s, 100% of 1.26s total
+Showing top 40 nodes out of 65
+      flat  flat%   sum%        cum   cum%
+     0.65s 51.59% 51.59%      0.72s 57.14%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).Next
+     0.15s 11.90% 63.49%      0.15s 11.90%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Add
+     0.11s  8.73% 72.22%      0.11s  8.73%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).replay
+     0.10s  7.94% 80.16%      0.10s  7.94%  internal/runtime/syscall/linux.Syscall6
+     0.06s  4.76% 84.92%      0.06s  4.76%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Find
+     0.06s  4.76% 89.68%      0.07s  5.56%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).canonicalRepresentation (inline)
+     0.02s  1.59% 91.27%      0.02s  1.59%  internal/bytealg.IndexByteString
+     0.02s  1.59% 92.86%      0.05s  3.97%  internal/strconv.AppendUint
+     0.01s  0.79% 93.65%      0.04s  3.17%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendCode
+     0.01s  0.79% 94.44%      0.07s  5.56%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendLine
+     0.01s  0.79% 95.24%      0.88s 69.84%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Tokens).Scan
+     0.01s  0.79% 96.03%      0.01s  0.79%  github.com/scttfrdmn/aws-kraken2/internal/mmscan.(*Scanner).reverseComplement
+     0.01s  0.79% 96.83%      0.01s  0.79%  internal/strconv.formatBase10
+     0.01s  0.79% 97.62%      0.01s  0.79%  runtime.markBits.isMarked
+     0.01s  0.79% 98.41%      0.01s  0.79%  runtime.memclrNoHeapPointers
+     0.01s  0.79% 99.21%      0.01s  0.79%  runtime.memmove
+     0.01s  0.79%   100%      0.01s  0.79%  runtime.tryDeferToSpanScan
+         0     0%   100%      0.02s  1.59%  bytes.IndexByte (inline)
+         0     0%   100%      0.01s  0.79%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Close
+         0     0%   100%      0.06s  4.76%  github.com/scttfrdmn/aws-kraken2/internal/chash.(*Table).Get (inline)
+         0     0%   100%      0.08s  6.35%  github.com/scttfrdmn/aws-kraken2/internal/chash.preadParallel.func1
+         0     0%   100%      0.18s 14.29%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).Classify
+         0     0%   100%      0.04s  3.17%  github.com/scttfrdmn/aws-kraken2/internal/classify.(*Classifier).appendHitlist
+         0     0%   100%      0.02s  1.59%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Block).scanNewlines
+         0     0%   100%      0.03s  2.38%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).LoadBlocks
+         0     0%   100%      0.02s  1.59%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*PairedReader).loadMates
+         0     0%   100%      0.01s  0.79%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadBlock
+         0     0%   100%      0.02s  1.59%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).LoadRecords
+         0     0%   100%      0.01s  0.79%  github.com/scttfrdmn/aws-kraken2/internal/seqio.(*Reader).fill
+         0     0%   100%      0.08s  6.35%  internal/poll.(*FD).Pread
+         0     0%   100%      0.08s  6.35%  internal/poll.(*FD).Pread.func1 (inline)
+         0     0%   100%      0.01s  0.79%  internal/poll.(*FD).Read
+         0     0%   100%      0.08s  6.35%  internal/poll.ignoringEINTR2[go.shape.int] (inline)
+         0     0%   100%      0.01s  0.79%  internal/poll.ignoringEINTRIO (inline)
+         0     0%   100%      0.03s  2.38%  main.(*runner).processFiles.func1
+         0     0%   100%      1.12s 88.89%  main.(*runner).processFiles.func2
+         0     0%   100%      1.12s 88.89%  main.(*runner).work
+         0     0%   100%      0.01s  0.79%  main.classifyRun
+         0     0%   100%      0.01s  0.79%  main.classifyRun.func1
+         0     0%   100%      0.01s  0.79%  main.main
