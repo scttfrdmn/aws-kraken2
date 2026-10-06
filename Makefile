@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle ami run orphans report harness g0b
+.PHONY: build test lint oracle ami run orphans report harness g0b equiv-seqout
 
 build:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/...
@@ -30,6 +30,10 @@ harness:
 G0B ?= $(or $(PART),all)
 g0b:
 	scripts/g0b.sh $(G0B)
+
+# seqio/seqout oracle (docs/equiv-seqout.md).
+equiv-seqout:
+	scripts/equiv-seqout.sh
 
 ami:
 	scripts/ami.sh
