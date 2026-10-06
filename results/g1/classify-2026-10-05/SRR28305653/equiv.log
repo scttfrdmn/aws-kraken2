@@ -1,0 +1,78 @@
+=== RUN   TestEquivUpstreamOutput
+=== RUN   TestEquivUpstreamOutput/se/default
+    equiv_test.go:248: byte-identical: 200000 reads, 1641 classified, 6893323 bytes
+=== RUN   TestEquivUpstreamOutput/se/conf0.1
+    equiv_test.go:248: byte-identical: 200000 reads, 395 classified, 6888037 bytes
+=== RUN   TestEquivUpstreamOutput/se/conf0.5
+    equiv_test.go:248: byte-identical: 200000 reads, 10 classified, 6886451 bytes
+=== RUN   TestEquivUpstreamOutput/se/mhg1
+    equiv_test.go:248: byte-identical: 200000 reads, 19672 classified, 6966897 bytes
+=== RUN   TestEquivUpstreamOutput/se/mhg3
+    equiv_test.go:248: byte-identical: 200000 reads, 740 classified, 6889523 bytes
+=== RUN   TestEquivUpstreamOutput/se/quick
+    equiv_test.go:248: byte-identical: 200000 reads, 1641 classified, 6102785 bytes
+=== RUN   TestEquivUpstreamOutput/se/quick-mhg1
+    equiv_test.go:248: byte-identical: 200000 reads, 19672 classified, 6249981 bytes
+=== RUN   TestEquivUpstreamOutput/se/quick-conf0.5
+    equiv_test.go:248: byte-identical: 200000 reads, 110 classified, 6089835 bytes
+=== RUN   TestEquivUpstreamOutput/se/names
+    equiv_test.go:248: byte-identical: 200000 reads, 1641 classified, 11102086 bytes
+=== RUN   TestEquivUpstreamOutput/se/names-conf0.5
+    equiv_test.go:248: byte-identical: 200000 reads, 10 classified, 11086651 bytes
+=== RUN   TestEquivUpstreamOutput/se/flagunique
+    equiv_test.go:248: byte-identical: 200000 reads, 1641 classified, 6981421 bytes
+=== RUN   TestEquivUpstreamOutput/pe/default
+    equiv_test.go:248: byte-identical: 200000 reads, 3191 classified, 9759968 bytes
+=== RUN   TestEquivUpstreamOutput/pe/conf0.1
+    equiv_test.go:248: byte-identical: 200000 reads, 114 classified, 9746843 bytes
+=== RUN   TestEquivUpstreamOutput/pe/conf0.5
+    equiv_test.go:248: byte-identical: 200000 reads, 2 classified, 9746342 bytes
+=== RUN   TestEquivUpstreamOutput/pe/mhg1
+    equiv_test.go:248: byte-identical: 200000 reads, 22544 classified, 9839612 bytes
+=== RUN   TestEquivUpstreamOutput/pe/mhg3
+    equiv_test.go:248: byte-identical: 200000 reads, 1441 classified, 9752415 bytes
+=== RUN   TestEquivUpstreamOutput/pe/quick
+    equiv_test.go:248: byte-identical: 200000 reads, 3191 classified, 6916277 bytes
+=== RUN   TestEquivUpstreamOutput/pe/quick-mhg1
+    equiv_test.go:248: byte-identical: 200000 reads, 22544 classified, 7075245 bytes
+=== RUN   TestEquivUpstreamOutput/pe/quick-conf0.5
+    equiv_test.go:248: byte-identical: 200000 reads, 126 classified, 6889975 bytes
+=== RUN   TestEquivUpstreamOutput/pe/names
+    equiv_test.go:248: byte-identical: 200000 reads, 3191 classified, 13976406 bytes
+=== RUN   TestEquivUpstreamOutput/pe/names-conf0.5
+    equiv_test.go:248: byte-identical: 200000 reads, 2 classified, 13946382 bytes
+=== RUN   TestEquivUpstreamOutput/pe/flagunique
+    equiv_test.go:248: byte-identical: 200000 reads, 3191 classified, 9906498 bytes
+--- PASS: TestEquivUpstreamOutput (14.39s)
+    --- PASS: TestEquivUpstreamOutput/se/default (0.46s)
+    --- PASS: TestEquivUpstreamOutput/se/conf0.1 (0.43s)
+    --- PASS: TestEquivUpstreamOutput/se/conf0.5 (0.44s)
+    --- PASS: TestEquivUpstreamOutput/se/mhg1 (0.44s)
+    --- PASS: TestEquivUpstreamOutput/se/mhg3 (0.45s)
+    --- PASS: TestEquivUpstreamOutput/se/quick (0.44s)
+    --- PASS: TestEquivUpstreamOutput/se/quick-mhg1 (0.43s)
+    --- PASS: TestEquivUpstreamOutput/se/quick-conf0.5 (0.44s)
+    --- PASS: TestEquivUpstreamOutput/se/names (0.44s)
+    --- PASS: TestEquivUpstreamOutput/se/names-conf0.5 (0.45s)
+    --- PASS: TestEquivUpstreamOutput/se/flagunique (0.44s)
+    --- PASS: TestEquivUpstreamOutput/pe/default (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/conf0.1 (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/conf0.5 (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/mhg1 (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/mhg3 (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/quick (0.86s)
+    --- PASS: TestEquivUpstreamOutput/pe/quick-mhg1 (0.84s)
+    --- PASS: TestEquivUpstreamOutput/pe/quick-conf0.5 (0.85s)
+    --- PASS: TestEquivUpstreamOutput/pe/names (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/names-conf0.5 (0.87s)
+    --- PASS: TestEquivUpstreamOutput/pe/flagunique (0.88s)
+=== RUN   TestEquivUpstreamReportCounts
+=== RUN   TestEquivUpstreamReportCounts/se
+    equiv_test.go:293: 200000 reads, 1641 classified, 15 called taxa, 220 taxa with hits; counts match
+=== RUN   TestEquivUpstreamReportCounts/pe
+    equiv_test.go:293: 200000 reads, 3191 classified, 47 called taxa, 375 taxa with hits; counts match
+--- PASS: TestEquivUpstreamReportCounts (1.33s)
+    --- PASS: TestEquivUpstreamReportCounts/se (0.45s)
+    --- PASS: TestEquivUpstreamReportCounts/pe (0.88s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/classify	16.219s
