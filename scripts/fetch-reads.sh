@@ -4,7 +4,9 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 ACC=${1:?run accession}; N=${2:?records per mate}
-DST=".cache/reads"; mkdir -p "$DST"
+. scripts/pin.env
+. scripts/paths.sh
+DST="$K2_READS"; mkdir -p "$DST"
 STEM="$DST/${ACC}_$N"
 [ -s "$STEM.SOURCE" ] && { echo "$STEM"; exit 0; }
 URLS=$(curl -fsS "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=$ACC&result=read_run&fields=fastq_ftp&format=tsv" | awk -F'\t' 'NR==2{print $2}' | tr ';' ' ')

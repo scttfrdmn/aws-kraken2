@@ -18,8 +18,10 @@ lint:
 	$(GO) vet $(PKGS)
 	staticcheck $(PKGS)
 
+# Law 1 end to end (docs/oracle.md): DB=viral|standard8|all.
+DB ?= viral
 oracle:
-	scripts/oracle.sh
+	scripts/oracle.sh $(DB)
 
 # Oracle harnesses (docs/harness.md): NAME="a b" builds those (default all); VARIANTS=lp|dh|lp,dh.
 VARIANTS ?= lp

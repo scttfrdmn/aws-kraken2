@@ -1,0 +1,104 @@
+# CI (#20): build, test, lint and the Viral oracle on Linux aarch64, the canonical oracle
+# platform. Runbooks: docs/build.md, docs/oracle.md.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Toolchain for the upstream oracle (system g++ with OpenMP, GNU gzip, perl, jq)
+        run: |
+          set +e; echo "shell flags $-"
+          sudo apt-get update -q && sudo apt-get install -y -q g++ make zlib1g-dev perl jq gzip bzip2 curl
+          st=$?
+          g++ --version | head -1; gzip --version | head -1; uname -sm
+          exit $st
+
+      - name: Install staticcheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Pin
+        id: pin
+        run: |
+          . scripts/pin.env
+          echo "pin=$UPSTREAM_PIN" >> "$GITHUB_OUTPUT"
+
+      - name: Cache upstream build (.oracle, keyed on the pin)
+        uses: actions/cache@v4
+        with:
+          path: |
+            .oracle/src-${{ steps.pin.outputs.pin }}
+            .oracle/${{ steps.pin.outputs.pin }}
+          key: oracle-${{ runner.os }}-${{ runner.arch }}-${{ steps.pin.outputs.pin }}-${{ hashFiles('scripts/oracle-build.sh', 'scripts/cxx.sh') }}
+
+      - name: Cache Viral database
+        uses: actions/cache@v4
+        with:
+          path: .cache/db/k2_viral_20260626
+          key: db-k2_viral_20260626-${{ hashFiles('scripts/fetch-db.sh') }}
+
+      - name: Cache reads
+        uses: actions/cache@v4
+        with:
+          path: .cache/reads
+          key: reads-SRR062634-ERR478965-SRR28305653-200000-${{ hashFiles('scripts/fetch-reads.sh') }}
+
+      - name: Fetch inputs and build upstream at the pin
+        run: |
+          set +e; echo "shell flags $-"
+          st=0
+          scripts/fetch-db.sh viral || st=1
+          for acc in SRR062634 ERR478965 SRR28305653; do scripts/fetch-reads.sh "$acc" 200000 || st=1; done
+          scripts/oracle-build.sh || st=1
+          cat ".oracle/${{ steps.pin.outputs.pin }}/BUILD"
+          exit $st
+
+      - name: make build
+        run: make build
+
+      - name: Oracle harnesses (for the oracle-backed unit tests)
+        run: make harness
+
+      - name: make test
+        run: make test
+
+      - name: go test -race ./internal/...
+        run: go test -race ./internal/...
+
+      - name: make lint
+        run: make lint
+
+      - name: make oracle DB=viral
+        run: make oracle DB=viral
+
+      - name: Upload oracle results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: oracle-viral-${{ github.sha }}
+          path: results/g1/oracle-viral-*
+          if-no-files-found: warn
