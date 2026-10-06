@@ -1,83 +1,121 @@
 # aws-kraken2 hygiene preamble (Law 4). scripts/run.sh prepends this to every spec's
 # `bash -c` script; a spec cannot opt out. It runs on the instance, as the instance user,
 # before any line of the spec. run.sh injects (and refuses specs that set) AK2_EXPECT_REGION,
-# AK2_BUCKETS, AK2_ALLOWED_BUCKETS, AK2_S3_PREFIX, AK2_RUN_ID, AK2_GATE, AK2_ALLOW_REQUESTER_PAYS.
+# AK2_BUCKETS, AK2_ALLOWED_BUCKETS, AK2_S3_PREFIX, AK2_RUN_ID, AK2_GATE.
 #
 # Contract for the spec body that follows (docs/run.md):
-#   - `set +e` is in force; check statuses by hand.
-#   - stdout/stderr go to $AK2_LOG, pushed to S3 every 5 s and once more on exit. Do not
-#     replace the EXIT trap.
-#   - `aws s3 …` / `aws s3api …` are refused for buckets outside $AK2_ALLOWED_BUCKETS (the
-#     declared buckets plus the results bucket). This is a guard against mistakes, not a
-#     sandbox: curl, SDKs and `command aws` are not covered.
-#   - ak2_stage SRC DST   stage an input (replaces spawn inputs[]; runs after the region assert)
-#   - ak2_push FILE [NAME] stream a result file to $AK2_S3_PREFIX/out/NAME now
-#   - ak2_phase NAME      mark the start of a phase (run.sh derives phases.tsv)
+#   - `set +e` is in force (run.sh refuses a body that turns -e back on); check statuses by hand.
+#   - stdout/stderr go to $AK2_LOG, pushed to S3 every 5 s and once more on exit or on
+#     TERM/HUP/INT. Do not replace the EXIT or signal traps.
+#   - `aws` on PATH is a shim that refuses s3/s3api calls naming a bucket outside
+#     $AK2_ALLOWED_BUCKETS (declared buckets plus the results bucket), then execs the real CLI.
+#     It covers anything that finds `aws` via PATH; not curl, SDKs, or `sudo aws`.
+#   - ak2_stage SRC DST     stage an input (replaces spawn inputs[]; runs after the region assert)
+#   - ak2_push FILE [NAME]  stream a result file to $AK2_S3_PREFIX/out/NAME now
+#   - ak2_phase NAME        mark the start of a phase (run.sh derives phases.tsv)
 #   - ak2_req OP N [BUCKET] record N S3 requests of OP in the current phase (requests.tsv)
-#   - ak2_drop_caches     required before every cold rung; returns non-zero and logs loudly
-#                         if it could not drop caches
+#   - ak2_drop_caches       required before every cold rung; marks the next phase cold.
+#                           Exits the run with 95 if caches cannot be dropped.
 AK2_INHERITED_FLAGS="$-"
 set +e
 AK2_LOG=/tmp/ak2-run.log
 AK2_REQS=/tmp/ak2-requests.tsv
+AK2_FIFO=/tmp/ak2-log.fifo
+AK2_BIN=/tmp/ak2-bin
 AK2_PUSH_EVERY=5
-readonly AK2_EXPECT_REGION AK2_BUCKETS AK2_ALLOWED_BUCKETS AK2_S3_PREFIX AK2_RUN_ID AK2_GATE AK2_PUSH_EVERY
+readonly AK2_EXPECT_REGION AK2_BUCKETS AK2_ALLOWED_BUCKETS AK2_S3_PREFIX AK2_RUN_ID AK2_GATE \
+  AK2_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN
+AK2_REAL_AWS=$(command -v aws)
+readonly AK2_REAL_AWS
 : > "$AK2_LOG"
 printf 'phase\top\tcount\tbucket\n' > "$AK2_REQS"
-# tee through a FIFO rather than a process substitution: bash waits for the last process
-# substitution on a bare `wait`, so a spec body's `wait` would hang until the TTL.
-rm -f /tmp/ak2-log.fifo; mkfifo /tmp/ak2-log.fifo
-tee -a "$AK2_LOG" < /tmp/ak2-log.fifo &
+AK2_REQ_ERRORS=0
+AK2_COLD_NEXT=no
+AK2_PHASE=preamble
+
+# ---- the log tee: a FIFO, not a process substitution (bash's bare `wait` waits for the last
+# process substitution), immune to TERM/HUP so the final lines survive a process-group kill,
+# and verified before anything relies on it ----
+ak2_boot_fail() {
+  local m; m=$(printf 'ak2: [%s] FATAL: %s' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*")
+  echo "$m" >> "$AK2_LOG"; echo "$m" >&2
+  "$AK2_REAL_AWS" s3 cp --only-show-errors "$AK2_LOG" "$AK2_S3_PREFIX/log/run.log" >/dev/null 2>&1
+  exit 97
+}
+rm -f "$AK2_FIFO"
+mkfifo "$AK2_FIFO" || ak2_boot_fail "mkfifo $AK2_FIFO failed"
+( trap '' TERM HUP; exec tee -a "$AK2_LOG" ) < "$AK2_FIFO" &
 AK2_TEE_PID=$!
 disown "$AK2_TEE_PID"
-exec > /tmp/ak2-log.fifo 2>&1
-AK2_PHASE=preamble
+exec 3<>"$AK2_FIFO" || ak2_boot_fail "cannot open $AK2_FIFO"
+echo "ak2: log tee up" >&3
+AK2_I=0
+until grep -q '^ak2: log tee up$' "$AK2_LOG" 2>/dev/null; do
+  AK2_I=$((AK2_I + 1))
+  if [ "$AK2_I" -gt 50 ] || ! kill -0 "$AK2_TEE_PID" 2>/dev/null; then
+    kill "$AK2_TEE_PID" 2>/dev/null; exec 3>&-
+    ak2_boot_fail "log tee did not start within 5 s"
+  fi
+  sleep 0.1
+done
+exec > "$AK2_FIFO" 2>&1 3>&-
+
 ak2_say() { printf 'ak2: [%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
 ak2_phase() {
   AK2_PHASE=$1
-  printf 'ak2-phase\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(date +%s)" "$1"
+  printf 'ak2-phase\t%s\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(date +%s)" "$1" "$AK2_COLD_NEXT"
+  AK2_COLD_NEXT=no
 }
-ak2_req() { printf '%s\t%s\t%s\t%s\n' "$AK2_PHASE" "$1" "$2" "${3:-}" >> "$AK2_REQS"; }
+ak2_req() {
+  if [ -z "${1:-}" ] || [[ "${1:-}" == *[[:space:]]* ]] || ! [[ "${2:-}" =~ ^[0-9]+$ ]]; then
+    AK2_REQ_ERRORS=$((AK2_REQ_ERRORS + 1))
+    ak2_say "ERROR: ak2_req '${1:-}' '${2:-}': op must be a non-empty word and count a non-negative integer (the run will exit 96)"
+    return 2
+  fi
+  printf '%s\t%s\t%s\t%s\n' "$AK2_PHASE" "$1" "$2" "${3:-}" >> "$AK2_REQS"
+}
 ak2_phase preamble
 ak2_say "inherited \$-=$AK2_INHERITED_FLAGS"
 ak2_say "after set +e \$-=$-"
 ak2_say "gate=$AK2_GATE run=$AK2_RUN_ID"
 
-# ---- aws CLI guard: s3/s3api only against allowed buckets ----
-ak2_allowed() { case " $AK2_ALLOWED_BUCKETS " in *" $1 "*) return 0 ;; esac; return 1; }
-aws() {
-  local a svc="" skip=0 b bad=""
-  for a in "$@"; do
-    if [ "$skip" = 1 ]; then skip=0; continue; fi
-    if [ -z "$svc" ]; then
-      case "$a" in
-        --region|--profile|--endpoint-url|--output|--color|--ca-bundle|--cli-read-timeout|--cli-connect-timeout) skip=1 ;;
-        -*) ;;
-        *) svc=$a ;;
-      esac
-    fi
+# ---- aws guard: a PATH shim, so env/xargs/timeout/sh/python subprocesses are covered too ----
+[ -n "$AK2_REAL_AWS" ] || ak2_boot_fail "no aws CLI on PATH"
+mkdir -p "$AK2_BIN" || ak2_boot_fail "cannot create $AK2_BIN"
+cat > "$AK2_BIN/aws" <<AK2SHIM
+#!/bin/bash
+# aws-kraken2 bucket allow-list shim (scripts/preamble.sh). Any call with an s3 or s3api
+# argument may only name allowed buckets; everything else passes straight through.
+ALLOWED=" $AK2_ALLOWED_BUCKETS "
+s3=0
+for a in "\$@"; do case "\$a" in s3|s3api) s3=1 ;; esac; done
+if [ "\$s3" = 1 ]; then
+  bad=""; prev=""
+  for a in "\$@"; do
+    b=""
+    case "\$a" in
+      s3://*) b=\${a#s3://}; b=\${b%%/*} ;;
+      --bucket=*) b=\${a#--bucket=} ;;
+      --copy-source=*) b=\${a#--copy-source=}; b=\${b#/}; b=\${b%%/*} ;;
+    esac
+    case "\$prev" in
+      --bucket) b=\$a ;;
+      --copy-source) b=\${a#/}; b=\${b%%/*} ;;
+    esac
+    prev=\$a
+    if [ -n "\$b" ]; then case "\$ALLOWED" in *" \$b "*) ;; *) bad="\$bad \$b" ;; esac; fi
   done
-  case "$svc" in s3|s3api)
-    local prev=""
-    for a in "$@"; do
-      b=""
-      case "$a" in
-        s3://*) b=${a#s3://}; b=${b%%/*} ;;
-        --bucket=*) b=${a#--bucket=} ;;
-        --copy-source=*) b=${a#--copy-source=}; b=${b%%/*} ;;
-      esac
-      case "$prev" in --bucket) b=$a ;; --copy-source) b=${a%%/*} ;; esac
-      prev=$a
-      [ -n "$b" ] && ! ak2_allowed "$b" && bad="$bad $b"
-    done
-    if [ -n "$bad" ]; then
-      echo "ak2: REFUSED aws $svc against undeclared bucket(s):$bad (declare them in env.AK2_DATASETS)" >&2
-      return 126
-    fi ;;
-  esac
-  command aws "$@"
-}
-export -f aws ak2_allowed
+  if [ -n "\$bad" ]; then
+    echo "ak2: REFUSED aws \$* -- undeclared bucket(s):\$bad (declare them in env.AK2_DATASETS)" >&2
+    exit 126
+  fi
+fi
+exec "$AK2_REAL_AWS" "\$@"
+AK2SHIM
+chmod 0555 "$AK2_BIN/aws" || ak2_boot_fail "cannot chmod the aws shim"
+export PATH="$AK2_BIN:$PATH"
+hash -r
+[ "$(command -v aws)" = "$AK2_BIN/aws" ] || ak2_boot_fail "aws shim is not first on PATH"
 
 # ---- region assert: IMDSv2 region must equal every declared bucket's region, before any data I/O ----
 AK2_TOK=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 21600')
@@ -91,17 +129,32 @@ ak2_say "imds region=$AK2_REGION az=$AK2_AZ instance=$AK2_INSTANCE_ID type=$AK2_
 export AWS_DEFAULT_REGION="$AK2_REGION" AWS_REGION="$AK2_REGION"
 
 ak2_put() { aws s3 cp --only-show-errors "$1" "$AK2_S3_PREFIX/$2" >/dev/null 2>&1; }
-ak2_close_log() {
-  exec >&- 2>&-
-  local i; for i in $(seq 1 20); do kill -0 "$AK2_TEE_PID" 2>/dev/null || break; sleep 0.5; done
-}
-ak2_fatal() {
-  ak2_say "FATAL: $*"
+AK2_PUSHER=""
+# Runs on every exit path: normal exit, `exit N`, and TERM/HUP/INT (e.g. a process-group kill at
+# shutdown). Its own output goes straight to the log file, so a dead tee cannot SIGPIPE it.
+ak2_finish() {
+  trap '' PIPE TERM HUP INT
+  set +e +u
+  local rc=$1 why=${2:-}
+  if [ -n "${AK2_FINISHING:-}" ]; then exit "$rc"; fi
+  AK2_FINISHING=1
+  trap - EXIT
+  exec >>"$AK2_LOG" 2>&1
+  if [ "$rc" = 0 ] && [ "${AK2_REQ_ERRORS:-0}" -gt 0 ]; then rc=96; why="ak2_req errors: $AK2_REQ_ERRORS"; fi
+  ak2_say "spec body exit rc=$rc${why:+ ($why)}"
   ak2_phase end
-  ak2_close_log
+  [ -n "$AK2_PUSHER" ] && kill "$AK2_PUSHER" 2>/dev/null
+  ak2_put "$AK2_REQS" out/requests.tsv
+  local i; for i in 1 2 3 4; do kill -0 "$AK2_TEE_PID" 2>/dev/null || break; sleep 0.5; done
   ak2_put "$AK2_LOG" log/run.log
-  exit 97
+  exit "$rc"
 }
+trap 'ak2_finish $?' EXIT
+trap 'ak2_finish 143 SIGTERM' TERM
+trap 'ak2_finish 129 SIGHUP' HUP
+trap 'ak2_finish 130 SIGINT' INT
+ak2_fatal() { ak2_say "FATAL: $1"; exit "${2:-97}"; }
+
 [ -n "$AK2_REGION" ] || ak2_fatal "IMDSv2 returned no region"
 [ "$AK2_REGION" = "$AK2_EXPECT_REGION" ] ||
   ak2_fatal "instance region $AK2_REGION != expected $AK2_EXPECT_REGION (cross-region placement)"
@@ -113,7 +166,8 @@ for AK2_B in $AK2_BUCKETS; do
   ak2_say "bucket $AK2_B region=$AK2_BR"
   [ "$AK2_BR" = "$AK2_REGION" ] || ak2_fatal "bucket $AK2_B is in '${AK2_BR:-unknown}', instance in $AK2_REGION"
   AK2_P=$(aws s3api get-bucket-request-payment --bucket "$AK2_B" --query Payer --output text 2>/dev/null) ||
-    AK2_P=$(aws s3api get-bucket-request-payment --no-sign-request --bucket "$AK2_B" --query Payer --output text 2>/dev/null) ||
+    { ak2_req GetBucketRequestPayment 1 "$AK2_B"
+      AK2_P=$(aws s3api get-bucket-request-payment --no-sign-request --bucket "$AK2_B" --query Payer --output text 2>/dev/null); } ||
     AK2_P=UNKNOWN
   ak2_req GetBucketRequestPayment 1 "$AK2_B"
   ak2_say "bucket $AK2_B payer=$AK2_P"
@@ -129,28 +183,18 @@ ak2_say "region assert passed"
 
 # ---- drop_caches probe: a cold rung is only cold if this works ----
 if sudo -n true 2>/dev/null && sudo -n test -w /proc/sys/vm/drop_caches; then AK2_DC_OK=true; else AK2_DC_OK=false; fi
+readonly AK2_DC_OK
 ak2_say "drop_caches_ok=$AK2_DC_OK"
 
-printf '{"inherited_flags":"%s","flags_after_set":"%s","region":"%s","az":"%s","instance_id":"%s","instance_type":"%s","ami":"%s","drop_caches_ok":%s,"buckets":[%s],"allowed_buckets":"%s","preflight_at":"%s"}\n' \
+printf '{"inherited_flags":"%s","flags_after_set":"%s","region":"%s","az":"%s","instance_id":"%s","instance_type":"%s","ami":"%s","drop_caches_ok":%s,"buckets":[%s],"allowed_buckets":"%s","aws_guard":"%s","preflight_at":"%s"}\n' \
   "$AK2_INHERITED_FLAGS" "$-" "$AK2_REGION" "$AK2_AZ" "$AK2_INSTANCE_ID" "$AK2_INSTANCE_TYPE" "$AK2_AMI" \
-  "$AK2_DC_OK" "${AK2_PAYERS%,}" "$AK2_ALLOWED_BUCKETS" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/ak2-preflight.json
+  "$AK2_DC_OK" "${AK2_PAYERS%,}" "$AK2_ALLOWED_BUCKETS" "$AK2_BIN/aws" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /tmp/ak2-preflight.json
 ak2_put /tmp/ak2-preflight.json preflight.json || ak2_say "WARN: preflight push failed"
 
 # ---- log streaming ----
 ( while sleep "$AK2_PUSH_EVERY"; do ak2_put "$AK2_LOG" log/run.log; ak2_put "$AK2_REQS" out/requests.tsv; done ) >/dev/null 2>&1 &
 AK2_PUSHER=$!
 disown "$AK2_PUSHER"
-ak2_finish() {
-  local rc=$1
-  ak2_say "spec body exit rc=$rc"
-  ak2_phase end
-  kill "$AK2_PUSHER" 2>/dev/null
-  ak2_put "$AK2_REQS" out/requests.tsv
-  ak2_close_log
-  ak2_put "$AK2_LOG" log/run.log
-  exit "$rc"
-}
-trap 'ak2_finish $?' EXIT
 
 ak2_push() {
   local f=$1 n=${2:-$(basename "$1")}
@@ -169,13 +213,15 @@ ak2_stage() {
   fi
 }
 ak2_drop_caches() {
+  [ "$AK2_DC_OK" = true ] ||
+    ak2_fatal "drop_caches is unavailable on this instance (preflight); the next rung cannot be cold" 95
   sync
-  if sudo -n sh -c 'echo 3 > /proc/sys/vm/drop_caches'; then
-    ak2_say "drop_caches done"
-  else
-    ak2_say "DROP_CACHES FAILED: the next rung is NOT cold"; return 1
-  fi
+  sudo -n sh -c 'echo 3 > /proc/sys/vm/drop_caches' ||
+    ak2_fatal "DROP_CACHES FAILED: the next rung would not be cold" 95
+  AK2_COLD_NEXT=yes
+  ak2_say "drop_caches done; next phase is cold"
 }
+readonly -f ak2_say ak2_phase ak2_req ak2_put ak2_finish ak2_fatal ak2_push ak2_stage ak2_drop_caches ak2_md ak2_boot_fail
 ak2_say "preamble done; spec body starts"
 ak2_phase body
 # ---- spec body follows ----

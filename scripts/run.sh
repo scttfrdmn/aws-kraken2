@@ -25,8 +25,8 @@ case "$SPEC" in runs/*.json) ;; *) die "SPEC must be a checked-in runs/*.json (g
 [ -f "$SPEC" ] || die "$SPEC: no such file"
 git ls-files --error-unmatch "$SPEC" >/dev/null 2>&1 || die "$SPEC is not committed; commit it first"
 # The manifest cites one commit for the harness, the spec and the decoders; they must be it.
-DIRTY_PATHS=$(git status --porcelain -- scripts runs cmd internal)
-[ -z "$DIRTY_PATHS" ] || die "uncommitted changes under scripts/ runs/ cmd/ internal/; commit first:
+DIRTY_PATHS=$(git status --porcelain -- scripts runs cmd internal upstream go.mod go.sum Makefile)
+[ -z "$DIRTY_PATHS" ] || die "uncommitted changes in scripts/ runs/ cmd/ internal/ upstream/ go.mod go.sum Makefile; commit first:
 $DIRTY_PATHS"
 jq -e . "$SPEC" >/dev/null || die "$SPEC is not valid JSON"
 
@@ -52,18 +52,24 @@ OC=$(q '.lifecycle.on_complete // "terminate"')
 [ "$(q '.inputs // [] | length')" = 0 ] ||
   die "spec.inputs[] is not supported: spawn stages it before the preamble's region assert. Use ak2_stage in the script."
 [ -z "$(q '.results_prefix // empty')" ] || die "results_prefix is set by the harness; remove it from the spec"
+for k in ami volumes fsx_lustre_id efs_id efs_mount_point fsx_mount_point; do
+  jq -e --arg k "$k" '.placement // {} | has($k)' "$SPEC" >/dev/null &&
+    die "placement.$k is not supported: the AMI comes from spawn's auto-selection (recorded in the manifest), and data comes through ak2_stage"
+done
+case "$(q '.resources.purchase // "on_demand"')" in
+  on_demand) ;;
+  *) die "resources.purchase must be on_demand: spot is a later lever, and cost_usd assumes the on-demand price" ;;
+esac
+[ -z "$(q '.resources.fallback // empty')" ] || die "resources.fallback is only meaningful with spot; remove it"
 jq -e '[.outputs[]?.destination | startswith("${AK2_OUT}/")] | all' "$SPEC" >/dev/null ||
   die 'every outputs[].destination must start with ${AK2_OUT}/'
 jq -e '(.command|length)==3 and .command[0]=="bash" and .command[1]=="-c"' "$SPEC" >/dev/null ||
   die 'command must be ["bash","-c","<script>"] so the preamble can be prepended'
 
-# env: only the declared AK2_ keys, and nothing that changes how bash starts.
-ALLOWED_AK2="AK2_REGION AK2_ACCESSIONS AK2_DATASETS AK2_ALLOW_NO_BUCKETS AK2_ALLOW_REQUESTER_PAYS"
+# env: an allow-list of keys. Anything else a spec needs is set in its script.
+ALLOWED_ENV="AK2_REGION AK2_ACCESSIONS AK2_DATASETS AK2_ALLOW_NO_BUCKETS AK2_ALLOW_REQUESTER_PAYS BUCKET_REGION"
 for k in $(q '.env // {} | keys[]'); do
-  case "$k" in BASH_ENV|ENV|SHELLOPTS|BASHOPTS|PROMPT_COMMAND|PS4) die "spec env may not set $k" ;; esac
-  if [[ "$k" =~ ^AK2_ ]]; then
-    case " $ALLOWED_AK2 " in *" $k "*) ;; *) die "spec env may not set $k (AK2_ keys are harness-owned; allowed: $ALLOWED_AK2)" ;; esac
-  fi
+  case " $ALLOWED_ENV " in *" $k "*) ;; *) die "spec env may not set $k (allowed keys: $ALLOWED_ENV)" ;; esac
 done
 for k in AK2_ALLOW_NO_BUCKETS AK2_ALLOW_REQUESTER_PAYS; do
   v=$(q ".env.$k // empty"); [ -z "$v" ] || [ "$v" = 1 ] || die "env.$k must be \"1\" or absent"
@@ -120,11 +126,16 @@ ALLOWED_BUCKETS=$(printf '%s\n' $BUCKETS "$RESULTS_BUCKET" | sort -u | tr '\n' '
 # resolved here; the preamble's aws() wrapper checks them at run time.
 BODY=$(q '.command[2]')
 LITERALS=$( { printf '%s\n' "$BODY" | grep -oE 's3://[A-Za-z0-9._-]+' | sed 's|^s3://||'
-              printf '%s\n' "$BODY" | grep -oE -- "--(bucket|copy-source)[= ]+[\"']?[A-Za-z0-9._-]+" |
-                sed -E "s/^--(bucket|copy-source)[= ]+[\"']?//"; } | sort -u)
+              printf '%s\n' "$BODY" | grep -oE -- "--(bucket|copy-source)[= ]+[\"']?/?[A-Za-z0-9._-]+" |
+                sed -E "s/^--(bucket|copy-source)[= ]+[\"']?\/?//"; } | sort -u)
 for b in $LITERALS; do
   case " $ALLOWED_BUCKETS " in *" $b "*) ;; *) die "the script names bucket '$b', which is not declared in AK2_DATASETS" ;; esac
 done
+# Law 4: `set +e`. Refuse anything in the body that turns errexit back on.
+ERREXIT=$(printf '%s\n' "$BODY" | grep -nE \
+  '(^|[;&|({[:space:]])(set|bash|sh)[[:space:]]+(-[A-Za-z]*e[A-Za-z]*|-o[[:space:]]*errexit)([[:space:];]|$)|shopt[[:space:]]+-s?o[[:space:]]+errexit|^#!.*[[:space:]]-[A-Za-z]*e')
+[ -z "$ERREXIT" ] || die "the script turns on errexit (Law 4 requires set +e):
+$ERREXIT"
 
 # ---- Payer: refuse UNKNOWN; refuse Requester unless the spec opts in ----
 PAYER_JSON=$(for b in $BUCKETS; do
@@ -301,23 +312,32 @@ PRE='null'; [ -s "$RUN_DIR/preflight.json" ] && PRE=$(cat "$RUN_DIR/preflight.js
 mkdir -p "$RUN_DIR/tables"
 PHASES='[]'
 if [ -s "$RUN_DIR/log/run.log" ]; then
-  awk -F'\t' 'BEGIN{print "phase\tstart\tseconds"} $1=="ak2-phase"{n++; name[n]=$4; at[n]=$2; ep[n]=$3}
-    END{for(i=1;i<n;i++) printf "%s\t%s\t%d\n", name[i], at[i], ep[i+1]-ep[i]}' "$RUN_DIR/log/run.log" > "$RUN_DIR/tables/phases.tsv"
-  PHASES=$(awk -F'\t' 'NR>1' "$RUN_DIR/tables/phases.tsv" | jq -R -s 'split("\n") | map(select(. != "") | split("\t") | {phase:.[0], start:.[1], seconds:(.[2]|tonumber)})')
+  # The last phase has no successor if the run was killed hard: emit it with empty seconds.
+  awk -F'\t' 'BEGIN{print "phase\tstart\tseconds\tcold"}
+    $1=="ak2-phase"{n++; name[n]=$4; at[n]=$2; ep[n]=$3; cold[n]=($5==""?"no":$5)}
+    END{for(i=1;i<=n;i++){ if(name[i]=="end") continue
+          if(i<n) printf "%s\t%s\t%d\t%s\n", name[i], at[i], ep[i+1]-ep[i], cold[i]
+          else printf "%s\t%s\t\t%s\n", name[i], at[i], cold[i] }}' "$RUN_DIR/log/run.log" > "$RUN_DIR/tables/phases.tsv"
+  PHASES=$(awk -F'\t' 'NR>1' "$RUN_DIR/tables/phases.tsv" | jq -R -s 'split("\n") | map(select(. != "") | split("\t")
+    | {phase:.[0], start:.[1], seconds:(.[2] | tonumber? // null), cold:(.[3] == "yes")})') || PHASES='null'
 fi
 # Request counts the spec recorded with ak2_req (out/requests.tsv).
 REQS='null'
 if [ -s "$RUN_DIR/out/requests.tsv" ]; then
   cp "$RUN_DIR/out/requests.tsv" "$RUN_DIR/tables/requests.tsv"
-  REQS=$(awk -F'\t' 'NR>1' "$RUN_DIR/out/requests.tsv" | jq -R -s 'split("\n") | map(select(. != "") | split("\t") | {phase:.[0], op:.[1], count:(.[2]|tonumber), bucket:.[3]})
-    | {total:(map(.count)|add // 0), by_op:(group_by(.op) | map({key:.[0].op, value:(map(.count)|add)}) | from_entries), rows:.}')
+  REQS=$(awk -F'\t' 'NR>1' "$RUN_DIR/out/requests.tsv" | jq -R -s 'split("\n") | map(select(. != "") | split("\t")
+      | {phase:.[0], op:.[1], count:(.[2] | tonumber? // null), bucket:.[3]})
+    | {total:(map(.count // 0)|add // 0), unparsed_rows:(map(select(.count == null))|length),
+       by_op:(group_by(.op) | map({key:.[0].op, value:(map(.count // 0)|add)}) | from_entries), rows:.}') || REQS='null'
 fi
 
-mset --arg state "$STATE" --arg end "$END_ISO" --argjson rec "$REC" --argjson pre "$PRE" \
-  --argjson phases "$PHASES" --argjson reqs "$REQS" --arg fin "$(now)" '
+# Derived tables first and separately: a bad table must never block finalisation below.
+mset --argjson phases "${PHASES:-null}" --argjson reqs "${REQS:-null}" '.phases = $phases | .requests = $reqs' ||
+  say "WARNING: could not record phases/requests in the manifest"
+mset --arg state "$STATE" --arg end "$END_ISO" --argjson rec "$REC" --argjson pre "$PRE" --arg fin "$(now)" '
   .instance.final_state = $state
   | .instance.terminated_at = (if $end == "" then null else $end end)
-  | .task = $rec | .preflight = $pre | .phases = $phases | .requests = $reqs
+  | .task = $rec | .preflight = $pre
   | .start = (.instance.launch_time) | .stop = .instance.terminated_at
   | .billed_seconds = (if .stop then ((.stop|sub("\\+00:00$";"Z")|fromdateiso8601) - (.start|sub("\\.[0-9]+";"")|sub("\\+00:00$";"Z")|fromdateiso8601)) else null end)
   | .cost_usd = (if .billed_seconds and .truffle_price_usd_per_hour then
