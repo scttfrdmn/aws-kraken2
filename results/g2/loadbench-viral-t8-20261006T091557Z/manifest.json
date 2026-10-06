@@ -1,0 +1,97 @@
+{
+  "gate": "g2",
+  "what": "make loadbench: load-path and whole-process wall, upstream vs ours (#36)",
+  "commit": "95111e64afe4e234b2e1ab35c9a3316c5b609ec3",
+  "dirty": false,
+  "ak2_run_id": "",
+  "upstream": {
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++ (g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0)\nversion Kraken version 2.17.1\nbuilt 2026-10-06T08:57:06Z Linux aarch64\n"
+  },
+  "implementations": [
+    {
+      "label": "upstream",
+      "binary": "/var/tmp/lbroot/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2",
+      "source": "upstream@2731b35f7abb26ec926517274f3d87e78d42fd76",
+      "sha256": "a2d282a2da39d1d00c683bd3c18833311257ff9728cfac45edc4892c5080a9c6",
+      "env": ""
+    },
+    {
+      "label": "base",
+      "binary": ".cache/loadbench/bin/linux-arm64/666459f6991cc5b99f4e7cbc278aeff866c35d7b/aws-kraken2",
+      "source": "666459f6991cc5b99f4e7cbc278aeff866c35d7b",
+      "sha256": "ba380aba881980a3733d0ec347b93b6a79c2226731fb23e6dd5ed81bc92fa6dc",
+      "env": ""
+    },
+    {
+      "label": "thp",
+      "binary": ".cache/loadbench/bin/linux-arm64/c138ab7f99e20af7dba8dc222c5b49630e4a50fb/aws-kraken2",
+      "source": "c138ab7f99e20af7dba8dc222c5b49630e4a50fb",
+      "sha256": "e4b91c28fefe74d08c7c071c34905417b5232b1b74922fa31de7226906627272",
+      "env": ""
+    },
+    {
+      "label": "fill",
+      "binary": ".cache/loadbench/bin/linux-arm64/9de50376abd84d6cc4255ad45bab03f032e46bbc/aws-kraken2",
+      "source": "9de50376abd84d6cc4255ad45bab03f032e46bbc",
+      "sha256": "6c477b3eda7392ff9b8126bee7df9e195e55f29ba73045809129048624489ebd",
+      "env": ""
+    },
+    {
+      "label": "fill-streams16",
+      "binary": ".cache/loadbench/bin/linux-arm64/9de50376abd84d6cc4255ad45bab03f032e46bbc/aws-kraken2",
+      "source": "9de50376abd84d6cc4255ad45bab03f032e46bbc",
+      "sha256": "6c477b3eda7392ff9b8126bee7df9e195e55f29ba73045809129048624489ebd",
+      "env": "K2_DB_READ_THREADS=16"
+    }
+  ],
+  "go": "go version go1.27.1 linux/arm64",
+  "db": {
+    "name": "viral",
+    "dir": "k2_viral_20260626",
+    "files": [
+      {
+        "file": "hash.k2d",
+        "bytes": 648733288
+      },
+      {
+        "file": "opts.k2d",
+        "bytes": 64
+      },
+      {
+        "file": "taxo.k2d",
+        "bytes": 2470742
+      }
+    ],
+    "source": "source s3://genome-idx/kraken/k2_viral_20260626.tar.gz\netag \"df6f9dd95095a9ea2e0cfc580b0f684a-69\"\nfetched 2026-10-06T00:17:31Z"
+  },
+  "reads_source": "accession SRR062634\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz\nsha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq\nsha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq\nfetched 2026-10-06T00:20:27Z",
+  "threads": 8,
+  "reps": 3,
+  "inputs": "empty pe",
+  "states_requested": "cold warm",
+  "states_run": "cold warm",
+  "extra_env": "",
+  "profile": true,
+  "cold": {
+    "available": true,
+    "method": "drop_caches-root"
+  },
+  "host": {
+    "os": "Linux",
+    "arch": "aarch64",
+    "kernel": "6.12.13-200.fc41.aarch64",
+    "model": "Apple Virtualization Generic Platform",
+    "ncpu": 8,
+    "mem_bytes": 8296513536,
+    "page_size": "4096",
+    "thp_enabled": "always [madvise] never",
+    "thp_defrag": "always defer defer+madvise [madvise] never",
+    "canonical_platform": false,
+    "note": "NOT a make run on Linux aarch64 EC2: development evidence only"
+  },
+  "start": "2026-10-06T09:15:57Z",
+  "stop": "2026-10-06T09:16:18Z",
+  "failures": 0
+}
