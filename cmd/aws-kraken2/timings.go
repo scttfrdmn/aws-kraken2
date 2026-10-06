@@ -75,6 +75,12 @@ func startProfile() {
 }
 
 func stopProfile() {
+	if p := os.Getenv("AK2_MEMPROFILE"); p != "" {
+		if f, err := os.Create(p); err == nil {
+			_ = pprof.Lookup("allocs").WriteTo(f, 0)
+			f.Close()
+		}
+	}
 	if cpuProfile == nil {
 		return
 	}
