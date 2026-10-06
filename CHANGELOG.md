@@ -119,6 +119,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   v3.1 (`est_abundance.py`, levels S and G, `-r 100`) on upstream's and our `--report` for
   Standard-8 on ERR478965 and SRR062634, and byte-compares the reports, Bracken's tables, its
   adjusted reports and its stdout. Writes `results/g1/bracken-<ts>-<sha>/`.
+- `make sortfuzz [SORTFUZZ=quick|full]` (`scripts/sortfuzz.sh`, `docs/sortfuzz.md`): a
+  differential fuzz of `internal/report`'s `stdSort` against libstdc++'s `std::sort`
+  (`upstream/sortfuzz.cc`, `internal/report/sortfuzz_test.go`) with upstream's report comparator.
+  The full corpus has about 10^6 heavy-tie cases, every n from 0 to 2048, and McIlroy
+  median-of-3 killers. Each case reports whether the heapsort fallback ran, detected by a
+  `std::__partial_sort` specialization on the harness's own iterator type. A CI job runs the full
+  corpus in `amazonlinux:2023` (GCC 11.5.0) (#35).
 
 ### Changed
 
