@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 )
 
 // The equivalence test replays upstream's own event streams (upstream/classify_trace.cc)
@@ -20,10 +22,10 @@ import (
 func oracleDir(t *testing.T) string {
 	d := os.Getenv("K2_CLASSIFY_ORACLE")
 	if d == "" {
-		d = filepath.Join("..", "..", ".cache", "classify")
+		d = filepath.Join(oracletest.ModuleRoot(), ".cache", "classify")
 	}
 	if _, err := os.Stat(filepath.Join(d, "MANIFEST")); err != nil {
-		t.Skipf("no classify oracle at %s (run scripts/classify-oracle.sh)", d)
+		oracletest.Skip(t, "no classify oracle at %s (run scripts/classify-oracle.sh)", d)
 	}
 	return d
 }
@@ -239,7 +241,7 @@ func TestEquivUpstreamOutput(t *testing.T) {
 			t.Run(mode+"/"+ec.name, func(t *testing.T) {
 				want, err := os.ReadFile(filepath.Join(dir, mode, ec.name+".out"))
 				if err != nil {
-					t.Skip(err)
+					oracletest.Skip(t, "%v", err)
 				}
 				got, w, reads := replayTrace(t, tree, filepath.Join(dir, mode+".trace"), ec.opts)
 				if !bytes.Equal(got, want) {
@@ -263,7 +265,7 @@ func TestEquivUpstreamReportCounts(t *testing.T) {
 		t.Run(mode, func(t *testing.T) {
 			rep, err := os.ReadFile(filepath.Join(dir, mode, "default.report"))
 			if err != nil {
-				t.Skip(err)
+				oracletest.Skip(t, "%v", err)
 			}
 			_, w, reads := replayTrace(t, tree, filepath.Join(dir, mode+".trace"),
 				Options{MinimumHitGroups: 2, CountTaxa: true})

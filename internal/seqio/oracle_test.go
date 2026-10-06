@@ -15,12 +15,18 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 )
 
 func TestOracleDecompress(t *testing.T) {
 	list := os.Getenv("K2_DECOMP_ORACLE")
 	if list == "" {
-		t.Skip("K2_DECOMP_ORACLE not set (scripts/equiv-seqout.sh sets it)")
+		// The latest make equiv-seqout work directory, if there is one.
+		list = filepath.Join(oracletest.Root(), ".cache", "equiv-seqout", "latest", "decomp.tsv")
+	}
+	if _, err := os.Stat(list); err != nil {
+		oracletest.Skip(t, "no decompression oracle at %s (make equiv-seqout)", list)
 	}
 	data, err := os.ReadFile(list)
 	if err != nil {

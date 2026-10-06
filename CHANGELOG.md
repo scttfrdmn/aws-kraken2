@@ -131,7 +131,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `fetch-reads.sh` uses `sha256sum` when `shasum` is absent and fails on an empty hash. It retries
   ENA requests (the portal API with `--retry-all-errors`; the FASTQ stream with `--retry`, plus a
   retry of the whole pipeline) and fails loudly when the retries run out.
-- CI uploads only the result directories the run created, not the committed ones.
+- CI uploads only the result directories the run created, not the committed ones, in an
+  artifact named for the PR head commit.
+- Oracle-backed tests no longer call `t.Skip` directly: they skip through `oracletest`, so
+  `AWS_KRAKEN2_REQUIRE_ORACLE=1` fails them. Every one of them runs in CI against Viral: the
+  classify traces come from `scripts/classify-oracle.sh`, and the seqio/seqout oracles from
+  `make equiv-seqout` (via `.cache/equiv-seqout/latest`). CI prints a ran/skipped summary of
+  `go test -race -v ./...`.
+- `fetch-reads.sh` checks FASTQ structure, and retries the FASTQ stream as a whole pipeline
+  rather than with curl `--retry`. `stage-reads.sh` and the G1 spec check that each gzip copy
+  decompresses to the FASTQ its SOURCE names. The spec stages only the declared read files.
 
 - `internal/chash`: `32 + capacity × cellBytes` is checked for overflow, so a crafted header can
   no longer pass the size check into an out-of-bounds slice. The header is decoded by

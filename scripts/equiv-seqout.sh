@@ -159,6 +159,10 @@ EXPECTED=$(( 30 + 4 * ${#EXTRA[@]} ))
 GOT=$(wc -l < "$W/cases.tsv" | tr -d ' ')
 log "cases: $GOT recorded, $CASES run, $EXPECTED expected"
 if [ "$GOT" != "$EXPECTED" ] || [ "$CASES" != "$EXPECTED" ]; then log "FAIL: case count"; FAILED=1; fi
+# The Go oracle tests also run under plain `go test` (make test, CI), reading the latest work
+# directory: point it here, with the expected case count.
+echo "$EXPECTED" > "$W/expected_cases"
+ln -sfn "$DATE" "$MAIN/.cache/equiv-seqout/latest"
 
 K2_SEQOUT_ORACLE="$W" K2_SEQOUT_SUMMARY="$RES/summary.tsv" K2_SEQOUT_EXPECTED_CASES="$EXPECTED" \
   go test -count=1 -v -run TestOracleSeqout ./internal/seqout/ 2>&1 | tee -a "$LOG"

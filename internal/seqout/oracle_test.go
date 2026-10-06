@@ -24,6 +24,8 @@ import (
 	"testing"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/seqio"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 )
 
 type oracleCase struct {
@@ -56,13 +58,21 @@ func loadCases(t *testing.T, dir string) []oracleCase {
 func TestOracleSeqout(t *testing.T) {
 	dir := os.Getenv("K2_SEQOUT_ORACLE")
 	if dir == "" {
-		t.Skip("K2_SEQOUT_ORACLE not set (scripts/equiv-seqout.sh sets it)")
+		// The latest make equiv-seqout work directory, if there is one.
+		dir = filepath.Join(oracletest.Root(), ".cache", "equiv-seqout", "latest")
+	}
+	if _, err := os.Stat(filepath.Join(dir, "cases.tsv")); err != nil {
+		oracletest.Skip(t, "no seqout oracle at %s (make equiv-seqout)", dir)
 	}
 	cases := loadCases(t, dir)
 	if len(cases) == 0 {
 		t.Fatal("no oracle cases")
 	}
-	if want := os.Getenv("K2_SEQOUT_EXPECTED_CASES"); want != "" && want != strconv.Itoa(len(cases)) {
+	want := os.Getenv("K2_SEQOUT_EXPECTED_CASES")
+	if b, err := os.ReadFile(filepath.Join(dir, "expected_cases")); want == "" && err == nil {
+		want = strings.TrimSpace(string(b))
+	}
+	if want != "" && want != strconv.Itoa(len(cases)) {
 		t.Fatalf("%d oracle cases, expected %s", len(cases), want)
 	}
 	seqio.DecompressLog = io.Discard // upstream's gzip -dc complaints go to its stderr only

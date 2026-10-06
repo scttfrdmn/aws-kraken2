@@ -42,7 +42,10 @@ GNU gzip, for example one built from `gzip-1.12.tar.gz` with `./configure --pref
 reference outputs and for upstream's wrapper, which finds gzip on `PATH`. The manifest records the
 gzip and bzip2 versions used.
 
-**Outputs:** upstream outputs under `.cache/equiv-seqout/<UTC timestamp>/` (large, not checked in), and
+**Outputs:** upstream outputs under `.cache/equiv-seqout/<UTC timestamp>/` (and the symlink
+`.cache/equiv-seqout/latest` to it, which `go test` uses when `K2_SEQOUT_ORACLE` /
+`K2_DECOMP_ORACLE` are unset, so `make test` and CI run both oracle tests; absent data is a skip,
+or a failure with `AWS_KRAKEN2_REQUIRE_ORACLE=1`) (large, not checked in), and
 `results/g1/seqio-seqout-<UTC timestamp>/` with these files:
 - `commands.txt`: the exact upstream commands.
 - `run.log`.

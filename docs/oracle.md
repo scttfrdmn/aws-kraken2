@@ -180,8 +180,9 @@ Prerequisites, run once from a machine that has the fetched inputs:
   genome-idx origin and ETag.
 - `make stage-reads` (`scripts/stage-reads.sh`) copies the read subsets
   (`<run>_200000_{1,2}.fq`, the `.fq.gz` copies and `<run>_200000.SOURCE` for SRR062634, ERR478965,
-  SRR28305653 and SRR5935746) to `…/aws-kraken2/data/reads/`. It first checks every plain FASTQ
-  against the sha256 its SOURCE recorded when ENA served it.
+  SRR28305653 and SRR5935746) to `…/aws-kraken2/data/reads/`. It first checks every plain FASTQ,
+  and what every gzip copy decompresses to, against the sha256 its SOURCE recorded when ENA served
+  it.
 - Both scripts store each object's sha256 as metadata and check it with head-object after the
   upload. Both are idempotent: an object whose metadata already matches is skipped.
 - The launch commit must be on GitHub. The instance clones the short sha that ends the run ID.
@@ -190,9 +191,11 @@ On the instance:
 1. **setup** installs g++, make, zlib, perl, jq, bzip2, GNU gzip, findutils and diffutils with
    dnf, clones the commit and installs Go at the version in `go.mod`. Each step stops the run on
    failure.
-2. **fetch** stages both databases and the reads with `ak2_stage`. For every file, both its
-   sha256 and the object's sha256 metadata must be 64 hex digits and equal, and the file
-   non-empty. The plain FASTQs must also match their SOURCE. Only a verified database copy has
+2. **fetch** stages both databases (one prefix each) and, one file at a time, only the read
+   files the run declares (the prefix also holds SRR5935746, which the oracle does not use), with
+   `ak2_stage`. For every file, both its sha256 and the object's sha256 metadata must be 64 hex
+   digits and equal, and the file non-empty. The plain FASTQs, and what their gzip copies
+   decompress to, must also match their SOURCE. Only a verified database copy has
    its staging location appended to `SOURCE`. A failure stops the run before anything is built.
 3. **build** runs `scripts/oracle-build.sh` and `make build`; either failing stops the run.
 4. **oracle** runs `make oracle DB=all ORACLE_THREADS=8`, streaming its output into the run log.
@@ -209,7 +212,9 @@ the whole results bucket, not just read the prefix. The `aws` PATH shim limits w
 CLI may touch, not what it may do inside an allowed one.
 
 CI (`.github/workflows/ci.yml`) still fetches its reads from ENA with `scripts/fetch-reads.sh`.
-Every request there is retried (ENA intermittently answers HTTP 500), and the script fails
+The portal API call is retried by curl (ENA intermittently answers HTTP 500); each FASTQ stream
+is retried as a whole pipeline, up to 5 times, until it yields the requested number of lines in
+well-formed FASTQ (`@` header, `+` separator, quality as long as the sequence). The script fails
 loudly, naming the URL, once the retries are spent.
 
 **Failure looks like:**

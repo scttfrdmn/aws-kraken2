@@ -30,9 +30,15 @@ for r in "${RUNS[@]}"; do
     h=$(sha "$p")
     [[ $h =~ ^[0-9a-f]{64}$ ]] || { echo "stage-reads: no sha256 for $p" >&2; FAILED=1; continue; }
     # A plain FASTQ must still match the sha256 its SOURCE recorded at fetch time.
-    case "$f" in *.fq)
-      grep -qx "sha256 $h $f" "$K2_READS/${r}_$N.SOURCE" \
-        || { echo "stage-reads: $f does not match its SOURCE" >&2; FAILED=1; continue; } ;;
+    # A gzip copy must decompress to exactly that plain FASTQ.
+    case "$f" in
+      *.fq)
+        grep -qx "sha256 $h $f" "$K2_READS/${r}_$N.SOURCE" \
+          || { echo "stage-reads: $f does not match its SOURCE" >&2; FAILED=1; continue; } ;;
+      *.fq.gz)
+        dh=$(gzip -dc "$p" | { if command -v sha256sum >/dev/null; then sha256sum; else shasum -a 256; fi; } | cut -d' ' -f1)
+        grep -qx "sha256 $dh ${f%.gz}" "$K2_READS/${r}_$N.SOURCE" \
+          || { echo "stage-reads: $f does not decompress to the ${f%.gz} its SOURCE names" >&2; FAILED=1; continue; } ;;
     esac
     have=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$KEY/$f" \
              --query 'Metadata.sha256' --output text 2>/dev/null)

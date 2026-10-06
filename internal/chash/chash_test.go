@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 )
 
 // Vectors from upstream's kv_store.h MurmurHash3, compiled at the pin.
@@ -351,15 +353,20 @@ func TestGetNoAlloc(t *testing.T) {
 	}
 }
 
-// Real-database smoke test: Load and Mmap agree. Skips unless K2_VIRAL_DB names a DB directory.
-func TestRealDBLoadVsMmap(t *testing.T) {
-	dir := os.Getenv("K2_VIRAL_DB")
-	if dir == "" {
-		t.Skip("K2_VIRAL_DB not set")
+// viralDB is K2_VIRAL_DB if set, else the shared Viral DB (internal/oracletest).
+func viralDB(t testing.TB) string {
+	t.Helper()
+	if dir := os.Getenv("K2_VIRAL_DB"); dir != "" {
+		return dir
 	}
-	path := filepath.Join(dir, "hash.k2d")
+	return oracletest.DB(t, oracletest.Viral)
+}
+
+// Real-database smoke test: Load and Mmap agree, on the Viral DB.
+func TestRealDBLoadVsMmap(t *testing.T) {
+	path := filepath.Join(viralDB(t), "hash.k2d")
 	if _, err := os.Stat(path); err != nil {
-		t.Skip(err)
+		oracletest.Skip(t, "%v", err)
 	}
 	a, err := Load(path, Options{})
 	if err != nil {

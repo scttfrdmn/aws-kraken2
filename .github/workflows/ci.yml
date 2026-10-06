@@ -84,19 +84,38 @@ jobs:
       - name: Oracle harnesses (for the oracle-backed unit tests)
         run: make harness
 
-      # Oracle-backed tests must run, not skip: everything this job fetched is required, and only
-      # Standard-8 (not fetched here) may be skipped.
+      # Inputs for the oracle-backed tests that replay a script's outputs: the classify traces
+      # (.cache/classify) and the seqio/seqout work directory (.cache/equiv-seqout/latest).
+      - name: Classify oracle inputs (scripts/classify-oracle.sh)
+        run: scripts/classify-oracle.sh .cache/classify
+
+      - name: make equiv-seqout
+        run: make equiv-seqout
+
+      # Oracle-backed tests must run, not skip: everything this job fetched or produced is
+      # required (a skip is a failure), and only Standard-8 (not fetched here) may be skipped.
+      # -v plus the summary below prove in the log which tests ran and which skipped.
       - name: make test
         env:
           AWS_KRAKEN2_REQUIRE_ORACLE: "1"
           AWS_KRAKEN2_DBS: k2_viral_20260626
         run: make test
 
-      - name: go test -race ./...
+      - name: go test -race -v ./... (with a ran/skipped summary)
         env:
           AWS_KRAKEN2_REQUIRE_ORACLE: "1"
           AWS_KRAKEN2_DBS: k2_viral_20260626
-        run: go test -race ./...
+        run: |
+          set +e; echo "shell flags $-"
+          go test -race -v -count=1 ./... > "$RUNNER_TEMP/test-v.log" 2>&1
+          st=$?
+          echo "== tests passed: $(grep -cE '^\s*--- PASS' "$RUNNER_TEMP/test-v.log")  failed: $(grep -cE '^\s*--- FAIL' "$RUNNER_TEMP/test-v.log")  skipped: $(grep -cE '^\s*--- SKIP' "$RUNNER_TEMP/test-v.log")"
+          echo "== skipped (each must be a database this job does not provide):"
+          grep -A1 -E '^\s*--- SKIP' "$RUNNER_TEMP/test-v.log"
+          echo "== oracle-backed tests that ran:"
+          grep -E '^\s*--- (PASS|FAIL): (TestOracle|TestEquiv|TestRealDB|TestViralDB)' "$RUNNER_TEMP/test-v.log"
+          [ $st = 0 ] || tail -80 "$RUNNER_TEMP/test-v.log"
+          exit $st
 
       - name: make lint
         run: make lint
@@ -119,6 +138,6 @@ jobs:
         if: always() && steps.newres.outputs.dirs != ''
         uses: actions/upload-artifact@v4
         with:
-          name: oracle-viral-${{ github.sha }}
+          name: oracle-viral-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ steps.newres.outputs.dirs }}
           if-no-files-found: error

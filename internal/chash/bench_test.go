@@ -2,7 +2,6 @@ package chash
 
 import (
 	"math/rand/v2"
-	"os"
 	"path/filepath"
 	"testing"
 )
@@ -59,10 +58,7 @@ func BenchmarkGetSynthDoubleMiss(b *testing.B) {
 
 // BenchmarkGetRealDB runs uniform random keys against a real hash.k2d (K2_VIRAL_DB); skips without.
 func BenchmarkGetRealDB(b *testing.B) {
-	dir := os.Getenv("K2_VIRAL_DB")
-	if dir == "" {
-		b.Skip("K2_VIRAL_DB not set")
-	}
+	dir := viralDB(b)
 	tab, err := Load(filepath.Join(dir, "hash.k2d"), Options{})
 	if err != nil {
 		b.Fatal(err)

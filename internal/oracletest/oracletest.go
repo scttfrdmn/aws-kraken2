@@ -102,6 +102,14 @@ func skip(t testing.TB, format string, args ...any) {
 	t.Skipf(format, args...)
 }
 
+// Skip skips t for an absent oracle input, or fails it when AWS_KRAKEN2_REQUIRE_ORACLE=1. Tests
+// whose oracle inputs come from elsewhere (an environment variable, a script's work directory)
+// skip through this, never through t.Skip directly.
+func Skip(t testing.TB, format string, args ...any) {
+	t.Helper()
+	skip(t, format, args...)
+}
+
 func need(t testing.TB, p string) string {
 	t.Helper()
 	if _, err := os.Stat(p); err != nil {
