@@ -1,15 +1,20 @@
 # make loadbench LB_LADDER=scripts/loadbench.ladder (issues #36, #39; docs/loadbench.md).
 # One line per change, in order: LABEL COMMIT [NAME=VALUE...]. COMMIT may be HEAD. Consecutive
-# lines are one attribution row. @NCPU is the online CPU count.
+# lines are one attribution row. @NCPU is the online CPU count. Two consecutive lines with the
+# same binary are an A/A control: lbsummary.py takes the cell's noise floor from them.
 #   base     AK2_TIMINGS phase log only (the load path of main at d396c75)
 #   thp      2 MiB-aligned table + MADV_HUGEPAGE
 #   fill     the Filler interface (a refactor: expected no change)
 #   scan     mmscan.AppendMinimizers: the scanner loop over a whole sequence, state in locals
-#   recycle  seqio.Recycle: input blocks reuse their memory
-#   rc       AppendMinimizers keeps the reverse complement incrementally
+#   recycle  seqio.Recycle: input blocks reuse their memory. Measured and REJECTED: reverted at
+#            the final commit (see its revert); the rung stays as the measurement.
+#   rc       AppendMinimizers keeps the reverse complement incrementally. This rung's commit also
+#            contains the merge of main a8b0c72 (and loadbench/doc-only commits), so recycle -> rc
+#            is that merge plus the change.
 #   matesize the second mate's block sized like the first; newline index presized
 #   batch    chash.GetBatch: a read's lookups with their cache misses overlapped
-#   final    the benchmarked commit (merges of main since; expected no change)
+#   final    the benchmarked commit: batch minus recycle (the revert), plus merges of main
+#   final-aa the same commit again: the A/A control (noise floor)
 # Pread streams stay at upstream's 8 (16 measured no gain: results/g2/20261006-091341-5d20b94,
 # results/g2/20261006-100409-16bc8b0); were 16 ever adopted, upstream would get
 # K2_DB_READ_THREADS=16 too.
@@ -22,3 +27,4 @@ rc 8db28f03b0340808aedad1d05534949fcb44c631
 matesize fd4eea8ce87566815330d76539cab2cf306c9e7c
 batch 411d4b430c577c80d9041483ed8167b2738dd9bb
 final HEAD
+final-aa HEAD

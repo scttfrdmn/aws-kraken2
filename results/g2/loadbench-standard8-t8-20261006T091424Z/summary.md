@@ -1,9 +1,18 @@
 # make loadbench: k2_standard_08_GB_20260626, 8 threads
 
 Commit `5d20b9420a2de0699c05b4fc9005a51320a53e41`; upstream `2731b35f7abb26ec926517274f3d87e78d42fd76` (2.17.2-20-g2731b35). Host: Darwin arm64 27.0.0, Mac16,6, 16 CPUs, 64 GiB, page size 16384, THP enabled `n/a`, defrag `n/a`. NOT a make run on Linux aarch64 EC2: development evidence only.
-Repetitions: 3; states run: warm (requested: cold warm; cold available: False, via none); 2026-10-06T09:14:24Z to 2026-10-06T09:14:38Z.
+Repetitions: 3; threads fixed at 8 for both implementations; states run: warm (requested: cold warm; cold available: False, via none); 2026-10-06T09:14:24Z to 2026-10-06T09:14:38Z.
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
+
+No A/A control pair in this run: "within noise" falls back to overlapping min–max ranges, which is lax at small n.
+
+## Acceptance: `fill-streams16` vs upstream, median whole-process wall
+
+| cell | upstream s | fill-streams16 s | Δ s | verdict |
+|---|---|---|---|---|
+| empty warm | 0.241 [0.241–0.248] | 0.236 [0.230–0.240] | -0.005 | ≤ upstream (ranges separated) |
+| pe warm | 0.371 [0.367–0.382] | 0.387 [0.387–0.389] | +0.016 | > upstream |
 
 ## input `empty`, warm
 
@@ -15,10 +24,10 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | fill | 3 | 0.225 [0.220–0.226] | 0.153 [0.150–0.154] | 0.000 [0.000–0.000] | 0.073 [0.065–0.075] | 489576 [489573–489590] | 1.238 [1.217–1.243] |
 | fill-streams16 | 3 | 0.236 [0.230–0.240] | 0.164 [0.163–0.164] | 0.000 [0.000–0.000] | 0.073 [0.066–0.076] | 489610 [489610–489617] | 2.409 [2.399–2.419] |
 
-- base − upstream, median wall: -0.022 s (0.219 s vs 0.241 s)
-- thp − upstream, median wall: -0.022 s (0.219 s vs 0.241 s)
-- fill − upstream, median wall: -0.016 s (0.225 s vs 0.241 s)
-- fill-streams16 − upstream, median wall: -0.005 s (0.236 s vs 0.241 s)
+- base − upstream, median wall: -0.022 s (0.219 s vs 0.241 s): ≤ upstream (ranges separated)
+- thp − upstream, median wall: -0.022 s (0.219 s vs 0.241 s): ≤ upstream (ranges separated)
+- fill − upstream, median wall: -0.016 s (0.225 s vs 0.241 s): ≤ upstream (ranges separated)
+- fill-streams16 − upstream, median wall: -0.005 s (0.236 s vs 0.241 s): ≤ upstream (ranges separated)
 
 ## input `pe`, warm
 
@@ -30,14 +39,14 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | fill | 3 | 0.378 [0.374–0.379] | 0.157 [0.155–0.160] | 0.150 [0.149–0.151] | 0.068 [0.067–0.071] | 504202 [503957–504340] | 1.313 [1.312–1.348] |
 | fill-streams16 | 3 | 0.387 [0.387–0.389] | 0.163 [0.159–0.164] | 0.153 [0.144–0.153] | 0.074 [0.070–0.080] | 504248 [503467–504591] | 2.450 [2.355–2.488] |
 
-- base − upstream, median wall: +0.006 s (0.378 s vs 0.371 s)
-- thp − upstream, median wall: +0.002 s (0.373 s vs 0.371 s)
-- fill − upstream, median wall: +0.006 s (0.378 s vs 0.371 s)
-- fill-streams16 − upstream, median wall: +0.016 s (0.387 s vs 0.371 s)
+- base − upstream, median wall: +0.006 s (0.378 s vs 0.371 s): > upstream by median, within noise
+- thp − upstream, median wall: +0.002 s (0.373 s vs 0.371 s): > upstream by median, within noise
+- fill − upstream, median wall: +0.006 s (0.378 s vs 0.371 s): > upstream by median, within noise
+- fill-streams16 − upstream, median wall: +0.016 s (0.387 s vs 0.371 s): > upstream
 
 ## Attribution (one row per change, Law 5)
 
-Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where the two min–max ranges overlap. Ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where it is at or below the cell's noise floor (above), or, without a control pair, where the min–max ranges overlap. "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
 
 | change | empty warm | pe warm |
 |---|---|---|

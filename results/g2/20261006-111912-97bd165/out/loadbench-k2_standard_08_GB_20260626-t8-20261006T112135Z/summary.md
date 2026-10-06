@@ -1,11 +1,22 @@
 # make loadbench: k2_standard_08_GB_20260626, 8 threads
 
 Commit `97bd1656f79f1c2a3129b5f81a79bb63ddd644e0`; upstream `2731b35f7abb26ec926517274f3d87e78d42fd76` (2.17.2-20-g2731b35). Host: Linux aarch64 6.18.51-120.163.amzn2023.aarch64, r8gd.2xlarge, 8 CPUs, 62 GiB, page size 4096, THP enabled `always [madvise] never`, defrag `always defer defer+madvise [madvise] never`. Linux aarch64 on EC2 (make run).
-Repetitions: 3; states run: cold warm (requested: cold warm; cold available: True, via ak2_drop_caches); 2026-10-06T11:21:35Z to 2026-10-06T11:29:15Z.
+Repetitions: 3; threads fixed at 8 for both implementations; states run: cold warm (requested: cold warm; cold available: True, via ak2_drop_caches); 2026-10-06T11:21:35Z to 2026-10-06T11:29:15Z.
 Database storage: device /dev/nvme0n1, disk model Amazon EC2 NVMe Instance Storage.
 Cold load rate (hash.k2d bytes / median cold load s): 1012–1021 MiB/s over every implementation and input. They agree within 5%: the cold rungs are capped by the storage, so they cannot resolve a difference in the load path itself.
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
+
+No A/A control pair in this run: "within noise" falls back to overlapping min–max ranges, which is lax at small n.
+
+## Acceptance: `final` vs upstream, median whole-process wall
+
+| cell | upstream s | final s | Δ s | verdict |
+|---|---|---|---|---|
+| empty cold | 7.526 [6.718–7.526] | 7.486 [7.485–7.486] | -0.040 | ≤ upstream by median, within noise |
+| empty warm | 0.267 [0.261–0.268] | 0.253 [0.245–0.254] | -0.013 | ≤ upstream (ranges separated) |
+| pe cold | 7.806 [7.779–7.807] | 7.732 [7.731–7.737] | -0.074 | ≤ upstream (ranges separated) |
+| pe warm | 0.453 [0.449–0.457] | 0.463 [0.448–0.464] | +0.009 | > upstream by median, within noise |
 
 ## input `empty`, cold
 
@@ -19,12 +30,12 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | recycle | 3 | 7.486 [7.485–7.486] | 7.472 [7.471–7.472] | 0.000 [0.000–0.000] | 0.013 [0.013–0.013] | 7237 [7209–7268] | 1.212 [1.175–1.224] |
 | final | 3 | 7.486 [7.485–7.486] | 7.472 [7.471–7.472] | 0.000 [0.000–0.000] | 0.013 [0.013–0.013] | 7267 [7252–7276] | 1.218 [1.195–1.218] |
 
-- base − upstream, median wall: +0.297 s (7.822 s vs 7.526 s)
-- thp − upstream, median wall: -0.040 s (7.486 s vs 7.526 s)
-- fill − upstream, median wall: -0.040 s (7.486 s vs 7.526 s)
-- scan − upstream, median wall: -0.040 s (7.486 s vs 7.526 s)
-- recycle − upstream, median wall: -0.040 s (7.486 s vs 7.526 s)
-- final − upstream, median wall: -0.040 s (7.486 s vs 7.526 s)
+- base − upstream, median wall: +0.297 s (7.822 s vs 7.526 s): > upstream
+- thp − upstream, median wall: -0.040 s (7.486 s vs 7.526 s): ≤ upstream by median, within noise
+- fill − upstream, median wall: -0.040 s (7.486 s vs 7.526 s): ≤ upstream by median, within noise
+- scan − upstream, median wall: -0.040 s (7.486 s vs 7.526 s): ≤ upstream by median, within noise
+- recycle − upstream, median wall: -0.040 s (7.486 s vs 7.526 s): ≤ upstream by median, within noise
+- final − upstream, median wall: -0.040 s (7.486 s vs 7.526 s): ≤ upstream by median, within noise
 
 ## input `empty`, warm
 
@@ -38,12 +49,12 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | recycle | 3 | 0.251 [0.248–0.254] | 0.238 [0.235–0.241] | 0.000 [0.000–0.000] | 0.013 [0.012–0.013] | 7262 [7245–7291] | 1.775 [1.742–1.786] |
 | final | 3 | 0.253 [0.245–0.254] | 0.240 [0.233–0.242] | 0.000 [0.000–0.000] | 0.012 [0.012–0.013] | 7262 [7229–7267] | 1.820 [1.721–1.867] |
 
-- base − upstream, median wall: +0.609 s (0.876 s vs 0.267 s)
-- thp − upstream, median wall: -0.012 s (0.255 s vs 0.267 s)
-- fill − upstream, median wall: +0.008 s (0.275 s vs 0.267 s)
-- scan − upstream, median wall: -0.012 s (0.254 s vs 0.267 s)
-- recycle − upstream, median wall: -0.016 s (0.251 s vs 0.267 s)
-- final − upstream, median wall: -0.013 s (0.253 s vs 0.267 s)
+- base − upstream, median wall: +0.609 s (0.876 s vs 0.267 s): > upstream
+- thp − upstream, median wall: -0.012 s (0.255 s vs 0.267 s): ≤ upstream (ranges separated)
+- fill − upstream, median wall: +0.008 s (0.275 s vs 0.267 s): > upstream by median, within noise
+- scan − upstream, median wall: -0.012 s (0.254 s vs 0.267 s): ≤ upstream (ranges separated)
+- recycle − upstream, median wall: -0.016 s (0.251 s vs 0.267 s): ≤ upstream (ranges separated)
+- final − upstream, median wall: -0.013 s (0.253 s vs 0.267 s): ≤ upstream (ranges separated)
 
 ## input `pe`, cold
 
@@ -57,12 +68,12 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | recycle | 3 | 7.733 [7.732–7.734] | 7.472 [7.471–7.472] | 0.239 [0.238–0.240] | 0.022 [0.021–0.022] | 66970 [66892–67512] | 1.235 [1.187–1.295] |
 | final | 3 | 7.732 [7.731–7.737] | 7.472 [7.472–7.473] | 0.238 [0.237–0.240] | 0.021 [0.021–0.024] | 66875 [66724–67513] | 1.243 [1.241–1.309] |
 
-- base − upstream, median wall: +0.322 s (8.128 s vs 7.806 s)
-- thp − upstream, median wall: -0.015 s (7.790 s vs 7.806 s)
-- fill − upstream, median wall: -0.026 s (7.779 s vs 7.806 s)
-- scan − upstream, median wall: -0.075 s (7.731 s vs 7.806 s)
-- recycle − upstream, median wall: -0.072 s (7.733 s vs 7.806 s)
-- final − upstream, median wall: -0.074 s (7.732 s vs 7.806 s)
+- base − upstream, median wall: +0.322 s (8.128 s vs 7.806 s): > upstream
+- thp − upstream, median wall: -0.015 s (7.790 s vs 7.806 s): ≤ upstream by median, within noise
+- fill − upstream, median wall: -0.026 s (7.779 s vs 7.806 s): ≤ upstream by median, within noise
+- scan − upstream, median wall: -0.075 s (7.731 s vs 7.806 s): ≤ upstream (ranges separated)
+- recycle − upstream, median wall: -0.072 s (7.733 s vs 7.806 s): ≤ upstream (ranges separated)
+- final − upstream, median wall: -0.074 s (7.732 s vs 7.806 s): ≤ upstream (ranges separated)
 
 ## input `pe`, warm
 
@@ -76,16 +87,16 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | recycle | 3 | 0.460 [0.446–0.462] | 0.240 [0.234–0.241] | 0.197 [0.190–0.199] | 0.022 [0.021–0.023] | 69966 [69845–70843] | 1.846 [1.751–1.916] |
 | final | 3 | 0.463 [0.448–0.464] | 0.242 [0.232–0.244] | 0.196 [0.195–0.200] | 0.022 [0.021–0.023] | 69650 [69281–70218] | 1.882 [1.759–1.906] |
 
-- base − upstream, median wall: +0.654 s (1.107 s vs 0.453 s)
-- thp − upstream, median wall: +0.056 s (0.510 s vs 0.453 s)
-- fill − upstream, median wall: +0.048 s (0.501 s vs 0.453 s)
-- scan − upstream, median wall: +0.002 s (0.456 s vs 0.453 s)
-- recycle − upstream, median wall: +0.007 s (0.460 s vs 0.453 s)
-- final − upstream, median wall: +0.009 s (0.463 s vs 0.453 s)
+- base − upstream, median wall: +0.654 s (1.107 s vs 0.453 s): > upstream
+- thp − upstream, median wall: +0.056 s (0.510 s vs 0.453 s): > upstream
+- fill − upstream, median wall: +0.048 s (0.501 s vs 0.453 s): > upstream
+- scan − upstream, median wall: +0.002 s (0.456 s vs 0.453 s): > upstream by median, within noise
+- recycle − upstream, median wall: +0.007 s (0.460 s vs 0.453 s): > upstream by median, within noise
+- final − upstream, median wall: +0.009 s (0.463 s vs 0.453 s): > upstream by median, within noise
 
 ## Attribution (one row per change, Law 5)
 
-Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where the two min–max ranges overlap. Ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where it is at or below the cell's noise floor (above), or, without a control pair, where the min–max ranges overlap. "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
 
 | change | empty cold | empty warm | pe cold | pe warm |
 |---|---|---|---|---|

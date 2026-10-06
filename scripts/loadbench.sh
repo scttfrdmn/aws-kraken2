@@ -10,6 +10,9 @@
 # Env:   LB_DB       viral | standard8 | a database directory           (default standard8)
 #        LB_THREADS  classifier threads                                 (default 8)
 #        LB_REPS     repetitions of each rung                           (default 3)
+#        LB_REPS_COLD, LB_REPS_WARM  per-state repetitions             (default LB_REPS)
+#        LB_WARMUP   1 = before the matrix, one unrecorded cold run of the first implementation
+#                    on the first input (its numbers go to the manifest as "warmup")  (default 1)
 #        LB_STATES   page-cache states, in order: "cold warm", "warm"   (default "cold warm")
 #        LB_INPUTS   inputs, cheapest first: empty (no reads: startup + load + teardown),
 #                    se (SRR062634 200k mate 1), pe (SRR062634 200k, --paired) (default "empty pe")
@@ -41,6 +44,8 @@ echo "loadbench: shell flags $-"
 
 lb_main() {
   local DBSEL=${LB_DB:-standard8} TH=${LB_THREADS:-8} REPS=${LB_REPS:-3}
+  local REPS_COLD=${LB_REPS_COLD:-${LB_REPS:-3}} REPS_WARM=${LB_REPS_WARM:-${LB_REPS:-3}}
+  local WARMUP=${LB_WARMUP:-1} WARMUP_JSON=null
   local STATES=${LB_STATES:-cold warm} INPUTS=${LB_INPUTS:-empty pe}
   local IMPLS=${LB_IMPLS:-upstream ours} LADDER=${LB_LADDER:-} PROFILE=${LB_PROFILE:-0}
   local GATE=${LB_GATE:-g2} EXTRA_ENV=${LB_ENV:-} PROFILE_IMPLS=${LB_PROFILE_IMPLS:-}
@@ -200,21 +205,45 @@ lb_main() {
   # binary's signature on its first run).
   for i in "${!BINS[@]}"; do "${BINS[$i]}" --version > /dev/null 2>&1; done
 
+  # Warm-up: the first cold read of a freshly staged database can differ from the rest (on
+  # instance-store NVMe it read faster, on EBS slower: results/g2/20261006-115949-dab2575 and
+  # results/g2/20261006-121954-dab2575), so one unrecorded cold run absorbs it. Its numbers are
+  # kept in the manifest, not dropped silently.
+  case " ${RSTATES[*]} " in *" cold "*)
+    if [ "$WARMUP" = 1 ]; then
+      local win=${INPUTS%% *}
+      if lb_drop; then
+        declare -F ak2_phase >/dev/null && ak2_phase "lb-warmup-${LABELS[0]}-$win"
+        # shellcheck disable=SC2046
+        WARMUP_JSON=$(env AK2_TIMINGS=1 $EXTRA_ENV ${ENVS[0]} python3 scripts/lib/lbrun.py \
+          "$RES/stderr/warmup-${LABELS[0]}-$win-cold.txt" -- "${BINS[0]}" $(lb_args "$WORK/warmup.out" "$win"))
+        WARMUP_JSON=$(jq -c --arg impl "${LABELS[0]}" --arg input "$win" '. + {impl:$impl, input:$input, state:"cold"}' <<< "${WARMUP_JSON:-null}" 2>/dev/null || echo null)
+        echo "loadbench: warmup (unrecorded) $WARMUP_JSON"
+        rm -f "$WORK/warmup.out"
+      fi
+    fi ;;
+  esac
+
   # Matrix: input (cheapest first) > rep > implementation > state. Warm follows the same
   # implementation's cold run, so the cache then holds the database and the reads. Without a cold
   # state, one unrecorded priming run per input warms the cache first. The implementation order
   # rotates by one each repetition (rep r starts with implementation r-1 mod n), so no
-  # implementation always runs first or always follows the same neighbour.
+  # implementation always runs first or always follows the same neighbour. Cold rungs run in
+  # repetitions 1..LB_REPS_COLD, warm ones in 1..LB_REPS_WARM.
   local input rep i st
   for input in $INPUTS; do
     case " ${RSTATES[*]} " in *" cold "*) ;; *)
       j=$(python3 scripts/lib/lbrun.py "$WORK/prime.txt" -- "${BINS[0]}" $(lb_args "$WORK/prime.out" "$input")) ;;
     esac
     local nimpl=${#LABELS[@]} o
-    for rep in $(seq 1 "$REPS"); do
+    for rep in $(seq 1 $(( REPS_COLD > REPS_WARM ? REPS_COLD : REPS_WARM ))); do
       for o in $(seq 0 $((nimpl - 1))); do
         i=$(( (o + rep - 1) % nimpl ))
-        for st in "${RSTATES[@]}"; do lb_rung "$rep" "$i" "$input" "$st"; done
+        for st in "${RSTATES[@]}"; do
+          [ "$st" = cold ] && [ "$rep" -gt "$REPS_COLD" ] && continue
+          [ "$st" = warm ] && [ "$rep" -gt "$REPS_WARM" ] && continue
+          lb_rung "$rep" "$i" "$input" "$st"
+        done
       done
     done
   done
@@ -311,7 +340,7 @@ lb_main() {
     --arg db "$DBSEL" --arg dbname "$DBNAME" --argjson dbfiles "$dbfiles" \
     --arg dbsource "$(cat "$DBDIR/SOURCE" 2>/dev/null)" \
     --arg reads "$(cat "${S1}.SOURCE" 2>/dev/null)" \
-    --argjson threads "$TH" --argjson reps "$REPS" --arg states "${RSTATES[*]}" --arg inputs "$INPUTS" \
+    --argjson threads "$TH" --argjson reps "$REPS" --argjson reps_cold "$REPS_COLD" --argjson reps_warm "$REPS_WARM" --argjson warmup "$WARMUP_JSON" --arg states "${RSTATES[*]}" --arg inputs "$INPUTS" \
     --arg extra_env "$EXTRA_ENV" --argjson profile "$([ "$PROFILE" = 1 ] && echo true || echo false)" \
     --argjson cold_ok "$COLD_OK" --arg drop "$DROP_METHOD" --arg requested_states "$STATES" \
     --arg os "$(uname -s)" --arg arch "$(uname -m)" --arg kernel "$(uname -r)" --arg model "$model" \
@@ -324,7 +353,7 @@ lb_main() {
       db:{name:$db, dir:$dbname, files:$dbfiles, source:$dbsource, storage:$storage},
       reads_source:$reads, reads_dir:$reads_dir,
       order:"implementations rotate by one per repetition",
-      threads:$threads, reps:$reps, inputs:$inputs, states_requested:$requested_states,
+      threads:$threads, reps:$reps, reps_cold:$reps_cold, reps_warm:$reps_warm, warmup:$warmup, inputs:$inputs, states_requested:$requested_states,
       states_run:$states, extra_env:$extra_env, profile:$profile,
       cold:{available:$cold_ok, method:$drop},
       host:{os:$os, arch:$arch, kernel:$kernel, model:$model, ncpu:$ncpu, mem_bytes:$mem,

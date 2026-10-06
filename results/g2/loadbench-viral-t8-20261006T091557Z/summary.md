@@ -1,10 +1,21 @@
 # make loadbench: k2_viral_20260626, 8 threads
 
 Commit `95111e64afe4e234b2e1ab35c9a3316c5b609ec3`; upstream `2731b35f7abb26ec926517274f3d87e78d42fd76` (2.17.2-20-g2731b35). Host: Linux aarch64 6.12.13-200.fc41.aarch64, Apple Virtualization Generic Platform, 8 CPUs, 8 GiB, page size 4096, THP enabled `always [madvise] never`, defrag `always defer defer+madvise [madvise] never`. NOT a make run on Linux aarch64 EC2: development evidence only.
-Repetitions: 3; states run: cold warm (requested: cold warm; cold available: True, via drop_caches-root); 2026-10-06T09:15:57Z to 2026-10-06T09:16:18Z.
+Repetitions: 3; threads fixed at 8 for both implementations; states run: cold warm (requested: cold warm; cold available: True, via drop_caches-root); 2026-10-06T09:15:57Z to 2026-10-06T09:16:18Z.
 Cold load rate (hash.k2d bytes / median cold load s): 16731–29691 MiB/s over every implementation and input.
 
 Each cell: median [min–max] over the repetitions. wall: exec to exit. load: exec to "Loading database information... done." on stderr (startup, including upstream's Perl wrapper, plus the opts/taxo/hash loads). classify: the classifier's own "processed in" figure. tail: that line to exit (report, flushes, teardown). minflt: minor page faults of the whole process tree. All from `runs.tsv`.
+
+No A/A control pair in this run: "within noise" falls back to overlapping min–max ranges, which is lax at small n.
+
+## Acceptance: `fill-streams16` vs upstream, median whole-process wall
+
+| cell | upstream s | fill-streams16 s | Δ s | verdict |
+|---|---|---|---|---|
+| empty cold | 0.033 [0.032–0.145] | 0.023 [0.023–0.024] | -0.010 | ≤ upstream (ranges separated) |
+| empty warm | 0.019 [0.019–0.019] | 0.015 [0.014–0.015] | -0.004 | ≤ upstream (ranges separated) |
+| pe cold | 0.300 [0.300–0.303] | 0.363 [0.355–0.371] | +0.063 | > upstream |
+| pe warm | 0.283 [0.282–0.286] | 0.360 [0.344–0.366] | +0.077 | > upstream |
 
 ## input `empty`, cold
 
@@ -16,10 +27,10 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | fill | 3 | 0.023 [0.022–0.023] | 0.021 [0.021–0.021] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2312 [2293–2335] | 0.113 [0.113–0.115] |
 | fill-streams16 | 3 | 0.023 [0.023–0.024] | 0.021 [0.021–0.022] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2410 [2387–2430] | 0.123 [0.121–0.125] |
 
-- base − upstream, median wall: +0.018 s (0.051 s vs 0.033 s)
-- thp − upstream, median wall: -0.010 s (0.023 s vs 0.033 s)
-- fill − upstream, median wall: -0.010 s (0.023 s vs 0.033 s)
-- fill-streams16 − upstream, median wall: -0.010 s (0.023 s vs 0.033 s)
+- base − upstream, median wall: +0.018 s (0.051 s vs 0.033 s): > upstream by median, within noise
+- thp − upstream, median wall: -0.010 s (0.023 s vs 0.033 s): ≤ upstream (ranges separated)
+- fill − upstream, median wall: -0.010 s (0.023 s vs 0.033 s): ≤ upstream (ranges separated)
+- fill-streams16 − upstream, median wall: -0.010 s (0.023 s vs 0.033 s): ≤ upstream (ranges separated)
 
 ## input `empty`, warm
 
@@ -31,10 +42,10 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | fill | 3 | 0.014 [0.014–0.015] | 0.013 [0.013–0.013] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2336 [2325–2348] | 0.070 [0.067–0.072] |
 | fill-streams16 | 3 | 0.015 [0.014–0.015] | 0.013 [0.012–0.014] | 0.000 [0.000–0.000] | 0.001 [0.001–0.001] | 2370 [2325–2401] | 0.070 [0.069–0.070] |
 
-- base − upstream, median wall: +0.025 s (0.045 s vs 0.019 s)
-- thp − upstream, median wall: -0.005 s (0.015 s vs 0.019 s)
-- fill − upstream, median wall: -0.005 s (0.014 s vs 0.019 s)
-- fill-streams16 − upstream, median wall: -0.004 s (0.015 s vs 0.019 s)
+- base − upstream, median wall: +0.025 s (0.045 s vs 0.019 s): > upstream
+- thp − upstream, median wall: -0.005 s (0.015 s vs 0.019 s): ≤ upstream (ranges separated)
+- fill − upstream, median wall: -0.005 s (0.014 s vs 0.019 s): ≤ upstream (ranges separated)
+- fill-streams16 − upstream, median wall: -0.004 s (0.015 s vs 0.019 s): ≤ upstream (ranges separated)
 
 ## input `pe`, cold
 
@@ -46,10 +57,10 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | fill | 3 | 0.381 [0.367–0.393] | 0.021 [0.021–0.022] | 0.354 [0.339–0.365] | 0.005 [0.005–0.005] | 57564 [57117–57638] | 0.148 [0.144–0.152] |
 | fill-streams16 | 3 | 0.363 [0.355–0.371] | 0.021 [0.020–0.021] | 0.336 [0.328–0.344] | 0.006 [0.006–0.006] | 57438 [57305–59217] | 0.168 [0.168–0.170] |
 
-- base − upstream, median wall: +0.102 s (0.403 s vs 0.300 s)
-- thp − upstream, median wall: +0.051 s (0.352 s vs 0.300 s)
-- fill − upstream, median wall: +0.081 s (0.381 s vs 0.300 s)
-- fill-streams16 − upstream, median wall: +0.063 s (0.363 s vs 0.300 s)
+- base − upstream, median wall: +0.102 s (0.403 s vs 0.300 s): > upstream
+- thp − upstream, median wall: +0.051 s (0.352 s vs 0.300 s): > upstream
+- fill − upstream, median wall: +0.081 s (0.381 s vs 0.300 s): > upstream
+- fill-streams16 − upstream, median wall: +0.063 s (0.363 s vs 0.300 s): > upstream
 
 ## input `pe`, warm
 
@@ -61,14 +72,14 @@ Each cell: median [min–max] over the repetitions. wall: exec to exit. load: ex
 | fill | 3 | 0.358 [0.346–0.358] | 0.013 [0.013–0.013] | 0.339 [0.327–0.339] | 0.006 [0.005–0.006] | 56814 [56727–57356] | 0.104 [0.103–0.112] |
 | fill-streams16 | 3 | 0.360 [0.344–0.366] | 0.013 [0.013–0.013] | 0.340 [0.325–0.347] | 0.006 [0.005–0.006] | 56743 [56514–57591] | 0.111 [0.107–0.112] |
 
-- base − upstream, median wall: +0.114 s (0.397 s vs 0.283 s)
-- thp − upstream, median wall: +0.061 s (0.344 s vs 0.283 s)
-- fill − upstream, median wall: +0.075 s (0.358 s vs 0.283 s)
-- fill-streams16 − upstream, median wall: +0.077 s (0.360 s vs 0.283 s)
+- base − upstream, median wall: +0.114 s (0.397 s vs 0.283 s): > upstream
+- thp − upstream, median wall: +0.061 s (0.344 s vs 0.283 s): > upstream
+- fill − upstream, median wall: +0.075 s (0.358 s vs 0.283 s): > upstream
+- fill-streams16 − upstream, median wall: +0.077 s (0.360 s vs 0.283 s): > upstream
 
 ## Attribution (one row per change, Law 5)
 
-Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where the two min–max ranges overlap. Ladder order is `LB_LADDER`'s.
+Median [min–max] wall seconds before → after each change, and the difference of the medians; "within noise" where it is at or below the cell's noise floor (above), or, without a control pair, where the min–max ranges overlap. "(A/A control)" marks a pair with the same binary. Ladder order is `LB_LADDER`'s.
 
 | change | empty cold | empty warm | pe cold | pe warm |
 |---|---|---|---|---|

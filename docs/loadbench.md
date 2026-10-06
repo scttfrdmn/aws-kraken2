@@ -10,6 +10,7 @@ compare like with like. Backed by `scripts/loadbench.sh`, `scripts/lib/lbrun.py`
 ```bash
 make loadbench                                   # Standard-8, 8 threads, 3 reps, cold + warm
 make loadbench DB=viral THREADS=4 REPS=5
+LB_REPS_COLD=3 LB_REPS_WARM=10 make loadbench    # per-state repetitions (the AWS specs use these)
 LB_LADDER=scripts/loadbench.ladder LB_PROFILE=1 make loadbench   # + attribution, + profiles
 make run GATE=g2 SPEC=runs/loadbench.json        # canonical: m7g.2xlarge, us-west-2
 make run GATE=g2 SPEC=runs/loadbench-g4.json     # Graviton4 with instance-store NVMe (r8gd/c8gd)
@@ -51,6 +52,17 @@ are skipped, and the manifest records `cold.available=false`. A warm run is neve
 and the reads. Without a cold state, one unrecorded priming run warms the cache first. Every
 binary runs once (`--version`) before the matrix, so no rung pays for a first exec.
 
+**Warm-up** (`LB_WARMUP`, default 1): before the matrix, one cold run of the first implementation
+on the first input, not counted in any cell. The first cold read of a freshly staged database
+was an outlier on both boxes (upstream empty cold: 6.791 s against 7.5 s on r8gd's NVMe, 61.7 s
+against 60.4 s on m7g's gp3), so the matrix starts after it. Its numbers are in the manifest
+(`warmup`) and in `summary.md`.
+
+**Repetitions:** `LB_REPS` for both states, or `LB_REPS_COLD` and `LB_REPS_WARM` separately.
+Warm cells are sub-second, so the AWS specs run 10 of them; cold cells take a minute each on
+EBS, so they run 3. The thread count is fixed (`LB_THREADS`, 8 in the specs = the boxes' vCPUs)
+and is the same for both implementations.
+
 **Order:** input, then repetition, then implementation, then state. The implementation order
 rotates by one each repetition (repetition r starts with the implementation at position r−1),
 so no implementation always runs first, or always right after the same neighbour. With 3
@@ -72,8 +84,18 @@ For cold numbers that measure the load path, use instance-store NVMe (Law 2), as
 be `HEAD`). Each commit's
 `cmd/aws-kraken2` is built into `.cache/loadbench/bin/<goos>-<goarch>/<commit>/` and benchmarked
 as `LABEL`, with that environment (`@NCPU` is replaced by the online CPU count). Consecutive
-lines form one row of the attribution table: median [min–max] before and after, the difference
-of the medians, and "within noise" where the two min–max ranges overlap.
+lines form one row of the attribution table: median [min–max] before and after, and the
+difference of the medians.
+
+**Noise floor.** Two consecutive ladder lines with the same binary and environment are an A/A
+control (`final` → `final-aa` in the #36 ladder). A cell's noise floor is the largest
+|Δ median wall| over its control pairs, and any difference at or below it, in an attribution row
+or against upstream, is marked "within noise". Without a control pair the summary says so and
+falls back to overlapping min–max ranges, which is lax at n = 3. The acceptance table gives each
+cell one verdict for `final` (or the last ladder line) against upstream:
+"≤ upstream (ranges separated)" (ours' max below upstream's min, and the difference above the
+floor), "≤ upstream by median, within noise", "> upstream by median, within noise", or
+"> upstream".
 `scripts/loadbench.ladder` is the #36/#39 ladder. Pread streams are 8 for both implementations;
 a streams change would apply to upstream too (`K2_DB_READ_THREADS`).
 
