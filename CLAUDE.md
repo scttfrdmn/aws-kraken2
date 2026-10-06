@@ -94,7 +94,7 @@ targets; ad hoc commands only during exploration.
 | `make oracle [DB=viral\|standard8\|all]` / `make stage-db DB=…` / `make stage-reads` | [docs/oracle.md](docs/oracle.md) |
 | `make harness [NAME=…] [VARIANTS=…]` | [docs/harness.md](docs/harness.md) |
 | `make g0b [G0B=hash\|scan\|all]` | [docs/g0b.md](docs/g0b.md) |
-| `make g0c [PART=local|runs|probes]` | [docs/g0c.md](docs/g0c.md) |
+| `make g0c [PART=local\|runs\|probes]` | [docs/g0c.md](docs/g0c.md) |
 | `make equiv-seqout` | [docs/equiv-seqout.md](docs/equiv-seqout.md) |
 | `make oracle-classify` | [docs/oracle-classify.md](docs/oracle-classify.md) |
 | `make bracken-check` | [docs/bracken-check.md](docs/bracken-check.md) |
