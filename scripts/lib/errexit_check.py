@@ -164,12 +164,9 @@ def tokenize(s):
             cur.extend(buf)
             line += s.count("\n", i, j)
             i = j + 1
-        elif s.startswith("$((", i) or (s.startswith("((", i) and cur is None):
+        elif (s.startswith("$((", i) or (s.startswith("((", i) and cur is None)) and arith_end(s, i) is not None:
             # Arithmetic: copy through the matching "))" as data, so "<<" here is a shift.
-            j, depth = i + (2 if s[i] == "(" else 3), 2
-            while j < n and depth:
-                depth += {"(": 1, ")": -1}.get(s[j], 0)
-                j += 1
+            j = arith_end(s, i)
             if cur is None:
                 cur, cur_line = [], line
             cur.extend(s[i:j])
@@ -199,6 +196,26 @@ def tokenize(s):
             i += 1
     flush()
     return toks
+
+
+def arith_end(s, i):
+    """End index of the arithmetic expression opened by "((" or "$((" at i, or None.
+
+    It is arithmetic only if the paren that brings the depth back to 1 is immediately followed
+    by ")". Otherwise bash parses it as a subshell or command substitution containing a
+    subshell, e.g. `((set -e; echo a); echo two)`, and the normal tokeniser handles it.
+    """
+    j, depth = i + (3 if s[i] == "$" else 2), 2
+    while j < len(s):
+        c = s[j]
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            depth -= 1
+            if depth == 1:
+                return j + 2 if j + 1 < len(s) and s[j + 1] == ")" else None
+        j += 1
+    return None
 
 
 def commands(toks):
@@ -318,6 +335,9 @@ SELF_TEST = [
     # arithmetic is not a heredoc
     ("x=$((1 << 4))\nset -e", True), ("((x <<= 1))\nset -e", True), ("echo $((a<<b)); echo ok", False),
     ("y=$(( (1 << 2) + 1 ))\ncat <<EOF\nset -e\nEOF", False),
+    # "((" / "$((" that bash parses as subshells, not arithmetic
+    ("((set -e; echo a); echo two)", True), ("((set -e; echo a) )", True),
+    ("x=$((set -e; echo a); echo t)", True), ("x=$((set -e; echo a) )", True),
 ]
 
 
