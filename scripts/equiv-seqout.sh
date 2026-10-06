@@ -15,6 +15,8 @@ cd "$(dirname "$0")/.." || exit 1
 ROOT=$(pwd)
 . scripts/pin.env
 . scripts/paths.sh
+. scripts/pin-identity.sh
+pin_identity || { echo "$(basename "$0"): cannot establish the upstream pin identity" >&2; exit 1; }
 MAIN=$K2_SHARED_ROOT
 K2DIR="$ORACLE_DST"
 K2="$K2DIR/kraken2"
@@ -44,7 +46,7 @@ LOG="$RES/run.log"
 : > "$LOG"
 log() { echo "$*" | tee -a "$LOG"; }
 log "shell flags: $-"
-log "pin $UPSTREAM_PIN  db $DB  reads $STEM  threads $THREADS  work $WORK"
+log "pin $UPSTREAM_SHA ($UPSTREAM_DESCRIBE)  db $DB  reads $STEM  threads $THREADS  work $WORK"
 FAILED=0
 
 # Inputs derived from the real reads (reformatted, recompressed or damaged with standard tools).
@@ -188,7 +190,8 @@ log "result: $RESULT"
   echo "  \"cases\": $GOT,"
   echo "  \"commit\": \"$(git rev-parse HEAD)\","
   echo "  \"dirty\": $( [ -n "$(git status --porcelain -- . ':!results')" ] && echo true || echo false ),"
-  echo "  \"upstream_pin\": \"$UPSTREAM_PIN\","
+  echo "  \"upstream_pin\": \"$UPSTREAM_SHA\","
+  echo "  \"upstream_describe\": \"$UPSTREAM_DESCRIBE\","
   echo "  \"classify_sha256\": \"$(shasum -a 256 "$K2DIR/classify" | cut -d' ' -f1)\","
   echo "  \"go_version\": \"$(go version)\","
   echo "  \"gzip_version\": \"$(gzip --version 2>&1 | head -1 | sed 's/"/\\"/g')\","
