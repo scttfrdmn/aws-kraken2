@@ -1,0 +1,12 @@
+=== RUN   TestSortFuzzHeapProbe
+    sortfuzz_test.go:505: killer   n=4096 heap_calls=1 comparisons=153687 (n*n/4=4194304)
+    sortfuzz_test.go:505: sorted   n=4096 heap_calls=0 comparisons=55831 (n*n/4=4194304)
+    sortfuzz_test.go:505: reverse  n=4096 heap_calls=0 comparisons=41482 (n*n/4=4194304)
+    sortfuzz_test.go:505: n=16     n=16 heap_calls=0 comparisons=42 (n*n/4=64)
+--- PASS: TestSortFuzzHeapProbe (0.00s)
+=== RUN   TestSortFuzz
+    sortfuzz_test.go:530: oracle: g++ 11.5.0 20240719 (Red Hat 11.5.0-5); libstdc++ _GLIBCXX_RELEASE=11 __GLIBCXX__=20240719; __cplusplus=201103; mode full; seed 35
+    sortfuzz_test.go:667: cases 1042835 (elements 275466435), mismatches 0, heapsort cases 5493 (calls 11445), n 0..32780 (2065 distinct, every 0..2048: true), 19.6s
+--- PASS: TestSortFuzz (19.61s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/report	19.621s
