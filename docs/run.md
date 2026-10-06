@@ -22,8 +22,7 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
     ceilings are in `ak2.env`. `on_complete` is forced to `terminate`;
   - `command` is `["bash","-c","<script>"]`. `container`, `inputs[]` and `results_prefix` are
     refused: spawn would stage inputs before the preamble's region assert, so use `ak2_stage`;
-  - the script may not turn errexit back on (`set -e`, `set -euo …`, `set -o errexit`,
-    `bash -e`, `shopt -so errexit`, a `-e` shebang); Law 4 says `set +e`;
+  - the script may not turn errexit back on; Law 4 says `set +e`. See [errexit](#errexit) below;
   - `placement.{ami,volumes,fsx_lustre_id,efs_id,…_mount_point}` are refused (the AMI is spawn's
     auto-selection, recorded in the manifest), and so are `resources.purchase` other than
     `on_demand` and `resources.fallback`. Spot is a later lever, and `cost_usd` assumes
@@ -75,18 +74,64 @@ The allow-list is a guard against mistakes, not a sandbox: keep data I/O on the 
 | helper | what |
 |---|---|
 | `ak2_say MSG` | timestamped log line |
-| `ak2_phase NAME` | marks the start of a phase; `run.sh` derives `tables/phases.tsv` (phase, start, seconds, cold) and `manifest.phases`. A phase still running when the run was killed hard has empty seconds (`null`) |
-| `ak2_req OP N [BUCKET]` | records N S3 requests of type OP in the current phase; becomes `out/requests.tsv`, `tables/requests.tsv` and `manifest.requests`. OP must be a non-empty word and N a non-negative integer; otherwise it logs an error and a run that would have exited 0 exits 96 |
+| `ak2_phase NAME` | marks the start of a phase; `run.sh` derives `tables/phases.tsv` (phase, start, seconds, cold) and `manifest.phases`. A phase still running when the run was killed hard has empty seconds (`null`). NAME must be a non-empty word |
+| `ak2_req OP N [BUCKET]` | records N S3 requests of type OP in the current phase; becomes `out/requests.tsv`, `tables/requests.tsv` and `manifest.requests`. OP must be a non-empty word, N a non-negative integer, and BUCKET empty or a valid bucket name (no tabs or newlines) |
 | `ak2_stage SRC DST` | stage an input from a declared bucket (signed, then anonymous); `SRC` ending in `/` is recursive |
 | `ak2_push FILE [NAME]` | stream a result to `<run prefix>/out/NAME` now |
 | `ak2_drop_caches` | required before every cold rung. Marks the **next** `ak2_phase` as `cold=yes`. If the preflight found `drop_caches_ok=false`, or the drop fails, it ends the run with exit 95; a warm rung is never mislabelled cold |
 
-The helpers are `readonly -f`. The body must not replace the EXIT/TERM/HUP/INT traps.
-- On any exit, including a process-group SIGTERM at shutdown, the finish handler logs the real
-  status (143 for TERM, 129 for HUP, 130 for INT) and pushes `run.log` and `requests.tsv`.
-  It writes straight to the log file, so a dead tee cannot SIGPIPE it.
-- The tee ignores TERM/HUP. The preamble checks that it started (within 5 s) and exits 97 if not.
-- A bare `wait` is safe, because the tee and the pusher are disowned.
+The helpers are `readonly -f`. The body must not replace the EXIT/TERM/HUP/INT/PIPE traps.
+- **Errors count from anywhere.** A helper error (bad `ak2_req`/`ak2_phase` arguments, a
+  `drop_caches` failure, a fatal assert) is appended to `/tmp/ak2-state/errors`, a file rather
+  than a variable. Errors from helpers called in subshells therefore still count. If the body
+  would have exited 0, the run instead exits with the first error's code (96, or 95 for
+  `drop_caches`), and the file is pushed as `out/helper-errors.tsv`.
+- **State the body can't clobber.** The current phase, the cold marker and the finish lock are
+  files under `/tmp/ak2-state`. The lock is an atomic `mkdir`, taken only by the main shell
+  (checked against `$BASHPID`). So neither a subshell calling `ak2_finish` nor a variable
+  assignment can make the real finish skip.
+- **Exits under signals.** On any exit, including a process-group SIGTERM at shutdown, the
+  finish handler logs the real status and pushes `run.log` and `requests.tsv`. The statuses are
+  143 for TERM, 129 for HUP, 130 for INT and 141 for PIPE (e.g. the tee died). The handler writes
+  straight to the log file, so it cannot itself SIGPIPE.
+- **Tee startup.** The tee ignores TERM/HUP. The preamble checks it started within 5 s; if not,
+  it KILLs it and exits 97.
+- **Shim checks.** The shim must be non-empty and executable, and its `cksum` must match what
+  was written. It must also refuse an undeclared bucket in a self-test; otherwise exit 97.
+- **`wait`.** A bare `wait` is safe, because the tee and the pusher are disowned.
+
+### errexit
+
+Law 4 says `set +e`, enforced in two layers.
+
+**Statically**, `run.sh` runs `scripts/lib/errexit_check.py` over the script. `make test` runs
+its self-test cases. It tokenises like a shell, so quotes, backslashes, comments, heredoc bodies
+and separators are understood, and it inspects every simple command's option words:
+- `set`: any option cluster containing `e`, or `-o errexit`, before `--` or the first positional
+  word. This catches `set -e`, `set -u -e`, `set -euo pipefail`, `set -o pipefail -e` and
+  `set -o nounset -o errexit`.
+- `shopt`: `-s` and `-o` in any spelling, with `errexit`.
+- `bash`/`sh`/`dash`/`ksh`/`zsh`: an `e` option cluster or `-o errexit`. The `-c` string is
+  re-checked.
+- `eval`: its arguments are re-checked, so `eval "set -e"` is caught.
+- A `-e` shebang.
+
+Before reading the command name, the checker skips assignments and keywords. It also skips the
+wrappers `exec`, `env` (options and `VAR=val` words), `sudo` (options), `timeout [opts] N`,
+`nohup`, `nice [-n N]`, `xargs [opts]`, `stdbuf [opts]` and `command`. So `sudo -u x bash -e` and
+`timeout 5 sh -e` are both caught. Arithmetic (`$((a << 2))`, `((x <<= 1))`) is data, not a
+heredoc. If the checker itself throws, it exits 2, and `run.sh` reports "errexit check crashed"
+instead of passing or failing the spec.
+
+Quoted text and heredoc bodies are data, so `echo "set -e"` is allowed. Static parsing does not
+see:
+- code inside `"$( … )"` within double quotes;
+- commands reached through variables (`$cmd -e`), aliases, or computed `eval` strings;
+- `source`d files.
+
+**At run time**, the preamble asserts at body start that `$-` lacks `e` (fatal, exit 97).
+`ak2_finish` checks again at exit; if `e` is on, it logs it, and a run that would have exited 0
+exits 96.
 
 Every spec must count its requests with `ak2_req`; `run.sh` warns if none were recorded.
 
@@ -143,9 +188,9 @@ Exit status: the task's exit code, or one of these harness codes:
 | 3 | orphans found, or a region could not be checked |
 | 4 | a manifest update failed |
 | 95 | `ak2_drop_caches` could not drop caches (a cold rung was impossible) |
-| 96 | the body exited 0 but an `ak2_req` call was invalid |
-| 97 | the on-instance region or Payer assert failed, or the log tee/mkfifo/shim could not start |
-| 129 / 130 / 143 | the body was killed by HUP / INT / TERM (the log still reached S3) |
+| 96 | the body exited 0 but a helper call was invalid, or errexit was on at exit |
+| 97 | the on-instance region or Payer assert failed; the log tee, mkfifo or shim could not start or verify; or errexit was on at body start |
+| 129 / 130 / 141 / 143 | the body was killed by HUP / INT / PIPE / TERM (the log still reached S3) |
 | 98 | the post script failed |
 | 99 | no completion record |
 | 126 | (in the log) an `aws` call was refused by the allow-list |

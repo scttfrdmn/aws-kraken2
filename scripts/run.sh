@@ -19,7 +19,7 @@ die() { echo "make run: $*" >&2; exit 2; }
 say() { echo "make run: $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
-for t in jq spawn truffle aws curl git; do command -v "$t" >/dev/null || die "$t not on PATH"; done
+for t in jq spawn truffle aws curl git python3; do command -v "$t" >/dev/null || die "$t not on PATH"; done
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate, e.g. g0a> SPEC=runs/<file>.json"
 case "$SPEC" in runs/*.json) ;; *) die "SPEC must be a checked-in runs/*.json (got '$SPEC')" ;; esac
 [ -f "$SPEC" ] || die "$SPEC: no such file"
@@ -131,11 +131,17 @@ LITERALS=$( { printf '%s\n' "$BODY" | grep -oE 's3://[A-Za-z0-9._-]+' | sed 's|^
 for b in $LITERALS; do
   case " $ALLOWED_BUCKETS " in *" $b "*) ;; *) die "the script names bucket '$b', which is not declared in AK2_DATASETS" ;; esac
 done
-# Law 4: `set +e`. Refuse anything in the body that turns errexit back on.
-ERREXIT=$(printf '%s\n' "$BODY" | grep -nE \
-  '(^|[;&|({[:space:]])(set|bash|sh)[[:space:]]+(-[A-Za-z]*e[A-Za-z]*|-o[[:space:]]*errexit)([[:space:];]|$)|shopt[[:space:]]+-s?o[[:space:]]+errexit|^#!.*[[:space:]]-[A-Za-z]*e')
-[ -z "$ERREXIT" ] || die "the script turns on errexit (Law 4 requires set +e):
-$ERREXIT"
+# Law 4: `set +e`. Refuse anything in the body that turns errexit back on. A shell-aware
+# tokeniser parses each set/shopt/eval/bash invocation (scripts/lib/errexit_check.py); the
+# preamble's runtime check of $- is the backstop for what static parsing cannot see.
+ERREXIT=$(printf '%s\n' "$BODY" | python3 scripts/lib/errexit_check.py)
+case $? in
+  0) ;;
+  1) die "the script turns on errexit (Law 4 requires set +e):
+$ERREXIT" ;;
+  *) die "errexit check crashed (scripts/lib/errexit_check.py); fix the checker, the spec was not judged:
+$ERREXIT" ;;
+esac
 
 # ---- Payer: refuse UNKNOWN; refuse Requester unless the spec opts in ----
 PAYER_JSON=$(for b in $BUCKETS; do
