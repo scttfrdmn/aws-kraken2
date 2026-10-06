@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - helper errors and state kept in files, so subshell errors count;
   - KILL for a hung tee;
   - shim content and self-test verification.
+- `run.sh` records its post-run orphan check: `<run dir>/orphans.txt`, plus
+  `manifest.orphan_check` (rc, own_gone, other live instances with flags, regions checked and
+  failed). `make report` shows it as a row.
 - Orphan check scoped per run:
   - `run.sh` now runs `scripts/orphans.sh --own <task_id> <instance_id>`, which fails only if
     its own instance survives;

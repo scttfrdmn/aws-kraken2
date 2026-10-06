@@ -45,6 +45,12 @@ cat <<EOF
 | bucket allow-list | $(jq -r 'if .allowed_buckets == null then "none: this run predates the allow-list" else (.allowed_buckets | join(", ")) + ". `aws s3`/`s3api` calls outside it were refused; curl and SDK calls are not covered" end' "$M") |
 | drop_caches usable | $(m .preflight.drop_caches_ok) |
 | object tags | ok=$(m .object_tags.ok): $(m .object_tags.line) |
+| post-run orphan check | $(jq -r 'if .orphan_check == null then "—" else .orphan_check
+    | "rc=\(.rc), own instance gone: \(.own_gone), \(.checked_regions // "?") regions checked"
+      + (if (.failed_regions // []) | length > 0 then ", failed regions: \(.failed_regions | join(" "))" else "" end)
+      + (if .error then ", ERROR: \(.error)" else "" end)
+      + ", other live ak2 instances: " + (if (.others // []) | length == 0 then "none"
+          else ((.others | map("\(.task_id) (\(.region) \(.id), \(.flag))") | join("; "))) end) end' "$M") |
 | S3 requests (spec-recorded) | $(m '.requests.total') |
 | sample accessions | $(jq -r 'if (.sample_accessions|length)==0 then "none" else .sample_accessions|join(", ") end' "$M") |
 | tools | spawn $(m .tools.spawn), truffle $(m .tools.truffle) |

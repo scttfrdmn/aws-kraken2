@@ -26,8 +26,35 @@ if [ "${1:-}" = --own ]; then
 fi
 GRACE_S=900
 
+# AK2_ORPHANS_JSON=FILE (scoped mode, set by run.sh): on every exit, write the outcome as JSON for
+# the manifest: {mode, rc, own_gone, others:[{region,id,task_id,state,launch,ttl_deadline,flag}],
+# checked_regions, failed_regions, at}. own_gone is true only when rc is 0.
+REGIONS="" ROWS="" FAILED_REGIONS=""
+write_json() {
+  local rc=$?
+  [ -n "${AK2_ORPHANS_JSON:-}" ] && [ -n "$OWN_TASK" ] || return "$rc"
+  local n_all n_failed
+  n_all=$(echo "$REGIONS" | wc -w | tr -d ' ')
+  n_failed=$(echo "$FAILED_REGIONS" | wc -w | tr -d ' ')
+  { echo "$ROWS" | jq -s -c --argjson rc "$rc" --arg task "$OWN_TASK" --argjson checked "$((n_all - n_failed))" \
+      --arg failed "$FAILED_REGIONS" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '
+      {mode:"own", task_id:$task, rc:$rc, own_gone:($rc == 0),
+       others:[.[] | select(.own | not) | {region, id, task_id:.task, state, launch, ttl_deadline:.deadline,
+               flag:(if .stale == true then "probable_orphan" elif .stale == "unparseable" then "deadline_unparseable"
+                     elif .stale == null then "no_deadline" else "within_ttl" end)}],
+       checked_regions:$checked, failed_regions:($failed | split(" ") | map(select(. != ""))), at:$at}' \
+      > "$AK2_ORPHANS_JSON"; } 2>/dev/null ||
+    printf '{"mode":"own","task_id":"%s","rc":%s,"own_gone":false,"error":"could not summarise"}\n' "$OWN_TASK" "$rc" > "$AK2_ORPHANS_JSON"
+  return "$rc"
+}
+trap write_json EXIT
+# A signal must not reach the EXIT trap as $?=0 (which would record own_gone:true).
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
 REGIONS=$(aws ec2 describe-regions --region us-west-2 --query 'Regions[].RegionName' --output text 2>&1) ||
-  { echo "orphans: describe-regions failed: $REGIONS" >&2; exit 2; }
+  { echo "orphans: describe-regions failed: $REGIONS" >&2; REGIONS=""; exit 2; }
 TMP=$(mktemp -d)
 # One call per region, in parallel. tag-key values are ORed; the jq filter then keeps instances
 # tagged ak2:project=<project> or spawn:task-id=<prefix>*, the latter catching an instance whose
@@ -51,7 +78,7 @@ done
 wait
 failed=0
 for r in $REGIONS; do
-  if [ -s "$TMP/$r.err" ]; then echo "orphans: $r: $(head -c 300 "$TMP/$r.err")" >&2; failed=1; fi
+  if [ -s "$TMP/$r.err" ]; then echo "orphans: $r: $(head -c 300 "$TMP/$r.err")" >&2; failed=1; FAILED_REGIONS="$FAILED_REGIONS $r"; fi
 done
 N=$(echo "$REGIONS" | wc -w | tr -d ' ')
 NOW=$(date -u +%s)

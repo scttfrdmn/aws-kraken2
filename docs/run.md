@@ -218,7 +218,7 @@ On the instance, `preamble.sh` runs first:
 `results/<gate>/<run-id>/`: `manifest.json`, `spec.json`, `spec.resolved.json`,
 `spawn-plan.txt`, `launch.json`, `launch.err`, `preflight.json`, `log/run.log`, `out/` (what the
 spec pushed, plus `requests.tsv`), `spawn/<task_id>/{completion.json,command.log,.exitcode}`,
-`completion.json`, `tables/phases.tsv`, `tables/requests.tsv`, plus `decoded/` and `tables/` from
+`completion.json`, `orphans.txt` (the post-run orphan check), `tables/phases.tsv`, `tables/requests.tsv`, plus `decoded/` and `tables/` from
 a post script. In S3, the same tree is under
 `s3://cookbook-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>/`.
 
