@@ -117,6 +117,7 @@ type workerState struct {
 	cl      *classify.Classifier
 	tokens  *classify.Tokens
 	w       classify.Worker
+	batch   chash.BatchScratch
 }
 
 type job struct {
@@ -461,11 +462,7 @@ func (r *runner) work(ws *workerState, j job, printing bool) *result {
 			tk.Scan(ws.scanner, s2.Seq)
 			len2 = uint32(len(s2.Seq))
 		}
-		tk.Vals = tk.Vals[:0]
-		for _, k := range tk.Keys {
-			v, _ := tab.Get(k)
-			tk.Vals = append(tk.Vals, v)
-		}
+		tk.Vals = tab.GetBatch(tk.Keys, tk.Vals[:0], &ws.batch)
 		call := ws.cl.Classify(tk, s1.ID, uint32(len(s1.Seq)), len2, &ws.w)
 		if printing {
 			res.batch.Add(s1, s2, call != 0, r.idx.tax.ExternalID(call))
