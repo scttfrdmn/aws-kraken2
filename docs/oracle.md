@@ -169,25 +169,48 @@ through `make run`.
 ## Canonical run (Linux aarch64, Graviton)
 
 `runs/g1-oracle.json` runs `make oracle DB=all` (Viral and Standard-8) on a Graviton instance in
-us-west-2 through `make run GATE=g1 SPEC=runs/g1-oracle.json` ([run.md](run.md)). The
-instance clones the launch commit (the short sha that ends the run ID) from GitHub, so that
-commit must be pushed first. It installs g++, perl, jq and GNU gzip with dnf, and Go at the
-version in `go.mod`. It stages both databases with `ak2_stage` (the instance gets read access
-to the data prefix through `resources.s3_read_write`) and checks each file: both its sha256 and
-the object's sha256 metadata must be 64 hex digits and equal, and the file non-empty, or the run
-stops before anything is built. Only then does it record in `SOURCE` where the copy came from. Then it builds upstream and our binary, runs the oracle, and
-pushes the results directory with `ak2_push`. The phases are setup, fetch, build, oracle and
-push, and every S3 request is counted with `ak2_req`.
+us-west-2 through `make run GATE=g1 SPEC=runs/g1-oracle.json` ([run.md](run.md)). It depends on
+neither genome-idx nor ENA; every input comes from in-region copies in the results bucket.
 
-The databases must already be in the run's region. The pinned objects
-(`genome-idx/kraken/<name>.tar.gz`) are in us-east-1, so `make stage-db DB=viral` and
-`make stage-db DB=standard8` (`scripts/stage-db.sh`) copy the fetched `hash.k2d`, `opts.k2d`,
-`taxo.k2d` and `SOURCE` from `.cache/db/` to
-`s3://cookbook-942542972736-us-west-2/aws-kraken2/data/<name>/`. Each object carries its sha256
-as metadata, checked after upload. The `SOURCE` file keeps the genome-idx origin and ETag, and
-the instance appends where it staged from. `stage-db` is idempotent: an object whose metadata
-already matches is skipped. Run it once, before the first launch. `make run` head-objects
-every declared file at launch and refuses the run if one is missing.
+Prerequisites, run once from a machine that has the fetched inputs:
+- `make stage-db DB=viral` and `make stage-db DB=standard8` (`scripts/stage-db.sh`) copy
+  `hash.k2d`, `opts.k2d`, `taxo.k2d` and `SOURCE` from `.cache/db/<name>/` to
+  `s3://cookbook-942542972736-us-west-2/aws-kraken2/data/<name>/`. The pinned genome-idx objects
+  are in us-east-1, so they cannot be declared for a us-west-2 run. `SOURCE` keeps the
+  genome-idx origin and ETag.
+- `make stage-reads` (`scripts/stage-reads.sh`) copies the read subsets
+  (`<run>_200000_{1,2}.fq`, the `.fq.gz` copies and `<run>_200000.SOURCE` for SRR062634, ERR478965,
+  SRR28305653 and SRR5935746) to `…/aws-kraken2/data/reads/`. It first checks every plain FASTQ
+  against the sha256 its SOURCE recorded when ENA served it.
+- Both scripts store each object's sha256 as metadata and check it with head-object after the
+  upload. Both are idempotent: an object whose metadata already matches is skipped.
+- The launch commit must be on GitHub. The instance clones the short sha that ends the run ID.
+
+On the instance:
+1. **setup** installs g++, make, zlib, perl, jq, bzip2, GNU gzip, findutils and diffutils with
+   dnf, clones the commit and installs Go at the version in `go.mod`. Each step stops the run on
+   failure.
+2. **fetch** stages both databases and the reads with `ak2_stage`. For every file, both its
+   sha256 and the object's sha256 metadata must be 64 hex digits and equal, and the file
+   non-empty. The plain FASTQs must also match their SOURCE. Only a verified database copy has
+   its staging location appended to `SOURCE`. A failure stops the run before anything is built.
+3. **build** runs `scripts/oracle-build.sh` and `make build`; either failing stops the run.
+4. **oracle** runs `make oracle DB=all ORACLE_THREADS=8`, streaming its output into the run log.
+5. **push** pushes with `ak2_push` only the result directories this run created (the paths
+   `make oracle` prints as `results: <dir>`), plus the oracle's output. The exit status is
+   the oracle's; if that is 0, a failed push makes it 1.
+
+Every S3 request is counted with `ak2_req`. `make run` head-objects every declared file at
+launch, and refuses the run if one is missing.
+
+**IAM:** `resources.s3_read_write` names the data prefix, but spawn's grant is its full
+read-write grant, and run.sh checks only the bucket. In practice the instance can read and write
+the whole results bucket, not just read the prefix. The `aws` PATH shim limits which buckets the
+CLI may touch, not what it may do inside an allowed one.
+
+CI (`.github/workflows/ci.yml`) still fetches its reads from ENA with `scripts/fetch-reads.sh`.
+Every request there is retried (ENA intermittently answers HTTP 500), and the script fails
+loudly, naming the URL, once the retries are spent.
 
 **Failure looks like:**
 - a non-zero exit with `oracle: FAILED`;

@@ -104,10 +104,21 @@ jobs:
       - name: make oracle DB=viral
         run: make oracle DB=viral
 
-      - name: Upload oracle results
+      # Only the result directories this run created (untracked), not the committed ones.
+      - name: List this run's results
         if: always()
+        id: newres
+        run: |
+          {
+            echo 'dirs<<EOF'
+            git ls-files --others --exclude-standard -- results/g1 | xargs -r -n1 dirname | sort -u
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload oracle results
+        if: always() && steps.newres.outputs.dirs != ''
         uses: actions/upload-artifact@v4
         with:
           name: oracle-viral-${{ github.sha }}
-          path: results/g1/oracle-viral-*
-          if-no-files-found: warn
+          path: ${{ steps.newres.outputs.dirs }}
+          if-no-files-found: error

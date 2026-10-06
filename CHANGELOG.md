@@ -89,7 +89,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ubuntu-24.04-arm`. The `.oracle` cache key includes the compiler version.
 - `runs/g1-oracle.json`: TaskSpec for `make oracle DB=all` on Graviton in us-west-2, the
   canonical evidence for both databases. Prepared, not launched. `make stage-db`
-  (`scripts/stage-db.sh`) makes the in-region database copies it stages and verifies.
+  (`scripts/stage-db.sh`) and `make stage-reads` (`scripts/stage-reads.sh`) make the in-region
+  database and read copies it stages and verifies, so the run depends on neither genome-idx nor
+  ENA. Setup steps fail fast; the oracle streams into the run log; only this run's result
+  directories are pushed, and push failures count into the exit status.
 - `classify.Calls`: report input from merged counters, keeping zero-read taxa, with an end-to-end
   counters-to-report test.
 - `upstream/chash_build.cc` and a g0b `hash` sub-step: a synthetic 40-bit table built by
@@ -125,7 +128,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `aws-kraken2`: an unwritable `--report` is silently not written and the run exits 0, as with
   upstream's unchecked ofstream (it exited 1). "Unable to open file" reasons are worded as C's
   strerror.
-- `fetch-reads.sh` uses `sha256sum` when `shasum` is absent and fails on an empty hash.
+- `fetch-reads.sh` uses `sha256sum` when `shasum` is absent and fails on an empty hash. It retries
+  ENA requests (the portal API with `--retry-all-errors`; the FASTQ stream with `--retry`, plus a
+  retry of the whole pipeline) and fails loudly when the retries run out.
+- CI uploads only the result directories the run created, not the committed ones.
 
 - `internal/chash`: `32 + capacity × cellBytes` is checked for overflow, so a crafted header can
   no longer pass the size check into an out-of-bounds slice. The header is decoded by
