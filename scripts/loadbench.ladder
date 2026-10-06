@@ -6,6 +6,9 @@
 #   fill     the Filler interface (a refactor: expected no change)
 #   scan     mmscan.AppendMinimizers: the scanner loop over a whole sequence, state in locals
 #   recycle  seqio.Recycle: input blocks reuse their memory
+#   rc       AppendMinimizers keeps the reverse complement incrementally
+#   matesize the second mate's block sized like the first; newline index presized
+#   batch    chash.GetBatch: a read's lookups with their cache misses overlapped
 #   final    the benchmarked commit (merges of main since; expected no change)
 # Pread streams stay at upstream's 8 (16 measured no gain: results/g2/20261006-091341-5d20b94,
 # results/g2/20261006-100409-16bc8b0); were 16 ever adopted, upstream would get
@@ -15,4 +18,7 @@ thp c138ab7f99e20af7dba8dc222c5b49630e4a50fb
 fill 9de50376abd84d6cc4255ad45bab03f032e46bbc
 scan fed426300c38b9f39f62af75fd542e02df705e24
 recycle 97fe7e67196841bebf28290afc1fa1743fde4cea
+rc 8db28f03b0340808aedad1d05534949fcb44c631
+matesize fd4eea8ce87566815330d76539cab2cf306c9e7c
+batch 411d4b430c577c80d9041483ed8167b2738dd9bb
 final HEAD

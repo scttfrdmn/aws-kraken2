@@ -157,8 +157,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Classification speed (#39, #36). `mmscan.Scanner.AppendMinimizers` runs the scanner loop over
   a whole sequence with its state in locals, and `classify.Tokens.Scan` uses it, with
   MurmurHash3 called directly for the capped-database check. Its output is held to `Next`'s by
-  a test. `seqio.Recycle` lets input blocks reuse their memory, as upstream's per-thread reader
-  does.
+  a test, and keeps the reverse complement incrementally. `seqio.Recycle` lets input blocks
+  reuse their memory, as upstream's per-thread reader does, and the second mate's block is sized
+  like the first's. `chash.GetBatch` resolves a read's lookups with their cache misses
+  overlapped. It returns the same values as `Get`, checked by a test and by `k2probe equiv-hash`
+  against upstream. `AK2_MEMPROFILE` writes an allocs profile.
 - `make loadbench`:
   - the implementation order rotates per repetition;
   - the manifest records the database's storage (device, model, EBS volume);
