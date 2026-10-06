@@ -1,0 +1,67 @@
+{
+  "gate": "g1",
+  "what": "make bracken-check: Bracken on upstream's vs our --report, byte-identity (#19)",
+  "invocation": "scripts/bracken-check.sh ",
+  "result": "PASS",
+  "commit": "91b0423b87c7a3e50a391aaaf9e8e6070590091f",
+  "dirty": false,
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+  "upstream_describe": "2.17.2-20-g2731b35",
+  "upstream": {
+    "kraken2_sha256": "552c39a4aa54ca56af49d5d61a7627ede37238c67978930eb020f8e7b567263f",
+    "classify_sha256": "765d9fd606ca48c1a533762e59877359c9f7a8e0c8c1fda850aafb8fdefc6681",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++-16 (Homebrew GCC 16.2.0) 16.2.0\nversion Kraken version 2.17.1\nbuilt 2026-10-06T00:14:07Z Darwin arm64\n"
+  },
+  "ours": {
+    "aws_kraken2_sha256": "c1186d93241d5ef1418a178292db3f778f832e7a5af2dcc23630f50cea5a2b67",
+    "go": "go version go1.27.1 darwin/arm64"
+  },
+  "bracken": {
+    "repo": "https://github.com/jenniferlu717/Bracken.git",
+    "tag": "v3.1",
+    "commit": "cfeac04b6445c44c3825866683a6fdd18746cb58",
+    "describe": "v3.1",
+    "est_abundance_sha256": "c311cb56921b92c807ea28710c98349c725f27b7cee2b20e2e343c50e2981cca",
+    "python": "Python 3.14.8",
+    "python_path": "/opt/homebrew/bin/python3",
+    "read_len": 100,
+    "threshold": 10,
+    "levels": "S G",
+    "kmer_distrib_sha256": "8cf177257f748cd3598163f3f84b395e3a89938c18d1c35da006e19fd027573e"
+  },
+  "kraken_args": {
+    "threads": 8,
+    "paired": true
+  },
+  "db": {
+    "dir": "k2_standard_08_GB_20260626",
+    "source": "source s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz\netag \"815577bbfd245c6e337f1bea41fae968-709\"\nfetched 2026-10-06T01:19:22Z\n",
+    "etag": "815577bbfd245c6e337f1bea41fae968-709"
+  },
+  "reads": [
+    {
+      "stem": "ERR478965_200000",
+      "paired": true,
+      "source": "accession ERR478965\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_2.fastq.gz\nsha256 385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be ERR478965_200000_1.fq\nsha256 71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 ERR478965_200000_2.fq\nfetched 2026-10-06T00:29:07Z\n"
+    },
+    {
+      "stem": "SRR062634_200000",
+      "paired": true,
+      "source": "accession SRR062634\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz\nsha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq\nsha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq\nfetched 2026-10-06T00:20:27Z\n"
+    }
+  ],
+  "host": {
+    "hostname": "juno",
+    "os": "Darwin",
+    "arch": "arm64",
+    "kernel": "27.0.0",
+    "model": "Mac16,6",
+    "canonical_platform": false,
+    "note": "local development host (not Linux aarch64); acceptable for this spot-check (#19)"
+  },
+  "start": "2026-10-06T08:33:49Z",
+  "stop": "2026-10-06T08:33:52Z",
+  "comparisons": 22,
+  "comparisons_identical": 22,
+  "comparisons_expected": 22
+}
