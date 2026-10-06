@@ -41,7 +41,7 @@ manifest() {
   {
     echo "{"
     echo "  \"gate\": \"g0b\", \"step\": \"$2\", \"run_id\": \"$RUN_ID\","
-    echo "  \"commit\": \"$(git rev-parse HEAD)\", \"dirty\": $([ -n "$(git status --porcelain)" ] && echo true || echo false),"
+    echo "  \"commit\": \"$(git rev-parse HEAD)\", \"dirty\": $([ -n "$(git status --porcelain -- . ':(exclude)results')" ] && echo true || echo false),"
     echo "  \"upstream_pin\": \"$UPSTREAM_PIN\","
     echo "  \"host\": \"$(uname -sm) $(sysctl -n hw.model 2>/dev/null || hostname)\","
     echo "  \"go\": \"$(go version)\","
