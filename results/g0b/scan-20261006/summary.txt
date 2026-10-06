@@ -1,14 +1,17 @@
-commit 173ed00858b6140bfd91051d6f93afbd89eb293f
+commit 7d566f8c7e56ad98d6355db221db7933ba91d5f1 (dirty)
 upstream https://github.com/DerrickWood/kraken2.git @ 2731b35f7abb26ec926517274f3d87e78d42fd76
-date 2026-10-06T00:42:33Z host Darwin arm64
+date 2026-10-06T01:21:11Z host Darwin arm64
 go go1.27.1
 harness pin 2731b35f7abb26ec926517274f3d87e78d42fd76
 harness cxx g++-16 (Homebrew GCC 16.2.0) 16.2.0
 harness cxxflags -fopenmp -Wall -std=c++11 -O3 -fPIC -g -DLINEAR_PROBING
-harness built 2026-10-06T00:42:34Z Darwin arm64
+harness built 2026-10-06T01:21:12Z Darwin arm64
 db k2_viral_20260626 source s3://genome-idx/kraken/k2_viral_20260626.tar.gz
 db k2_viral_20260626 etag "df6f9dd95095a9ea2e0cfc580b0f684a-69"
 db k2_viral_20260626 fetched 2026-10-06T00:17:31Z
+db k2_standard_08_GB_20260626 source s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz
+db k2_standard_08_GB_20260626 etag "815577bbfd245c6e337f1bea41fae968-709"
+db k2_standard_08_GB_20260626 fetched 2026-10-06T01:19:22Z
 reads SRR062634_200000 accession SRR062634
 reads SRR062634_200000 records_per_mate 200000
 reads SRR062634_200000 urls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz
@@ -33,11 +36,14 @@ reads SRR28305653_200000 urls ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/053/SRR2830565
 reads SRR28305653_200000 sha256 ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946 SRR28305653_200000_1.fq
 reads SRR28305653_200000 sha256 d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a SRR28305653_200000_2.fq
 reads SRR28305653_200000 fetched 2026-10-06T00:32:45Z
-skip standard-8 (no /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_standard_08_GB_20260626/opts.k2d)
 case viral reads=SRR062634_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=26400000 ambiguous_minimizers=33762 reads_with_ambiguous_minimizer=656 reads_with_non_ACGT=2167 non_ACGT_bases=18229 range_scans=0 range_minimizers=0 
 case viral reads=SRR5935746_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=23939727 ambiguous_minimizers=1064 reads_with_ambiguous_minimizer=245 reads_with_non_ACGT=929 non_ACGT_bases=929 range_scans=0 range_minimizers=0 
 case viral reads=ERR478965_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=22574848 ambiguous_minimizers=0 reads_with_ambiguous_minimizer=0 reads_with_non_ACGT=0 non_ACGT_bases=0 range_scans=0 range_minimizers=0 
 case viral reads=SRR28305653_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=46400000 ambiguous_minimizers=2496 reads_with_ambiguous_minimizer=382 reads_with_non_ACGT=439 non_ACGT_bases=461 range_scans=0 range_minimizers=0 
+case standard-8 reads=SRR062634_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0xed805142634b1800 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=26400000 ambiguous_minimizers=33762 reads_with_ambiguous_minimizer=656 reads_with_non_ACGT=2167 non_ACGT_bases=18229 range_scans=0 range_minimizers=0 
+case standard-8 reads=SRR5935746_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0xed805142634b1800 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=23939727 ambiguous_minimizers=1064 reads_with_ambiguous_minimizer=245 reads_with_non_ACGT=929 non_ACGT_bases=929 range_scans=0 range_minimizers=0 
+case standard-8 reads=ERR478965_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0xed805142634b1800 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=22574848 ambiguous_minimizers=0 reads_with_ambiguous_minimizer=0 reads_with_non_ACGT=0 non_ACGT_bases=0 range_scans=0 range_minimizers=0 
+case standard-8 reads=SRR28305653_200000 flags='' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0xed805142634b1800 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=46400000 ambiguous_minimizers=2496 reads_with_ambiguous_minimizer=382 reads_with_non_ACGT=439 non_ACGT_bases=461 range_scans=0 range_minimizers=0 
 case viral-variant reads=SRR062634_200000 flags='-r' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=26400000 ambiguous_minimizers=33762 reads_with_ambiguous_minimizer=656 reads_with_non_ACGT=2167 non_ACGT_bases=18229 range_scans=400000 range_minimizers=13916319 
 case viral-variant reads=SRR062634_200000 flags='-R 0 -r' rc=0 :: opts k=35 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=0 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=26400000 ambiguous_minimizers=33762 reads_with_ambiguous_minimizer=656 reads_with_non_ACGT=2167 non_ACGT_bases=18229 range_scans=400000 range_minimizers=13916319 
 case viral-variant reads=SRR062634_200000 flags='-k 31 -l 31 -r' rc=0 :: opts k=31 l=31 spaced_seed_mask=0x3ffffffff3333333 toggle_mask=0xe37e28c4271b5a2d dna_db=true minimum_acceptable_hash_value=0x0 revcom_version=1 db_version=0 db_type=0 opts_filesize=64 MATCH reads=400000 minimizers=28000000 ambiguous_minimizers=36089 reads_with_ambiguous_minimizer=2167 reads_with_non_ACGT=2167 non_ACGT_bases=18229 range_scans=400000 range_minimizers=14000070 
