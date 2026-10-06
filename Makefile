@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: build test lint oracle ami run orphans report
+.PHONY: build test lint oracle harness oracle-classify ami run orphans report
 
 build:
 	$(GO) build -trimpath -o $(BIN)/ ./cmd/...
@@ -20,6 +20,17 @@ lint:
 
 oracle:
 	scripts/oracle.sh
+
+harness:
+	scripts/harness-build.sh "$(NAME)"
+
+# Byte-identity of internal/classify's --output against upstream (issues #13, #14).
+CLASSIFY_ORACLE ?= .cache/classify
+oracle-classify:
+	scripts/classify-oracle.sh "$(CLASSIFY_ORACLE)"
+	K2_CLASSIFY_ORACLE="$(abspath $(CLASSIFY_ORACLE))" $(GO) test -count=1 -v -run Equiv \
+		./internal/classify/ > "$(CLASSIFY_ORACLE)/equiv.log" 2>&1; s=$$?; \
+		cat "$(CLASSIFY_ORACLE)/equiv.log"; exit $$s
 
 ami:
 	scripts/ami.sh
