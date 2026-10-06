@@ -1,0 +1,11 @@
+# make loadbench LB_LADDER=scripts/loadbench.ladder (issue #36; docs/loadbench.md).
+# One line per change, in order: LABEL COMMIT [NAME=VALUE...]. Consecutive lines are one
+# attribution row. @NCPU is the online CPU count.
+#   base   AK2_TIMINGS phase log only (the load path of main at d396c75)
+#   thp    2 MiB-aligned table + MADV_HUGEPAGE
+#   fill   the Filler interface (a refactor: expected no change)
+#   fill-streams-ncpu   the same build with K2_DB_READ_THREADS = vCPU count (upstream: 8)
+base 666459f6991cc5b99f4e7cbc278aeff866c35d7b
+thp c138ab7f99e20af7dba8dc222c5b49630e4a50fb
+fill 9de50376abd84d6cc4255ad45bab03f032e46bbc
+fill-streams-ncpu 9de50376abd84d6cc4255ad45bab03f032e46bbc K2_DB_READ_THREADS=@NCPU
