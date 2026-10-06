@@ -150,7 +150,12 @@ So `command[2]` is `scripts/stub.sh`, about 1.9 KB, and the **payload** (`script
 - It passes the stub `AK2_PAYLOAD_URI`, `AK2_PAYLOAD_SHA256`, and `AK2_PAYLOAD_URL`, a presigned
   GET for that one object valid for TTL + 1 h. The instance needs no extra IAM grant on the
   shared bucket.
-- The URL is redacted from `spec.resolved.json` after launch.
+- The URL-bearing spec that spawn reads is a `mktemp` file outside `results/`, removed by an
+  EXIT trap. `spec.resolved.json` under `results/` is only ever written with the URL redacted.
+- The stub checks that the URL is `https://<bucket>.s3.<region>.amazonaws.com/…` for the
+  asserted region, and unsets it before exec.
+- The payload must be under 120 KiB, because it travels as one `bash -c` argument (Linux caps
+  a single argument at 128 KiB).
 
 The stub keeps Law 4's order:
 1. It records `$-` first, then runs `set +e`.
@@ -166,7 +171,9 @@ has not started yet.
 **Size check.** Before the plan, and so in `DRY_RUN=1` too, `run.sh` builds `scripts/udsize`. This
 is a separate Go module that links spawn v0.121.0's own `taskproto.GenerateWrapper`,
 `GenerateFlushScript`, `launcher.BuildLinuxBootstrap` and `EncodeLinuxUserData`. It measures the
-exact user data for the resolved spec. `run.sh` refuses if the result exceeds
+exact user data for the resolved spec. `run.sh` refuses to run at all if `spawn version` differs
+from the spawn version pinned in `scripts/udsize/go.mod` (bump it there and `go mod tidy`). It
+refuses if the result exceeds
 16384 − `AK2_USERDATA_MARGIN` (1024, in `ak2.env`). The manifest records `user_data` and
 `payload` (URI, sha256, bytes).
 
