@@ -26,6 +26,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 )
 
 // Format is a record's (or stream's) sequence format.
@@ -299,9 +300,28 @@ func (r *Reader) fill(b *Block, n int) bool {
 	return true
 }
 
+// blockPool holds blocks handed back by Recycle, so steady-state loads reuse memory instead
+// of allocating (and, on Linux, faulting in) a fresh multi-MB buffer per block, as upstream's
+// per-thread FastReader reuses its buffer (issue #39).
+var blockPool sync.Pool
+
+// Recycle hands back a block whose records (and anything sliced from them) the caller no
+// longer uses; a later LoadBlock may reuse its memory. Safe from any goroutine; nil is a no-op.
+func Recycle(b *Block) {
+	if b != nil {
+		blockPool.Put(b)
+	}
+}
+
 // reset starts a new block from the carried tail.
 func (r *Reader) reset(extra int) *Block {
-	b := &Block{buf: make([]byte, 0, len(r.carry)+extra+1)}
+	need := len(r.carry) + extra + 1
+	b, _ := blockPool.Get().(*Block)
+	if b != nil && cap(b.buf) >= need {
+		*b = Block{buf: b.buf[:0], nl: b.nl[:0]}
+	} else {
+		b = &Block{buf: make([]byte, 0, need)}
+	}
 	b.buf = append(b.buf, r.carry...)
 	r.carry = r.carry[:0]
 	return b
