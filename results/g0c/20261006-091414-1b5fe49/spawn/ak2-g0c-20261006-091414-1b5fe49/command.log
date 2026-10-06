@@ -1,0 +1,89 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-06T09:15:09Z] wrapper start
+spawn: [2026-10-06T09:15:09Z] stage-in start
+spawn: [2026-10-06T09:15:09Z] stage-in done rc=0
+spawn: [2026-10-06T09:15:09Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 3eb304e92aa8e754f0c16f1a15aac8dbcd94eb84e00a4dca3a440784c7f3e7eb); exec
+ak2: log tee up
+ak2-phase	2026-10-06T09:15:09Z	1791278109	preamble	no
+ak2: [2026-10-06T09:15:09Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T09:15:09Z] after set +e $-=hBc
+ak2: [2026-10-06T09:15:09Z] gate=g0c run=20261006-091414-1b5fe49
+ak2: [2026-10-06T09:15:09Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T09:15:09Z] imds region=us-west-2 az=us-west-2b instance=i-0f039f7890d6572fc type=c8gn.2xlarge ami=ami-09325776a00699513
+ak2: [2026-10-06T09:15:09Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-06T09:15:10Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-06T09:15:10Z] region assert passed
+ak2: [2026-10-06T09:15:10Z] drop_caches_ok=true
+ak2: [2026-10-06T09:15:10Z] preamble done; spec body starts
+ak2-phase	2026-10-06T09:15:10Z	1791278111	body	no
+ak2-phase	2026-10-06T09:15:11Z	1791278111	setup	no
+ak2: [2026-10-06T09:15:27Z] checkout 1b5fe49 head=1b5fe49030b75ea6278ae78826f2f502db10b51a
+ak2: [2026-10-06T09:15:36Z] go: go version go1.27.1 linux/arm64; k2probe built; nproc 8; mem_gib 15
+ak2-phase	2026-10-06T09:15:36Z	1791278136	head	no
+ak2: [2026-10-06T09:15:37Z] pushed out/head-hash.k2d.json
+ak2: [2026-10-06T09:15:37Z] hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800 version=null
+ak2-phase	2026-10-06T09:15:37Z	1791278137	pilot	no
+2026-10-06T09:15:42Z k2probe: sha-bench: 8589934592 bytes at 1.752 GB/s
+2026-10-06T09:15:42Z k2probe: pass: https://kraken2-ncbi-refseq-complete-v205.s3.us-west-2.amazonaws.com/Kraken2_RefSeqCompleteV205/hash.k2d bytes [0,34359738368) of 1189091671800, chunk 64 MiB, 48 workers, window 72, GOMAXPROCS 8
+2026-10-06T09:15:48Z k2probe: progress: 8589934592 / 34359738368 bytes (25.00%) 6.6 s, 1.294 GB/s wall, sha busy 1.651 GB/s, occupied so far 1501367133, requests 200 retries 0
+2026-10-06T09:15:54Z k2probe: progress: 17179869184 / 34359738368 bytes (50.00%) 11.8 s, 1.452 GB/s wall, sha busy 1.652 GB/s, occupied so far 3002752484, requests 328 retries 0
+2026-10-06T09:15:59Z k2probe: progress: 25769803776 / 34359738368 bytes (75.00%) 17.0 s, 1.512 GB/s wall, sha busy 1.651 GB/s, occupied so far 4504084663, requests 456 retries 0
+2026-10-06T09:16:04Z k2probe: progress: 34359738368 / 34359738368 bytes (100.00%) 22.1 s, 1.552 GB/s wall, sha busy 1.660 GB/s, occupied so far 6005443654, requests 513 retries 0
+2026-10-06T09:16:04Z k2probe: pass done: 34359738368 bytes in 22.1 s (1.552 GB/s wall; sha busy 20.7 s = 1.660 GB/s; consumer stalled 1.4 s), sha256 512bcd5b6e2bc7d465f14c84db850441d791c56a61969c0d0461960e3ff1343b
+ak2: [2026-10-06T09:16:04Z] pilot rc=0
+ak2: [2026-10-06T09:16:05Z] pushed out/pilot/summary.json
+ak2-phase	2026-10-06T09:16:05Z	1791278165	pass	no
+2026-10-06T09:16:05Z k2probe: pass: https://kraken2-ncbi-refseq-complete-v205.s3.us-west-2.amazonaws.com/Kraken2_RefSeqCompleteV205/hash.k2d bytes [0,1189091671800) of 1189091671800, chunk 64 MiB, 48 workers, window 72, GOMAXPROCS 8
+2026-10-06T09:16:26Z k2probe: progress: 34359738368 / 1189091671800 bytes (2.89%) 21.8 s, 1.577 GB/s wall, sha busy 1.659 GB/s, occupied so far 6005443654, requests 584 retries 0
+2026-10-06T09:16:47Z k2probe: progress: 68719476736 / 1189091671800 bytes (5.78%) 42.4 s, 1.619 GB/s wall, sha busy 1.662 GB/s, occupied so far 12010927221, requests 1096 retries 0
+2026-10-06T09:17:08Z k2probe: progress: 103079215104 / 1189091671800 bytes (8.67%) 63.2 s, 1.632 GB/s wall, sha busy 1.661 GB/s, occupied so far 18016260188, requests 1608 retries 0
+2026-10-06T09:17:29Z k2probe: progress: 137438953472 / 1189091671800 bytes (11.56%) 83.8 s, 1.639 GB/s wall, sha busy 1.661 GB/s, occupied so far 24021655006, requests 2120 retries 0
+2026-10-06T09:17:49Z k2probe: progress: 171798691840 / 1189091671800 bytes (14.45%) 104.6 s, 1.643 GB/s wall, sha busy 1.661 GB/s, occupied so far 30027136812, requests 2632 retries 0
+2026-10-06T09:18:10Z k2probe: progress: 206158430208 / 1189091671800 bytes (17.34%) 125.3 s, 1.645 GB/s wall, sha busy 1.660 GB/s, occupied so far 36032606910, requests 3144 retries 0
+2026-10-06T09:18:31Z k2probe: progress: 240518168576 / 1189091671800 bytes (20.23%) 146.2 s, 1.646 GB/s wall, sha busy 1.658 GB/s, occupied so far 42038127017, requests 3656 retries 0
+2026-10-06T09:18:52Z k2probe: progress: 274877906944 / 1189091671800 bytes (23.12%) 167.0 s, 1.646 GB/s wall, sha busy 1.657 GB/s, occupied so far 48043604571, requests 4168 retries 0
+2026-10-06T09:19:13Z k2probe: progress: 309237645312 / 1189091671800 bytes (26.01%) 187.8 s, 1.646 GB/s wall, sha busy 1.656 GB/s, occupied so far 54048864941, requests 4680 retries 0
+2026-10-06T09:19:34Z k2probe: progress: 343597383680 / 1189091671800 bytes (28.90%) 208.8 s, 1.645 GB/s wall, sha busy 1.656 GB/s, occupied so far 60054377095, requests 5192 retries 0
+2026-10-06T09:19:54Z k2probe: progress: 377957122048 / 1189091671800 bytes (31.79%) 229.8 s, 1.645 GB/s wall, sha busy 1.655 GB/s, occupied so far 66059912885, requests 5704 retries 0
+2026-10-06T09:20:15Z k2probe: progress: 412316860416 / 1189091671800 bytes (34.67%) 250.5 s, 1.646 GB/s wall, sha busy 1.655 GB/s, occupied so far 72065320960, requests 6216 retries 0
+2026-10-06T09:20:36Z k2probe: progress: 446676598784 / 1189091671800 bytes (37.56%) 271.3 s, 1.646 GB/s wall, sha busy 1.655 GB/s, occupied so far 78070786208, requests 6728 retries 0
+2026-10-06T09:20:57Z k2probe: progress: 481036337152 / 1189091671800 bytes (40.45%) 292.1 s, 1.647 GB/s wall, sha busy 1.655 GB/s, occupied so far 84076369984, requests 7240 retries 0
+2026-10-06T09:21:18Z k2probe: progress: 515396075520 / 1189091671800 bytes (43.34%) 313.0 s, 1.647 GB/s wall, sha busy 1.654 GB/s, occupied so far 90081853415, requests 7752 retries 0
+2026-10-06T09:21:39Z k2probe: progress: 549755813888 / 1189091671800 bytes (46.23%) 333.9 s, 1.647 GB/s wall, sha busy 1.653 GB/s, occupied so far 96087309663, requests 8264 retries 0
+2026-10-06T09:21:59Z k2probe: progress: 584115552256 / 1189091671800 bytes (49.12%) 354.7 s, 1.647 GB/s wall, sha busy 1.653 GB/s, occupied so far 102092754484, requests 8776 retries 0
+2026-10-06T09:22:20Z k2probe: progress: 618475290624 / 1189091671800 bytes (52.01%) 375.4 s, 1.647 GB/s wall, sha busy 1.653 GB/s, occupied so far 108098183398, requests 9288 retries 0
+2026-10-06T09:22:41Z k2probe: progress: 652835028992 / 1189091671800 bytes (54.90%) 396.3 s, 1.647 GB/s wall, sha busy 1.653 GB/s, occupied so far 114103589086, requests 9800 retries 0
+2026-10-06T09:23:02Z k2probe: progress: 687194767360 / 1189091671800 bytes (57.79%) 417.0 s, 1.648 GB/s wall, sha busy 1.653 GB/s, occupied so far 120108936817, requests 10312 retries 0
+2026-10-06T09:23:23Z k2probe: progress: 721554505728 / 1189091671800 bytes (60.68%) 437.8 s, 1.648 GB/s wall, sha busy 1.653 GB/s, occupied so far 126114332064, requests 10824 retries 0
+2026-10-06T09:23:43Z k2probe: progress: 755914244096 / 1189091671800 bytes (63.57%) 458.6 s, 1.648 GB/s wall, sha busy 1.653 GB/s, occupied so far 132119731866, requests 11336 retries 0
+2026-10-06T09:24:04Z k2probe: progress: 790273982464 / 1189091671800 bytes (66.46%) 479.3 s, 1.649 GB/s wall, sha busy 1.654 GB/s, occupied so far 138125224965, requests 11848 retries 0
+2026-10-06T09:24:25Z k2probe: progress: 824633720832 / 1189091671800 bytes (69.35%) 500.1 s, 1.649 GB/s wall, sha busy 1.654 GB/s, occupied so far 144130772795, requests 12360 retries 0
+2026-10-06T09:24:46Z k2probe: progress: 858993459200 / 1189091671800 bytes (72.24%) 520.8 s, 1.649 GB/s wall, sha busy 1.654 GB/s, occupied so far 150136328979, requests 12872 retries 0
+2026-10-06T09:25:06Z k2probe: progress: 893353197568 / 1189091671800 bytes (75.13%) 541.7 s, 1.649 GB/s wall, sha busy 1.654 GB/s, occupied so far 156141826328, requests 13384 retries 0
+2026-10-06T09:25:27Z k2probe: progress: 927712935936 / 1189091671800 bytes (78.02%) 562.7 s, 1.649 GB/s wall, sha busy 1.653 GB/s, occupied so far 162147337160, requests 13896 retries 0
+2026-10-06T09:25:48Z k2probe: progress: 962072674304 / 1189091671800 bytes (80.91%) 583.6 s, 1.649 GB/s wall, sha busy 1.653 GB/s, occupied so far 168152790026, requests 14408 retries 0
+2026-10-06T09:26:09Z k2probe: progress: 996432412672 / 1189091671800 bytes (83.80%) 604.4 s, 1.649 GB/s wall, sha busy 1.653 GB/s, occupied so far 174158226906, requests 14920 retries 0
+2026-10-06T09:26:30Z k2probe: progress: 1030792151040 / 1189091671800 bytes (86.69%) 625.3 s, 1.649 GB/s wall, sha busy 1.652 GB/s, occupied so far 180163741145, requests 15432 retries 0
+2026-10-06T09:26:51Z k2probe: progress: 1065151889408 / 1189091671800 bytes (89.58%) 646.0 s, 1.649 GB/s wall, sha busy 1.653 GB/s, occupied so far 186169242583, requests 15944 retries 0
+2026-10-06T09:27:11Z k2probe: progress: 1099511627776 / 1189091671800 bytes (92.47%) 666.6 s, 1.649 GB/s wall, sha busy 1.653 GB/s, occupied so far 192174690984, requests 16456 retries 0
+2026-10-06T09:27:32Z k2probe: progress: 1133871366144 / 1189091671800 bytes (95.36%) 687.3 s, 1.650 GB/s wall, sha busy 1.653 GB/s, occupied so far 198180202558, requests 16968 retries 0
+2026-10-06T09:27:53Z k2probe: progress: 1168231104512 / 1189091671800 bytes (98.25%) 708.1 s, 1.650 GB/s wall, sha busy 1.653 GB/s, occupied so far 204185664385, requests 17480 retries 0
+2026-10-06T09:28:05Z k2probe: progress: 1189091671800 / 1189091671800 bytes (100.00%) 720.6 s, 1.650 GB/s wall, sha busy 1.654 GB/s, occupied so far 207831744422, requests 17720 retries 0
+2026-10-06T09:28:05Z k2probe: pass done: 1189091671800 bytes in 720.6 s (1.650 GB/s wall; sha busy 719.0 s = 1.654 GB/s; consumer stalled 1.4 s), sha256 bc6c65498309a6a32b121edec171a7d2189493020b2014e9c7f6c4cf0e96382c
+2026-10-06T09:28:05Z k2probe: checks: cells == capacity == 297272917942; occupied == header size == 207831744422
+ak2: [2026-10-06T09:28:06Z] pass rc=0
+ak2-phase	2026-10-06T09:28:06Z	1791278886	head-after	no
+ak2: [2026-10-06T09:28:06Z] head-object after rc=0 etag="f80959f9556b50d76b3e744afdd3b22a-8860"
+ak2-phase	2026-10-06T09:28:06Z	1791278886	push	no
+ak2: [2026-10-06T09:28:06Z] pushed out/head-hash.k2d.after.json
+ak2: [2026-10-06T09:28:07Z] pushed out/pass/boundaries.tsv
+ak2: [2026-10-06T09:28:07Z] pushed out/pass/hist-raw.tsv
+ak2: [2026-10-06T09:28:07Z] pushed out/pass/hist.tsv
+ak2: [2026-10-06T09:28:08Z] pushed out/pass/summary.json
+ak2: [2026-10-06T09:28:08Z] pushed out/pass/tails.tsv
+ak2: [2026-10-06T09:28:08Z] G0c-a done rc=0 push_failures=0
+spawn: [2026-10-06T09:28:09Z] command exit rc=0
