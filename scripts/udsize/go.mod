@@ -4,7 +4,7 @@ module github.com/scttfrdmn/aws-kraken2/scripts/udsize
 
 go 1.26
 
-require github.com/spore-host/spawn v0.121.0
+require github.com/spore-host/spawn v0.123.0
 
 require (
 	github.com/BurntSushi/toml v1.4.0 // indirect

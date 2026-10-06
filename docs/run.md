@@ -137,7 +137,7 @@ Every spec must count its requests with `ak2_req`; `run.sh` warns if none were r
 
 ## User data: the stub and the payload
 
-EC2 caps user data at **16384 bytes after base64 decoding**. spawn 0.121.0 sends
+EC2 caps user data at **16384 bytes after base64 decoding**. spawn (0.121.0 and 0.123.0) sends
 `base64(gzip(bootstrap))`, where the bootstrap embeds the task wrapper, which embeds
 `command[2]`. spawn's own bootstrap already takes about 10.4 KB of the gzip budget. Inlining the
 preamble and the spec body overran it: g1 measured 17781 bytes and failed at RunInstances, and
@@ -169,7 +169,7 @@ A stub failure appears in `spawn/<task_id>/command.log`, because the preamble's 
 has not started yet.
 
 **Size check.** Before the plan, and so in `DRY_RUN=1` too, `run.sh` builds `scripts/udsize`. This
-is a separate Go module that links spawn v0.121.0's own `taskproto.GenerateWrapper`,
+is a separate Go module that links the pinned spawn version's own `taskproto.GenerateWrapper`,
 `GenerateFlushScript`, `launcher.BuildLinuxBootstrap` and `EncodeLinuxUserData`. It measures the
 exact user data for the resolved spec. `run.sh` refuses to run at all if `spawn version` differs
 from the spawn version pinned in `scripts/udsize/go.mod` (bump it there and `go mod tidy`). It

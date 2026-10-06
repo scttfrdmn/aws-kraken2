@@ -21,6 +21,8 @@ cd "$(dirname "$0")/.." || exit 1
 ROOT=$PWD
 . scripts/pin.env
 . scripts/paths.sh
+. scripts/pin-identity.sh
+pin_identity || { echo "$(basename "$0"): cannot establish the upstream pin identity" >&2; exit 1; }
 echo "oracle: shell flags $-"
 INVOCATION="scripts/oracle.sh $*"
 
@@ -470,7 +472,7 @@ manifest() {
     --arg etag "$(awk '$1=="etag"{print $2}' "$dbdir/SOURCE" | tr -d '"')" \
     --slurpfile opts "$RES/opts.json" \
     --arg commit "$(git rev-parse HEAD)" --argjson dirty "$dirty" \
-    --arg pin "$UPSTREAM_PIN" --arg classify_sha "$(sha "$K2DIR/classify")" \
+    --arg pin "$UPSTREAM_SHA" --arg describe "$UPSTREAM_DESCRIBE" --arg classify_sha "$(sha "$K2DIR/classify")" \
     --arg kraken2_sha "$(sha "$K2DIR/kraken2")" --rawfile upbuild "$K2DIR/BUILD" \
     --arg compiler "$(awk '$1=="cxx"{$1=""; sub(/^ /,""); print}' "$K2DIR/BUILD")" \
     --arg go "$(go version)" --arg ours_sha "$(sha "$OURS")" \
@@ -483,8 +485,8 @@ manifest() {
     --argjson cases "$total" --argjson identical "$ident" --argjson upstream_unexpected "$upbad" \
     --argjson ckbad "$ckbad" --argjson failed "$failed" --argjson defined "${#CASES[@]}" \
     '{gate:$gate, what:$what, invocation:$invocation, case_filter:$filter, threads:$threads,
-      commit:$commit, dirty:$dirty, upstream_pin:$pin,
-      upstream:{classify_sha256:$classify_sha, kraken2_sha256:$kraken2_sha, build:$upbuild, compiler:$compiler},
+      commit:$commit, dirty:$dirty, upstream_pin:$pin, upstream_describe:$describe,
+      upstream:{sha:$pin, describe:$describe, classify_sha256:$classify_sha, kraken2_sha256:$kraken2_sha, build:$upbuild, compiler:$compiler},
       ours:{aws_kraken2_sha256:$ours_sha, go:$go},
       host:{os:$os, arch:$arch, kernel:$kernel, model:$model, canonical_platform:$canonical,
             note:(if $canonical then "Linux aarch64: the canonical oracle platform"
@@ -503,7 +505,7 @@ summarize() {
   local man="$RES/manifest.json"
   echo "# make oracle: $db, $TS"
   echo
-  echo "Upstream \`kraken2\` at \`$UPSTREAM_PIN\` vs \`bin/aws-kraken2\` at \`$(jq -r .commit "$man")\`" \
+  echo "Upstream \`kraken2\` at \`$UPSTREAM_SHA\` (\`$UPSTREAM_DESCRIBE\`) vs \`bin/aws-kraken2\` at \`$(jq -r .commit "$man")\`" \
        "(dirty: $(jq -r .dirty "$man")), on $(jq -r '.host.os + " " + .host.arch' "$man")."
   echo "$(jq -r .host.note "$man")."
   [ -n "$FILTER" ] && echo && echo "**Filtered run (ORACLE_CASES='$FILTER'): not the full matrix.**"

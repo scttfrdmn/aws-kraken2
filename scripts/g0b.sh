@@ -16,6 +16,8 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 . scripts/pin.env
 . scripts/paths.sh
+. scripts/pin-identity.sh
+pin_identity || { echo "$(basename "$0"): cannot establish the upstream pin identity" >&2; exit 1; }
 echo "g0b: shell flags $-"
 INVOCATION="scripts/g0b.sh $*"
 
@@ -76,7 +78,7 @@ manifest() {
     echo "  \"invocation\": \"$INVOCATION\","
     echo "  \"env\": {\"G0B_DBS\": \"$DBS\", \"G0B_SCAN_READS\": \"$SCAN_READS\"},"
     echo "  \"commit\": \"$(git rev-parse HEAD)\", \"dirty\": $(dirty),"
-    echo "  \"upstream_pin\": \"$UPSTREAM_PIN\","
+    echo "  \"upstream_pin\": \"$UPSTREAM_SHA\", \"upstream_describe\": \"$UPSTREAM_DESCRIBE\","
     echo "  \"host\": \"$(uname -sm) $(sysctl -n hw.model 2>/dev/null || hostname)\","
     echo "  \"canonical_platform\": \"Linux aarch64; this host is $( [ "$(uname -s)/$(uname -m)" = Linux/aarch64 ] && echo canonical || echo development-only)\","
     echo "  \"go\": \"$(go version)\","
@@ -172,7 +174,7 @@ run_synth40() {
 summarize_hash() {
   echo "# g0b hash equivalence, run $RUN_ID"
   echo
-  echo "Upstream pin \`$UPSTREAM_PIN\`; commit \`$(git rev-parse HEAD)\` (dirty: $(dirty)). Failed checks: $FAILED."
+  echo "Upstream pin \`$UPSTREAM_SHA\` (\`$UPSTREAM_DESCRIBE\`); commit \`$(git rev-parse HEAD)\` (dirty: $(dirty)). Failed checks: $FAILED."
   echo "Raw per-run files are alongside; \`manifest.json\` has the run metadata."
   echo
   echo '```'; cat "$RES/commands.txt"; echo; cat "$RES"/harness-*.BUILD; echo '```'
@@ -240,7 +242,7 @@ step_scan() {
   { echo "shell flags: $-"; echo "invocation: $INVOCATION"; echo "G0B_SCAN_READS=$SCAN_READS"; } >> "$log"
   {
     echo "commit $(git rev-parse HEAD) dirty=$(dirty)"
-    echo "upstream $UPSTREAM_REPO @ $UPSTREAM_PIN"
+    echo "upstream $UPSTREAM_REPO @ $UPSTREAM_SHA ($UPSTREAM_DESCRIBE)"
     echo "date $(date -u +%FT%TZ) host $(uname -sm)"
     echo "go $(go env GOVERSION)"
   } >> "$sum"

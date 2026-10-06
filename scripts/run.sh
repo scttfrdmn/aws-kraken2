@@ -10,7 +10,11 @@ cd "$ROOT" || exit 2
 # shellcheck source=/dev/null
 . scripts/pin.env
 # shellcheck source=/dev/null
+. scripts/pin-identity.sh
+# shellcheck source=/dev/null
 . scripts/ak2.env
+# shellcheck source=/dev/null
+. scripts/lib/tags.sh
 export AWS_PROFILE
 
 GATE=${1:-}
@@ -20,6 +24,7 @@ say() { echo "make run: $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
 for t in jq spawn truffle aws curl git python3; do command -v "$t" >/dev/null || die "$t not on PATH"; done
+pin_identity || die "cannot establish the upstream pin identity (scripts/pin-identity.sh)"
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate, e.g. g0a> SPEC=runs/<file>.json"
 case "$SPEC" in runs/*.json) ;; *) die "SPEC must be a checked-in runs/*.json (got '$SPEC')" ;; esac
 [ -f "$SPEC" ] || die "$SPEC: no such file"
@@ -224,7 +229,7 @@ jq --rawfile stub scripts/stub.sh --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
 ' "$SPEC" > "$LIVE_SPEC" && write_resolved || die "could not resolve spec"
 cp "$SPEC" "$RUN_DIR/spec.json"
 
-# ---- user-data size, measured with spawn v0.121.0's own builders (scripts/udsize) ----
+# ---- user-data size, measured with the pinned spawn version's own builders (scripts/udsize) ----
 UDSIZE_BIN="$ROOT/bin/udsize"
 SPAWN_V=$(spawn version 2>/dev/null | awk '/Version:/{print $2}')
 UDSIZE_V=$(awk '$1=="require" && $2=="github.com/spore-host/spawn"{sub(/^v/,"",$3); print $3}' scripts/udsize/go.mod)
@@ -245,7 +250,7 @@ fi
 
 jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" \
   --arg spec_sha "$(shasum -a 256 "$SPEC" | cut -d' ' -f1)" --arg sha "$SHA" --argjson dirty "$DIRTY" \
-  --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_PIN" --arg region "$REGION" \
+  --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_SHA" --arg udesc "$UPSTREAM_DESCRIBE" --arg region "$REGION" \
   --arg spawn_v "$(spawn version 2>/dev/null | awk '/Version:/{print $2}')" \
   --arg truffle_v "$(truffle version 2>/dev/null | awk '/Version:/{print $2}')" \
   --arg ttl "$TTL" --argjson cost "$COST" --arg prefix "$PREFIX" --arg acc "$ACCESSIONS" \
@@ -253,7 +258,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --arg pbytes "$(wc -c < "$PAYLOAD" | tr -d ' ')" --argjson ud "$UD" \
   --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" '{
     gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha,
-    commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin},
+    commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin, sha:$upin, describe:$udesc},
     tools:{spawn:$spawn_v, truffle:$truffle_v},
     region:$region, ttl:$ttl, cost_limit_usd:$cost, s3_prefix:$prefix,
     sample_accessions:($acc|split(" ")|map(select(.!=""))),
@@ -289,6 +294,8 @@ fi
 aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD" "$PAYLOAD_URI" || die "could not upload the payload to $PAYLOAD_URI"
 GOT=$(aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD_URI" - | shasum -a 256 | cut -d' ' -f1)
 [ "$GOT" = "$PAYLOAD_SHA" ] || die "uploaded payload sha256 $GOT != $PAYLOAD_SHA"
+ak2_tag_object "$RESULTS_BUCKET" "${PAYLOAD_URI#s3://$RESULTS_BUCKET/}" payload >/dev/null ||
+  die "could not tag the payload object"
 LAUNCH_AT=$(now)
 spawn task run --spec "$LIVE_SPEC" --region "$REGION" -o json > "$RUN_DIR/launch.json" 2> "$RUN_DIR/launch.err"
 LRC=$?
@@ -355,6 +362,10 @@ for _ in $(seq 1 40); do
   sleep 15
 done
 aws s3 cp --only-show-errors --recursive "$PREFIX/" "$RUN_DIR/" || say "WARNING: fetch of $PREFIX failed"
+# The instance role has PutObject but not PutObjectTagging, so what the preamble and spawn wrote
+# under the run prefix is tagged here, after the run.
+TAGLINE=$(scripts/tag-objects.sh "$PREFIX/" 2>&1); TAG_OK=$?
+if [ "$TAG_OK" = 0 ]; then say "$TAGLINE"; else say "WARNING: object tagging failed: $TAGLINE"; fi
 DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json)
 # StateTransitionReason carries the termination time: "User initiated (2026-10-05 18:40:12 GMT)".
 END_AT=$(echo "$DESC" | jq -r '.StateTransitionReason' | sed -n 's/.*(\([0-9-]* [0-9:]*\) GMT).*/\1/p')
@@ -385,6 +396,8 @@ if [ -s "$RUN_DIR/out/requests.tsv" ]; then
        by_op:(group_by(.op) | map({key:.[0].op, value:(map(.count // 0)|add)}) | from_entries), rows:.}') || REQS='null'
 fi
 
+mset --argjson ok "$([ "$TAG_OK" = 0 ] && echo true || echo false)" --arg line "$TAGLINE" \
+  '.object_tags = {ok: $ok, line: $line}' || say "WARNING: could not record object tags in the manifest"
 # Derived tables first and separately: a bad table must never block finalisation below.
 mset --argjson phases "${PHASES:-null}" --argjson reqs "${REQS:-null}" '.phases = $phases | .requests = $reqs' ||
   say "WARNING: could not record phases/requests in the manifest"
