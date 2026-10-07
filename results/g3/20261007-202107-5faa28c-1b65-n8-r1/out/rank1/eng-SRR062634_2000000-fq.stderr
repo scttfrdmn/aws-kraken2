@@ -1,0 +1,18 @@
+Loading database information...ak2-timing	opts	0.000045	0.000026	5	0	0.000000	0.000028
+ak2-timing	taxo	0.000077	0.102567	87862	0	0.039759	0.077340
+ak2-timing	shard-load-1	0.426576	80.558198	78115	0	75.857191	70.961721
+ak2-timing	rendezvous	82.825324	8.620956	140	0	0.000496	0.010610
+ak2-timing	connect	91.446306	0.301985	7	0	0.000142	0.000584
+ak2-timing	hash	0.102728	91.645582	80432	0	75.866445	70.979520
+ done.
+ak2-timing	setup	91.748315	0.000053	8	0	0.000031	0.000029
+ak2-timing	classify	91.748372	2.182981	371546	0	2.766504	0.415220
+ak2-timing	barrier	93.932363	4.623079	2	0	0.076701	0.000000
+ak2-engine	shard	0	n	8	lo	37159114742	hi	74318229485	tail	302	full	false	empty_at	37159114742	keys	11161303	batches	63	probe_s	0.275739	tail_probes	0	wrap_probes	0
+ak2-engine	node	rank	1	n	8	emitter	false	blocks_cut	63	blocks_mine	8	read_s	0.449017	window_wait_s	0.000002	send_s	12.952157	sent_bytes	40086021	emit_wait_s	0.000000	emit_s	0.000000
+ak2-engine	rendezvous	requests	18
+ak2-engine	load	seconds	80.558194	requests	2233	retries	0	bytes	148636525780
+ak2-engine	route	transport	nodes	calls	8	keys	11468180	batches	64	route_s	0.152653	wait_s	0.083960	gather_s	0.040176
+ak2-engine	worker	scan_s	1.138308	lookup_s	0.276796	classify_s	0.898221
+ak2-timing	unmap	98.555513	0.272259	0	0	0.005723	0.265110
+ak2-timing	total	0.000001	98.827824	539916	0	78.755900	71.737942
