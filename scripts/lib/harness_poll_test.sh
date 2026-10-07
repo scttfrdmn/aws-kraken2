@@ -18,6 +18,8 @@ cat > "$T/bin/aws" <<'STUB'
 #!/usr/bin/env bash
 args=" $* "
 case "$args" in
+  *" ec2 describe-regions "*) echo us-west-2; exit 0 ;;
+  *" ec2 describe-instances "*"--filters"*) echo '{"Reservations":[]}'; exit 0 ;;
   *" ec2 describe-instances "*)
     case "${STUB_EC2:-}" in
       notfound) echo "An error occurred (InvalidInstanceID.NotFound) when calling the DescribeInstances operation: The instance ID 'i-1' does not exist" >&2; exit 254 ;;
@@ -85,6 +87,7 @@ jq -r .cost_basis "$M" | grep -q 'completion ended_at - launch_time' && jq -r .c
   ok "cost_basis names the completion ended_at" || bad "cost_basis: $(jq -r .cost_basis "$M")"
 [ "$(jq -r .manifest_repair.object_tags.ok "$M")" = true ] && ok "tag result under the repair record" || bad "repair tags $(jq -c .manifest_repair.object_tags "$M")"
 [ "$(jq -r .task.exit_code "$M")" = 0 ] && [ "$(jq -r .requests.total "$M")" = 3 ] && ok "task and requests filled" || bad "task/requests"
+[ "$(jq -r .orphan_check.own_gone "$M")" = true ] && [ -s "$R/orphans.txt" ] && ok "orphan check recorded" || bad "orphan_check $(jq -c .orphan_check "$M")"
 cp "$M" "$T/m1"
 STUB_EC2=none "$ROOT/scripts/refinalise.sh" "$R" > "$T/out2" 2>&1 && bad "second repair was not refused" ||
   { cmp -s "$M" "$T/m1" && ok "second repair refused, manifest untouched" || bad "refused but manifest changed"; }
