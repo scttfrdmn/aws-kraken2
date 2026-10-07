@@ -279,6 +279,7 @@ Exit status: the task's exit code, or one of these harness codes:
   - fills only unset fields (null or `""`), from DescribeInstances while EC2 still describes
     the instance (about an hour after termination);
   - applies run.sh's finalisation;
+  - runs the scoped orphan check and records `.orphan_check` when the manifest has none;
   - writes one repair record, with its gaps, `stop_basis` and object-tag result, to
     `.manifest_repair`.
 

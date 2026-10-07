@@ -101,5 +101,16 @@ jq --argjson d "$DESC" --arg state "$STATE" --arg end "$END_ISO" --argjson rec "
    --argjson tagok "$([ "$TAG_OK" = 0 ] && echo true || echo false)" --arg tagline "$TAGLINE" \
    --argjson force "$FORCE" --arg fin "$(date -u +%Y-%m-%dT%H:%M:%SZ)" -f scripts/lib/refinalise.jq "$M" > "$TMP" &&
   mv "$TMP" "$M" || { echo "refinalise: jq failed" >&2; rm -f "$TMP"; exit 2; }
-jq -c '{instance, start, stop, stop_basis, billed_seconds, cost_usd, cost_basis, task_exit:.task.exit_code,
+# 5. the scoped orphan check, as run.sh records it, if the manifest has none
+if [ "$(jq -r '.orphan_check // empty' "$M")" = "" ]; then
+  AK2_ORPHANS_JSON="$D/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" "$IID" > "$D/orphans.txt" 2>&1
+  ORC=$?
+  OC=null
+  [ -s "$D/orphan_check.json" ] && OC=$(jq -e -c --argjson rc "$ORC" 'if type == "object" and .mode == "own" then . + {rc: $rc, own_gone: (.own_gone == true and $rc == 0), recorded_by: "scripts/refinalise.sh"} else null end' "$D/orphan_check.json" 2>/dev/null) || OC=null
+  rm -f "$D/orphan_check.json"
+  TMP=$(mktemp) && jq --argjson oc "$OC" '.orphan_check = $oc' "$M" > "$TMP" && mv "$TMP" "$M" ||
+    { echo "refinalise: could not record the orphan check" >&2; rm -f "$TMP"; }
+  [ "$ORC" = 0 ] || echo "refinalise: orphan check rc $ORC (see $D/orphans.txt)" >&2
+fi
+jq -c '{instance, start, stop, stop_basis, billed_seconds, cost_usd, cost_basis, task_exit:.task.exit_code, orphan_check:(.orphan_check | {rc, own_gone}?),
         repair:((.manifest_repairs // [])[-1] // .manifest_repair | {at, forced, gaps, stop_basis})}' "$M"
