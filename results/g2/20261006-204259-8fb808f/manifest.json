@@ -986,6 +986,14 @@
       "preflight"
     ],
     "gaps": [],
-    "note": "a gap entry claiming terminated_at unknown was removed: terminated_at was recorded by run.sh at 02:51Z (refinalise.sh bug, fixed in the same commit)"
+    "note": "a gap entry claiming terminated_at unknown was removed: terminated_at was recorded by run.sh at 02:51Z (refinalise.sh bug, fixed in the same commit)",
+    "hand_edit": {
+      "edited_by": "hand",
+      "edited_at": "2026-10-07T06:47:26Z",
+      "first_edit_at": "2026-10-07T06:24Z (approximately; the hand edit that emptied .manifest_repair.gaps)",
+      "removed_gap": "instance i-0719b1ba642ce781b no longer describable (): terminated_at unknown; stop = completion ended_at (else last phase start), so billed_seconds and cost_usd undercount by the shutdown time (about 10-15 s)",
+      "why": "false gap: run.sh had already recorded instance.terminated_at (2026-10-07T02:19:04Z) at finalisation; the refinalise.sh version that wrote it added the gap whenever DescribeInstances returned nothing, without checking terminated_at",
+      "fixed_in": "25ff5cc (harness-poll-resilience; the gap is only added when terminated_at is unset)"
+    }
   }
 }
