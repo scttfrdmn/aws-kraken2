@@ -189,7 +189,7 @@ RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$(git rev-parse --short=7 HEAD)"
 # rendezvous (the cohort prefix) in its env.
 COHORT_ID=${AK2_COHORT_ID:-}; COHORT_RANK=${AK2_COHORT_RANK:-}; COHORT_N=${AK2_COHORT_N:-}; COHORT_PREFIX=""
 if [ -n "$COHORT_ID$COHORT_RANK$COHORT_N" ]; then
-  [[ "$COHORT_ID" =~ ^[0-9]{8}-[0-9]{6}-[0-9a-f]{7}-n[0-9]+$ ]] || die "AK2_COHORT_ID '$COHORT_ID' is not <yyyymmdd-hhmmss>-<sha7>-n<N> (use scripts/run-multi.sh)"
+  [[ "$COHORT_ID" =~ ^[0-9]{8}-[0-9]{6}-[0-9a-f]{7}-[0-9a-f]{4}-n[0-9]+$ ]] || die "AK2_COHORT_ID '$COHORT_ID' is not <yyyymmdd-hhmmss>-<sha7>-<rand4>-n<N> (use scripts/run-multi.sh)"
   [[ "$COHORT_N" =~ ^[1-9][0-9]*$ ]] && [[ "$COHORT_RANK" =~ ^[0-9]+$ ]] && [ "$COHORT_RANK" -lt "$COHORT_N" ] ||
     die "AK2_COHORT_RANK=$COHORT_RANK AK2_COHORT_N=$COHORT_N: want 0 <= rank < n"
   [ "${COHORT_ID##*-n}" = "$COHORT_N" ] || die "AK2_COHORT_ID $COHORT_ID does not end in -n$COHORT_N"

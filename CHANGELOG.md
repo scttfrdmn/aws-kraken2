@@ -203,6 +203,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - the emitter validates Result frames (owner rank, input, once) and checks each node's Done
       against what arrived and its own cut;
     - a race in `nd.stopped` is fixed, and an in-process 3-node test runs under -race.
+  - review of a7b0f0b:
+    - member drivers run in their own process groups, and `finish` stops them (TERM, then
+      KILL) before it sweeps, waits for termination, sweeps again and only then aborts
+      uploads;
+    - sweeps repeat after a fail-fast, sweep failures are recorded and exit 6, and the cohort id
+      has a random suffix;
+    - `scripts/lib/run_multi_test.sh` (stub simulation) runs in `make test`.
 
 ### Changed
 

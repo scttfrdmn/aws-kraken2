@@ -309,7 +309,8 @@ make run GATE=g3 SPEC=runs/g3-std8.json NODES=2 DRY_RUN=1  # checks + rank 0's p
 of the cohort, in parallel. Each member is a complete single run, with everything above: its own
 `results/<gate>/<cohort>-r<k>/`, manifest, log stream, TTL, `cost_limit`, region and Payer
 asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
-- **Identity.** The cohort id is `<UTC>-<sha7>-n<n>`. Member k's run id is `<cohort>-r<k>`, and
+- **Identity.** The cohort id is `<UTC>-<sha7>-<rand4>-n<n>`; the random suffix keeps two
+  cohorts started in the same second from sharing task ids. Member k's run id is `<cohort>-r<k>`, and
   its manifest has `.cohort = {id, rank, n, prefix, rendezvous, dir}`.
 - **Engine env.** run.sh adds these from `AK2_COHORT_*`; a spec cannot set them:
   - `AK2_ENGINE_N`, `AK2_ENGINE_RANK`;
@@ -338,25 +339,38 @@ asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
   `GetBucketLocation`. Neither grant includes `s3:AbortMultipartUpload`, so only the launch host
   can abort an upload.
 - **Fail fast.** Once any member's run.sh exits non-zero while others are still running, the
-  others' instances are terminated (found by their `spawn:task-id` tag). Their run.sh then
-  finalise as for any terminated instance, and `cohort.json` records `terminated_early`. The
-  spec body stops a member at its first failed case.
-- **On every exit** (normal, error, INT, TERM or HUP), the `finish` trap does the following:
-  - if the cohort did not end normally, it terminates every member instance still alive and
-    stops the member drivers (their run dirs may then need `scripts/refinalise.sh`);
-  - it aborts unfinished multipart uploads under the cohort prefix (the bucket has no
-    lifecycle rule, so stale parts would be billed indefinitely);
+  others' instances are terminated (found by their `spawn:task-id` tag). The sweep repeats on
+  every monitor pass after that, so a member still being sized or launched is caught when its
+  instance appears. Their run.sh then finalise as for any terminated instance, and
+  `cohort.json` records `terminated_early`. The spec body stops a member at its first failed
+  case.
+- **Process groups.** Each member driver runs in its own process group (`set -m`; macOS has no
+  `setsid`). So the driver and the `spawn task run` it may be in the middle of (sizing takes
+  minutes) can be signalled together, and a launch can never land after the cohort has ended.
+- **On every exit** (normal, error, INT, TERM or HUP), the `finish` trap does the following, in
+  this order:
+  - if the cohort did not end normally: TERM every member driver's process group, wait (KILL
+    after 60 s). Their run dirs may then need `scripts/refinalise.sh`;
+  - sweep: terminate every member instance still alive or shutting down (by tag), `aws ec2 wait
+    instance-terminated` for them, then sweep again;
+  - only then abort unfinished multipart uploads under the cohort prefix, so an instance that was
+    shutting down cannot start an upload after the abort. The bucket's lifecycle rule would
+    abort them after 7 days; this does it at once, so no parts are billed in between;
   - it fetches the cohort prefix (rendezvous records and the emitter's outputs) to
     `results/<gate>/<cohort>/prefix/` and tags it;
   - it writes `results/<gate>/<cohort>/cohort.json`: members (run id, exit, instance, AZ, cost,
-    finalised), `cost_usd` (the sum of the members' costs), `ended`, `terminated_early`, and the
-    multipart abort counts;
+    finalised), `cost_usd` (the sum of the members' costs), `ended`, `terminated_early`,
+    `sweep_failures` (every describe, terminate or wait that failed) and the multipart abort
+    counts;
   - it runs the **global** `make orphans`.
 
   Each member's driver output is in `rank-<k>.run.log`.
 - **Exit:** the worst member exit. Otherwise 3 if orphans were found, 4 if the prefix could not be
-  fetched, 5 if an unfinished upload could not be listed or aborted, and 130, 143 or 129 when
-  interrupted.
+  fetched, 5 if an unfinished upload could not be listed or aborted, 6 if a sweep failed, and 130,
+  143 or 129 when interrupted. `make test` runs `scripts/lib/run_multi_test.sh`, a stub
+  simulation with a stubbed `aws` and stub member drivers. It covers TERM and INT before a late
+  launch, INT after the launches, a normal end, fail fast with a late launch, a failing describe,
+  and an unfinished upload.
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
 rebase commits that a run under `results/` cites. Merge them as they are.
