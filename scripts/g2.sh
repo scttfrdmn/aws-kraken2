@@ -139,7 +139,8 @@ g2_main() {
   local -a ARGV
   local -A SKIP=()
   local push_ok=false; declare -F ak2_push >/dev/null && push_ok=true
-  local lineno=0 LINE_ENV=""
+  local lineno=0 LINE_ENV="" HOST_TUNE=""
+  local -A RA_BOOT=()
   while IFS= read -r line || [ -n "$line" ]; do
     lineno=$((lineno + 1))
     line=${line%%#*}
@@ -148,6 +149,19 @@ g2_main() {
       ''|note) continue ;;
       env) LINE_ENV=$(sed -E 's/^[[:space:]]*env[[:space:]]*//; s/^-$//' <<< "$line" | xargs)
            echo "g2: plan line $lineno: classifier env for the following lines: '${LINE_ENV}'"; continue ;;
+      readahead)
+           # Host tuning (not a code change): read_ahead_kb of every G2_DEVS device, so the
+           # mmap read-around window is the given size; "default" restores the boot values.
+           local dv rv
+           for dv in ${DEVS//,/ }; do
+             [ -n "${RA_BOOT[$dv]:-}" ] || RA_BOOT[$dv]=$(cat "/sys/block/$dv/queue/read_ahead_kb" 2>/dev/null)
+             rv=$regime; [ "$rv" = default ] && rv=${RA_BOOT[$dv]}
+             [ -n "$rv" ] && echo "$rv" | sudo -n tee "/sys/block/$dv/queue/read_ahead_kb" >/dev/null ||
+               { echo "g2: plan line $lineno: cannot set read_ahead_kb on $dv" >&2; FAILS=$((FAILS + 1)); }
+           done
+           if [ "$regime" = default ]; then HOST_TUNE=""; else HOST_TUNE="read_ahead_kb=$regime"; fi
+           echo "g2: plan line $lineno: read_ahead_kb now: $(for dv in ${DEVS//,/ }; do printf '%s=%s ' "$dv" "$(cat /sys/block/$dv/queue/read_ahead_kb)"; done)"
+           continue ;;
       run|profile) ;;
       *) echo "g2: plan line $lineno: unknown directive '$kind'" >&2; FAILS=$((FAILS + 1)); continue ;;
     esac
@@ -209,8 +223,8 @@ g2_main() {
         seqs=$(grep -oE '^[0-9]+ sequences \(' "$RES/stderr/$tag.stderr" | grep -oE '^[0-9]+' | head -1)
         jq -c --arg tag "$tag" --argjson l "$lineno" --arg rg "$regime" --arg i "$input" --arg s "$state" \
           --argjson r "$rep" --argjson osha "$osha" --argjson rsha "$rsha" --arg seqs "${seqs:-}" \
-          --arg at "$(date -u +%FT%TZ)" --arg env "$LINE_ENV" \
-          '{tag:$tag,line:$l,kind:"run",regime:$rg,input:$i,state:$s,rep:$r,finished_at:$at,env:$env,
+          --arg at "$(date -u +%FT%TZ)" --arg env "$LINE_ENV" --arg tune "$HOST_TUNE" \
+          '{tag:$tag,line:$l,kind:"run",regime:$rg,input:$i,state:$s,rep:$r,finished_at:$at,env:$env,host_tune:$tune,
             sequences:(if $seqs=="" then null else ($seqs|tonumber) end),
             output_sha256:$osha,report_sha256:$rsha} + .' <<< "$j" >> "$JL"
         echo "g2: $tag $(jq -c '{exit,timed_out,wall_s,load_s,classify_s,offcpu_frac,ipc,aqu:([.disks[]?.aqu_sz]|max),majflt}' <<< "$j")"
