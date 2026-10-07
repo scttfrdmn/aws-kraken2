@@ -357,6 +357,25 @@ aws_try() {
   fi
   return 2
 }
+# final_describe: the end-of-run DescribeInstances. Sets FDESC to the instance JSON, and STATE and
+# FINAL_BASIS=observed to whatever state EC2 answers (terminated or not: a stale "terminated"
+# inferred earlier never survives an answer that says otherwise). Not found: FDESC empty, STATE
+# and FINAL_BASIS kept (aged out). Failed calls: 5 tries with backoff (FD_BACKOFF_S, default 10).
+final_describe() {
+  local i st
+  FDESC=""
+  for i in 1 2 3 4 5; do
+    aws_try FDESC ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json
+    case $? in
+      0) st=$(echo "$FDESC" | jq -r '.State.Name // empty')
+         [ -n "$st" ] && { STATE=$st; FINAL_BASIS=observed; }
+         return 0 ;;
+      1) say "final describe: $IID no longer describable ($AWS_TRY_ERR); terminated_at unknown"; FDESC=""; return 1 ;;
+    esac
+    sleep $(( ${FD_BACKOFF_S:-10} * i ))
+  done
+  return 2
+}
 poll_sleep() { local s=15 i; for ((i = 1; i < FAILS_IN_ROW && s < 120; i++)); do s=$((s * 2)); done; [ $s -gt 120 ] && s=120; sleep $s; }
 
 # EC2 is eventually consistent: right after RunInstances, DescribeInstances can answer
@@ -443,15 +462,7 @@ done
 # under the run prefix is tagged here, after the run.
 TAGLINE=$(scripts/tag-objects.sh "$PREFIX/" 2>&1); TAG_OK=$?
 if [ "$TAG_OK" = 0 ]; then say "$TAGLINE"; else say "WARNING: object tagging failed: $TAGLINE"; fi
-FDESC=""
-for i in 1 2 3 4 5; do
-  aws_try FDESC ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json
-  case $? in
-    0) [ "$(echo "$FDESC" | jq -r '.State.Name // empty')" = terminated ] && FINAL_BASIS=observed; break ;;
-    1) say "final describe: $IID no longer describable ($AWS_TRY_ERR); terminated_at unknown"; FDESC=""; break ;;
-  esac
-  sleep $((10 * i))
-done
+final_describe
 DESC=$FDESC
 # StateTransitionReason carries the termination time: "User initiated (2026-10-05 18:40:12 GMT)".
 END_AT=$(echo "$DESC" | jq -r '.StateTransitionReason' | sed -n 's/.*(\([0-9-]* [0-9:]*\) GMT).*/\1/p')

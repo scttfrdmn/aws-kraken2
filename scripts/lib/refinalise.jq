@@ -6,6 +6,9 @@ def iso: sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | fromdateiso8601;
 ([paths(. == null or . == "")] | map(map(tostring) | join("."))) as $nulls_before
 | (.stop | unset) as $stop_was_unset
 | (.cost_usd == null) as $cost_was_unset
+# run.sh writes final_state_basis "unknown" when no describe ever answered: its final_state is
+# then not a measurement, so both count as unset and may be filled.
+| (if .instance.final_state_basis == "unknown" then .instance.final_state = null | del(.instance.final_state_basis) else . end)
 | .instance.final_state |= (if unset then null else . end)
 | if $d != null then
     .instance.ami //= $d.ImageId | .instance.az //= $d.Placement.AvailabilityZone
