@@ -24,8 +24,12 @@ cd "$(dirname "$0")/.." || exit 1
 . scripts/ak2.env
 # shellcheck source=/dev/null
 . scripts/lib/tags.sh
-export AWS_PROFILE
-echo "stage-cohort: shell flags $-"
+# On an instance launched by make run (AK2_RUN_ID set; runs/stage-cohort.json) the instance role
+# is the credential, not the launch host's profile, and the role cannot tag objects (tag them
+# from the launch host afterwards: make tag-objects PREFIX=aws-kraken2/data/cohort/).
+ON_INSTANCE=0
+if [ -n "${AK2_RUN_ID:-}" ]; then ON_INSTANCE=1; unset AWS_PROFILE; else export AWS_PROFILE; fi
+echo "stage-cohort: shell flags $- (on instance: $ON_INSTANCE)"
 PART=${1:-stage}; PROJECT=${2:-PRJNA398089}
 [[ "$PROJECT" =~ ^PRJ[A-Z]{2}[0-9]+$ ]] || { echo "stage-cohort: bad project $PROJECT" >&2; exit 2; }
 DIR="results/cohort/$PROJECT"
@@ -110,7 +114,9 @@ stage)
         { echo "stage-cohort: head-object $f failed" >&2; FAILED=1; continue; }
       [ "$(echo "$hd" | jq -r '[.Metadata.sha256, .Metadata.md5, (.ContentLength|tostring)] | join(" ")')" = "$h $want $b" ] ||
         { echo "stage-cohort: $f: head-object disagrees: $(echo "$hd" | jq -c '{Metadata, ContentLength}')" >&2; FAILED=1; continue; }
-      ak2_tag_object "$BUCKET" "$k" data >/dev/null || { echo "stage-cohort: tagging $f failed" >&2; FAILED=1; continue; }
+      if [ "$ON_INSTANCE" = 0 ]; then
+        ak2_tag_object "$BUCKET" "$k" data >/dev/null || { echo "stage-cohort: tagging $f failed" >&2; FAILED=1; continue; }
+      fi
       printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$run" "$m" "$b" "$want" "$h" "$k" "$(echo "$hd" | jq -r '.VersionId // "null"')" \
         "$(date -u +%FT%TZ)" >> "$DIR/staged.tsv"
       echo "stage-cohort: $f staged ($b bytes, md5 $want, sha256 $h)"

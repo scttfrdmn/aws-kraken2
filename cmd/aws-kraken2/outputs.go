@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -39,8 +40,47 @@ type sink struct {
 // isS3 reports whether an output name is an object (s3://bucket/key).
 func isS3(name string) bool { return strings.HasPrefix(name, "s3://") }
 
+// s3InFlight is how many parts an s3:// output uploads at once: AK2_S3_INFLIGHT, else 8 through
+// the SDK (one process, concurrent requests) and 4 through the CLI (a process per part).
+func s3InFlight(client string) int {
+	if v, err := strconv.Atoi(os.Getenv("AK2_S3_INFLIGHT")); err == nil && v > 0 {
+		return v
+	}
+	if client == "" {
+		client = os.Getenv("AK2_S3_CLIENT")
+	}
+	if client == "cli" {
+		return 4
+	}
+	return 8
+}
+
+// s3Report is an s3:// --report: the report's bytes, then one PutObject on Close.
+type s3Report struct {
+	name, client string
+	buf          []byte
+}
+
+func (r *s3Report) Write(p []byte) (int, error) { r.buf = append(r.buf, p...); return len(p), nil }
+
+func (r *s3Report) Close() error {
+	b, k, err := objstore.ParseURL(r.name)
+	if err != nil {
+		return err
+	}
+	st, err := objstore.Open(r.client)
+	if err != nil {
+		return err
+	}
+	return st.Put(context.Background(), b, k, r.buf)
+}
+
 func (o *outputs) newS3Sink(name string) (*sink, error) {
-	w, err := objstore.NewWriter(context.Background(), objstore.FromEnv(), name, objstore.DefaultPartSize, 4)
+	st, err := objstore.Open(o.s3client)
+	if err != nil {
+		return nil, err
+	}
+	w, err := objstore.NewWriter(context.Background(), st, name, objstore.DefaultPartSize, s3InFlight(o.s3client))
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +107,7 @@ type outputs struct {
 	krakenInit bool
 	files      []*os.File
 	s3         []*sink
+	s3client   string // "sdk" | "cli" | "" (AK2_S3_CLIENT)
 
 	jobs   chan wjob
 	wg     sync.WaitGroup
@@ -149,6 +190,7 @@ func (o *outputs) initialize(c *classifyArgs) int {
 	if o.initialized {
 		return 0
 	}
+	o.s3client = c.s3client
 	pair := func(pattern string) (*sink, *sink, int) {
 		if !c.paired {
 			return o.openPlain(pattern), nil, 0

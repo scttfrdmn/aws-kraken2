@@ -61,18 +61,27 @@ func ParseURL(u string) (bucket, key string, err error) {
 	return bucket, key, nil
 }
 
-// FromEnv returns the store the engine uses: Dir rooted at AK2_S3_EMULATE when that is set,
-// else CLI (region AK2_REGION or AWS_REGION when set).
+// FromEnv returns the store the engine uses by default: Open("") (AK2_S3_EMULATE, else
+// AK2_S3_CLIENT, default sdk, behind the AK2_ALLOWED_BUCKETS guard). A configuration error is
+// returned by every call on the store.
 func FromEnv() Store {
-	if d := os.Getenv("AK2_S3_EMULATE"); d != "" {
-		return &Dir{Root: d}
+	st, err := Open("")
+	if err != nil {
+		return errStore{err}
 	}
-	r := os.Getenv("AK2_REGION")
-	if r == "" {
-		r = os.Getenv("AWS_REGION")
-	}
-	return &CLI{Region: r}
+	return st
 }
+
+type errStore struct{ err error }
+
+func (e errStore) Put(context.Context, string, string, []byte) error               { return e.err }
+func (e errStore) Get(context.Context, string, string) ([]byte, error)             { return nil, e.err }
+func (e errStore) CreateMultipart(context.Context, string, string) (string, error) { return "", e.err }
+func (e errStore) UploadPart(context.Context, string, string, string, int, []byte) (string, error) {
+	return "", e.err
+}
+func (e errStore) Complete(context.Context, string, string, string, []Part) error { return e.err }
+func (e errStore) Abort(context.Context, string, string, string) error            { return e.err }
 
 // ---- CLI ----------------------------------------------------------------------------------
 

@@ -210,6 +210,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - sweeps repeat after a fail-fast, sweep failures are recorded and exit 6, and the cohort id
       has a random suffix;
     - `scripts/lib/run_multi_test.sh` (stub simulation) runs in `make test`.
+- G3 sweep build (#25, docs/cohort.md):
+  - `make stage-cohort`: the first 1000 PRJNA398089 paired WGS runs, recorded before use
+    (`results/cohort/PRJNA398089/runs.tsv`); md5-checked staging, with `runs/stage-cohort.json` to
+    stage from an instance;
+  - cohort mode (`AK2_COHORT`): one engine process per node over a sample list, the shard loaded
+    once, sample-parallel (each sample's home node is its emitter) or block-striped, samples in
+    flight per node, batches with barriers, and per-sample `ak2-sample` records;
+  - an aws-sdk-go-v2 S3 store (the default; the CLI is kept selectable), which enforces
+    `AK2_ALLOWED_BUCKETS` itself, `s3://` reports, and a fake S3 for tests (`k2probe fakes3`);
+  - `make oracle-cohort`: per-sample byte-identity of cohort mode against upstream at N=1 and N=3
+    (parallel, striped, SDK), also in CI;
+  - `scripts/upstream-cohort.sh`: the upstream arm (huge=always tmpfs, `-M`, the same manifest);
+  - `runs/g3-e1.json`, the calibration run, with the tidy-table post scripts
+    (`scripts/lib/tidy.py`, `scripts/post/g3-e1{,.cohort}.sh`; run-multi runs a cohort-level post);
+  - an `ak2-engine result` line;
+  - fixed a data race in `TCPClient.dial` (Lo and Hi were written on every concurrent dial).
 
 ### Changed
 

@@ -261,7 +261,7 @@ type TCPClient struct {
 	Run      uint64
 	ID       [32]byte      // the table identity both sides must hold (TableID)
 	Timeout  time.Duration // per lookup, send to reply (default DefaultTimeout)
-	// Lo and Hi are the owned range the server reported in its hello (set by Dial).
+	// Lo and Hi are the shard's owned range; every connection's hello must report exactly it.
 	Lo, Hi uint64
 
 	pool chan net.Conn
@@ -281,6 +281,7 @@ func DialTCP(addr string, shard, n int, capacity, run uint64, id [32]byte, conns
 	if err != nil {
 		return nil, err
 	}
+	c.Lo, c.Hi = Cut(shard, n, capacity) // dial checked the server reports exactly this
 	c.put(conn)
 	return c, nil
 }
@@ -324,10 +325,12 @@ func (c *TCPClient) dial() (net.Conn, error) {
 			"capacity %d run %x table %x: %s mismatch (status %d)", c.Addr, le.Uint32(rb[12:]), le.Uint32(rb[16:]),
 			le.Uint64(rb[20:]), rb[44:52], c.Shard, c.N, c.Capacity, c.Run, c.ID[:8], why, st)
 	}
-	c.Lo, c.Hi = le.Uint64(rb[28:]), le.Uint64(rb[36:])
-	if lo, hi := Cut(c.Shard, c.N, c.Capacity); lo != c.Lo || hi != c.Hi {
+	// Checked on every connection; recorded in Lo and Hi once, by DialTCP (connections are
+	// dialled concurrently, so dial writes nothing shared).
+	glo, ghi := le.Uint64(rb[28:]), le.Uint64(rb[36:])
+	if lo, hi := Cut(c.Shard, c.N, c.Capacity); lo != glo || hi != ghi {
 		conn.Close()
-		return nil, fmt.Errorf("engine: shard %d/%d at %s owns [%d,%d), want [%d,%d)", c.Shard, c.N, c.Addr, c.Lo, c.Hi, lo, hi)
+		return nil, fmt.Errorf("engine: shard %d/%d at %s owns [%d,%d), want [%d,%d)", c.Shard, c.N, c.Addr, glo, ghi, lo, hi)
 	}
 	c.mu.Lock()
 	c.all = append(c.all, conn)

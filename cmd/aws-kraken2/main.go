@@ -74,7 +74,12 @@ func strp(s string) *string { return &s }
 func main() {
 	startProfile()
 	p := phase("total")
-	status := run(os.Args[1:])
+	var status int
+	if m, ok := os.LookupEnv("AK2_COHORT"); ok {
+		status = runCohort(m, os.Args[1:], nil)
+	} else {
+		status = run(os.Args[1:])
+	}
 	p.end()
 	stopProfile()
 	os.Exit(status)
@@ -85,6 +90,17 @@ func run(args []string) int { return runEnv(args, nil) }
 // runEnv is run with the engine's AK2_ENGINE_* settings looked up through env (nil: the
 // process environment), so a test can run several nodes of a multi-node run in one process.
 func runEnv(args []string, env func(string) (string, bool)) int {
+	c, status := buildArgs(args, env)
+	if c == nil {
+		return status
+	}
+	return classifyRun(c)
+}
+
+// buildArgs is the wrapper's and classify's command-line handling: the classify arguments, or
+// nil and the exit status upstream ends the run with. Cohort mode (cohort.go) parses each
+// sample's arguments with it, exactly as a separate invocation would be.
+func buildArgs(args []string, env func(string) (string, bool)) (*classifyArgs, int) {
 	o := options{confidence: "0.0", minimumBaseQuality: "0", minimumHitGroups: "2"}
 	set := func(b *bool) func(string) { return func(string) { *b = true } }
 	specs := []optSpec{
@@ -126,29 +142,29 @@ func runEnv(args []string, env func(string) (string, bool)) int {
 	dbPrefix, err := findDB(o.db)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %s", prog, err.msg)
-		return err.status
+		return nil, err.status
 	}
 	for _, f := range dbFiles() {
 		if _, err := os.Stat(dbPrefix + "/" + f); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %s/%s does not exist!\n", prog, dbPrefix, f)
-			return exitDieErrno
+			return nil, exitDieErrno
 		}
 	}
 	if o.paired && len(o.files)%2 != 0 {
-		return die("--paired requires positive and even number filenames")
+		return nil, die("--paired requires positive and even number filenames")
 	}
 	if o.gunzip && o.bunzip2 {
-		return die("can't use both gzip and bzip2 compression flags")
+		return nil, die("can't use both gzip and bzip2 compression flags")
 	}
 	conf := perlAtof(o.confidence)
 	if conf < 0 {
-		return die("confidence threshold must be nonnegative")
+		return nil, die("confidence threshold must be nonnegative")
 	}
 	if conf > 1 {
-		return die("confidence threshold must be no greater than 1")
+		return nil, die("confidence threshold must be no greater than 1")
 	}
 	if perlAtoi(o.minimumHitGroups) < 0 {
-		return die("minimum number of hit groups must be nonnegative")
+		return nil, die("minimum number of hit groups must be nonnegative")
 	}
 
 	// What follows is classify's own command-line handling (ParseCommandLine) of the flags the
@@ -178,19 +194,19 @@ func runEnv(args []string, env func(string) (string, bool)) int {
 		env:             env,
 	}
 	if c.threads < 1 {
-		return classifyErr(exUsage, "number of threads can't be less than 1")
+		return nil, classifyErr(exUsage, "number of threads can't be less than 1")
 	}
 	if c.mpa && (c.reportFile == nil || *c.reportFile == "") {
 		fmt.Fprintln(os.Stderr, "classify: -m requires -R be used")
 		classifyUsage()
-		return exUsage
+		return nil, exUsage
 	}
 	if c.reportKmerData {
 		fmt.Fprintf(os.Stderr, "%s: --report-minimizer-data is not supported yet (issue #18); "+
 			"run upstream kraken2 for minimizer data\n", prog)
-		return exUsage
+		return nil, exUsage
 	}
-	return classifyRun(&c)
+	return &c, 0
 }
 
 type dieErr struct {

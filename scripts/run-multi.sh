@@ -241,6 +241,13 @@ finish() {
       cost_basis:"sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
       prefix_fetched:($fetched == "yes"), multipart_aborted:$aborted, multipart_abort_failures:$abort_fail,
       orphans_rc:$orc}' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
+  # A cohort-level post script, scripts/post/<spec>.cohort.sh, gets the cohort dir (after
+  # cohort.json, so it can find the members).
+  local CPOST="scripts/post/$(basename "$SPEC" .json).cohort.sh" POSTRC=0
+  if [ -f "$CPOST" ]; then
+    bash "$CPOST" "$CDIR" > "$CDIR/post.log" 2>&1; POSTRC=$?
+    say "cohort post: $CPOST rc $POSTRC ($(tail -1 "$CDIR/post.log"))"
+  fi
   say "cohort dir: $CDIR  ended: $ENDED  cost \$$(jq -r .cost_usd "$CDIR/cohort.json" 2>/dev/null)  orphans rc $ORC"
   local WORST=$rc r
   for r in "${RCS[@]}"; do [[ "$r" =~ ^[0-9]+$ ]] && [ "$r" -gt "$WORST" ] && WORST=$r; done
@@ -248,6 +255,7 @@ finish() {
   [ "$FETCHED" = yes ] || { say "WARNING: cohort prefix not fetched"; [ "$WORST" = 0 ] && WORST=4; }
   [ "$ABORT_FAIL" = 0 ] || { [ "$WORST" = 0 ] && WORST=5; }
   [ "$SWEEP_FAILURES" = "[]" ] || { say "sweep failures: $SWEEP_FAILURES"; [ "$WORST" = 0 ] && WORST=6; }
+  [ "$POSTRC" = 0 ] || { say "cohort post script failed (see $CDIR/post.log)"; [ "$WORST" = 0 ] && WORST=98; }
   exit "$WORST"
 }
 trap finish EXIT

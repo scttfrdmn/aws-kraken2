@@ -74,6 +74,20 @@ A presigned `AK2_ENGINE_HASH_URL` is a credential. Errors never carry its query 
 of which only the `<Code>` is kept, because a SignatureDoesNotMatch body echoes the credential.
 Spec bodies must not log it.
 
+## Cohort mode and the S3 clients
+
+`AK2_COHORT=<manifest>` runs a whole sample list in one engine process per node, with the shard
+loaded once. Samples are sample-parallel (each sample's home node is its emitter) or
+block-striped (one control session per sample), with samples in flight per node and one
+`ak2-sample` line each. See [cohort.md](cohort.md).
+- **S3 clients.** `s3://` outputs go through aws-sdk-go-v2 by default (`AK2_S3_CLIENT=sdk`,
+  concurrent parts from one process) or through the aws CLI (`cli`, a process per part, kept for
+  the L1 comparison).
+- **Allow-list.** The SDK store refuses any bucket not in `AK2_ALLOWED_BUCKETS`, the engine's own
+  copy of the run harness's allow-list (the SDK bypasses the aws shim).
+- **Connection phases.** A single multi-node invocation now times `connect` (the shards) and
+  `connect-control` (the emitter sessions) separately.
+
 ## Failure
 
 Each failure ends the run with exit 1 and a `classify: engine: …` message, rather than hanging:
