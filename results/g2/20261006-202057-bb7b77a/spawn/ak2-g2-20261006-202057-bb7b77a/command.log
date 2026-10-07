@@ -1,0 +1,53 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-06T20:21:50Z] wrapper start
+spawn: [2026-10-06T20:21:50Z] stage-in start
+spawn: [2026-10-06T20:21:50Z] stage-in done rc=0
+spawn: [2026-10-06T20:21:50Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 e1c0dad32bd71fdb95f60da769cf9a3e8d9e3cc8b9e9d907d34debb380a8466e); exec
+ak2: log tee up
+ak2-phase	2026-10-06T20:21:50Z	1791318110	preamble	no
+ak2: [2026-10-06T20:21:50Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T20:21:50Z] after set +e $-=hBc
+ak2: [2026-10-06T20:21:50Z] gate=g2 run=20261006-202057-bb7b77a
+ak2: [2026-10-06T20:21:50Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T20:21:50Z] imds region=us-west-2 az=us-west-2b instance=i-09aebfa2d3f544d99 type=r8gd.xlarge ami=ami-09325776a00699513
+ak2: [2026-10-06T20:21:50Z] bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-06T20:21:51Z] bucket cookbook-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-06T20:21:51Z] WARN: could not read Payer of cookbook-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-06T20:21:51Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-06T20:21:51Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-06T20:21:51Z] region assert passed
+ak2: [2026-10-06T20:21:51Z] drop_caches_ok=true
+ak2: [2026-10-06T20:21:52Z] preamble done; spec body starts
+ak2-phase	2026-10-06T20:21:52Z	1791318112	body	no
+ak2-phase	2026-10-06T20:21:52Z	1791318112	setup	no
+ak2: [2026-10-06T20:22:22Z] perf perf version 6.1.188-233.386.amzn2023.aarch64; events usable: task-clock,context-switches,cpu-migrations,page-faults,major-faults,minor-faults,cycles,instructions,dTLB-loads,dTLB-load-misses,dtlb_walk,stall_backend,syscalls:sys_enter_futex
+ak2: [2026-10-06T20:22:22Z] host: 4 CPUs; 32248252 kB; kernel 6.18.51-120.163.amzn2023.aarch64
+ak2: [2026-10-06T20:22:22Z] thp enabled=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] shmem_enabled=[always within_size advise [never] deny force]
+ak2: [2026-10-06T20:22:22Z] lscpu: Core(s) per socket: 4;Socket(s): 1;NUMA node(s): 1;
+ak2: [2026-10-06T20:22:22Z] numa: available: 1 nodes (0);node 0 size: 31492 MB;
+ak2: [2026-10-06T20:22:22Z] disks: nvme1n1    40G Amazon Elastic Block Store       vol0947cc2dc68f8f1d4;nvme0n1 220.7G Amazon EC2 NVMe Instance Storage AWS68C92B264295471ED;
+ak2: [2026-10-06T20:22:23Z] storage: instance-store NVMe 1x (220.7G Amazon EC2 NVMe Instance Storage)  xfs noatime at /mnt/nvme; read_ahead_kb: nvme0n1=128KiB; scheduler: nvme0n1=[none]mq-deadlinekyberbfq
+ak2-phase	2026-10-06T20:22:23Z	1791318143	fetch	no
+ak2: [2026-10-06T20:22:42Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/ -> /mnt/nvme/db/k2_standard_08_GB_20260626/ (8004818876 bytes)
+ak2: [2026-10-06T20:22:48Z] db k2_standard_08_GB_20260626 verified against sha256 metadata
+ak2: [2026-10-06T20:22:48Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE -> /mnt/nvme/reads/SRR062634_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T20:22:49Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq -> /mnt/nvme/reads/SRR062634_200000_1.fq (51895574 bytes)
+ak2: [2026-10-06T20:22:50Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq -> /mnt/nvme/reads/SRR062634_200000_2.fq (51895574 bytes)
+ak2: [2026-10-06T20:22:51Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq.gz -> /mnt/nvme/reads/SRR062634_200000_1.fq.gz (15955195 bytes)
+ak2: [2026-10-06T20:22:52Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq.gz -> /mnt/nvme/reads/SRR062634_200000_2.fq.gz (15893511 bytes)
+ak2: [2026-10-06T20:22:53Z] reads SRR062634_200000 verified against SOURCE
+ak2: [2026-10-06T20:22:54Z] subset SRR062634_50000: derived_from SRR062634_200000 (first 50000 records per mate, head -n 200000; gzip -6 -n);sha256 ab33b8be9cdcd11ece16fa8c7f9d31f0d6871a33d6f466b3d5fb9a52df42b1b4 SRR062634_50000_1.fq;sha256 dff836553f7f4eb032c4d1ec96318cbaf4953c3b41170fd9321a6545510438b2 SRR062634_50000_2.fq;sha256 252f725b6427d4e8e27ba38a067335343017b4fb54ffc1795e13fbfe96cf6cf5 SRR062634_50000_1.fq.gz;sha256 76e5210138dfe84bf9b32165bc42ad2d7d6efcf79b30906d8725b8fa59ef0b28 SRR062634_50000_2.fq.gz;
+ak2: [2026-10-06T20:22:54Z] aws: aws-cli/2.36.47 Python/3.9.25 Linux/6.18.51-120.163.amzn2023.aarch64 source/aarch64.amzn.2023; s3 transfer client crt, target_bandwidth 12Gb/s, 64 MB parts
+ak2: [2026-10-06T20:22:55Z] staged opts.k2d bytes=56 in 0.4 s (0.000 GB/s)
+ak2: [2026-10-06T20:22:55Z] etag opts.k2d: {"ok": true, "file": "/mnt/nvme/roda/opts.k2d", "size": 56, "etag": "24fb1753eb45d74643ef13f16562df6b", "computed": "24fb1753eb45d74643ef13f16562df6b", "part_bytes": 56, "parts": 1, "workers": 8, "seconds": 0.0, "read_gb_s": 0.0}
+ak2: [2026-10-06T20:22:58Z] staged taxo.k2d bytes=179150665 in 2.1 s (0.086 GB/s)
+ak2: [2026-10-06T20:22:58Z] etag taxo.k2d: {"ok": true, "file": "/mnt/nvme/roda/taxo.k2d", "size": 179150665, "etag": "9ee988cb814f39881e29623b9c8007cd-22", "computed": "9ee988cb814f39881e29623b9c8007cd-22", "part_bytes": 8388608, "parts": 22, "workers": 8, "seconds": 0.087, "read_gb_s": 2.06}
+ak2: [2026-10-06T20:22:58Z] gzip -dc rate: /mnt/nvme/reads/SRR062634_200000_1.fq.gz -> 51895574 bytes in 0.26 s (199.7 MB/s plain out)
+ak2-phase	2026-10-06T20:22:58Z	1791318178	build	no
+scripts/madvrandom-build.sh: line 25: patch: command not found
+ak2: [2026-10-06T20:23:18Z] ERROR: madvrandom-build failed
+spawn: [2026-10-06T20:23:19Z] command exit rc=1

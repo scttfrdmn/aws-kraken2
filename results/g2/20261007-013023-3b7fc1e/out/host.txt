@@ -1,0 +1,107 @@
+Architecture:                            aarch64
+CPU op-mode(s):                          64-bit
+Byte Order:                              Little Endian
+CPU(s):                                  32
+On-line CPU(s) list:                     0-31
+Vendor ID:                               ARM
+Model:                                   1
+Thread(s) per core:                      1
+Core(s) per socket:                      32
+Socket(s):                               1
+Stepping:                                r0p1
+BogoMIPS:                                2000.00
+Flags:                                   fp asimd evtstrm aes pmull sha1 sha2 crc32 atomics fphp asimdhp cpuid asimdrdm jscvt fcma lrcpc dcpop sha3 asimddp sha512 sve asimdfhm dit uscat ilrcpc flagm sb paca pacg dcpodp sve2 sveaes svepmull svebitperm svesha3 flagm2 frint svei8mm svebf16 i8mm bf16 dgh rng bti
+L1d cache:                               2 MiB (32 instances)
+L1i cache:                               2 MiB (32 instances)
+L2 cache:                                64 MiB (32 instances)
+L3 cache:                                36 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-31
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Ghostwrite:                Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Old microcode:             Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Not affected
+Vulnerability Spec rstack overflow:      Not affected
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; CSV2, BHB
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+
+available: 1 nodes (0)
+node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+node 0 size: 63129 MB
+node 0 free: 61262 MB
+node distances:
+node   0 
+  0:  10 
+
+MemTotal:       64644672 kB
+MemFree:        62732908 kB
+MemAvailable:   63232984 kB
+Buffers:            3120 kB
+Cached:           996440 kB
+SwapCached:            0 kB
+Active:           316516 kB
+Inactive:         791556 kB
+Active(anon):        504 kB
+Inactive(anon):   108792 kB
+Active(file):     316012 kB
+Inactive(file):   682764 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:              4464 kB
+Writeback:             0 kB
+AnonPages:        108680 kB
+Mapped:           111880 kB
+Shmem:               800 kB
+KReclaimable:      68540 kB
+Slab:             193408 kB
+SReclaimable:      68540 kB
+SUnreclaim:       124868 kB
+KernelStack:        8984 kB
+PageTables:         6912 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    32322336 kB
+Committed_AS:     542112 kB
+VmallocTotal:   135288315904 kB
+VmallocUsed:       21320 kB
+VmallocChunk:          0 kB
+Percpu:            14336 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:      8192 kB
+FilePmdMapped:         0 kB
+CmaTotal:          65536 kB
+CmaFree:           52736 kB
+Balloon:               0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+Hugetlb:               0 kB
+
+NAME           SIZE MODEL                            SERIAL               TYPE MOUNTPOINT
+nvme1n1         40G Amazon Elastic Block Store       vol0ab9820be33cb5d35 disk 
+├─nvme1n1p1     40G                                                       part /
+└─nvme1n1p128   10M                                                       part /boot/efi
+nvme0n1        1.7T Amazon EC2 NVMe Instance Storage AWS1AB910E6B8D3820E9 disk 

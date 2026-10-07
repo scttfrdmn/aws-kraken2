@@ -1,0 +1,150 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 310  of event 'cycles'
+# Event count (approx.): 4672966321
+#
+# Overhead  Shared Object          Symbol                                                                                                                                                                                                                                                                                                                                                                                                                            
+# ........  .....................  ..................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+    20.92%  classify               [.] ClassifySequence
+            |
+            ---ClassifySequence
+               ProcessFiles
+               |          
+               |--13.99%--0xffffae5b3440
+               |          start_thread
+               |          thread_start
+               |          
+                --6.93%--GOMP_parallel
+                          ProcessFiles
+                          classify
+                          main
+                          __libc_start_call_main
+                          __libc_start_main@@GLIBC_2.34
+                          _start
+    17.31%  classify               [.] kraken2::MinimizerScanner::NextMinimizer
+            |
+            ---kraken2::MinimizerScanner::NextMinimizer
+               ClassifySequence
+               ProcessFiles
+               |          
+               |--13.02%--0xffffae5b3440
+               |          start_thread
+               |          thread_start
+               |          
+                --4.30%--GOMP_parallel
+                          ProcessFiles
+                          classify
+                          main
+                          __libc_start_call_main
+                          __libc_start_main@@GLIBC_2.34
+                          _start
+     7.88%  gzip                   [.] 0x0000000000015780
+            |          
+            |--5.74%--0xaaaaad4f5780
+            |          0xaaaaad4f6b84
+            |          0xaaaaad4f7448
+            |          0xaaaaad4f8580
+            |          0xaaaaad4fc254
+            |          0xaaaaad4f0e68
+            |          __libc_start_call_main
+            |          __libc_start_main@@GLIBC_2.34
+            |          0xaaaaad4f1070
+            |          
+             --2.14%--0xaaaabf345780
+                       0xaaaabf346b84
+                       0xaaaabf347448
+                       0xaaaabf348580
+                       0xaaaabf34c254
+                       0xaaaabf340e68
+                       __libc_start_call_main
+                       __libc_start_main@@GLIBC_2.34
+                       0xaaaabf341070
+     5.69%  libc.so.6              [.] __GI___memcpy_sve
+            |
+            ---__GI___memcpy_sve
+               |          
+               |--3.08%--0xaaaabf346a73
+               |          0xaaaabf347448
+               |          0xaaaabf348580
+               |          0xaaaabf34c254
+               |          0xaaaabf340e68
+               |          __libc_start_call_main
+               |          __libc_start_main@@GLIBC_2.34
+               |          0xaaaabf341070
+               |          
+               |--1.32%--0xaaaaad4f6a73
+               |          0xaaaaad4f7448
+               |          0xaaaaad4f8580
+               |          0xaaaaad4fc254
+               |          0xaaaaad4f0e68
+               |          __libc_start_call_main
+               |          __libc_start_main@@GLIBC_2.34
+               |          0xaaaaad4f1070
+               |          
+                --1.28%--std::basic_streambuf<char, std::char_traits<char> >::xsputn
+                          |          
+                           --0.98%--std::num_put<char, std::ostreambuf_iterator<char, std::char_traits<char> > >::_M_insert_int<long>
+                                     std::ostream::_M_insert<long>
+                                     AddHitlistString
+                                     ClassifySequence
+                                     ProcessFiles
+                                     0xffffae5b3440
+                                     start_thread
+                                     thread_start
+     4.61%  classify               [.] kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+            |
+            ---kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+               ClassifySequence
+               ProcessFiles
+               |          
+               |--3.73%--0xffffae5b3440
+               |          start_thread
+               |          thread_start
+               |          
+                --0.88%--GOMP_parallel
+                          ProcessFiles
+                          classify
+                          main
+                          __libc_start_call_main
+                          __libc_start_main@@GLIBC_2.34
+                          _start
+     2.81%  [kernel.kallsyms]      [k] next_uptodate_folio
+            |
+            ---next_uptodate_folio
+               filemap_map_pages
+               do_read_fault
+               do_fault
+               handle_pte_fault
+               __handle_mm_fault
+               handle_mm_fault
+               do_page_fault
+               do_translation_fault
+               do_mem_abort
+               el0_da
+               el0t_64_sync_handler
+               el0t_64_sync
+               kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+               ClassifySequence
+               ProcessFiles
+               |          
+               |--1.95%--0xffffae5b3440
+               |          start_thread
+               |          thread_start
+               |          
+                --0.85%--GOMP_parallel
+                          ProcessFiles
+                          classify
+                          main
+                          __libc_start_call_main
+                          __libc_start_main@@GLIBC_2.34
+                          _start
+     2.59%  libstdc++.so.6.0.33    [.] std::__ostream_insert<char, std::char_traits<char> >
+            |
+            ---std::__ostream_insert<char, std::char_traits<char> >
+               |          
+                --2.00%--AddHitlistString
+                          ClassifySequence

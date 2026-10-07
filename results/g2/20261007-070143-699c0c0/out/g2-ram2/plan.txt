@@ -1,0 +1,29 @@
+# runs/g2-ram2.json (r8gd.48xlarge: 192 vCPU, 1536 GiB, 2 NUMA nodes, 6 x 1900 GB NVMe RAID0).
+# #22 absolute big-RAM baselines in the `load` regime (upstream's default load, table resident),
+# n = 3. The tmpfs `ram` regime of results/g2/20261006-210414-2058d42 measured 2-8% slow, so it
+# gives the knee's shape only.
+# Cells:
+#   - host default (THP madvise, upstream's MADV_HUGEPAGE): fq T = 64 and 96, gz T = 8;
+#   - the same with instrumentation off (a control for g2run's perf stat and sampler overhead);
+#   - the page-size contrast at fq T = 64: THP never (4 KiB pages) vs THP always;
+#   - upstream's equivalent host tune: THP enabled=always plus numactl --interleave=all (the
+#     table spread evenly over both nodes), fq T = 64 and 96, gz T = 8.
+# Each rung loads the 1.19 TB table (about 50 s; the page cache cannot keep the file beside the
+# resident table, so every load reads NVMe). Last: a perf record of the load itself, to see why
+# it takes 50 s at any K2_DB_READ_THREADS.
+note #22 load regime n=3: host default, uninstrumented control, THP never vs always, THP always + numactl --interleave=all; perf record of the load
+run load SRR062634_8000000-fq warm 3 64 96
+run load SRR062634_8000000-gz warm 3 8
+instrument off
+run load SRR062634_8000000-fq warm 3 64
+instrument on
+thp never
+run load SRR062634_8000000-fq warm 3 64
+thp always
+run load SRR062634_8000000-fq warm 3 64
+prefix numactl --interleave=all
+run load SRR062634_8000000-fq warm 3 64 96
+run load SRR062634_8000000-gz warm 3 8
+prefix -
+thp default
+profile load empty cold 64

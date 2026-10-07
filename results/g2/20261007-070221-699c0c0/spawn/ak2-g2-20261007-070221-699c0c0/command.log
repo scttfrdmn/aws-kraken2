@@ -1,0 +1,154 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-07T07:02:51Z] wrapper start
+spawn: [2026-10-07T07:02:51Z] stage-in start
+spawn: [2026-10-07T07:02:51Z] stage-in done rc=0
+spawn: [2026-10-07T07:02:51Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 51145b9e8b659eab288929ade7a65feda2892c7842fbfa8ce1e7466534bcd667); exec
+ak2: log tee up
+ak2-phase	2026-10-07T07:02:52Z	1791356572	preamble	no
+ak2: [2026-10-07T07:02:52Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-07T07:02:52Z] after set +e $-=hBc
+ak2: [2026-10-07T07:02:52Z] gate=g2 run=20261007-070221-699c0c0
+ak2: [2026-10-07T07:02:52Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-07T07:02:52Z] imds region=us-west-2 az=us-west-2b instance=i-05d09d2d40ca8db4d type=r8gd.16xlarge ami=ami-09325776a00699513
+ak2: [2026-10-07T07:02:52Z] bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-07T07:02:52Z] bucket cookbook-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-07T07:02:52Z] WARN: could not read Payer of cookbook-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-07T07:02:52Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-07T07:02:53Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-07T07:02:53Z] region assert passed
+ak2: [2026-10-07T07:02:53Z] drop_caches_ok=true
+ak2: [2026-10-07T07:02:53Z] preamble done; spec body starts
+ak2-phase	2026-10-07T07:02:53Z	1791356573	body	no
+ak2-phase	2026-10-07T07:02:53Z	1791356573	setup	no
+ak2: [2026-10-07T07:03:30Z] perf perf version 6.1.188-233.386.amzn2023.aarch64; events usable: task-clock,context-switches,cpu-migrations,page-faults,major-faults,minor-faults,cycles,instructions,dTLB-loads,dTLB-load-misses,dtlb_walk,stall_backend,syscalls:sys_enter_futex
+ak2: [2026-10-07T07:03:30Z] host: 64 CPUs; 518833360 kB; kernel 6.18.51-120.163.amzn2023.aarch64
+ak2: [2026-10-07T07:03:30Z] thp enabled=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] shmem_enabled=[always within_size advise [never] deny force]
+ak2: [2026-10-07T07:03:30Z] lscpu: Core(s) per socket: 64;Socket(s): 1;NUMA node(s): 1;
+ak2: [2026-10-07T07:03:30Z] numa: available: 1 nodes (0);node 0 size: 506673 MB;
+ak2: [2026-10-07T07:03:30Z] disks: nvme1n1   40G Amazon Elastic Block Store       vol0fe50d23ef80339b1;nvme0n1  1.7T Amazon EC2 NVMe Instance Storage AWS64D19C5BD1BE66CA9;nvme2n1  1.7T Amazon EC2 NVMe Instance Storage AWS85BD941E3D873130D;
+log stripe unit (524288 bytes) is too large (maximum is 256KiB)
+log stripe unit adjusted to 32KiB
+ak2: [2026-10-07T07:03:33Z] storage: instance-store NVMe 2x ( 1.7T Amazon EC2 NVMe Instance Storage) mdadm RAID0 chunk 512K as md0; xfs noatime at /mnt/nvme; read_ahead_kb: md0=2048KiB nvme0n1=128KiB nvme2n1=128KiB; scheduler: md0= nvme0n1=[none]mq-deadlinekyberbfq nvme2n1=[none]mq-deadlinekyberbfq
+ak2-phase	2026-10-07T07:03:33Z	1791356613	fetch-reads	no
+ak2: [2026-10-07T07:03:33Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000.SOURCE -> /mnt/nvme/reads/SRR062634_8000000.SOURCE (403 bytes)
+ak2: [2026-10-07T07:03:39Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_1.fq -> /mnt/nvme/reads/SRR062634_8000000_1.fq (2093755239 bytes)
+ak2: [2026-10-07T07:03:46Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_2.fq -> /mnt/nvme/reads/SRR062634_8000000_2.fq (2093755239 bytes)
+ak2: [2026-10-07T07:03:49Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz -> /mnt/nvme/reads/SRR062634_8000000_1.fq.gz (630707754 bytes)
+ak2: [2026-10-07T07:03:52Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz -> /mnt/nvme/reads/SRR062634_8000000_2.fq.gz (626133309 bytes)
+ak2: [2026-10-07T07:04:16Z] reads SRR062634_8000000 verified against SOURCE
+ak2: [2026-10-07T07:04:17Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE -> /mnt/nvme/reads/SRR062634_200000.SOURCE (400 bytes)
+ak2: [2026-10-07T07:04:18Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq -> /mnt/nvme/reads/SRR062634_200000_1.fq (51895574 bytes)
+ak2: [2026-10-07T07:04:19Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq -> /mnt/nvme/reads/SRR062634_200000_2.fq (51895574 bytes)
+ak2: [2026-10-07T07:04:20Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq.gz -> /mnt/nvme/reads/SRR062634_200000_1.fq.gz (15955195 bytes)
+ak2: [2026-10-07T07:04:21Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq.gz -> /mnt/nvme/reads/SRR062634_200000_2.fq.gz (15893511 bytes)
+ak2: [2026-10-07T07:04:22Z] reads SRR062634_200000 verified against SOURCE
+ak2: [2026-10-07T07:04:22Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000.SOURCE -> /mnt/nvme/reads/ERR478965_200000.SOURCE (400 bytes)
+ak2: [2026-10-07T07:04:23Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq -> /mnt/nvme/reads/ERR478965_200000_1.fq (47238491 bytes)
+ak2: [2026-10-07T07:04:24Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq -> /mnt/nvme/reads/ERR478965_200000_2.fq (47075003 bytes)
+ak2: [2026-10-07T07:04:25Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq.gz -> /mnt/nvme/reads/ERR478965_200000_1.fq.gz (13868909 bytes)
+ak2: [2026-10-07T07:04:26Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq.gz -> /mnt/nvme/reads/ERR478965_200000_2.fq.gz (13801673 bytes)
+ak2: [2026-10-07T07:04:27Z] reads ERR478965_200000 verified against SOURCE
+ak2: [2026-10-07T07:04:28Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000.SOURCE -> /mnt/nvme/reads/ERR598966_200000.SOURCE (400 bytes)
+ak2: [2026-10-07T07:04:29Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000_1.fq -> /mnt/nvme/reads/ERR598966_200000_1.fq (51418954 bytes)
+ak2: [2026-10-07T07:04:30Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000_2.fq -> /mnt/nvme/reads/ERR598966_200000_2.fq (51400840 bytes)
+ak2: [2026-10-07T07:04:31Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000_1.fq.gz -> /mnt/nvme/reads/ERR598966_200000_1.fq.gz (14413175 bytes)
+ak2: [2026-10-07T07:04:32Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/ERR598966_200000_2.fq.gz -> /mnt/nvme/reads/ERR598966_200000_2.fq.gz (14431235 bytes)
+ak2: [2026-10-07T07:04:33Z] reads ERR598966_200000 verified against SOURCE
+ak2: [2026-10-07T07:04:33Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000.SOURCE -> /mnt/nvme/reads/SRR28305653_200000.SOURCE (422 bytes)
+ak2: [2026-10-07T07:04:34Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq -> /mnt/nvme/reads/SRR28305653_200000_1.fq (72980506 bytes)
+ak2: [2026-10-07T07:04:36Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq -> /mnt/nvme/reads/SRR28305653_200000_2.fq (72980506 bytes)
+ak2: [2026-10-07T07:04:37Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_1.fq.gz -> /mnt/nvme/reads/SRR28305653_200000_1.fq.gz (9836969 bytes)
+ak2: [2026-10-07T07:04:37Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR28305653_200000_2.fq.gz -> /mnt/nvme/reads/SRR28305653_200000_2.fq.gz (10134869 bytes)
+ak2: [2026-10-07T07:04:38Z] reads SRR28305653_200000 verified against SOURCE
+ak2: [2026-10-07T07:05:26Z] subset SRR062634_2000000: derived_from SRR062634_8000000 (first 2000000 records per mate, head -n 8000000; gzip -6 -n);sha256 73b7b8af194f9d8e0082b62532f3d140a44e1d5848b2cded1ce54276c497ffd6 SRR062634_2000000_1.fq;sha256 bdd4b2d9a1e984dfa342bd104b92dec71f76171bc7753074d98d1d84a9f91e6b SRR062634_2000000_2.fq;sha256 fbc0808601a9f786ed370ee9d232e4cec29e9659c52d6e48ae945adc343054c7 SRR062634_2000000_1.fq.gz;sha256 877abfa949331c3dd50fd42b8a1504cc664ad8d105f92fa7e36f0220b53de4c2 SRR062634_2000000_2.fq.gz;
+ak2: [2026-10-07T07:05:32Z] subset SRR062634_250000: derived_from SRR062634_8000000 (first 250000 records per mate, head -n 1000000; gzip -6 -n);sha256 74f5d102f0b7b07c2c39cad1d2dec1cb1ba17eadfab4afe1245e834b8fd853ba SRR062634_250000_1.fq;sha256 53515ddf6698925ffe55691d01ca9d7e44379f2b78aaf9ee4fb0f9e942c7d095 SRR062634_250000_2.fq;sha256 4944aeb4020b053480addc833c36460320628bb825cd4ee26588a14fe296dd0a SRR062634_250000_1.fq.gz;sha256 a3670a9303824efa026a15232c1591b224a50eec479152d466dba06b11768cba SRR062634_250000_2.fq.gz;
+ak2: [2026-10-07T07:05:35Z] gzip -dc rate: /mnt/nvme/reads/SRR062634_2000000_1.fq.gz -> 521103409 bytes in 2.64 s (197.5 MB/s plain out)
+ak2-phase	2026-10-07T07:05:35Z	1791356735	fetch-db	no
+ak2: [2026-10-07T07:05:35Z] aws: aws-cli/2.36.47 Python/3.9.25 Linux/6.18.51-120.163.amzn2023.aarch64 source/aarch64.amzn.2023; s3 transfer client crt, target_bandwidth 25Gb/s, 64 MB parts
+ak2: [2026-10-07T07:05:36Z] staged opts.k2d bytes=56 in 0.4 s (0.000 GB/s)
+ak2: [2026-10-07T07:05:36Z] etag opts.k2d: {"ok": true, "file": "/mnt/nvme/db/RefSeqCompleteV205/opts.k2d", "size": 56, "etag": "24fb1753eb45d74643ef13f16562df6b", "computed": "24fb1753eb45d74643ef13f16562df6b", "part_bytes": 56, "parts": 1, "workers": 64, "seconds": 0.0, "read_gb_s": 0.0}
+ak2: [2026-10-07T07:05:40Z] staged taxo.k2d bytes=179150665 in 3.5 s (0.052 GB/s)
+ak2: [2026-10-07T07:05:40Z] etag taxo.k2d: {"ok": true, "file": "/mnt/nvme/db/RefSeqCompleteV205/taxo.k2d", "size": 179150665, "etag": "9ee988cb814f39881e29623b9c8007cd-22", "computed": "9ee988cb814f39881e29623b9c8007cd-22", "part_bytes": 8388608, "parts": 22, "workers": 64, "seconds": 0.034, "read_gb_s": 5.264}
+ak2: [2026-10-07T07:15:32Z] staged hash.k2d bytes=1189091671800 in 592.1 s (2.008 GB/s)
+ak2: [2026-10-07T07:18:03Z] etag hash.k2d: {"ok": true, "file": "/mnt/nvme/db/RefSeqCompleteV205/hash.k2d", "size": 1189091671800, "etag": "f80959f9556b50d76b3e744afdd3b22a-8860", "computed": "f80959f9556b50d76b3e744afdd3b22a-8860", "part_bytes": 134217728, "parts": 8860, "workers": 64, "seconds": 150.922, "read_gb_s": 7.879}
+ak2: [2026-10-07T07:06:15Z] upstream: pin 2731b35f7abb26ec926517274f3d87e78d42fd76;describe 2.17.2-20-g2731b35;cxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5));version Kraken version 2.17.1;built 2026-10-07T07:05:55Z Linux aarch64;
+ak2: [2026-10-07T07:06:15Z] madvrandom (diagnostic): pin 2731b35f7abb26ec926517274f3d87e78d42fd76;variant madvrandom (diagnostic; not the oracle or the baseline);patch upstream/madvrandom.patch;patch_sha256 b71f3a927c5b713a420cd0029c74c7ab7dc593739628623eae3a91ee1053efae;cxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5));version Kraken version 2.17.1;built 2026-10-07T07:06:15Z Linux aarch64;
+g2: shell flags hBc
+g2: plan=scripts/g2/nvme3.plan db=/mnt/nvme/db/RefSeqCompleteV205 ramdb= reads=/mnt/nvme/reads cold=true (ak2_drop_caches) thp=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] devs=md0,nvme0n1,nvme2n1
+g2: results /home/ec2-user/ak2/repo/results/g2/g2-nvme3-20261007T071804Z
+g2: plan line 12: read_ahead_kb now: md0=4 nvme0n1=4 nvme2n1=4 
+ak2: [2026-10-07T07:18:15Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:18:15Z	1791357495	g2-1-mmap-SRR062634_8000000-gz-cold-t256-r1	yes
+g2: L13-run-mmap-SRR062634_8000000-gz-cold-t256-r1 {"exit":0,"timed_out":false,"wall_s":269.379843,"load_s":0.260072,"classify_s":236.895,"offcpu_frac":0.8085,"ipc":0.8918,"aqu":109.787,"majflt":178877022}
+ak2: [2026-10-07T07:24:13Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:24:13Z	1791357853	g2-2-mmap-SRR062634_8000000-gz-cold-t192-r1	yes
+g2: L13-run-mmap-SRR062634_8000000-gz-cold-t192-r1 {"exit":0,"timed_out":false,"wall_s":290.521456,"load_s":0.2506,"classify_s":257.532,"offcpu_frac":0.8068,"ipc":0.9687,"aqu":88.529,"majflt":178725722}
+ak2: [2026-10-07T07:30:31Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:30:31Z	1791358231	g2-3-mmap-SRR062634_8000000-gz-cold-t128-r1	yes
+g2: L13-run-mmap-SRR062634_8000000-gz-cold-t128-r1 {"exit":0,"timed_out":false,"wall_s":302.320481,"load_s":0.203404,"classify_s":269.394,"offcpu_frac":0.7242,"ipc":0.976,"aqu":71.546,"majflt":178492753}
+ak2: [2026-10-07T07:37:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:37:02Z	1791358622	g2-4-mmap-SRR062634_8000000-gz-cold-t96-r1	yes
+g2: L13-run-mmap-SRR062634_8000000-gz-cold-t96-r1 {"exit":0,"timed_out":false,"wall_s":335.169185,"load_s":0.250071,"classify_s":302.238,"offcpu_frac":0.7448,"ipc":1.065,"aqu":56.913,"majflt":178492194}
+ak2: [2026-10-07T07:44:05Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:44:05Z	1791359045	g2-5-mmap-SRR062634_8000000-gz-cold-t64-r1	yes
+g2: L13-run-mmap-SRR062634_8000000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":391.450776,"load_s":0.28519,"classify_s":357.773,"offcpu_frac":0.718,"ipc":1.1689,"aqu":42.642,"majflt":178349716}
+ak2: [2026-10-07T07:52:04Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:52:04Z	1791359524	g2-6-mmap-SRR062634_8000000-fq-cold-t256-r1	yes
+g2: L14-run-mmap-SRR062634_8000000-fq-cold-t256-r1 {"exit":0,"timed_out":false,"wall_s":270.549051,"load_s":0.257568,"classify_s":241.671,"offcpu_frac":0.818,"ipc":0.8905,"aqu":112.016,"majflt":178824068}
+ak2: [2026-10-07T07:57:57Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T07:57:57Z	1791359877	g2-7-mmap-SRR062634_8000000-fq-cold-t128-r1	yes
+g2: L14-run-mmap-SRR062634_8000000-fq-cold-t128-r1 {"exit":0,"timed_out":false,"wall_s":297.898806,"load_s":0.244132,"classify_s":264.636,"offcpu_frac":0.7117,"ipc":0.9494,"aqu":73.635,"majflt":178410901}
+ak2: [2026-10-07T08:04:24Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:04:24Z	1791360264	g2-8-mmap-SRR062634_2000000-gz-cold-t128-r1	yes
+g2: L15-run-mmap-SRR062634_2000000-gz-cold-t128-r1 {"exit":0,"timed_out":false,"wall_s":135.653517,"load_s":0.252441,"classify_s":120.794,"offcpu_frac":0.8896,"ipc":1.5328,"aqu":45.3,"majflt":63614962}
+ak2: [2026-10-07T08:07:22Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:07:22Z	1791360442	g2-9-mmap-SRR062634_2000000-gz-cold-t64-r1	yes
+g2: L15-run-mmap-SRR062634_2000000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":135.98287,"load_s":0.281134,"classify_s":120.83,"offcpu_frac":0.7795,"ipc":1.5501,"aqu":45.244,"majflt":63614967}
+ak2-phase	2026-10-07T08:09:39Z	1791360579	g2-10-mmap-SRR062634_2000000-gz-warm-t128-r1	no
+g2: L16-run-mmap-SRR062634_2000000-gz-warm-t128-r1 {"exit":0,"timed_out":false,"wall_s":36.611465,"load_s":0.019341,"classify_s":5.785,"offcpu_frac":0.8996,"ipc":1.2362,"aqu":0.0,"majflt":0}
+ak2-phase	2026-10-07T08:10:16Z	1791360616	g2-11-mmap-SRR062634_2000000-gz-warm-t64-r1	no
+g2: L16-run-mmap-SRR062634_2000000-gz-warm-t64-r1 {"exit":0,"timed_out":false,"wall_s":19.96291,"load_s":0.019135,"classify_s":5.748,"offcpu_frac":0.813,"ipc":1.3416,"aqu":0.0,"majflt":0}
+ak2: [2026-10-07T08:11:11Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:11:11Z	1791360671	g2-12-mmap-SRR062634_200000-gz-cold-t64-r1	yes
+g2: L17-run-mmap-SRR062634_200000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":119.156013,"load_s":0.221179,"classify_s":116.4,"offcpu_frac":0.9764,"ipc":1.7703,"aqu":4.539,"majflt":7788826}
+ak2-phase	2026-10-07T08:13:11Z	1791360791	g2-13-mmap-SRR062634_200000-gz-warm-t64-r1	no
+g2: L18-run-mmap-SRR062634_200000-gz-warm-t64-r1 {"exit":0,"timed_out":false,"wall_s":6.737085,"load_s":0.019231,"classify_s":2.215,"offcpu_frac":0.9163,"ipc":1.1734,"aqu":0.0,"majflt":0}
+ak2: [2026-10-07T08:13:24Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:13:24Z	1791360804	g2-14-mmap-ERR478965_200000-gz-cold-t64-r1	yes
+g2: L19-run-mmap-ERR478965_200000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":109.254596,"load_s":0.252995,"classify_s":106.7,"offcpu_frac":0.9784,"ipc":1.7725,"aqu":4.188,"majflt":6606372}
+ak2-phase	2026-10-07T08:15:14Z	1791360914	g2-15-mmap-ERR478965_200000-gz-warm-t64-r1	no
+g2: L20-run-mmap-ERR478965_200000-gz-warm-t64-r1 {"exit":0,"timed_out":false,"wall_s":5.957179,"load_s":0.019009,"classify_s":2.061,"offcpu_frac":0.9212,"ipc":1.1117,"aqu":0.0,"majflt":0}
+ak2: [2026-10-07T08:15:26Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:15:26Z	1791360926	g2-16-mmap-ERR598966_200000-gz-cold-t64-r1	yes
+g2: L21-run-mmap-ERR598966_200000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":123.534022,"load_s":0.239819,"classify_s":120.558,"offcpu_frac":0.9764,"ipc":1.6805,"aqu":4.551,"majflt":8080589}
+ak2-phase	2026-10-07T08:17:30Z	1791361050	g2-17-mmap-ERR598966_200000-gz-warm-t64-r1	no
+g2: L22-run-mmap-ERR598966_200000-gz-warm-t64-r1 {"exit":0,"timed_out":false,"wall_s":7.175395,"load_s":0.019037,"classify_s":2.418,"offcpu_frac":0.9152,"ipc":0.9651,"aqu":0.0,"majflt":0}
+ak2: [2026-10-07T08:17:44Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:17:44Z	1791361064	g2-18-mmap-SRR28305653_200000-gz-cold-t64-r1	yes
+g2: L23-run-mmap-SRR28305653_200000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":91.239421,"load_s":0.266247,"classify_s":88.384,"offcpu_frac":0.9664,"ipc":1.7901,"aqu":6.447,"majflt":8345415}
+ak2-phase	2026-10-07T08:19:16Z	1791361156	g2-19-mmap-SRR28305653_200000-gz-warm-t64-r1	no
+g2: L24-run-mmap-SRR28305653_200000-gz-warm-t64-r1 {"exit":0,"timed_out":false,"wall_s":6.821363,"load_s":0.019783,"classify_s":1.952,"offcpu_frac":0.8847,"ipc":1.2132,"aqu":0.0,"majflt":0}
+ak2: [2026-10-07T08:19:30Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:19:30Z	1791361170	g2-20-mmap-SRR062634_8000000-gz-cold-t256-r1	yes
+g2: L25-run-mmap-SRR062634_8000000-gz-cold-t256-r1 {"exit":0,"timed_out":false,"wall_s":266.716857,"load_s":0.299786,"classify_s":233.671,"offcpu_frac":0.8141,"ipc":0.9135,"aqu":112.115,"majflt":178903867}
+ak2: [2026-10-07T08:25:23Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:25:23Z	1791361523	g2-21-mmap-SRR062634_8000000-gz-cold-t192-r1	yes
+g2: L25-run-mmap-SRR062634_8000000-gz-cold-t192-r1 {"exit":0,"timed_out":false,"wall_s":288.692505,"load_s":0.199431,"classify_s":255.522,"offcpu_frac":0.8091,"ipc":0.9886,"aqu":89.062,"majflt":178620444}
+ak2: [2026-10-07T08:31:41Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:31:41Z	1791361901	g2-22-mmap-SRR062634_8000000-gz-cold-t128-r1	yes
+g2: L25-run-mmap-SRR062634_8000000-gz-cold-t128-r1 {"exit":0,"timed_out":false,"wall_s":302.418779,"load_s":0.255602,"classify_s":268.886,"offcpu_frac":0.7262,"ipc":0.9838,"aqu":71.877,"majflt":178515492}
+ak2: [2026-10-07T08:38:12Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:38:12Z	1791362292	g2-23-mmap-SRR062634_8000000-gz-cold-t96-r1	yes
+g2: L25-run-mmap-SRR062634_8000000-gz-cold-t96-r1 {"exit":0,"timed_out":false,"wall_s":337.256169,"load_s":0.190772,"classify_s":304.03,"offcpu_frac":0.745,"ipc":1.0705,"aqu":56.487,"majflt":178474398}
+ak2: [2026-10-07T08:45:16Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-07T08:45:16Z	1791362716	g2-24-mmap-SRR062634_8000000-gz-cold-t64-r1	yes
+g2: L25-run-mmap-SRR062634_8000000-gz-cold-t64-r1 {"exit":0,"timed_out":false,"wall_s":392.577841,"load_s":0.197602,"classify_s":358.984,"offcpu_frac":0.7141,"ipc":1.1588,"aqu":42.45,"majflt":178395097}
+g2: plan line 26: read_ahead_kb now: md0=2048 nvme0n1=128 nvme2n1=128 
+g2: 24 rungs, 0 skipped, 0 failures; /home/ec2-user/ak2/repo/results/g2/g2-nvme3-20261007T071804Z
+ak2: [2026-10-07T08:51:55Z] g2 nvme3 rc=0
+ak2-phase	2026-10-07T08:51:55Z	1791363115	push	no
+spawn: [2026-10-07T08:51:56Z] command exit rc=0

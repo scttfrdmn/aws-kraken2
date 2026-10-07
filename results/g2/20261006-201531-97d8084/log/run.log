@@ -1,0 +1,33 @@
+ak2: log tee up
+ak2-phase	2026-10-06T20:16:26Z	1791317786	preamble	no
+ak2: [2026-10-06T20:16:26Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-06T20:16:26Z] after set +e $-=hBc
+ak2: [2026-10-06T20:16:26Z] gate=g2 run=20261006-201531-97d8084
+ak2: [2026-10-06T20:16:26Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-06T20:16:26Z] imds region=us-west-2 az=us-west-2b instance=i-02d4248d5eca0cae8 type=r8gd.xlarge ami=ami-09325776a00699513
+ak2: [2026-10-06T20:16:26Z] bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-06T20:16:27Z] bucket cookbook-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-06T20:16:27Z] WARN: could not read Payer of cookbook-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-06T20:16:27Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-06T20:16:28Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-06T20:16:28Z] region assert passed
+ak2: [2026-10-06T20:16:28Z] drop_caches_ok=true
+ak2: [2026-10-06T20:16:28Z] preamble done; spec body starts
+ak2-phase	2026-10-06T20:16:28Z	1791317788	body	no
+ak2-phase	2026-10-06T20:16:28Z	1791317788	setup	no
+ak2: [2026-10-06T20:16:58Z] perf perf version 6.1.188-233.386.amzn2023.aarch64; events usable: task-clock,context-switches,cpu-migrations,page-faults,major-faults,minor-faults,cycles,instructions,dTLB-loads,dTLB-load-misses,dtlb_walk,stall_backend,syscalls:sys_enter_futex
+ak2: [2026-10-06T20:16:58Z] host: 4 CPUs; 32248252 kB; kernel 6.18.51-120.163.amzn2023.aarch64
+ak2: [2026-10-06T20:16:58Z] thp enabled=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] shmem_enabled=[always within_size advise [never] deny force]
+ak2: [2026-10-06T20:16:58Z] lscpu: Core(s) per socket: 4;Socket(s): 1;NUMA node(s): 1;
+ak2: [2026-10-06T20:16:58Z] numa: available: 1 nodes (0);node 0 size: 31492 MB;
+ak2: [2026-10-06T20:16:58Z] disks: nvme1n1    40G Amazon Elastic Block Store       vol04bd42c54e94ff9dd;nvme0n1 220.7G Amazon EC2 NVMe Instance Storage AWS49C7F2640B832DF7D;
+ak2: [2026-10-06T20:16:59Z] storage: instance-store NVMe 1x (220.7G Amazon EC2 NVMe Instance Storage)  xfs noatime at /mnt/nvme; read_ahead_kb: nvme0n1=128KiB; scheduler: nvme0n1=[none]mq-deadlinekyberbfq
+ak2-phase	2026-10-06T20:16:59Z	1791317819	fetch	no
+ak2: [2026-10-06T20:17:19Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/ -> /mnt/nvme/db/k2_standard_08_GB_20260626/ (8004818876 bytes)
+ak2: [2026-10-06T20:17:25Z] db k2_standard_08_GB_20260626 verified against sha256 metadata
+ak2: [2026-10-06T20:17:25Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000.SOURCE -> /mnt/nvme/reads/SRR062634_200000.SOURCE (400 bytes)
+ak2: [2026-10-06T20:17:26Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq -> /mnt/nvme/reads/SRR062634_200000_1.fq (51895574 bytes)
+ak2: [2026-10-06T20:17:27Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq -> /mnt/nvme/reads/SRR062634_200000_2.fq (51895574 bytes)
+ak2: [2026-10-06T20:17:28Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_1.fq.gz -> /mnt/nvme/reads/SRR062634_200000_1.fq.gz (15955195 bytes)
+ak2: [2026-10-06T20:17:29Z] staged s3://cookbook-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_200000_2.fq.gz -> /mnt/nvme/reads/SRR062634_200000_2.fq.gz (15893511 bytes)
+ak2: [2026-10-06T20:17:30Z] reads SRR062634_200000 verified against SOURCE

@@ -1,0 +1,150 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 58K of event 'cycles'
+# Event count (approx.): 567841714051
+#
+# Overhead  Shared Object        Symbol                                       
+# ........  ...................  .............................................
+#
+    31.53%  [kernel.kallsyms]    [k] __arch_copy_to_user
+            |
+            ---__arch_copy_to_user
+               copy_page_to_iter
+               filemap_read
+               generic_file_read_iter
+               xfs_file_buffered_read
+               xfs_file_read_iter
+               vfs_read
+               __arm64_sys_pread64
+               invoke_syscall
+               el0_svc_common.constprop.0
+               do_el0_svc
+               el0_svc
+               el0t_64_sync_handler
+               el0t_64_sync
+               __libc_pread
+               |          
+                --31.42%--kraken2::pread_parallel
+                          |          
+                          |--27.66%--0xffff8ebb3440
+                          |          start_thread
+                          |          thread_start
+                          |          
+                           --3.76%--GOMP_parallel
+                                     kraken2::CompactHashTable<kraken2::CompactHashCell>::LoadTable
+                                     load_index
+                                     main
+                                     __libc_start_call_main
+                                     __libc_start_main@@GLIBC_2.34
+                                     _start
+    14.06%  [kernel.kallsyms]    [k] __pageblock_pfn_to_page
+            |
+            ---__pageblock_pfn_to_page
+               |          
+               |--13.50%--isolate_migratepages
+               |          compact_zone
+               |          compact_zone_order
+               |          try_to_compact_pages
+               |          __alloc_pages_direct_compact
+               |          __alloc_pages_slowpath.constprop.0
+               |          __alloc_frozen_pages_noprof
+               |          alloc_pages_mpol
+               |          |          
+               |           --13.42%--folio_alloc_mpol_noprof
+               |                     vma_alloc_folio_noprof
+               |                     vma_alloc_anon_folio_pmd
+               |                     __do_huge_pmd_anonymous_page
+               |                     do_huge_pmd_anonymous_page
+               |                     __handle_mm_fault
+               |                     handle_mm_fault
+               |                     do_page_fault
+               |                     do_translation_fault
+               |                     do_mem_abort
+               |                     el1_abort
+               |                     el1h_64_sync_handler
+               |                     el1h_64_sync
+               |                     __arch_copy_to_user
+               |                     copy_page_to_iter
+               |                     filemap_read
+               |                     generic_file_read_iter
+               |                     xfs_file_buffered_read
+               |                     xfs_file_read_iter
+               |                     vfs_read
+               |                     __arm64_sys_pread64
+               |                     invoke_syscall
+               |                     el0_svc_common.constprop.0
+               |                     do_el0_svc
+               |                     el0_svc
+               |                     el0t_64_sync_handler
+               |                     el0t_64_sync
+               |                     __libc_pread
+               |                     kraken2::pread_parallel
+               |                     0xffff8ebb3440
+               |                     start_thread
+               |                     thread_start
+               |          
+                --0.55%--compact_zone
+                          compact_zone_order
+                          try_to_compact_pages
+                          __alloc_pages_direct_compact
+                          __alloc_pages_slowpath.constprop.0
+                          __alloc_frozen_pages_noprof
+                          alloc_pages_mpol
+                          |          
+                           --0.55%--folio_alloc_mpol_noprof
+                                     vma_alloc_folio_noprof
+                                     vma_alloc_anon_folio_pmd
+                                     __do_huge_pmd_anonymous_page
+                                     do_huge_pmd_anonymous_page
+                                     __handle_mm_fault
+                                     handle_mm_fault
+                                     do_page_fault
+                                     do_translation_fault
+                                     do_mem_abort
+                                     el1_abort
+                                     el1h_64_sync_handler
+                                     el1h_64_sync
+                                     __arch_copy_to_user
+                                     copy_page_to_iter
+                                     filemap_read
+                                     generic_file_read_iter
+                                     xfs_file_buffered_read
+                                     xfs_file_read_iter
+                                     vfs_read
+                                     __arm64_sys_pread64
+                                     invoke_syscall
+                                     el0_svc_common.constprop.0
+                                     do_el0_svc
+                                     el0_svc
+                                     el0t_64_sync_handler
+                                     el0t_64_sync
+                                     __libc_pread
+                                     kraken2::pread_parallel
+                                     0xffff8ebb3440
+                                     start_thread
+                                     thread_start
+    12.98%  [kernel.kallsyms]    [k] isolate_migratepages
+            |
+            ---isolate_migratepages
+               compact_zone
+               compact_zone_order
+               try_to_compact_pages
+               __alloc_pages_direct_compact
+               __alloc_pages_slowpath.constprop.0
+               __alloc_frozen_pages_noprof
+               alloc_pages_mpol
+               |          
+                --12.93%--folio_alloc_mpol_noprof
+                          vma_alloc_folio_noprof
+                          vma_alloc_anon_folio_pmd
+                          __do_huge_pmd_anonymous_page
+                          do_huge_pmd_anonymous_page
+                          __handle_mm_fault
+                          handle_mm_fault
+                          do_page_fault
+                          do_translation_fault
+                          do_mem_abort
+                          el1_abort

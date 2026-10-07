@@ -151,6 +151,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   median-of-3 killers. Each case reports whether the heapsort fallback ran, detected by a
   `std::__partial_sort` specialization on the harness's own iterator type. A CI job runs the full
   corpus in `amazonlinux:2023` (GCC 11.5.0) (#35).
+- G2 (#21, #22, #23): `make g2 PART=local|summary` (`scripts/g2.sh`, `docs/g2.md`) runs a
+  checked-in plan (`scripts/g2/*.plan`) of upstream rungs in four regimes (default load, `-M` on a
+  huge=always tmpfs, `-M` on NVMe, and the diagnostic `kraken2-madvrandom`), each instrumented by
+  `scripts/lib/g2run.py` (classify-window `/proc/vmstat` and `/proc/diskstats` deltas, `perf stat`
+  enabled through a control fifo, a per-thread state and syscall sampler), and summarised by
+  `scripts/lib/g2summary.py` (cells with median and range, ladders with step efficiency and
+  resolution, gz vs plain, per-candidate signature tables). `scripts/g2-instance.sh` does the
+  instance setup (NVMe RAID0, RODA v205 staged and checked against its ETag with
+  `scripts/lib/etagcheck.py`, reads and derived subsets, builds). `scripts/madvrandom-build.sh`
+  builds the diagnostic `upstream/madvrandom.patch` variant into its own directory; the oracle
+  build stays pristine. Plans can set the host `read_ahead_kb` (`readahead`), and the summary flags warm cells that did not follow their own input. Plans can also set THP, a command prefix (numactl) and switch instrumentation off for a control. Specs `runs/g2-{smoke,nvme,nvme2,nvme3,ram,ram2,c8gd,c9gd}.json`. `make stage-reads` takes
+  `STAGE_READS_N` and `STAGE_READS_RUNS` (the SRR062634 8M-pair subset).
 
 ### Changed
 

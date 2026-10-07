@@ -1,0 +1,9 @@
+# runs/g2-smoke.json: every regime, state and instrument once, on Standard-8 (not a measurement).
+note smoke test of the g2 driver on AWS: Standard-8, SRR062634; checks instruments, not a result
+run madv SRR062634_50000-gz cold 1 4 2
+run mmap SRR062634_50000-gz cold 1 4 2
+run mmap SRR062634_50000-gz warm 1 4
+run mmap SRR062634_50000-fq warm 1 4
+run load empty cold 1 4
+run load SRR062634_200000-gz warm 1 4
+profile mmap SRR062634_200000-gz warm 4

@@ -1,0 +1,22 @@
+# runs/g2-ram.json part 2 (r8gd.48xlarge): #23 regime (a), table in RAM. hash.k2d sits on a
+# tmpfs mounted huge=always (shmem THP) and upstream runs with --memory-mapping on it, so no rung
+# pays a 1.19 TB load; the classify loop is the same Get() over a RAM-resident table. Part 1's
+# validation rungs (default load, T = 8 and 64, gz and fq) give the same cells under regime
+# "load" for comparison.
+# Workload: SRR062634 8M pairs = 247 blocks of 8 MiB (>= 2 per thread up to T = 123); one ladder
+# per input format (gz: the wrapper's single gzip -dc per mate; fq: plain). Highest T first
+# (cheapest). Reps: 3 for T >= 4, 2 for T = 1, 2.
+note #23 (a) r8gd.48xlarge, table resident on tmpfs huge=always, -M; validated against part 1's default-load rungs
+run ram SRR062634_8000000-gz warm 1 192 128 96 64 48 32 24 16 12 8 4 2 1
+run ram SRR062634_8000000-fq warm 1 192 128 96 64 48 32 24 16 12 8 4 2 1
+run ram SRR062634_200000-gz warm 2 64
+run ram ERR478965_200000-gz warm 2 64
+run ram ERR598966_200000-gz warm 2 64
+run ram SRR28305653_200000-gz warm 2 64
+profile ram SRR062634_8000000-gz warm 64
+profile ram SRR062634_8000000-fq warm 64
+profile ram SRR062634_8000000-fq warm 8
+run ram SRR062634_8000000-gz warm 1 192 128 96 64 48 32 24 16 12 8 4 2 1
+run ram SRR062634_8000000-fq warm 1 192 128 96 64 48 32 24 16 12 8 4 2 1
+run ram SRR062634_8000000-gz warm 1 192 128 96 64 48 32 24 16 12 8 4
+run ram SRR062634_8000000-fq warm 1 192 128 96 64 48 32 24 16 12 8 4

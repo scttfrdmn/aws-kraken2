@@ -1,0 +1,150 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 279K of event 'cycles'
+# Event count (approx.): 883739065330
+#
+# Overhead  Shared Object        Symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+# ........  ...................  ......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+#
+    13.13%  [kernel.kallsyms]    [k] xas_load
+            |
+            ---xas_load
+               |          
+               |--11.44%--xas_find
+               |          next_uptodate_folio
+               |          filemap_map_pages
+               |          do_read_fault
+               |          do_fault
+               |          handle_pte_fault
+               |          __handle_mm_fault
+               |          handle_mm_fault
+               |          do_page_fault
+               |          do_translation_fault
+               |          do_mem_abort
+               |          el0_da
+               |          el0t_64_sync_handler
+               |          el0t_64_sync
+               |          |          
+               |           --11.44%--kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+               |                     ClassifySequence
+               |                     ProcessFiles
+               |                     |          
+               |                      --11.25%--0xffffab302440
+               |                                start_thread
+               |                                thread_start
+               |          
+               |--1.12%--filemap_get_entry
+               |          __filemap_get_folio
+               |          filemap_fault
+               |          xfs_filemap_fault
+               |          __do_fault
+               |          do_read_fault
+               |          do_fault
+               |          handle_pte_fault
+               |          __handle_mm_fault
+               |          handle_mm_fault
+               |          do_page_fault
+               |          do_translation_fault
+               |          do_mem_abort
+               |          el0_da
+               |          el0t_64_sync_handler
+               |          el0t_64_sync
+               |          kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+               |          ClassifySequence
+               |          ProcessFiles
+               |          |          
+               |           --1.10%--0xffffab302440
+               |                     start_thread
+               |                     thread_start
+               |          
+                --0.54%--xa_load
+                          iomap_readahead
+                          xfs_vm_readahead
+                          read_pages
+                          page_cache_ra_order
+                          do_sync_mmap_readahead
+                          filemap_fault
+                          xfs_filemap_fault
+                          __do_fault
+                          do_read_fault
+                          do_fault
+                          handle_pte_fault
+                          __handle_mm_fault
+                          handle_mm_fault
+                          do_page_fault
+                          do_translation_fault
+                          do_mem_abort
+                          el0_da
+                          el0t_64_sync_handler
+                          el0t_64_sync
+                          kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+                          ClassifySequence
+                          ProcessFiles
+                          |          
+                           --0.53%--0xffffab302440
+                                     start_thread
+                                     thread_start
+     6.58%  [kernel.kallsyms]    [k] next_uptodate_folio
+            |
+            ---next_uptodate_folio
+               |          
+                --6.53%--filemap_map_pages
+                          do_read_fault
+                          do_fault
+                          handle_pte_fault
+                          __handle_mm_fault
+                          handle_mm_fault
+                          do_page_fault
+                          do_translation_fault
+                          do_mem_abort
+                          el0_da
+                          el0t_64_sync_handler
+                          el0t_64_sync
+                          |          
+                           --6.53%--kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+                                     ClassifySequence
+                                     ProcessFiles
+                                     |          
+                                      --6.43%--0xffffab302440
+                                                start_thread
+                                                thread_start
+     6.42%  [kernel.kallsyms]    [k] up_read
+            |
+            ---up_read
+               |          
+               |--2.07%--xfs_filemap_fault
+               |          __do_fault
+               |          do_read_fault
+               |          do_fault
+               |          handle_pte_fault
+               |          __handle_mm_fault
+               |          handle_mm_fault
+               |          do_page_fault
+               |          do_translation_fault
+               |          do_mem_abort
+               |          el0_da
+               |          el0t_64_sync_handler
+               |          el0t_64_sync
+               |          kraken2::CompactHashTable<kraken2::CompactHashCell>::GetBatch
+               |          ClassifySequence
+               |          ProcessFiles
+               |          |          
+               |           --2.04%--0xffffab302440
+               |                     start_thread
+               |                     thread_start
+               |          
+               |--2.01%--do_sync_mmap_readahead
+               |          filemap_fault
+               |          xfs_filemap_fault
+               |          __do_fault
+               |          do_read_fault
+               |          do_fault
+               |          handle_pte_fault
+               |          __handle_mm_fault
+               |          handle_mm_fault
+               |          do_page_fault
+               |          do_translation_fault
+               |          do_mem_abort
