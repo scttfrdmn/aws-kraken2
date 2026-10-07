@@ -127,6 +127,11 @@ jobs:
       - name: make oracle-engine DB=viral NS="1 3 4"
         run: make oracle-engine DB=viral NS="1 3 4"
 
+      # The multi-node engine (#24, checkpoint 2): N processes over loopback, rendezvous in a
+      # directory, rank 0 the emitter.
+      - name: make oracle-engine DB=viral NS="2 3" TRANSPORT=procs
+        run: make oracle-engine DB=viral NS="2 3" TRANSPORT=procs
+
       # Only the result directories this run created (untracked), not the committed ones.
       - name: List this run's results
         if: always()

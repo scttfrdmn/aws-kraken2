@@ -159,13 +159,14 @@ type inbox struct {
 	cond   *sync.Cond
 	m      map[bkey]*result
 	total  map[uint32]uint64 // blocks per input, once the emitter's own cut is done
+	cut    map[uint32]uint64 // blocks the emitter's own cut has produced so far, per input
 	done   map[int]*engine.Done
 	lost   map[int]error
 	failed func() bool
 }
 
 func newInbox(failed func() bool) *inbox {
-	b := &inbox{m: map[bkey]*result{}, total: map[uint32]uint64{}, done: map[int]*engine.Done{},
+	b := &inbox{m: map[bkey]*result{}, total: map[uint32]uint64{}, cut: map[uint32]uint64{}, done: map[int]*engine.Done{},
 		lost: map[int]error{}, failed: failed}
 	b.cond = sync.NewCond(&b.mu)
 	return b
@@ -181,6 +182,15 @@ func (b *inbox) put(k bkey, r *result) {
 func (b *inbox) setTotal(f uint32, n uint64) {
 	b.mu.Lock()
 	b.total[f] = n
+	b.cut[f] = n
+	b.mu.Unlock()
+	b.cond.Broadcast()
+}
+
+// setCut records that the emitter's own cut of input f has produced n blocks.
+func (b *inbox) setCut(f uint32, n uint64) {
+	b.mu.Lock()
+	b.cut[f] = n
 	b.mu.Unlock()
 	b.cond.Broadcast()
 }
@@ -206,7 +216,9 @@ func (b *inbox) take(k bkey, home int) (r *result, ok bool, err error) {
 		if e := b.lost[home]; e != nil {
 			return nil, false, fmt.Errorf("lost rank %d before block %d of input %d: %w", home, k.seq, k.file, e)
 		}
-		if d := b.done[home]; d != nil {
+		// A node's Done means it has sent all its blocks; the block is missing only if it
+		// exists, i.e. the emitter's own cut has passed it (the cut may still be behind).
+		if d := b.done[home]; d != nil && b.cut[k.file] > k.seq {
 			return nil, false, fmt.Errorf("rank %d ended (status %d) without block %d of input %d", home, d.Status, k.seq, k.file)
 		}
 		b.cond.Wait()
@@ -480,6 +492,9 @@ func (r *runner) processFilesCluster(name1, name2 string) int {
 				break
 			}
 			nd.cut.Add(1)
+			if nd.emitter {
+				nd.box.setCut(f, seq+1)
+			}
 			if !nd.mineBlock(seq) {
 				continue
 			}
