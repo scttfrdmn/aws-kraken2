@@ -5,9 +5,12 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
+	"io"
 	"math/rand/v2"
 	"net"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/chash"
 	"github.com/scttfrdmn/aws-kraken2/internal/rangeread"
@@ -430,6 +433,20 @@ func TestTCP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	id, err := TableID(context.Background(), memSource{img}, int64(len(img)), "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Another table of the same capacity has another identity.
+	other, _ := synth(t, l, 3500, 12)
+	otherID, _ := TableID(context.Background(), memSource{image(l, other)}, int64(len(img)), "")
+	declID, _ := TableID(context.Background(), memSource{img}, int64(len(img)), "etag-1")
+	if otherID == id || declID == id {
+		t.Fatal("table identity does not tell the tables apart")
+	}
+	for _, s := range shards {
+		s.ID = id
+	}
 	var servers []*Server
 	var clients []Client
 	var addrs []string
@@ -444,7 +461,7 @@ func TestTCP(t *testing.T) {
 		addrs = append(addrs, ln.Addr().String())
 	}
 	for i, a := range addrs {
-		c, err := DialTCP(a, i, n, l.Capacity, run, 4)
+		c, err := DialTCP(a, i, n, l.Capacity, run, id, 4, 0)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -463,8 +480,10 @@ func TestTCP(t *testing.T) {
 	for _, bad := range []struct {
 		shard, n int
 		cap, run uint64
-	}{{1, n, l.Capacity, run}, {0, 4, l.Capacity, run}, {0, n, l.Capacity + 1, run}, {0, n, l.Capacity, run + 1}} {
-		if _, err := DialTCP(addrs[0], bad.shard, bad.n, bad.cap, bad.run, 1); err == nil {
+		id       [32]byte
+	}{{1, n, l.Capacity, run, id}, {0, 4, l.Capacity, run, id}, {0, n, l.Capacity + 1, run, id},
+		{0, n, l.Capacity, run + 1, id}, {0, n, l.Capacity, run, otherID}} {
+		if _, err := DialTCP(addrs[0], bad.shard, bad.n, bad.cap, bad.run, bad.id, 1, 0); err == nil {
 			t.Fatalf("hello %+v accepted by shard 0", bad)
 		}
 	}
@@ -479,6 +498,88 @@ func TestTCP(t *testing.T) {
 	}
 	for _, s := range shards {
 		s.Close()
+	}
+}
+
+// TestDeadlines: a shard server that accepts but never answers fails the dial (hello) or the
+// lookup with an error naming the shard, within the deadline, rather than hanging the run.
+func TestDeadlines(t *testing.T) {
+	old := HelloTimeout
+	HelloTimeout = 200 * time.Millisecond
+	defer func() { HelloTimeout = old }()
+	// A listener that accepts and reads but never writes.
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	go func() {
+		for {
+			c, err := ln.Accept()
+			if err != nil {
+				return
+			}
+			go func() { _, _ = io.Copy(io.Discard, c) }()
+		}
+	}()
+	t0 := time.Now()
+	_, err = DialTCP(ln.Addr().String(), 0, 2, 100, 1, [32]byte{}, 1, 0)
+	if err == nil || time.Since(t0) > 5*time.Second || !strings.Contains(err.Error(), "hello to shard 0") {
+		t.Fatalf("silent server at hello: %v after %s", err, time.Since(t0))
+	}
+	// A real server whose shard then hangs: the lookup times out. The hang is simulated by a
+	// proxy that forwards the hello and then swallows everything.
+	l := layout(t, 100, 22, 10)
+	img := image(l, make([]uint64, 100))
+	sh, err := LoadShard(context.Background(), l, 0, 2, 5, RangeFiller{Src: memSource{img}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer sh.Close()
+	sln, _ := net.Listen("tcp", "127.0.0.1:0")
+	srv := &Server{Shard: sh, Run: 1}
+	go srv.Serve(sln)
+	defer srv.Close()
+	pln, _ := net.Listen("tcp", "127.0.0.1:0")
+	defer pln.Close()
+	go func() {
+		for {
+			c, err := pln.Accept()
+			if err != nil {
+				return
+			}
+			go func() {
+				up, err := net.Dial("tcp", sln.Addr().String())
+				if err != nil {
+					c.Close()
+					return
+				}
+				hello := make([]byte, helloLen)
+				reply := make([]byte, replyLen)
+				if _, err := io.ReadFull(c, hello); err == nil {
+					up.Write(hello)
+					if _, err := io.ReadFull(up, reply); err == nil {
+						c.Write(reply)
+					}
+				}
+				_, _ = io.Copy(io.Discard, c) // then hang
+			}()
+		}
+	}()
+	cl, err := DialTCP(pln.Addr().String(), 0, 2, 100, 1, [32]byte{}, 1, 300*time.Millisecond)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cl.Close()
+	var v [1]uint32
+	t0 = time.Now()
+	err = cl.Lookup([]uint64{chash.MurmurHash3(keyWithSlot(100, 3))}, v[:])
+	if err == nil || time.Since(t0) > 5*time.Second || !strings.Contains(err.Error(), "shard 0") {
+		t.Fatalf("hung shard: %v after %s", err, time.Since(t0))
+	}
+	var ne net.Error
+	if !errors.As(err, &ne) || !ne.Timeout() {
+		t.Fatalf("hung shard: %v is not a timeout", err)
 	}
 }
 

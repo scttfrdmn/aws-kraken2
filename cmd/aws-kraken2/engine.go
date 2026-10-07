@@ -32,6 +32,7 @@ type engineConf struct {
 	n         int
 	transport string
 	tail      uint64
+	cluster   *clusterConf // multi-node (AK2_ENGINE_RANK; cluster.go); nil = in-process
 }
 
 // engineFromEnv returns nil when AK2_ENGINE_N is unset.
@@ -58,6 +59,9 @@ func engineFromEnv() (*engineConf, error) {
 		}
 		c.tail = v
 	}
+	if c.cluster, err = clusterFromEnv(n); err != nil {
+		return nil, err
+	}
 	return c, nil
 }
 
@@ -69,6 +73,9 @@ type engineIndex struct {
 	servers []*engine.Server
 	tcp     []*engine.TCPClient
 	router  *engine.Router
+	node    *node // multi-node only
+
+	rvRequests int64
 
 	scanNs, lookupNs, classifyNs atomic.Int64
 }
@@ -113,7 +120,13 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 		var tok [8]byte
 		_, _ = rand.Read(tok[:])
 		run := binary.LittleEndian.Uint64(tok[:])
+		id, err := engine.TableID(ctx, src, st.Size(), "")
+		if err != nil {
+			e.close()
+			return nil, err
+		}
 		for i, s := range e.shards {
+			s.ID = id
 			ln, err := net.Listen("tcp", "127.0.0.1:0")
 			if err != nil {
 				e.close()
@@ -123,7 +136,7 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 			go srv.Serve(ln)
 			e.servers = append(e.servers, srv)
 			e.stats = append(e.stats, &srv.Stats)
-			c, err := engine.DialTCP(ln.Addr().String(), i, conf.n, l.Capacity, run, threads)
+			c, err := engine.DialTCP(ln.Addr().String(), i, conf.n, l.Capacity, run, id, threads, 0)
 			if err != nil {
 				e.close()
 				return nil, err
@@ -165,6 +178,10 @@ func (e *engineIndex) report() {
 		fmt.Fprintf(os.Stderr, "ak2-engine\tshard\t%d\tn\t%d\tlo\t%d\thi\t%d\ttail\t%d\tfull\t%t\tempty_at\t%d\tkeys\t%d\tbatches\t%d\tprobe_s\t%.6f\ttail_probes\t%d\twrap_probes\t%d\n",
 			i, s.N, s.Lo, s.Hi, s.Tail, s.Full, s.Empty, st.Keys.Load(), st.Batches.Load(), sec(st.ProbeNs.Load()),
 			s.TailProbes.Load(), s.WrapProbes.Load())
+	}
+	if e.node != nil {
+		e.node.report()
+		fmt.Fprintf(os.Stderr, "ak2-engine\trendezvous\trequests\t%d\n", e.rvRequests)
 	}
 	r := &e.router.Stats
 	fmt.Fprintf(os.Stderr, "ak2-engine\troute\ttransport\t%s\tcalls\t%d\tkeys\t%d\tbatches\t%d\troute_s\t%.6f\twait_s\t%.6f\tgather_s\t%.6f\n",

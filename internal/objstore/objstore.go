@@ -22,7 +22,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
+	"sync/atomic"
 )
 
 // MinPartSize is S3's smallest part other than the last.
@@ -210,9 +210,10 @@ func (c *CLI) Abort(ctx context.Context, bucket, key, id string) error {
 // Dir emulates S3 under Root.
 type Dir struct {
 	Root string
-	mu   sync.Mutex
-	next int
 }
+
+// uploadSeq numbers emulated uploads across every Dir in the process.
+var uploadSeq atomic.Int64
 
 func (d *Dir) path(bucket, key string) (string, error) {
 	p := filepath.Join(d.Root, bucket, filepath.FromSlash(key))
@@ -262,10 +263,7 @@ func (d *Dir) CreateMultipart(_ context.Context, bucket, key string) (string, er
 	if _, err := d.path(bucket, key); err != nil {
 		return "", err
 	}
-	d.mu.Lock()
-	d.next++
-	id := fmt.Sprintf("u%d-%d", os.Getpid(), d.next)
-	d.mu.Unlock()
+	id := fmt.Sprintf("u%d-%d", os.Getpid(), uploadSeq.Add(1))
 	if err := os.MkdirAll(d.uploadDir(id), 0o755); err != nil {
 		return "", err
 	}

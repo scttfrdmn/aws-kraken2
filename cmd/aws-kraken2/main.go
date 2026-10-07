@@ -124,7 +124,7 @@ func run(args []string) int {
 		fmt.Fprintf(os.Stderr, "%s: %s", prog, err.msg)
 		return err.status
 	}
-	for _, f := range []string{"taxo.k2d", "hash.k2d", "opts.k2d"} {
+	for _, f := range dbFiles() {
 		if _, err := os.Stat(dbPrefix + "/" + f); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %s/%s does not exist!\n", prog, dbPrefix, f)
 			return exitDieErrno
@@ -244,7 +244,7 @@ func findDB(supplied *string) (string, *dieErr) {
 			return "", &dieErr{fmt.Sprintf("unable to find %s in $KRAKEN2_DB_PATH (%s)\n", *supplied, printed), exitDieErrno}
 		}
 	}
-	for _, f := range []string{"taxo.k2d", "hash.k2d", "opts.k2d"} {
+	for _, f := range dbFiles() {
 		if _, err := os.Stat(prefix + "/" + f); err != nil {
 			return "", &dieErr{fmt.Sprintf("database (\"%s\") does not contain necessary file %s\n", prefix, f), exitDieErrno}
 		}

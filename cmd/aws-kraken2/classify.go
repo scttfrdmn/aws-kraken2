@@ -14,6 +14,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/chash"
@@ -108,7 +109,11 @@ func loadIndex(c *classifyArgs) (*index, int) {
 		if readThreads <= 0 {
 			readThreads = 8
 		}
-		eng, err := loadEngine(c.hashFile, ec, readThreads, c.threads)
+		load := loadEngine
+		if ec.cluster != nil {
+			load = loadNode
+		}
+		eng, err := load(c.hashFile, ec, readThreads, c.threads)
 		if err != nil {
 			return fail(exitFailure, "%v", err)
 		}
@@ -205,27 +210,46 @@ func classifyRun(c *classifyArgs) int {
 	}
 
 	r := &runner{c: c, idx: idx, opt: opt, comp: comp, workers: workers, tty: isTTY(os.Stderr)}
+	if idx.eng != nil {
+		r.node = idx.eng.node
+	}
 	defer r.out.close()
 	ps.end()
 	pc := phase("classify")
 	start := time.Now()
+	status = 0
 	if c.paired {
-		for i := 0; i+1 < len(c.files); i += 2 {
-			if st := r.processFiles(c.files[i], c.files[i+1]); st != 0 {
-				return st
-			}
+		for i := 0; i+1 < len(c.files) && status == 0; i += 2 {
+			status = r.processFiles(c.files[i], c.files[i+1])
 		}
 	} else {
-		for _, f := range c.files {
-			if st := r.processFiles(f, ""); st != 0 {
-				return st
-			}
+		for i := 0; i < len(c.files) && status == 0; i++ {
+			status = r.processFiles(c.files[i], "")
 		}
 	}
 	elapsed := time.Since(start)
 	pc.end()
-	if idx.eng != nil {
+	counts := map[uint64]*classify.TaxonCount{}
+	for _, w := range workers {
+		classify.MergeCounts(counts, w.w.Counts)
+	}
+	if nd := r.node; nd != nil {
+		// Every node waits here until no node needs its shard; the emitter collects the others'
+		// counters (the report's sum-reduce).
+		merged, st, err := nd.endRun(status, counts)
 		idx.eng.report()
+		if err != nil {
+			return classifyErr(st, "%v", err)
+		}
+		if !nd.emitter || st != 0 {
+			return st
+		}
+		counts = merged
+	} else if idx.eng != nil {
+		idx.eng.report()
+	}
+	if status != 0 {
+		return status
 	}
 	pf := phase("close")
 	if err := r.out.close(); err != nil {
@@ -237,10 +261,6 @@ func classifyRun(c *classifyArgs) int {
 	if name := c.reportName(); name != "" {
 		pr := phase("report")
 		defer pr.end()
-		counts := map[uint64]*classify.TaxonCount{}
-		for _, w := range workers {
-			classify.MergeCounts(counts, w.w.Counts)
-		}
 		calls := classify.Calls(counts)
 		// Upstream writes the report through an unchecked ofstream: a report that cannot be
 		// created is silently not written, and the run still exits 0.
@@ -278,6 +298,11 @@ type runner struct {
 	out     outputs
 	st      stats
 	tty     bool
+	node    *node // multi-node engine (AK2_ENGINE_RANK); nil otherwise
+
+	failed   atomic.Bool
+	failOnce sync.Once
+	failErr  error
 }
 
 // openInput opens one input as classify sees it. Without compression classify opens the file
@@ -304,63 +329,89 @@ func (r *runner) openInput(name string) (*seqio.Reader, int) {
 	return rd, 0
 }
 
+// inputs is one processFiles call's open inputs.
+type inputs struct {
+	name1, name2 string
+	r1, r2       *seqio.Reader
+	pr           *seqio.PairedReader
+}
+
+func (in *inputs) close() {
+	if in.r1 != nil {
+		in.r1.Close()
+	}
+	if in.r2 != nil {
+		in.r2.Close()
+	}
+}
+
+// open is ProcessFiles' prologue: open and prime both inputs, and initialize the outputs once
+// an input holds data. It returns 0 or the exit status upstream ends the run with.
+func (r *runner) open(name1, name2 string, initOutputs bool) (*inputs, int) {
+	in := &inputs{name1: name1, name2: name2}
+	var st int
+	if in.r1, st = r.openInput(name1); st != 0 {
+		return in, st
+	}
+	if name2 != "" {
+		if in.r2, st = r.openInput(name2); st != 0 {
+			return in, st
+		}
+	}
+	// Prime both inputs before checking either, as upstream.
+	haveInput, err1 := in.r1.Prime()
+	var err2 error
+	if in.r2 != nil {
+		_, err2 = in.r2.Prime()
+	}
+	if err1 != nil {
+		return in, classifyErr(exIOErr, "%v (%s)", err1, name1)
+	}
+	if err2 != nil {
+		return in, classifyErr(exIOErr, "%v (%s)", err2, name2)
+	}
+	if haveInput && initOutputs {
+		if st := r.out.initialize(r.c); st != 0 {
+			return in, st
+		}
+	}
+	if in.r2 != nil {
+		in.pr = seqio.NewPairedReader(in.r1, in.r2)
+	}
+	return in, 0
+}
+
+// next cuts the next block of whole records (ok false at the end of the input).
+func (in *inputs) next(seq uint64) (job, bool) {
+	if in.pr != nil {
+		b1, b2, ok := in.pr.LoadBlocks(seqio.DefaultBlockBytes)
+		return job{seq, b1, b2}, ok
+	}
+	b := in.r1.LoadBlock(seqio.DefaultBlockBytes, 1)
+	return job{seq: seq, b1: b}, b != nil
+}
+
 // processFiles is ProcessFiles for one input (name2 == "") or one mate pair. It returns 0, or
 // the exit status upstream ends the run with.
 func (r *runner) processFiles(name1, name2 string) int {
-	c := r.c
-	r1, st := r.openInput(name1)
+	if r.node != nil {
+		return r.processFilesCluster(name1, name2)
+	}
+	in, st := r.open(name1, name2, true)
+	defer in.close()
 	if st != 0 {
 		return st
 	}
-	defer r1.Close()
-	var r2 *seqio.Reader
-	if name2 != "" {
-		if r2, st = r.openInput(name2); st != 0 {
-			return st
-		}
-		defer r2.Close()
-	}
-	// Prime both inputs before checking either, as upstream.
-	haveInput, err1 := r1.Prime()
-	var err2 error
-	if r2 != nil {
-		_, err2 = r2.Prime()
-	}
-	if err1 != nil {
-		return classifyErr(exIOErr, "%v (%s)", err1, name1)
-	}
-	if err2 != nil {
-		return classifyErr(exIOErr, "%v (%s)", err2, name2)
-	}
-	if haveInput {
-		if st := r.out.initialize(c); st != 0 {
-			return st
-		}
-	}
-
-	var pr *seqio.PairedReader
-	if r2 != nil {
-		pr = seqio.NewPairedReader(r1, r2)
-	}
 	jobs := make(chan job, len(r.workers))
 	results := make(chan *result, 2*len(r.workers))
-	// Sequential step: cut blocks of whole records, in order.
+	// Sequential step: cut blocks of whole records, in order. After a failed block nothing
+	// more is cut, and workers skip what is queued, so no further lookups are scheduled.
 	go func() {
 		defer close(jobs)
-		for seq := uint64(0); ; seq++ {
-			var j job
-			if pr != nil {
-				b1, b2, ok := pr.LoadBlocks(seqio.DefaultBlockBytes)
-				if !ok {
-					return
-				}
-				j = job{seq, b1, b2}
-			} else {
-				b := r1.LoadBlock(seqio.DefaultBlockBytes, 1)
-				if b == nil {
-					return
-				}
-				j = job{seq: seq, b1: b}
+		for seq := uint64(0); !r.failed.Load(); seq++ {
+			j, ok := in.next(seq)
+			if !ok {
+				return
 			}
 			jobs <- j
 		}
@@ -380,7 +431,6 @@ func (r *runner) processFiles(name1, name2 string) int {
 
 	// Ordered emission: results arrive in any order and are written in input order.
 	var fault seqio.Fault
-	var fatal error
 	pending := map[uint64]*result{}
 	next := uint64(0)
 	for res := range results {
@@ -392,33 +442,61 @@ func (r *runner) processFiles(name1, name2 string) int {
 			}
 			delete(pending, next)
 			next++
-			if p.err != nil && fatal == nil {
-				fatal = p.err
-			}
-			if fatal != nil {
+			if p.err != nil || r.failed.Load() {
 				continue // drain; nothing after a failed block is written
 			}
-			r.st.sequences += p.st.sequences
-			r.st.bases += p.st.bases
-			r.st.classified += p.st.classified
-			if p.fault.Count > 0 && fault.First == "" {
-				fault.First = p.fault.First
-			}
-			fault.Count += p.fault.Count
-			r.out.emit(p)
-			if r.tty {
-				fmt.Fprintf(os.Stderr, "\rProcessed %d sequences (%d bp) ...", r.st.sequences, r.st.bases)
-			}
+			r.emitResult(p, &fault)
 		}
 	}
 	if err := r.out.flush(); err != nil {
 		return classifyErr(exIOErr, "%v", err)
 	}
-	if fatal != nil {
-		return classifyErr(exitFailure, "%v", fatal)
+	if err := r.failure(); err != nil {
+		return classifyErr(exitFailure, "%v", err)
 	}
+	return r.finishInput(in, fault, true)
+}
 
-	// The end-of-run problems, reported once everything readable is written.
+// emitResult accounts for and writes one block, in input order.
+func (r *runner) emitResult(p *result, fault *seqio.Fault) {
+	r.st.sequences += p.st.sequences
+	r.st.bases += p.st.bases
+	r.st.classified += p.st.classified
+	if p.fault.Count > 0 && fault.First == "" {
+		fault.First = p.fault.First
+	}
+	fault.Count += p.fault.Count
+	r.out.emit(p)
+	if r.tty {
+		fmt.Fprintf(os.Stderr, "\rProcessed %d sequences (%d bp) ...", r.st.sequences, r.st.bases)
+	}
+}
+
+// fail records the first failed block's error and stops further work (no more blocks are cut
+// or looked up).
+func (r *runner) fail(err error) {
+	r.failOnce.Do(func() { r.failErr = err })
+	r.failed.Store(true)
+	if nd := r.node; nd != nil {
+		nd.aborted.Store(true)
+		if nd.box != nil {
+			nd.box.wake()
+		}
+	}
+}
+
+func (r *runner) failure() error {
+	if !r.failed.Load() {
+		return nil
+	}
+	return r.failErr
+}
+
+// finishInput is ProcessFiles' end: the end-of-run problems, reported once everything readable
+// is written. writing is false on a home node that is not the emitter (it writes nothing).
+func (r *runner) finishInput(in *inputs, fault seqio.Fault, writing bool) int {
+	c := r.c
+	r1, r2, pr := in.r1, in.r2, in.pr
 	var problems []string
 	e1, e2 := r1.Err(), error(nil)
 	if r2 != nil {
@@ -430,10 +508,10 @@ func (r *runner) processFiles(name1, name2 string) int {
 		e2 = r2.Err()
 	}
 	if e1 != nil {
-		problems = append(problems, fmt.Sprintf("%v (%s)", e1, name1))
+		problems = append(problems, fmt.Sprintf("%v (%s)", e1, in.name1))
 	}
 	if e2 != nil {
-		problems = append(problems, fmt.Sprintf("%v (%s)", e2, name2))
+		problems = append(problems, fmt.Sprintf("%v (%s)", e2, in.name2))
 	}
 	if mismatch && e1 == nil && e2 == nil {
 		problems = append(problems, seqio.ErrMateCountMismatch.Error())
@@ -445,34 +523,41 @@ func (r *runner) processFiles(name1, name2 string) int {
 		}
 		problems = append(problems, f+"; their bases were classified with the rest")
 	}
-	if len(problems) > 0 {
-		var msg bytes.Buffer
-		for i, p := range problems {
-			if i > 0 {
-				msg.WriteString("; ")
-			}
-			msg.WriteString(p)
-		}
-		fmt.Fprintf(&msg, ". %d records were classified", r.st.sequences)
-		if r.out.krakenWritten() {
-			name := "standard output"
-			if c.kraken2Output != nil && *c.kraken2Output != "" {
-				name = *c.kraken2Output
-			}
-			msg.WriteString(" and written to " + name)
-		}
-		if c.reportName() != "" {
-			msg.WriteString("; the report was not written")
-		}
-		r.out.close()
-		return classifyErr(exDataErr, "%s", msg.String())
+	if len(problems) == 0 {
+		return 0
 	}
-	return 0
+	if !writing {
+		return exDataErr // the emitter reports it
+	}
+	var msg bytes.Buffer
+	for i, p := range problems {
+		if i > 0 {
+			msg.WriteString("; ")
+		}
+		msg.WriteString(p)
+	}
+	fmt.Fprintf(&msg, ". %d records were classified", r.st.sequences)
+	if r.out.krakenWritten() {
+		name := "standard output"
+		if c.kraken2Output != nil && *c.kraken2Output != "" {
+			name = *c.kraken2Output
+		}
+		msg.WriteString(" and written to " + name)
+	}
+	if c.reportName() != "" {
+		msg.WriteString("; the report was not written")
+	}
+	r.out.close()
+	return classifyErr(exDataErr, "%s", msg.String())
 }
 
 // work is one block on one worker: parse, mask, scan, look up, classify, format.
 func (r *runner) work(ws *workerState, j job, printing bool) *result {
 	res := &result{seq: j.seq}
+	if r.failed.Load() {
+		res.err = errAborted
+		return res
+	}
 	var m1, m2 []seqio.Record
 	if j.b2 != nil {
 		m1, m2, res.fault = seqio.PairBlocks(j.b1, j.b2)
@@ -481,6 +566,9 @@ func (r *runner) work(ws *workerState, j job, printing bool) *result {
 	}
 	if r.idx.eng != nil {
 		r.workEngine(ws, res, m1, m2, printing)
+		if res.err != nil {
+			r.fail(res.err)
+		}
 		return res
 	}
 	paired := r.c.paired
@@ -598,6 +686,9 @@ func (r *runner) workEngine(ws *workerState, res *result, m1, m2 []seqio.Record,
 	ws.w.Out = nil
 	eng.classifyNs.Add(int64(time.Since(t2)))
 }
+
+// errAborted marks a block skipped after another block failed.
+var errAborted = errors.New("aborted after an earlier failure")
 
 var bufPool = sync.Pool{New: func() any { return []byte(nil) }}
 

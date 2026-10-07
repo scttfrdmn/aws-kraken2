@@ -54,12 +54,12 @@ const (
 
 // BlockResult is one classified input block.
 type BlockResult struct {
-	File                          uint32
-	Seq                           uint64
-	Sequences, Bases, Classified  uint64
-	FaultCount                    uint32
-	FaultFirst, Err               string
-	Streams                       [NumStreams][]byte
+	File                         uint32
+	Seq                          uint64
+	Sequences, Bases, Classified uint64
+	FaultCount                   uint32
+	FaultFirst, Err              string
+	Streams                      [NumStreams][]byte
 }
 
 // Count is one taxon's report counters.
@@ -79,7 +79,7 @@ type Progress struct {
 
 func putU64(b []byte, v uint64) []byte { return binary.LittleEndian.AppendUint64(b, v) }
 func putU32(b []byte, v uint32) []byte { return binary.LittleEndian.AppendUint32(b, v) }
-func putBytes(b, s []byte) []byte    { return append(putU64(b, uint64(len(s))), s...) }
+func putBytes(b, s []byte) []byte      { return append(putU64(b, uint64(len(s))), s...) }
 
 // AppendResult encodes r as a Result frame.
 func AppendResult(b []byte, r *BlockResult) []byte {

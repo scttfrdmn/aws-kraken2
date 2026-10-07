@@ -15,7 +15,11 @@
 #                        runs once per case and ours runs once per N through the sharded engine
 #                        (AK2_ENGINE_N=N, cmd/aws-kraken2/engine.go), each byte-compared with it;
 #                        one cases.tsv row per (case, N). Results go to oracle-engine-<db>-<UTC>.
-#        ORACLE_ENGINE_TRANSPORT  local (default) | tcp: AK2_ENGINE_TRANSPORT for those runs
+#        ORACLE_ENGINE_TRANSPORT  local (default) | tcp: AK2_ENGINE_TRANSPORT for those runs;
+#                        procs: N processes over loopback, the multi-node engine (AK2_ENGINE_RANK,
+#                        a rendezvous directory; cmd/aws-kraken2/cluster.go). Rank 0, the emitter,
+#                        is "ours"; ranks 1..N-1 run alongside with the same arguments, their
+#                        stdout must be empty and, when rank 0 exits 0, their exits 0.
 #        ORACLE_ENGINE_TAIL       AK2_ENGINE_TAIL (overlap tail cells; default the engine's 302)
 # Writes results/g1/oracle-<db>-<UTC timestamp>/{manifest.json,cases.tsv,checks.tsv,summary.md}
 # (every number in them is computed here; nothing is typed in) and large outputs under
@@ -50,7 +54,7 @@ if [ -n "${ORACLE_ENGINE:-}" ]; then
   for n in "${ENG_NS[@]}"; do
     [[ $n =~ ^[1-9][0-9]*$ ]] || { echo "oracle: ORACLE_ENGINE: bad shard count '$n'" >&2; exit 2; }
   done
-  case "$ETR" in local|tcp) ;; *) echo "oracle: ORACLE_ENGINE_TRANSPORT=$ETR: want local or tcp" >&2; exit 2 ;; esac
+  case "$ETR" in local|tcp|procs) ;; *) echo "oracle: ORACLE_ENGINE_TRANSPORT=$ETR: want local, tcp or procs" >&2; exit 2 ;; esac
   [ -z "$ETAIL" ] || [[ $ETAIL =~ ^[0-9]+$ ]] || { echo "oracle: ORACLE_ENGINE_TAIL=$ETAIL: want a cell count" >&2; exit 2; }
   MODE=engine
 else
@@ -294,7 +298,7 @@ run_db() {
   {
     printf 'case\tsample\tlayout\tform\targs\texpected_exit\tupstream_exit\tours_exit\tupstream_s\tours_s'
     for k in "${KINDS[@]}"; do printf '\t%s_upstream_sha256\t%s_ours_sha256' "$k" "$k"; done
-    printf '\tfiles_compared\tidentical\tupstream_exit_ok\tstderr_same\tcontrol\tpass\tupstream_classify_s\tours_classify_s\trequested_outputs_ok\tunexpected_files\tengine_n\ttail_probes\twrap_probes\n'
+    printf '\tfiles_compared\tidentical\tupstream_exit_ok\tstderr_same\tcontrol\tpass\tupstream_classify_s\tours_classify_s\trequested_outputs_ok\tunexpected_files\tengine_n\ttail_probes\twrap_probes\tpeer_exits\n'
   } > "$T"
   local ran=0
   local c name sample layout form expect outs extra ctl
@@ -345,7 +349,12 @@ run_db() {
     local od=$d lab=$cname eenv=()
     if [ -n "$EN" ]; then
       od="$d/n$EN"; rm -rf "$od"; mkdir -p "$od"; lab="$cname@n$EN"
-      eenv=(AK2_ENGINE_N="$EN" AK2_ENGINE_TRANSPORT="$ETR" AK2_TIMINGS=1)
+      if [ "$ETR" = procs ]; then
+        local rvd="$W/peers/$cname-n$EN/rv"; rm -rf "$W/peers/$cname-n$EN"; mkdir -p "$rvd"
+        eenv=(AK2_ENGINE_N="$EN" AK2_ENGINE_RENDEZVOUS="$rvd" AK2_ENGINE_TIMEOUT=3m AK2_TIMINGS=1)
+      else
+        eenv=(AK2_ENGINE_N="$EN" AK2_ENGINE_TRANSPORT="$ETR" AK2_TIMINGS=1)
+      fi
       [ -n "$ETAIL" ] && eenv+=(AK2_ENGINE_TAIL="$ETAIL")
     fi
     outargs ours "$od" "$layout" "$outs"
@@ -354,7 +363,28 @@ run_db() {
     local ou=("$OURS" "${base[@]}" "${ca[@]}" "${OUTARGS[@]}" "${inputs[@]}")
     local O_out=$P_output O_rep=$P_report O_c1=$P_c1 O_c2=$P_c2 O_u1=$P_u1 O_u2=$P_u2 O_std=$P_stdout
     echo "+ ${envs[*]} ${eenv[*]} ${ou[*]}" >> "$LOG"
-    t1=$(now); env "${envs[@]}" "${eenv[@]}" "${ou[@]}" > "$O_std" 2> "$od/ours.stderr"; oe=$?; t2=$(now)
+    local ppids=() pk pex="-" peerok=yes
+    t1=$(now)
+    if [ -n "$EN" ] && [ "$ETR" = procs ]; then
+      # Ranks 1..N-1 first (same arguments; they write no outputs), then rank 0 in the foreground.
+      for ((pk = 1; pk < EN; pk++)); do
+        env "${envs[@]}" "${eenv[@]}" AK2_ENGINE_RANK="$pk" "${ou[@]}" \
+          > "$W/peers/$cname-n$EN/rank$pk.stdout" 2> "$W/peers/$cname-n$EN/rank$pk.stderr" &
+        ppids+=($!)
+      done
+      env "${envs[@]}" "${eenv[@]}" AK2_ENGINE_RANK=0 "${ou[@]}" > "$O_std" 2> "$od/ours.stderr"; oe=$?
+      pex=""
+      for pk in "${!ppids[@]}"; do
+        wait "${ppids[$pk]}"; local px=$?
+        pex+="${pex:+,}$px"
+        [ "$oe" != 0 ] || [ "$px" = 0 ] || { peerok=no; log "PEER $db $lab: rank $((pk + 1)) exited $px while rank 0 exited 0"; }
+        [ ! -s "$W/peers/$cname-n$EN/rank$((pk + 1)).stdout" ] || { peerok=no; log "PEER $db $lab: rank $((pk + 1)) wrote to standard output"; }
+      done
+      [ -n "$pex" ] || pex="-"
+    else
+      env "${envs[@]}" "${eenv[@]}" "${ou[@]}" > "$O_std" 2> "$od/ours.stderr"; oe=$?
+    fi
+    t2=$(now)
 
     local ident=yes nfiles=0 ndiff=0 reqok=yes row k us os
     row=$(printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$lab" "$sample" "$layout" "$form" \
@@ -403,7 +433,7 @@ run_db() {
     local isctl=no pass=no
     [ -n "$ctl" ] && isctl=yes
     # A control passes only if both sides exit alike and at least one output file differs.
-    if [ "$upok" = yes ] && [ "$reqok" = yes ] && [ -z "$extra_files" ] &&
+    if [ "$upok" = yes ] && [ "$reqok" = yes ] && [ -z "$extra_files" ] && [ "$peerok" = yes ] &&
        { { [ $isctl = no ] && [ "$ident" = yes ]; } || { [ $isctl = yes ] && [ "$ue" = "$oe" ] && [ "$ndiff" -gt 0 ]; }; }; then pass=yes; fi
     local uc oc
     uc=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$d/upstream.stderr" | tail -1)
@@ -414,10 +444,10 @@ run_db() {
     if [ -n "$EN" ]; then
       read -r tp wp < <(awk -F'\t' '$1=="ak2-engine" && $2=="shard" {
           for (i = 3; i < NF; i++) { if ($i=="tail_probes") t += $(i+1); if ($i=="wrap_probes") w += $(i+1) } }
-        END { print t+0, w+0 }' "$od/ours.stderr")
+        END { print t+0, w+0 }' "$od/ours.stderr" $( [ "$ETR" = procs ] && ls "$W/peers/$cname-n$EN"/rank*.stderr 2>/dev/null ))
       ETP[$EN]=$(( ${ETP[$EN]:-0} + tp )); EWP[$EN]=$(( ${EWP[$EN]:-0} + wp ))
     fi
-    row+=$(printf '\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$nfiles" "$ident" "$upok" "$errsame" "$isctl" "$pass" "${uc:--}" "${oc:--}" "$reqok" "${extra_files:--}" "${EN:--}" "$tp" "$wp")
+    row+=$(printf '\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$nfiles" "$ident" "$upok" "$errsame" "$isctl" "$pass" "${uc:--}" "${oc:--}" "$reqok" "${extra_files:--}" "${EN:--}" "$tp" "$wp" "$pex")
     echo "$row" >> "$T"
     log "case $db $lab: upstream exit $ue, ours $oe, $nfiles files, identical=$ident, control=$isctl, pass=$pass, stderr_same=$errsame"
     if [ "$pass" = yes ]; then
@@ -497,12 +527,28 @@ checks() {
       printf '%s\t%s\t%s\t%s\n' "engine N=$EN: lookups whose probe ended in a shard's overlap tail, summed over cases (real-data reach of the tail path; synthetic coverage: internal/engine tests)" "${ETP[$EN]:-0}" "info" "-" >> "$f"
       printf '%s\t%s\t%s\t%s\n' "engine N=$EN: of those, ended past slot C-1 in the last shard's wrapped tail" "${EWP[$EN]:-0}" "info" "-" >> "$f"
     done
+    # Law 4: say what the read-level matrix could resolve, from the numbers above.
+    local reach=0 zero="" nz=""
+    for EN in "${ENG_NS[@]}"; do
+      [ "$EN" = 1 ] && continue
+      reach=$((reach + ${ETP[$EN]:-0}))
+      if [ "${ETP[$EN]:-0}" = 0 ]; then zero+=" $EN"; else nz+=" $EN"; fi
+    done
+    local msg
+    if [ -z "$nz" ]; then
+      msg="engine resolution: no real lookup ended in an overlap tail at any N >1 (N =${zero:- none}), so this read-level matrix cannot show the tail path is correct; that evidence is TestRealDBBoundaries (real tables, every boundary run) and the synthetic tests in internal/engine"
+    else
+      msg="engine resolution: real lookups reached a tail at N =$nz ($reach in all)${zero:+ but at N =$zero none did}; the read-level matrix exercises the tail path only that often, so the main evidence for it is TestRealDBBoundaries (real tables, every boundary run) and the synthetic tests in internal/engine"
+    fi
+    printf '%s\t%s\t%s\t%s\n' "$msg" "$reach" "info" "-" >> "$f"
   fi
   local mh; mh=$(jq -r .minimum_acceptable_hash_value "$RES/opts.json")
   printf '%s\t%s\t%s\t%s\n' "minimum_acceptable_hash_value (nonzero: the subthreshold skip path runs)" "$mh" "info" "-" >> "$f"
 }
 
 manifest() {
+  local WHAT="make oracle: upstream kraken2 vs bin/aws-kraken2, byte-identity (Law 1, #17)"
+  [ "$MODE" = engine ] && WHAT="make oracle-engine: upstream kraken2 vs bin/aws-kraken2 through the sharded engine at each N, byte-identity (Law 1, #24)"
   local db=$1 dbdir=$2 RES=$3 start=$4 stop=$5
   local dirty=false
   if ! git diff --quiet HEAD -- . ':!results' || [ -n "$(git ls-files --others --exclude-standard -- . ':!results')" ]; then dirty=true; fi
@@ -524,7 +570,7 @@ manifest() {
   if [ "$total" = 0 ] || [ "$ident" != "$total" ] || [ "$upbad" != 0 ] || [ "$MATRIX_OK" != yes ] ||
      { [ -z "$FILTER" ] && [ "$total" != "$NROWS" ]; } || { [ "$ckbad" != 0 ] && [ -z "$FILTER" ]; }; then failed=true; fi
   jq -n \
-    --arg gate g1 --arg what "make oracle: upstream kraken2 vs bin/aws-kraken2, byte-identity (Law 1, #17)" \
+    --arg gate g1 --arg what "$WHAT" \
     --arg invocation "$INVOCATION" --arg filter "$FILTER" --argjson threads "$TH" \
     --arg db "$db" --arg dbname "$(basename "$dbdir")" --rawfile dbsource "$dbdir/SOURCE" \
     --arg etag "$(awk '$1=="etag"{print $2}' "$dbdir/SOURCE" | tr -d '"')" \

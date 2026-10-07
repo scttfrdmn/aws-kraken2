@@ -26,6 +26,7 @@ package engine
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"math/bits"
@@ -81,6 +82,9 @@ type Shard struct {
 	// lookups a shard without its tail would have got wrong. WrapProbes counts those of them
 	// that ended past slot C−1, in the wrapped part of the last shard's tail.
 	TailProbes, WrapProbes atomic.Int64
+	// ID is the table identity (TableID) the shard's server requires of its clients; the
+	// loader's caller sets it.
+	ID [32]byte
 
 	cells32 []uint32
 	cells40 []byte
@@ -171,6 +175,36 @@ func ReadLayout(ctx context.Context, src rangeread.Source, size int64) (chash.He
 	}
 	l, _ := h.Layout()
 	return h, l, nil
+}
+
+// TableID identifies a hash.k2d for the shard hello, so that two tables of the same capacity
+// are told apart: SHA-256 over a version tag, the object's size, a declared identity (the
+// object's ETag, or its SHA-256 when known; "" for a local file), the 32-byte header, and 16
+// samples of up to 4 KiB at fixed, evenly spaced offsets across the cells. Every node of a run
+// loads the same object with the same declared identity, so they agree; a different table, a
+// different copy's declared identity, or different cells at the samples disagree.
+func TableID(ctx context.Context, src rangeread.Source, size int64, declared string) ([32]byte, error) {
+	h := sha256.New()
+	fmt.Fprintf(h, "ak2-table-v1\x00%d\x00%s\x00", size, declared)
+	var hb [chash.HeaderSize]byte
+	if err := src.ReadRange(ctx, 0, hb[:]); err != nil {
+		return [32]byte{}, fmt.Errorf("engine: table id: header: %w", err)
+	}
+	h.Write(hb[:])
+	const samples, sampleLen = 16, 4096
+	body := size - chash.HeaderSize
+	buf := make([]byte, sampleLen)
+	for i := int64(0); i < samples && body > 0; i++ {
+		off := chash.HeaderSize + body*i/samples
+		n := min(int64(sampleLen), size-off)
+		if err := src.ReadRange(ctx, off, buf[:n]); err != nil {
+			return [32]byte{}, fmt.Errorf("engine: table id: sample at %d: %w", off, err)
+		}
+		h.Write(buf[:n])
+	}
+	var id [32]byte
+	h.Sum(id[:0])
+	return id, nil
 }
 
 // ErrTailTooShort is LoadShard's error when the loaded tail holds no empty cell: some probe
@@ -342,7 +376,9 @@ func (s *Shard) lookup32(hcs []uint64, vals []uint32) error {
 				break
 			}
 		}
-		if j >= own { // ended in the tail (never for a Full shard, whose j stays below C)
+		// Ended in the tail. A Full shard holds the whole table and has no tail; its probes
+		// may pass Hi and wrap within its cells, and are not counted.
+		if !s.Full && j >= own {
 			tail++
 			if s.Lo+j >= c {
 				wrap++
@@ -378,7 +414,7 @@ func (s *Shard) lookup40(hc uint64) (uint32, error) {
 	j := slot - s.Lo
 	first := j
 	done := func(v uint32) (uint32, error) {
-		if j >= s.Hi-s.Lo {
+		if !s.Full && j >= s.Hi-s.Lo {
 			var w int64
 			if s.Lo+j >= c {
 				w = 1

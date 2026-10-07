@@ -7,10 +7,13 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
+	"github.com/scttfrdmn/aws-kraken2/internal/objstore"
 	"github.com/scttfrdmn/aws-kraken2/internal/seqout"
 )
 
@@ -28,6 +31,22 @@ type sink struct {
 	off     int64
 	bw      *bufio.Writer // when !pwrite
 	discard bool          // upstream's single-end ofstream that failed to open: writes vanish
+	// An s3:// output (the multi-node engine's emitter, #24) is one multipart upload, written
+	// in read order by the sequencer; parts of at least 8 MiB upload in the background.
+	mw *objstore.Writer
+}
+
+// isS3 reports whether an output name is an object (s3://bucket/key).
+func isS3(name string) bool { return strings.HasPrefix(name, "s3://") }
+
+func (o *outputs) newS3Sink(name string) (*sink, error) {
+	w, err := objstore.NewWriter(context.Background(), objstore.FromEnv(), name, objstore.DefaultPartSize, 4)
+	if err != nil {
+		return nil, err
+	}
+	s := &sink{mw: w}
+	o.s3 = append(o.s3, s)
+	return s, nil
 }
 
 type wjob struct {
@@ -47,6 +66,7 @@ type outputs struct {
 	kraken     *sink
 	krakenInit bool
 	files      []*os.File
+	s3         []*sink
 
 	jobs   chan wjob
 	wg     sync.WaitGroup
@@ -79,6 +99,14 @@ func (o *outputs) newSink(f *os.File) *sink {
 
 // openStream is OpenOutputStream: failure ends the run with EXIT_FAILURE.
 func (o *outputs) openStream(name string) (*sink, int) {
+	if isS3(name) {
+		s, err := o.newS3Sink(name)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "\rUnable to open file: %s, reason: %v\n", name, err)
+			return nil, exitFailure
+		}
+		return s, 0
+	}
 	f, err := os.Create(name)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "\rUnable to open file: %s, reason: %s\n", name, unwrapPath(err))
@@ -89,6 +117,14 @@ func (o *outputs) openStream(name string) (*sink, int) {
 
 // openPlain is the single-end `new ofstream(name)`, which upstream does not check.
 func (o *outputs) openPlain(name string) *sink {
+	if isS3(name) {
+		s, err := o.newS3Sink(name)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %s: %v\n", prog, name, err)
+			return &sink{discard: true}
+		}
+		return s
+	}
 	f, err := os.Create(name)
 	if err != nil {
 		return &sink{discard: true}
@@ -189,6 +225,15 @@ func (o *outputs) write(s *sink, b []byte, put bool) {
 		}
 		return
 	}
+	if s.mw != nil {
+		if _, err := s.mw.Write(b); err != nil {
+			o.setErr(err)
+		}
+		if put {
+			putBuf(b)
+		}
+		return
+	}
 	if !s.pwrite {
 		if _, err := s.bw.Write(b); err != nil {
 			o.setErr(err)
@@ -242,6 +287,13 @@ func (o *outputs) close() error {
 	}
 	for _, f := range o.files {
 		if e := f.Close(); err == nil && e != nil {
+			err = e
+		}
+	}
+	for _, s := range o.s3 {
+		if err != nil {
+			_ = s.mw.Abort()
+		} else if e := s.mw.Close(); e != nil {
 			err = e
 		}
 	}

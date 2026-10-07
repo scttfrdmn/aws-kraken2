@@ -10,17 +10,25 @@ package engine
 // LocalClient calls the shard directly (one process, N shards). TCPClient talks to a Server
 // over plain TCP with length-prefixed little-endian frames:
 //
-//	hello    client → server  magic "AK2E" u32, version u32, shard u32, n u32, capacity u64, run u64
+//	hello    client → server  magic "AK2E" u32, version u32, shard u32, n u32, capacity u64,
+//	                          run u64, table id [32]byte
 //	         server → client  magic u32, version u32, status u32, shard u32, n u32, capacity u64,
-//	                          lo u64, hi u64      (status 0 = accepted)
+//	                          lo u64, hi u64, table id [32]byte      (status 0 = accepted)
 //	lookup   client → server  op u32 (1), count u32, count × hc u64
 //	         server → client  status u32, count u32, then count × value u32 (status 0)
 //	                          or a message of count bytes (status ≠ 0)
 //
-// The hello makes a misrouted connection (wrong shard, shard count, table or run) an error on
-// both sides. A connection carries one batch at a time; a client keeps a pool of them.
+// The hello makes a misrouted connection (wrong shard, shard count, capacity, table or run) an
+// error on both sides; the table id (TableID) tells apart two tables of the same capacity. A
+// connection carries one batch at a time; a client keeps a pool of them.
+//
+// Deadlines: the hello must complete within HelloTimeout on both sides, every lookup (send and
+// reply) within the client's Timeout, and every reply write within the server's WriteTimeout,
+// so a hung or partitioned peer fails the run with an error naming the shard rather than
+// hanging it. An idle pooled connection has no deadline.
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -64,16 +72,28 @@ func (c LocalClient) Lookup(hcs []uint64, vals []uint32) error {
 
 const (
 	protoMagic   = 0x45324b41 // "AK2E" little-endian
-	protoVersion = 1
+	protoVersion = 2
 	opLookup     = 1
 	maxBatch     = 1 << 28 // keys per frame
+	helloLen     = 64
+	replyLen     = 76
 )
+
+// Default deadlines.
+const (
+	DefaultTimeout      = 2 * time.Minute
+	DefaultWriteTimeout = 2 * time.Minute
+)
+
+// HelloTimeout bounds a connection's dial and hello on both sides (a variable for tests).
+var HelloTimeout = 30 * time.Second
 
 // Server serves one shard's lookups over TCP.
 type Server struct {
-	Shard *Shard
-	Run   uint64 // run token every client must present
-	Stats ShardStats
+	Shard        *Shard
+	Run          uint64        // run token every client must present
+	WriteTimeout time.Duration // per reply (default DefaultWriteTimeout)
+	Stats        ShardStats
 
 	ln    net.Listener
 	wg    sync.WaitGroup
@@ -133,7 +153,12 @@ func (s *Server) handle(c net.Conn) {
 	if tc, ok := c.(*net.TCPConn); ok {
 		_ = tc.SetNoDelay(true)
 	}
-	var hb [32]byte
+	wt := s.WriteTimeout
+	if wt <= 0 {
+		wt = DefaultWriteTimeout
+	}
+	_ = c.SetDeadline(time.Now().Add(HelloTimeout))
+	var hb [helloLen]byte
 	if _, err := io.ReadFull(c, hb[:]); err != nil {
 		return
 	}
@@ -149,8 +174,10 @@ func (s *Server) handle(c net.Conn) {
 		status = 3
 	case le.Uint64(hb[24:]) != s.Run:
 		status = 4
+	case !bytes.Equal(hb[32:64], sh.ID[:]):
+		status = 5
 	}
-	var rb [44]byte
+	var rb [replyLen]byte
 	le.PutUint32(rb[0:], protoMagic)
 	le.PutUint32(rb[4:], protoVersion)
 	le.PutUint32(rb[8:], status)
@@ -159,6 +186,7 @@ func (s *Server) handle(c net.Conn) {
 	le.PutUint64(rb[20:], sh.Layout.Capacity)
 	le.PutUint64(rb[28:], sh.Lo)
 	le.PutUint64(rb[36:], sh.Hi)
+	copy(rb[44:], sh.ID[:])
 	if _, err := c.Write(rb[:]); err != nil || status != 0 {
 		return
 	}
@@ -166,10 +194,12 @@ func (s *Server) handle(c net.Conn) {
 	var vals []uint32
 	var fh [8]byte
 	for {
+		_ = c.SetDeadline(time.Time{}) // idle between batches is normal
 		if _, err := io.ReadFull(c, fh[:]); err != nil {
 			return
 		}
 		op, n := le.Uint32(fh[0:]), le.Uint32(fh[4:])
+		_ = c.SetDeadline(time.Now().Add(wt))
 		if op != opLookup || n > maxBatch {
 			writeErr(c, fmt.Sprintf("engine: bad frame op %d count %d", op, n))
 			return
@@ -229,6 +259,8 @@ type TCPClient struct {
 	Shard, N int
 	Capacity uint64
 	Run      uint64
+	ID       [32]byte      // the table identity both sides must hold (TableID)
+	Timeout  time.Duration // per lookup, send to reply (default DefaultTimeout)
 	// Lo and Hi are the owned range the server reported in its hello (set by Dial).
 	Lo, Hi uint64
 
@@ -237,9 +269,13 @@ type TCPClient struct {
 	all  []net.Conn
 }
 
-// DialTCP connects to a shard server and checks its hello. conns bounds the idle pool.
-func DialTCP(addr string, shard, n int, capacity, run uint64, conns int) (*TCPClient, error) {
-	c := &TCPClient{Addr: addr, Shard: shard, N: n, Capacity: capacity, Run: run,
+// DialTCP connects to a shard server and checks its hello. conns bounds the idle pool;
+// timeout bounds each lookup (0 = DefaultTimeout).
+func DialTCP(addr string, shard, n int, capacity, run uint64, id [32]byte, conns int, timeout time.Duration) (*TCPClient, error) {
+	if timeout <= 0 {
+		timeout = DefaultTimeout
+	}
+	c := &TCPClient{Addr: addr, Shard: shard, N: n, Capacity: capacity, Run: run, ID: id, Timeout: timeout,
 		pool: make(chan net.Conn, max(conns, 1))}
 	conn, err := c.dial()
 	if err != nil {
@@ -250,22 +286,24 @@ func DialTCP(addr string, shard, n int, capacity, run uint64, conns int) (*TCPCl
 }
 
 func (c *TCPClient) dial() (net.Conn, error) {
-	conn, err := net.DialTimeout("tcp", c.Addr, 30*time.Second)
+	conn, err := net.DialTimeout("tcp", c.Addr, HelloTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("engine: dial shard %d at %s: %w", c.Shard, c.Addr, err)
 	}
 	if tc, ok := conn.(*net.TCPConn); ok {
 		_ = tc.SetNoDelay(true)
 	}
+	_ = conn.SetDeadline(time.Now().Add(HelloTimeout))
 	le := binary.LittleEndian
-	var hb [32]byte
+	var hb [helloLen]byte
 	le.PutUint32(hb[0:], protoMagic)
 	le.PutUint32(hb[4:], protoVersion)
 	le.PutUint32(hb[8:], uint32(c.Shard))
 	le.PutUint32(hb[12:], uint32(c.N))
 	le.PutUint64(hb[16:], c.Capacity)
 	le.PutUint64(hb[24:], c.Run)
-	var rb [44]byte
+	copy(hb[32:], c.ID[:])
+	var rb [replyLen]byte
 	_, err = conn.Write(hb[:])
 	if err == nil {
 		_, err = io.ReadFull(conn, rb[:])
@@ -274,15 +312,17 @@ func (c *TCPClient) dial() (net.Conn, error) {
 		conn.Close()
 		return nil, fmt.Errorf("engine: hello to shard %d at %s: %w", c.Shard, c.Addr, err)
 	}
+	_ = conn.SetDeadline(time.Time{})
 	if le.Uint32(rb[0:]) != protoMagic || le.Uint32(rb[4:]) != protoVersion {
 		conn.Close()
 		return nil, fmt.Errorf("engine: %s is not an aws-kraken2 shard server (protocol %d)", c.Addr, protoVersion)
 	}
 	if st := le.Uint32(rb[8:]); st != 0 {
 		conn.Close()
-		return nil, fmt.Errorf("engine: shard server %s (shard %d/%d, capacity %d) refused shard %d/%d "+
-			"capacity %d run %x: status %d", c.Addr, le.Uint32(rb[12:]), le.Uint32(rb[16:]), le.Uint64(rb[20:]),
-			c.Shard, c.N, c.Capacity, c.Run, st)
+		why := map[uint32]string{1: "protocol", 2: "shard or shard count", 3: "capacity", 4: "run token", 5: "table identity"}[st]
+		return nil, fmt.Errorf("engine: shard server %s (shard %d/%d, capacity %d, table %x) refused shard %d/%d "+
+			"capacity %d run %x table %x: %s mismatch (status %d)", c.Addr, le.Uint32(rb[12:]), le.Uint32(rb[16:]),
+			le.Uint64(rb[20:]), rb[44:52], c.Shard, c.N, c.Capacity, c.Run, c.ID[:8], why, st)
 	}
 	c.Lo, c.Hi = le.Uint64(rb[28:]), le.Uint64(rb[36:])
 	if lo, hi := Cut(c.Shard, c.N, c.Capacity); lo != c.Lo || hi != c.Hi {
@@ -324,18 +364,21 @@ func (c *TCPClient) Lookup(hcs []uint64, vals []uint32) error {
 	if err != nil {
 		return err
 	}
+	fail := func(what string, err error) error {
+		conn.Close()
+		return fmt.Errorf("engine: %s shard %d at %s (%d keys, timeout %s): %w", what, c.Shard, c.Addr, len(hcs), c.Timeout, err)
+	}
+	_ = conn.SetDeadline(time.Now().Add(c.Timeout))
 	le := binary.LittleEndian
 	var fh [8]byte
 	le.PutUint32(fh[0:], opLookup)
 	le.PutUint32(fh[4:], uint32(len(hcs)))
 	bufs := net.Buffers{fh[:], u64Bytes(hcs)}
 	if _, err := bufs.WriteTo(conn); err != nil {
-		conn.Close()
-		return fmt.Errorf("engine: send to shard %d: %w", c.Shard, err)
+		return fail("send to", err)
 	}
 	if _, err := io.ReadFull(conn, fh[:]); err != nil {
-		conn.Close()
-		return fmt.Errorf("engine: reply from shard %d: %w", c.Shard, err)
+		return fail("reply from", err)
 	}
 	st, n := le.Uint32(fh[0:]), le.Uint32(fh[4:])
 	if st != 0 {
@@ -349,9 +392,9 @@ func (c *TCPClient) Lookup(hcs []uint64, vals []uint32) error {
 		return fmt.Errorf("engine: shard %d answered %d of %d keys", c.Shard, n, len(hcs))
 	}
 	if _, err := io.ReadFull(conn, u32Bytes(vals)); err != nil {
-		conn.Close()
-		return fmt.Errorf("engine: values from shard %d: %w", c.Shard, err)
+		return fail("values from", err)
 	}
+	_ = conn.SetDeadline(time.Time{})
 	c.put(conn)
 	return nil
 }

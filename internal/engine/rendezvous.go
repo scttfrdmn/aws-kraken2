@@ -14,15 +14,15 @@ import (
 
 // Peer is one node's rendezvous record: where its shard server and its emitter listener are.
 type Peer struct {
-	Rank      int    `json:"rank"`
-	N         int    `json:"n"`
-	Run       string `json:"run"` // the run token, hex
-	Shard     string `json:"shard_addr"`
-	Emit      string `json:"emit_addr"`
-	Host      string `json:"host"`
-	PID       int    `json:"pid"`
-	Published string `json:"published"` // RFC 3339, UTC
-	LoadS     float64 `json:"load_s"`   // seconds the node took to load its shard
+	Rank      int     `json:"rank"`
+	N         int     `json:"n"`
+	Run       string  `json:"run"` // the run token, hex
+	Shard     string  `json:"shard_addr"`
+	Emit      string  `json:"emit_addr"`
+	Host      string  `json:"host"`
+	PID       int     `json:"pid"`
+	Published string  `json:"published"` // RFC 3339, UTC
+	LoadS     float64 `json:"load_s"`    // seconds the node took to load its shard
 }
 
 // Rendezvous is peer discovery through an object store: each node writes
@@ -73,10 +73,12 @@ func (r *Rendezvous) Publish(ctx context.Context, p Peer) error {
 
 // Wait polls until every rank 0..n−1 has published, and returns their records by rank.
 func (r *Rendezvous) Wait(ctx context.Context, n int) ([]Peer, error) {
-	poll := r.Poll
-	if poll <= 0 {
-		poll = time.Second
+	// Poll quickly at first (peers that are already up), backing off to Poll.
+	maxPoll := r.Poll
+	if maxPoll <= 0 {
+		maxPoll = time.Second
 	}
+	poll := min(50*time.Millisecond, maxPoll)
 	peers := make([]Peer, n)
 	have := make([]bool, n)
 	left := n
@@ -117,5 +119,6 @@ func (r *Rendezvous) Wait(ctx context.Context, n int) ([]Peer, error) {
 			return nil, fmt.Errorf("engine: rendezvous at %s: ranks %v never published: %w", r.Location, missing, ctx.Err())
 		case <-time.After(poll):
 		}
+		poll = min(2*poll, maxPoll)
 	}
 }
