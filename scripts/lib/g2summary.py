@@ -19,11 +19,27 @@ Resolution rules (Law 4: a null result counts only if the probe could have shown
 - DRAM/TLB: needs perf cycles/instructions (and dTLB events) in the window.
 - gzip: needs the same regime/state/threads run with both -gz and -fq inputs.
 """
+import datetime
 import json
 import math
 import os
 import statistics
+import subprocess
 import sys
+
+
+def _git(*a):
+    try:
+        return subprocess.run(["git", "-C", os.path.dirname(os.path.abspath(__file__))] + list(a),
+                              capture_output=True, text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+# The generator's own identity, cited in every summary next to the run's commit.
+GEN_COMMIT = _git("rev-parse", "HEAD") or "unknown"
+GEN_DIRTY = bool(_git("status", "--porcelain", "--", "g2summary.py"))
+GEN_AT = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def med(xs):
@@ -112,18 +128,33 @@ def main():
                 runs.append(json.loads(line))
     inputs = json.load(open(os.path.join(d, "inputs.json")))
     man = json.load(open(os.path.join(d, "manifest.json"))) if os.path.exists(os.path.join(d, "manifest.json")) else {}
-    done = [r for r in runs if r.get("kind") == "run" and not r.get("skipped")]
-    # A warm rung is warm for its input only if the rung before it (in run order) read the same
-    # input in the same regime: every cold rung drops the page cache, so a warm rung that follows
-    # another input's cold rung finds that input's pages, not its own.
+    # Warm validity, keyed on what the page cache actually held. Every cold rung (run or profile)
+    # drops the cache, so a warm rung measures its own input's cached table pages only if the
+    # rung executed just before it (a profile rung included) read the same file set: the same
+    # input and the same database copy (the NVMe file for load/mmap/madv, the tmpfs for ram).
+    # ram is exempt: drop_caches does not touch tmpfs. A warm rung after its own cold rung is
+    # still physically cold when that cold rung's working set (major faults x 4 KiB) exceeded
+    # 80% of RAM: the cache could not keep it.
+    mem_b = float((man.get("host") or {}).get("mem_kib") or 0) * 1024
+    dbclass = lambda r: "tmpfs" if r["regime"].startswith("ram") else "nvme"
     prev = None
-    for r in done:
-        if r["state"] == "warm":
-            # ram: the table is on tmpfs, which drop_caches does not touch, so only file-backed
-            # regimes are checked.
-            r["warm_ok"] = r["regime"].startswith("ram") or (
-                bool(prev) and prev["input"] == r["input"] and prev["regime"] == r["regime"])
+    for r in runs:
+        if r.get("skipped"):
+            continue
+        if r.get("kind") == "run" and r["state"] == "warm" and not r["regime"].startswith("ram"):
+            why = None
+            if prev is None:
+                why = "first rung of the run"
+            elif prev["input"] != r["input"] or dbclass(prev) != dbclass(r):
+                why = "follows %s on %s: the cache held another file set" % (prev.get("tag"), prev["input"])
+            else:
+                ws = ((prev.get("vmstat") or {}).get("pgmajfault") or 0) * 4096.0
+                if prev["state"] == "cold" and mem_b and ws > 0.8 * mem_b:
+                    why = "physically cold: the preceding cold rung's working set %.0f GiB exceeds 80%% of RAM (%.0f GiB)" % (ws / 2**30, mem_b / 2**30)
+            r["warm_invalid"] = why
         prev = r
+    excluded = [r for r in runs if r.get("kind") == "run" and not r.get("skipped") and r.get("warm_invalid")]
+    done = [r for r in runs if r.get("kind") == "run" and not r.get("skipped") and not r.get("warm_invalid")]
     skipped = [r for r in runs if r.get("skipped")]
     cells = {}
     for r in done:
@@ -153,8 +184,7 @@ def main():
                "pairs": pairs, "pairs_per_s": (pairs / med(cl)) if pairs and med(cl) else None,
                "blocks": B, "quant": quant, "blocks_ok": (B >= 2 * T) if B else None,
                "outputs": sorted(set(r.get("output_sha256") or "-" for r in ok)),
-               "timeout_s": max([r.get("wall_s") or 0 for r in rs if r.get("timed_out")] or [0]) or None,
-               "warm_invalid": sum(1 for r in rs if r["state"] == "warm" and not r.get("warm_ok"))}
+               "timeout_s": max([r.get("wall_s") or 0 for r in rs if r.get("timed_out")] or [0]) or None}
         rows.append(row)
         ss = [sig(r) for r in ok] or [sig(r) for r in rs]
         srow = {"regime": key[0], "input": key[1], "state": key[2], "threads": T, "n": len(ss),
@@ -180,12 +210,16 @@ def main():
     md.append("| | |\n|---|---|")
     up = man.get("upstream") or {}
     host = man.get("host") or {}
-    md.append("| commit | `%s` (dirty: %s) |" % (man.get("commit"), man.get("tree_dirty")))
+    md.append("| run commit | `%s` (dirty: %s) |" % (man.get("commit"), man.get("tree_dirty")))
+    md.append("| summary generated by | `scripts/lib/g2summary.py` at commit `%s` (dirty: %s), %s |" % (GEN_COMMIT, GEN_DIRTY, GEN_AT))
     md.append("| upstream pin | `%s` (`%s`) |" % (up.get("pin"), up.get("describe")))
     md.append("| madvrandom (diagnostic) | %s |" % ("yes: " + str((man.get("madvrandom") or {}).get("install")) if man.get("madvrandom") else "not used"))
     md.append("| host | %s, %s CPUs, %s KiB, kernel %s, THP [%s] defrag [%s] |" % (
         host.get("instance_type") or "local", host.get("ncpu"), host.get("mem_kib"), host.get("kernel"),
         host.get("thp_enabled"), host.get("thp_defrag")))
+    if host.get("thp_shmem_enabled") or host.get("numa"):
+        md.append("| THP shmem / at end / NUMA | [%s] / [%s] / %s |" % (host.get("thp_shmem_enabled"),
+                  host.get("thp_enabled_at_end"), host.get("numa")))
     md.append("| storage | %s |" % (man.get("storage") or "-"))
     md.append("| make run id | %s |" % (man.get("make_run_id") or "-"))
     md.append("| cold | %s (%s) |" % ((man.get("cold") or {}).get("available"), (man.get("cold") or {}).get("method")))
@@ -199,14 +233,14 @@ def main():
         md.append("| %s | %s | %s | %s | %s |" % (k, v["pairs"], v["mate1_bytes"], v["blocks_8mib"], v["blocks_8mib"]))
     md.append("")
     md.append("## Cells (classify_s = upstream's own `processed in`; median [min-max])\n")
-    md.append("`warm!` marks a warm cell with a rung that did not follow a rung on its own input "
-              "(the cache held another input's pages): not a warm measurement.\n")
+    md.append("Warm rungs that were not warm for their own input are excluded from every table below "
+              "and listed under *Excluded warm rungs*.\n")
     md.append("| regime | input | state | T | n | classify_s | pairs/s | load_s | wall_s | blocks/T | quant | output sha256 |")
     md.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         bt = (r["blocks"] / r["threads"]) if r["blocks"] else None
         md.append("| %s | %s | %s | %d | %d%s | %s [%s-%s] | %s | %s [%s-%s] | %s | %s | %s | %s |" % (
-            r["regime"], r["input"], r["state"] + ("!" if r["warm_invalid"] else ""), r["threads"], r["n"],
+            r["regime"], r["input"], r["state"], r["threads"], r["n"],
             (" (+%d censored)" % r["censored"]) if r["censored"] else "",
             f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]), f(r["pairs_per_s"], 0),
             f(r["load_med"]), f(r["load_min"]), f(r["load_max"]), f(r["wall_med"]), f(bt, 2), f(r["quant"], 2),
@@ -217,7 +251,7 @@ def main():
     md.append("`--output` must not depend on thread count or regime (all oracle-identical builds; madvrandom changes only page-fault read-around).\n")
     md.append("| input | distinct --output sha256 over all rungs |\n|---|---|")
     byin = {}
-    for r in done:
+    for r in done + excluded:
         if r.get("exit") == 0 and not r.get("timed_out") and r.get("output_sha256"):
             byin.setdefault(r["input"], set()).add(r["output_sha256"])
     for k, v in sorted(byin.items()):
@@ -252,13 +286,16 @@ def main():
                 sep = (r["classify_max"] < rs[i - 1]["classify_min"]) or (r["classify_min"] > rs[i - 1]["classify_max"])
                 res = "yes" if sep else "no (ranges overlap)"
                 if knee is None and e < 0.5:
-                    knee = (rs[i - 1]["threads"], r["threads"], e, sep, r["blocks_ok"])
+                    knee = (rs[i - 1]["threads"], r["threads"], e, sep, r["blocks_ok"],
+                            max(r["quant"] or 1, rs[i - 1]["quant"] or 1))
             md.append("| %d | %s [%s-%s] | %s | %s | %s | %s | %s |" % (
                 r["threads"], f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]), f(r["pairs_per_s"], 0),
                 f(sp, 2), eff, res, r["blocks_ok"]))
         if knee:
-            md.append("\nKnee: first step below 50%% efficiency is T=%d -> %d (efficiency %.2f; %s; blocks/T >= 2 at %d: %s).\n" % (
-                knee[0], knee[1], knee[2], "resolved" if knee[3] else "NOT resolved: ranges overlap", knee[1], knee[4]))
+            qn = ("; **coincides with block quantization** (ceil(B/T)/(B/T) up to %.2f, or < 2 blocks per thread): "
+                  "not a scaling limit of the code" % knee[5]) if (knee[5] > 1.1 or knee[4] is False) else ""
+            md.append("\nKnee: first step below 50%% efficiency is T=%d -> %d (efficiency %.2f; %s; blocks/T >= 2 at %d: %s%s).\n" % (
+                knee[0], knee[1], knee[2], "resolved" if knee[3] else "NOT resolved: ranges overlap", knee[1], knee[4], qn))
         else:
             md.append("\nNo step below 50% efficiency on this ladder.\n")
 
@@ -296,6 +333,21 @@ def main():
             f(s["ipc"], 2), f(s["dtlb_miss_ratio"], 4), f(s["dtlb_walk_pki"], 2), f(s["futex_calls_per_s"], 0)))
     md.append("")
 
+    # IPC per rep, per ladder and T (the resolution of the DRAM/TLB reading)
+    ipc_reps = {}
+    for r in done:
+        if r.get("ipc") is not None:
+            ipc_reps.setdefault((r["regime"], r["input"], r["state"]), {}).setdefault(r["threads"], []).append(r["ipc"])
+    # page-size contrasts: the same base regime, input, state and T under thp=never and thp=always
+    contrast = {}
+    for (rg_, st_, T_, in_), r in byk.items():
+        if "thp=never" in rg_ and in_.endswith("-fq"):
+            q = byk.get((rg_.replace("thp=never", "thp=always"), st_, T_, in_))
+            if q and r["classify_med"] and q["classify_med"]:
+                contrast.setdefault(rg_.split("[")[0], []).append(
+                    "%s T=%d: 4 KiB pages (thp=never) %s s vs THP %s s (x%s)" % (in_, T_, f(r["classify_med"]), f(q["classify_med"]),
+                                                                               f(r["classify_med"] / q["classify_med"], 2)))
+
     # mechanical verdicts per regime
     md.append("## Candidates per regime (mechanical reading; see docs/g2.md for the rules)\n")
     md.append("One block of rows per ladder (regime / input / state). Critical sections are read only "
@@ -312,10 +364,22 @@ def main():
         # queue depth
         io = [s for s in ss if (s["rd_ios"] or 0) >= 1000]
         if io:
-            ev = "; ".join("T=%d aqu=%s (%.2f per busy-able thread, %d)" % (
-                s["threads"], f(s["aqu_sz"], 1), (s["aqu_sz"] or 0) / s["busy_max"], s["busy_max"]) for s in io)
-            seen = all((s["aqu_sz"] or 0) / s["busy_max"] >= 0.7 for s in io)
-            md.append("| %s | sync faults cap NVMe QD (aqu-sz ~ T) | %s: %s | yes (>= 1000 read IOs per rung) |" % (rg, "seen" if seen else "not seen at every T", ev))
+            # A synchronous fault holds one I/O per blocked thread, so the cap shows as aqu-sz equal to
+            # the threads in D state (T x the sampler's D fraction). aqu-sz well above that means I/O
+            # is issued asynchronously (read-around), so threads do not cap the queue.
+            def tdx(s):
+                return s["threads"] * (s["thr_D"] or 0)
+            ev = "; ".join("T=%d aqu=%s vs T x D=%s (ratio %s)" % (
+                s["threads"], f(s["aqu_sz"], 1), f(tdx(s), 1), f((s["aqu_sz"] or 0) / tdx(s), 2) if tdx(s) else "-") for s in io)
+            rat = [((s["aqu_sz"] or 0) / tdx(s)) for s in io if tdx(s) >= 1]
+            if rat and all(0.8 <= x <= 1.25 for x in rat):
+                verdict = "seen: outstanding I/O = blocked threads at every T, so queue depth is capped by the thread count"
+            elif rat and all(x > 1.25 for x in rat):
+                verdict = "not seen: aqu-sz exceeds the blocked threads (asynchronous read-around I/O), so threads do not cap the queue"
+            else:
+                verdict = "mixed"
+            md.append("| %s | sync faults cap NVMe QD (aqu-sz ~ T x D) | %s: %s | %s |" % (
+                rg, verdict, ev, "yes (>= 1000 read IOs and T x D >= 1 per rung)" if rat else "no: no rung with T x D >= 1"))
         else:
             md.append("| %s | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |" % rg)
         mj = [s for s in ss if (s["pgmajfault"] or 0) >= 1000]
@@ -335,13 +399,32 @@ def main():
             ev = "S-futex %s -> %s, off-CPU %s -> %s (T=%d -> %d)" % (f(a["thr_S_futex"], 2), f(b["thr_S_futex"], 2),
                  f(a["offcpu_frac"], 2), f(b["offcpu_frac"], 2), a["threads"], b["threads"])
             grow = (b["thr_S_futex"] or 0) - (a["thr_S_futex"] or 0) > 0.1
-            md.append("| %s | critical sections | %s: %s | yes (>= 50 samples at >= 2 T) |" % (rg, "seen" if grow else "not seen", ev))
+            if lk[1].endswith("-gz"):
+                v = ("gzip starvation behind seqread: threads wait in futex for the reader, which waits "
+                     "on the wrapper's gzip pipes (see the gz/fq table); not lock contention in classify") if grow else "not seen"
+            else:
+                v = "seen" if grow else "not seen"
+            md.append("| %s | critical sections | %s: %s | yes (>= 50 samples at >= 2 T) |" % (rg, v, ev))
         else:
             md.append("| %s | critical sections | too few sampler samples | no |" % rg)
         pm = [s for s in ss if s["ipc"] is not None]
-        if pm:
-            ev = "; ".join("T=%d IPC %s dTLB-miss %s walk/kinst %s" % (s["threads"], f(s["ipc"], 2), f(s["dtlb_miss_ratio"], 4), f(s["dtlb_walk_pki"], 2)) for s in pm)
-            md.append("| %s | DRAM/TLB limits | %s | yes (perf counters present) |" % (rg, ev))
+        if lk[1].endswith("-gz"):
+            md.append("| %s | DRAM/TLB limits | not read: perf stat counts the wrapper's gzip children on gz input; see the -fq ladder | no |" % rg)
+        elif pm:
+            ipcs = [s["ipc"] for s in pm]
+            walks = [s["dtlb_walk_pki"] for s in pm if s["dtlb_walk_pki"] is not None]
+            # resolution: the IPC spread across reps of one cell bounds the smallest detectable change
+            spread = max([(max(x) - min(x)) for x in ipc_reps.get(lk, {}).values() if len(x) > 1] or [0])
+            ev = "IPC %s..%s, dTLB walks %s..%s per kinst over T=%d..%d" % (
+                f(min(ipcs), 2), f(max(ipcs), 2), f(min(walks) if walks else None, 2), f(max(walks) if walks else None, 2),
+                pm[0]["threads"], pm[-1]["threads"])
+            flat = (max(ipcs) - min(ipcs)) <= max(spread, 0.1)
+            ctr = contrast.get(lk[0].split("[")[0], [])
+            md.append("| %s | DRAM/TLB limits | %s: %s. Growth with T would show as falling IPC / rising walks; "
+                      "whether DRAM/TLB is a lever at all (absolute cost) needs a page-size contrast: %s | "
+                      "%s |" % (rg, "flat (no growth with T)" if flat else "changes with T", ev,
+                                ("; ".join(ctr)) if ctr else "none in this run, so unresolved",
+                                "yes for growth with T (IPC rep spread %s; changes above max(spread, 0.10) resolve)" % f(spread, 2)))
         else:
             md.append("| %s | DRAM/TLB limits | no perf counters | no |" % rg)
         gz = [(k, r) for k, r in byk.items() if k[0] == lk[0] and k[1] == lk[2] and k[3] == lk[1]
@@ -355,6 +438,12 @@ def main():
         else:
             md.append("| %s | single-stream gzip | no gz/fq pair | no |" % rg)
     md.append("")
+    if excluded:
+        md.append("## Excluded warm rungs\n")
+        md.append("| tag | classify_s | why excluded |\n|---|---|---|")
+        for r in excluded:
+            md.append("| %s | %s | %s |" % (r["tag"], f(r.get("classify_s")), r["warm_invalid"]))
+        md.append("")
     if skipped:
         md.append("## Skipped rungs\n")
         md.append("| tag | why |\n|---|---|")

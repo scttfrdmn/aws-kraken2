@@ -1,16 +1,16 @@
 {
-  "task_id": "g2-c9gd",
+  "task_id": "g2-nvme3",
   "command": [
     "bash",
     "-c",
-    "# G2 #21 c-family (docs/g2.md; scripts/g2/cfam.plan) on the cheapest c8gd / c9gd size with\n# >= 1.2 TB instance-store NVMe (one device, no RAID): upstream kraken2 at the pin (pristine; built\n# from source here) on RODA v205, --memory-mapping at the host default read_ahead_kb (128) and at\n# 4, the per-accession baseline, and madv (diagnostic) as the reference.\n# Reads, database checks and fail-fast setup as in runs/g2-nvme.json.\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nB=cookbook-942542972736-us-west-2; DATA=aws-kraken2/data\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nG2_DEADLINE=$(( $(date +%s) + 160 * 60 )); export G2_DEADLINE\n\nak2_phase setup\nsudo -n dnf install -y -q git > \"$W/dnf0.log\" 2>&1 || fail \"dnf git failed\"\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\ncd \"$W/repo\" || fail \"no repo\"\n. scripts/g2-instance.sh\ng2i_setup\ng2i_nvme\n\nak2_phase fetch-reads\nRD=$G2_NVME/reads\ng2i_stage_reads \"$RD\" \"$B\" \"$DATA\" SRR062634_8000000 SRR062634_200000 ERR478965_200000 ERR598966_200000 SRR28305653_200000\ng2i_subset \"$RD\" SRR062634_8000000 2000000 SRR062634_2000000\ng2i_subset \"$RD\" SRR062634_8000000 250000 SRR062634_250000\ng2i_gzip_rate \"$RD/SRR062634_2000000_1.fq.gz\"\n\n# The builds run while the database streams in.\nak2_phase fetch-db\n( g2i_build > \"$W/build.out\" 2>&1 ) &\nBUILD_PID=$!\ng2i_awscfg 15Gb/s\nDB=$G2_NVME/db/RefSeqCompleteV205\ng2i_stage_roda \"$DB\"\nwait \"$BUILD_PID\" || { cat \"$W/build.out\"; fail \"build failed\"; }\ncat \"$W/build.out\"\nG2_UPSTREAM=$(scripts/oracle-build.sh) && G2_MADV=$(scripts/madvrandom-build.sh) || fail \"builds not found\"\nexport G2_UPSTREAM G2_MADV\n\nG2_PLAN=scripts/g2/cfam.plan G2_DB=$DB G2_READS=$RD G2_WORK=$G2_NVME/work G2_LABEL=cfam G2_RUNG_TIMEOUT=1800\nexport G2_PLAN G2_DB G2_READS G2_WORK G2_LABEL G2_RUNG_TIMEOUT\n. scripts/g2.sh\nRC=$?\nak2_say \"g2 cfam rc=$RC\"\nak2_phase push\n[ \"$RC\" = 0 ] || exit \"$RC\"\nexit 0\n"
+    "# G2 #21 NVMe thread tuning (docs/g2.md; scripts/g2/nvme3.plan): upstream kraken2 at the pin\n# (pristine; built from source here) on RODA v205 staged onto instance-store NVMe (RAID0 over\n# both devices), --memory-mapping with the host tune read_ahead_kb=4, T = 64..256 on the\n# SRR062634 8M-pair prefix, cold (ak2_drop_caches before every cold rung), and per-accession\n# cold+warm pairs. The madvrandom diagnostic build is built but not used by this plan.\n# Reads: SRR062634 8M-pair prefix (the 2M and 250k subsets derived here) and the four G0c\n# accessions' 200k-pair subsets, each checked against its sha256 and SOURCE. The database is\n# checked against the RODA object's ETag after staging. Every setup step fails fast.\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nB=cookbook-942542972736-us-west-2; DATA=aws-kraken2/data\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nG2_DEADLINE=$(( $(date +%s) + 150 * 60 )); export G2_DEADLINE\n\nak2_phase setup\nsudo -n dnf install -y -q git > \"$W/dnf0.log\" 2>&1 || fail \"dnf git failed\"\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\ncd \"$W/repo\" || fail \"no repo\"\n. scripts/g2-instance.sh\ng2i_setup\ng2i_nvme\n\nak2_phase fetch-reads\nRD=$G2_NVME/reads\ng2i_stage_reads \"$RD\" \"$B\" \"$DATA\" SRR062634_8000000 SRR062634_200000 ERR478965_200000 ERR598966_200000 SRR28305653_200000\ng2i_subset \"$RD\" SRR062634_8000000 2000000 SRR062634_2000000\ng2i_subset \"$RD\" SRR062634_8000000 250000 SRR062634_250000\ng2i_gzip_rate \"$RD/SRR062634_2000000_1.fq.gz\"\n\n# The builds run while the database streams in.\nak2_phase fetch-db\n( g2i_build > \"$W/build.out\" 2>&1 ) &\nBUILD_PID=$!\ng2i_awscfg 25Gb/s\nDB=$G2_NVME/db/RefSeqCompleteV205\ng2i_stage_roda \"$DB\"\nwait \"$BUILD_PID\" || { cat \"$W/build.out\"; fail \"build failed\"; }\ncat \"$W/build.out\"\nG2_UPSTREAM=$(scripts/oracle-build.sh) && G2_MADV=$(scripts/madvrandom-build.sh) || fail \"builds not found\"\nexport G2_UPSTREAM G2_MADV\n\nG2_PLAN=scripts/g2/nvme3.plan G2_DB=$DB G2_READS=$RD G2_WORK=$G2_NVME/work G2_LABEL=nvme3 G2_RUNG_TIMEOUT=1800\nexport G2_PLAN G2_DB G2_READS G2_WORK G2_LABEL G2_RUNG_TIMEOUT\n. scripts/g2.sh\nRC=$?\nak2_say \"g2 nvme3 rc=$RC\"\nak2_phase push\n[ \"$RC\" = 0 ] || exit \"$RC\"\nexit 0\n"
   ],
   "resources": {
-    "cpu": 32,
-    "memory_gib": 64,
+    "cpu": 64,
+    "memory_gib": 512,
     "architecture": "arm64",
     "families": [
-      "c9gd"
+      "r8gd"
     ],
     "disk_gib": 40,
     "s3_read_write": [
@@ -25,6 +25,6 @@
   "lifecycle": {
     "ttl": "3h",
     "on_complete": "terminate",
-    "cost_limit": 6.5
+    "cost_limit": 15.0
   }
 }

@@ -1,0 +1,26 @@
+# runs/g2-nvme3.json (r8gd.16xlarge: 64 vCPU, 512 GiB, 2 x 1900 GB NVMe RAID0). #21 thread tuning
+# for upstream at its best on NVMe: pristine upstream -M with the host tune read_ahead_kb=4
+# (results/g2/20261007-013103-3b7fc1e). madv and RA=4 scale with busy threads up to 64, and
+# oversubscription helped on the 32-vCPU c-family boxes, so T = 64 is not shown to be the optimum.
+# Thread counts above the block count cannot help, and SRR062634_2000000 has 63 blocks
+# (inputs.json), so the T = 64..256 ladder runs on SRR062634_8000000 (250 blocks). The 2M-pair
+# rungs at T = 64 and 128 show the block cap on the smaller input.
+# Then warm measured properly: each warm rung right after its own cold rung (the per-accession
+# warm rungs of nvme2 and cfam did not follow their own input). Cheapest first (highest T first);
+# rep 2 of the 8M ladder last.
+note #21 NVMe thread tuning at read_ahead_kb=4 (T 64..256 on 8M pairs), fq at the high T, per-accession cold+warm pairs
+readahead 4
+run mmap SRR062634_8000000-gz cold 1 256 192 128 96 64
+run mmap SRR062634_8000000-fq cold 1 256 128
+run mmap SRR062634_2000000-gz cold 1 128 64
+run mmap SRR062634_2000000-gz warm 1 128 64
+run mmap SRR062634_200000-gz cold 1 64
+run mmap SRR062634_200000-gz warm 1 64
+run mmap ERR478965_200000-gz cold 1 64
+run mmap ERR478965_200000-gz warm 1 64
+run mmap ERR598966_200000-gz cold 1 64
+run mmap ERR598966_200000-gz warm 1 64
+run mmap SRR28305653_200000-gz cold 1 64
+run mmap SRR28305653_200000-gz warm 1 64
+run mmap SRR062634_8000000-gz cold 1 256 192 128 96 64
+readahead default

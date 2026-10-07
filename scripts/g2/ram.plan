@@ -3,7 +3,7 @@
 # pays a 1.19 TB load; the classify loop is the same Get() over a RAM-resident table. Part 1's
 # validation rungs (default load, T = 8 and 64, gz and fq) give the same cells under regime
 # "load" for comparison.
-# Workload: SRR062634 8M pairs = 247 blocks of 8 MiB (>= 2 per thread up to T = 123); one ladder
+# Workload: SRR062634 8M pairs = 250 blocks of 8 MiB (inputs.json; >= 2 per thread up to T = 125); one ladder
 # per input format (gz: the wrapper's single gzip -dc per mate; fq: plain). Highest T first
 # (cheapest). Reps: 3 for T >= 4, 2 for T = 1, 2.
 note #23 (a) r8gd.48xlarge, table resident on tmpfs huge=always, -M; validated against part 1's default-load rungs

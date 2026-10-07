@@ -3,7 +3,7 @@
 # (c) (kraken2-madvrandom, diagnostic only), RODA v205, SRR062634.
 #
 # Workloads (same reads at every thread count of a ladder; prefixes of one real sample):
-#   SRR062634_2000000  62 blocks of 8 MiB: the T >= 8 ladder (>= 2 blocks/thread up to T = 31;
+#   SRR062634_2000000  63 blocks of 8 MiB (inputs.json): the T >= 8 ladder (>= 2 blocks/thread up to T = 31;
 #                      T = 48/64 are quantization-limited, shown per rung as ceil(B/T)/(B/T))
 #   SRR062634_250000   8 blocks: the T <= 8 ladder (a cold 1-thread rung on 2M pairs would take
 #                      hours); T = 8 is on both ladders, so the workload-size effect is measured

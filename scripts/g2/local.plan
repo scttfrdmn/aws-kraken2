@@ -5,3 +5,8 @@ run mmap SRR062634_200000-fq warm 1 4 2
 run madv SRR062634_200000-gz warm 1 2
 run load empty warm 1 2
 run load SRR062634_200000-gz cold 1 4
+instrument off
+prefix env
+run mmap SRR062634_200000-fq warm 1 4
+prefix -
+instrument on

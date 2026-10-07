@@ -139,8 +139,13 @@ g2_main() {
   local -a ARGV
   local -A SKIP=()
   local push_ok=false; declare -F ak2_push >/dev/null && push_ok=true
-  local lineno=0 LINE_ENV="" HOST_TUNE=""
+  local lineno=0 LINE_ENV="" HOST_TUNE="" TUNE_RA="" TUNE_THP="" TUNE_PREFIX="" TUNE_INSTR=""
+  local PREFIX_CMD="" INSTR=true THP_BOOT=""
+  local -a PFX=()
   local -A RA_BOOT=()
+  g2_tune() {  # the cell label for host tunes: e.g. "read_ahead_kb=4 thp=always numactl --interleave=all"
+    HOST_TUNE=$(printf '%s\n' "$TUNE_RA" "$TUNE_THP" "$TUNE_PREFIX" "$TUNE_INSTR" | grep -v '^$' | paste -sd ' ' -)
+  }
   while IFS= read -r line || [ -n "$line" ]; do
     lineno=$((lineno + 1))
     line=${line%%#*}
@@ -159,8 +164,32 @@ g2_main() {
              [ -n "$rv" ] && echo "$rv" | sudo -n tee "/sys/block/$dv/queue/read_ahead_kb" >/dev/null ||
                { echo "g2: plan line $lineno: cannot set read_ahead_kb on $dv" >&2; FAILS=$((FAILS + 1)); }
            done
-           if [ "$regime" = default ]; then HOST_TUNE=""; else HOST_TUNE="read_ahead_kb=$regime"; fi
+           if [ "$regime" = default ]; then TUNE_RA=""; else TUNE_RA="read_ahead_kb=$regime"; fi
+           g2_tune
            echo "g2: plan line $lineno: read_ahead_kb now: $(for dv in ${DEVS//,/ }; do printf '%s=%s ' "$dv" "$(cat /sys/block/$dv/queue/read_ahead_kb)"; done)"
+           continue ;;
+      thp)
+           # Host tuning: /sys/kernel/mm/transparent_hugepage/enabled = always|madvise|never;
+           # "default" restores the boot value.
+           local tf=/sys/kernel/mm/transparent_hugepage/enabled tv
+           [ -n "$THP_BOOT" ] || THP_BOOT=$(sed -E 's/.*\[([a-z]+)\].*/\1/' "$tf" 2>/dev/null)
+           tv=$regime; [ "$tv" = default ] && tv=$THP_BOOT
+           echo "$tv" | sudo -n tee "$tf" >/dev/null || { echo "g2: plan line $lineno: cannot set THP to $tv" >&2; FAILS=$((FAILS + 1)); }
+           if [ "$regime" = default ]; then TUNE_THP=""; else TUNE_THP="thp=$regime"; fi
+           g2_tune
+           echo "g2: plan line $lineno: THP enabled now [$(cat "$tf")]"
+           continue ;;
+      prefix)
+           # A command the classifier runs under, e.g. `prefix numactl --interleave=all`; `prefix -` clears.
+           PREFIX_CMD=$(sed -E 's/^[[:space:]]*prefix[[:space:]]*//; s/^-$//' <<< "$line" | xargs)
+           TUNE_PREFIX=$PREFIX_CMD; g2_tune
+           echo "g2: plan line $lineno: classifier prefix now '$PREFIX_CMD'"
+           continue ;;
+      instrument)
+           # `instrument off`: no perf stat, no sampler, no disk deltas (a control for their overhead).
+           case "$regime" in off) INSTR=false; TUNE_INSTR=uninstrumented ;; *) INSTR=true; TUNE_INSTR="" ;; esac
+           g2_tune
+           echo "g2: plan line $lineno: instrumentation $regime"
            continue ;;
       run|profile) ;;
       *) echo "g2: plan line $lineno: unknown directive '$kind'" >&2; FAILS=$((FAILS + 1)); continue ;;
@@ -186,6 +215,8 @@ g2_main() {
         fi
         mapfile -t ARGV < <(g2_cmd "$regime" "$input" "$th" "$WORK/out.txt" "$WORK/report.txt") || true
         [ "${#ARGV[@]}" -gt 0 ] || { echo "g2: $tag: bad regime/input" >&2; FAILS=$((FAILS + 1)); continue; }
+        # shellcheck disable=SC2206
+        [ -n "$PREFIX_CMD" ] && { PFX=($PREFIX_CMD); ARGV=("${PFX[@]}" "${ARGV[@]}"); }
         rm -f "$WORK/out.txt" "$WORK/report.txt"
         case "$state" in
           cold) $COLD_OK || { echo "g2: $tag: cannot drop caches here; skipped" >&2; SKIPPED=$((SKIPPED + 1))
@@ -209,12 +240,18 @@ g2_main() {
             2>/dev/null | grep -v '^#' | grep -v '^$' | head -40 > "$RES/profile/$tag.dso.txt"
           rm -f "$WORK/perf.data"
           echo "g2: $tag profile written ($(wc -l < "$RES/profile/$tag.txt") lines)"
+          # Recorded so the summary knows what the page cache held afterwards (warm validity).
+          jq -cn --arg tag "$tag" --argjson l "$lineno" --arg rg "$regime" --arg i "$input" --arg s "$state" \
+            --argjson t "$th" --arg tune "$HOST_TUNE" --arg env "$LINE_ENV" --arg at "$(date -u +%FT%TZ)" \
+            '{tag:$tag,line:$l,kind:"profile",regime:$rg,input:$i,state:$s,rep:1,threads:$t,env:$env,host_tune:$tune,finished_at:$at}' >> "$JL"
           $push_ok && ak2_push "$RES/profile/$tag.txt" "g2-$LABEL/profile/$tag.txt" >/dev/null
           continue
         fi
+        local r_devs=$DEVS r_events=$EVENTS r_hz=$HZ
+        $INSTR || { r_devs=""; r_events=""; r_hz=0; }
         # shellcheck disable=SC2086
         j=$(env $EXTRA_ENV $LINE_ENV python3 scripts/lib/g2run.py --out "$RES/stderr/$tag" --threads "$th" \
-              --devs "$DEVS" --perf-events "$EVENTS" --perf "$PERF" --hz "$HZ" --timeout "$TMO" -- "${ARGV[@]}")
+              --devs "$r_devs" --perf-events "$r_events" --perf "$PERF" --hz "$r_hz" --timeout "$TMO" -- "${ARGV[@]}")
         [ -n "$j" ] || { echo "g2: $tag: no measurement" >&2; FAILS=$((FAILS + 1)); continue; }
         [ -f "$RES/stderr/$tag.perf.csv" ] && mv "$RES/stderr/$tag.perf.csv" "$RES/perf/$tag.csv"
         local osha=null rsha=null seqs
@@ -246,7 +283,7 @@ g2_main() {
      --arg up "$UP" --arg upb "$(cat "$UP/BUILD" 2>/dev/null)" --arg madv "$MADV" --arg madvb "$(cat "$MADV/BUILD" 2>/dev/null)" \
      --arg db "$DB" --arg ramdb "$RAMDB" --arg reads "$READS" --arg devs "$DEVS" --arg events "$EVENTS" \
      --arg hz "$HZ" --arg tmo "$TMO" --arg dl "$DEADLINE" --arg extra "$EXTRA_ENV" \
-     --argjson cold "$COLD_OK" --arg drop "$DROP" --arg thp "$thp_en" --arg df "$thp_df" \
+     --argjson cold "$COLD_OK" --arg drop "$DROP" --arg thp "$thp_en" --arg df "$thp_df" --arg shm "$(cat /sys/kernel/mm/transparent_hugepage/shmem_enabled 2>/dev/null)" --arg numa "$(numactl -H 2>/dev/null | grep -E "available|size" | paste -sd ";" -)" --arg thpend "$(cat /sys/kernel/mm/transparent_hugepage/enabled 2>/dev/null)" \
      --arg kernel "$(uname -r)" --arg arch "$(uname -m)" --arg ncpu "$(getconf _NPROCESSORS_ONLN 2>/dev/null)" \
      --arg mem "$(awk '/MemTotal/{print $2}' /proc/meminfo 2>/dev/null)" --arg run "${AK2_RUN_ID:-}" \
      --arg itype "${AK2_INSTANCE_TYPE:-}" --arg storage "${G2_STORAGE:-}" \
@@ -259,7 +296,7 @@ g2_main() {
        instruments:{devs:$devs, perf_events:$events, sampler_hz:($hz|tonumber), rung_timeout_s:($tmo|tonumber),
                     deadline_epoch:($dl|tonumber), extra_env:$extra},
        cold:{available:$cold, method:$drop},
-       host:{instance_type:$itype, kernel:$kernel, arch:$arch, ncpu:$ncpu, mem_kib:$mem, thp_enabled:$thp, thp_defrag:$df},
+       host:{instance_type:$itype, kernel:$kernel, arch:$arch, ncpu:$ncpu, mem_kib:$mem, thp_enabled:$thp, thp_defrag:$df, thp_shmem_enabled:$shm, thp_enabled_at_end:$thpend, numa:$numa},
        make_run_id:$run, start:$start, stop:$stop, failures:$fails, skipped:$skipped}' > "$RES/manifest.json"
   python3 scripts/lib/g2summary.py "$RES" || { echo "g2: summary failed" >&2; FAILS=$((FAILS + 1)); }
   echo "g2: $RUNG rungs, $SKIPPED skipped, $FAILS failures; $RES"

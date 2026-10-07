@@ -242,7 +242,7 @@ def main():
                         target = int(f.read().split()[0])
                 except (OSError, IndexError, ValueError):
                     target = None
-            if target and os.path.isdir("/proc/%d/task" % target):
+            if a.hz > 0 and target and os.path.isdir("/proc/%d/task" % target):
                 sampler = Sampler(target, a.hz, arch)
                 sampler.start()
         if t_stats is None and re.search(rb"sequences \([0-9.]+ Mbp\) processed in", buf):
