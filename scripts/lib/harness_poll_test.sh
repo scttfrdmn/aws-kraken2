@@ -78,6 +78,15 @@ STATE="" FINAL_BASIS=""; STUB_EC2=terminated final_describe; rc=$?
 STATE="" FINAL_BASIS=""; STUB_EC2=down final_describe; rc=$?
 [ "$rc" = 2 ] && [ -z "$STATE" ] && [ -z "$FINAL_BASIS" ] && ok "final describe failing leaves the state unknown" || bad "final_describe down: rc $rc"
 
+# ---- run.sh's note_state: a failed describe clears the basis ----
+DESC='{}'
+STATE=running FINAL_BASIS=observed; STUB_EC2=down aws_try STATE ec2 describe-instances --instance-ids i-1 --query State.Name --output text; note_state $?
+[ -z "$STATE" ] && [ -z "$FINAL_BASIS" ] && ok "failed poll describe: STATE and FINAL_BASIS both unknown (no stale observed)" || bad "note_state 2: STATE=$STATE BASIS=$FINAL_BASIS"
+STUB_EC2=terminated aws_try STATE ec2 describe-instances --instance-ids i-1 --query State.Name --output text; note_state $?
+[ "$STATE" = terminated ] && [ "$FINAL_BASIS" = observed ] && ok "poll describe answering terminated is observed" || bad "note_state 0: STATE=$STATE BASIS=$FINAL_BASIS"
+STUB_EC2=notfound aws_try STATE ec2 describe-instances --instance-ids i-1 --query State.Name --output text; note_state $?
+[ "$STATE" = terminated ] && [ "$FINAL_BASIS" = aged_out ] && ok "poll describe not found after launch: aged out" || bad "note_state 1: STATE=$STATE BASIS=$FINAL_BASIS"
+
 # ---- refinalise.sh on a fixture run dir ----
 fixture() {  # fixture DIR FINAL_STATE [BASIS]: a manifest as a TTL-killed / outage run leaves it
   mkdir -p "$1" "$T/prefix/spawn/ak2-g9-x/log" "$T/prefix/log" "$T/prefix/out"

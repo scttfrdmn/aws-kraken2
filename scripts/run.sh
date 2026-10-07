@@ -376,6 +376,17 @@ final_describe() {
   done
   return 2
 }
+# note_state RC: what a State.Name describe (aws_try rc) says about the instance. 0: STATE is what
+# EC2 answered (observed). 1: not found after launch was seen (DESC set): aged out, so
+# terminated. 2: the call failed: STATE is unknown (aws_try emptied it), and so is its basis, so
+# a stale basis from an earlier answer never labels an unknown state.
+note_state() {
+  case $1 in
+    0) FINAL_BASIS=observed ;;
+    1) [ -n "$DESC" ] && { STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; } ;;
+    *) FINAL_BASIS="" ;;
+  esac
+}
 poll_sleep() { local s=15 i; for ((i = 1; i < FAILS_IN_ROW && s < 120; i++)); do s=$((s * 2)); done; [ $s -gt 120 ] && s=120; sleep $s; }
 
 # EC2 is eventually consistent: right after RunInstances, DescribeInstances can answer
@@ -430,8 +441,7 @@ while :; do
   if [ "$NOW" -gt "$DEADLINE" ] && [ $CRC = 1 ]; then say "no completion record by TTL+3m (S3 reachable; the record is absent)"; break; fi
   if [ "$NOW" -gt "$HARD_DEADLINE" ]; then say "no completion record by TTL+3m+grace; AWS calls were failing ($FAILS_IN_ROW in a row)"; break; fi
   aws_try STATE ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0].State.Name' --output text; SRC=$?
-  [ $SRC = 0 ] && FINAL_BASIS=observed
-  [ $SRC = 1 ] && [ -n "$DESC" ] && { STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; }
+  note_state "$SRC"
   case "$STATE" in shutting-down|terminated)
     for _ in 1 2 3 4 5 6; do
       sleep 10
@@ -445,8 +455,7 @@ done
 TERM_DEADLINE=$(( $(date +%s) + 600 ))
 while [ "$(date +%s)" -lt "$TERM_DEADLINE" ]; do
   aws_try STATE ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0].State.Name' --output text; SRC=$?
-  [ $SRC = 0 ] && FINAL_BASIS=observed
-  [ $SRC = 1 ] && [ -n "$DESC" ] && { STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; }
+  note_state "$SRC"
   [ "$STATE" = terminated ] && break
   # While calls fail, wait for the network rather than burning the 10 minutes.
   [ $SRC = 2 ] && [ "$(date +%s)" -lt "$HARD_DEADLINE" ] && TERM_DEADLINE=$(( $(date +%s) + 600 ))
