@@ -80,7 +80,11 @@ func main() {
 	os.Exit(status)
 }
 
-func run(args []string) int {
+func run(args []string) int { return runEnv(args, nil) }
+
+// runEnv is run with the engine's AK2_ENGINE_* settings looked up through env (nil: the
+// process environment), so a test can run several nodes of a multi-node run in one process.
+func runEnv(args []string, env func(string) (string, bool)) int {
 	o := options{confidence: "0.0", minimumBaseQuality: "0", minimumHitGroups: "2"}
 	set := func(b *bool) func(string) { return func(string) { *b = true } }
 	specs := []optSpec{
@@ -124,7 +128,7 @@ func run(args []string) int {
 		fmt.Fprintf(os.Stderr, "%s: %s", prog, err.msg)
 		return err.status
 	}
-	for _, f := range []string{"taxo.k2d", "hash.k2d", "opts.k2d"} {
+	for _, f := range dbFiles() {
 		if _, err := os.Stat(dbPrefix + "/" + f); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %s/%s does not exist!\n", prog, dbPrefix, f)
 			return exitDieErrno
@@ -171,6 +175,7 @@ func run(args []string) int {
 		classifiedOut:   o.classifiedOut,
 		unclassifiedOut: o.unclassifiedOut,
 		reportFile:      o.report,
+		env:             env,
 	}
 	if c.threads < 1 {
 		return classifyErr(exUsage, "number of threads can't be less than 1")
@@ -244,7 +249,7 @@ func findDB(supplied *string) (string, *dieErr) {
 			return "", &dieErr{fmt.Sprintf("unable to find %s in $KRAKEN2_DB_PATH (%s)\n", *supplied, printed), exitDieErrno}
 		}
 	}
-	for _, f := range []string{"taxo.k2d", "hash.k2d", "opts.k2d"} {
+	for _, f := range dbFiles() {
 		if _, err := os.Stat(prefix + "/" + f); err != nil {
 			return "", &dieErr{fmt.Sprintf("database (\"%s\") does not contain necessary file %s\n", prefix, f), exitDieErrno}
 		}

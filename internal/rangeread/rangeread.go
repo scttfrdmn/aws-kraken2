@@ -11,6 +11,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -109,10 +110,43 @@ func (s *HTTPSource) ReadRange(ctx context.Context, off int64, dst []byte) error
 	return fmt.Errorf("rangeread: %d bytes at %d after %d attempts: %w", len(dst), off, retries+1, err)
 }
 
+// Redact returns u without its query string: a presigned URL's query is a credential (signature,
+// and with instance-role credentials a session token), and must never reach a log, an error or a
+// committed result.
+func Redact(u string) string {
+	if i := strings.IndexByte(u, '?'); i >= 0 {
+		return u[:i] + "?<redacted>"
+	}
+	return u
+}
+
+// redactErr removes the query string from the URL a *url.Error carries (net/http's errors name
+// the request URL).
+func redactErr(err error) error {
+	var ue *url.Error
+	if errors.As(err, &ue) {
+		ue.URL = Redact(ue.URL)
+	}
+	return err
+}
+
+// s3Code is the <Code> of an S3 error body. A presigned request's error body (e.g.
+// SignatureDoesNotMatch) echoes the canonical request, credential included, so only the code is
+// kept.
+func s3Code(body []byte) string {
+	b := string(body)
+	i := strings.Index(b, "<Code>")
+	j := strings.Index(b, "</Code>")
+	if i < 0 || j < i {
+		return ""
+	}
+	return b[i+len("<Code>") : j]
+}
+
 func (s *HTTPSource) get(ctx context.Context, off int64, dst []byte) (permanent bool, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.URL, nil)
 	if err != nil {
-		return true, err
+		return true, fmt.Errorf("rangeread: %s: bad request", Redact(s.URL))
 	}
 	last := off + int64(len(dst)) - 1
 	req.Header.Set("Range", "bytes="+strconv.FormatInt(off, 10)+"-"+strconv.FormatInt(last, 10))
@@ -121,16 +155,16 @@ func (s *HTTPSource) get(ctx context.Context, off int64, dst []byte) (permanent 
 	}
 	resp, err := s.Client.Do(req)
 	if err != nil {
-		return false, err
+		return false, redactErr(err)
 	}
 	defer resp.Body.Close()
 	switch {
 	case resp.StatusCode == http.StatusPreconditionFailed:
-		return true, fmt.Errorf("rangeread: %s: ETag is no longer %q (412)", s.URL, s.ETag)
+		return true, fmt.Errorf("rangeread: %s: ETag is no longer %q (412)", Redact(s.URL), s.ETag)
 	case resp.StatusCode != http.StatusPartialContent:
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 		return resp.StatusCode < 500 && resp.StatusCode != 429, fmt.Errorf("rangeread: %s range %d-%d: %s: %s",
-			s.URL, off, last, resp.Status, strings.TrimSpace(string(b)))
+			Redact(s.URL), off, last, resp.Status, s3Code(b))
 	}
 	if s.ETag != "" && strings.Trim(resp.Header.Get("ETag"), `"`) != s.ETag {
 		return true, fmt.Errorf("rangeread: response ETag %s, want %q", resp.Header.Get("ETag"), s.ETag)
@@ -143,7 +177,7 @@ func (s *HTTPSource) get(ctx context.Context, off int64, dst []byte) (permanent 
 	n, err := io.ReadFull(resp.Body, dst)
 	s.Bytes.Add(int64(n))
 	if err != nil {
-		return false, fmt.Errorf("rangeread: body at %d: %w", off, err)
+		return false, fmt.Errorf("rangeread: body at %d: %w", off, redactErr(err))
 	}
 	return false, nil
 }

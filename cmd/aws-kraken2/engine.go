@@ -32,11 +32,13 @@ type engineConf struct {
 	n         int
 	transport string
 	tail      uint64
+	cluster   *clusterConf // multi-node (AK2_ENGINE_RANK; cluster.go); nil = in-process
 }
 
 // engineFromEnv returns nil when AK2_ENGINE_N is unset.
-func engineFromEnv() (*engineConf, error) {
-	ns, ok := os.LookupEnv("AK2_ENGINE_N")
+func engineFromEnv(lookup func(string) (string, bool)) (*engineConf, error) {
+	getenv := func(k string) string { v, _ := lookup(k); return v }
+	ns, ok := lookup("AK2_ENGINE_N")
 	if !ok {
 		return nil, nil
 	}
@@ -45,18 +47,21 @@ func engineFromEnv() (*engineConf, error) {
 		return nil, fmt.Errorf("AK2_ENGINE_N=%q: want an integer from 1 to 65536", ns)
 	}
 	c := &engineConf{n: n, transport: "local", tail: engine.DefaultTail}
-	if t := os.Getenv("AK2_ENGINE_TRANSPORT"); t != "" {
+	if t := getenv("AK2_ENGINE_TRANSPORT"); t != "" {
 		if t != "local" && t != "tcp" {
 			return nil, fmt.Errorf("AK2_ENGINE_TRANSPORT=%q: want local or tcp", t)
 		}
 		c.transport = t
 	}
-	if ts, ok := os.LookupEnv("AK2_ENGINE_TAIL"); ok {
+	if ts, ok := lookup("AK2_ENGINE_TAIL"); ok {
 		v, err := strconv.ParseUint(ts, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("AK2_ENGINE_TAIL=%q: want a cell count", ts)
 		}
 		c.tail = v
+	}
+	if c.cluster, err = clusterFromEnv(n, lookup); err != nil {
+		return nil, err
 	}
 	return c, nil
 }
@@ -69,6 +74,13 @@ type engineIndex struct {
 	servers []*engine.Server
 	tcp     []*engine.TCPClient
 	router  *engine.Router
+	node    *node // multi-node only
+
+	rvRequests int64
+	// The node's shard load: seconds, and the source's request counters (ranged GETs or preads,
+	// including the table id's samples, which are read after the load).
+	loadS                                float64
+	loadRequests, loadRetries, loadBytes int64
 
 	scanNs, lookupNs, classifyNs atomic.Int64
 }
@@ -113,7 +125,13 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 		var tok [8]byte
 		_, _ = rand.Read(tok[:])
 		run := binary.LittleEndian.Uint64(tok[:])
+		id, err := engine.TableID(ctx, src, st.Size(), "")
+		if err != nil {
+			e.close()
+			return nil, err
+		}
 		for i, s := range e.shards {
+			s.ID = id
 			ln, err := net.Listen("tcp", "127.0.0.1:0")
 			if err != nil {
 				e.close()
@@ -123,7 +141,7 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 			go srv.Serve(ln)
 			e.servers = append(e.servers, srv)
 			e.stats = append(e.stats, &srv.Stats)
-			c, err := engine.DialTCP(ln.Addr().String(), i, conf.n, l.Capacity, run, threads)
+			c, err := engine.DialTCP(ln.Addr().String(), i, conf.n, l.Capacity, run, id, threads, 0)
 			if err != nil {
 				e.close()
 				return nil, err
@@ -166,9 +184,19 @@ func (e *engineIndex) report() {
 			i, s.N, s.Lo, s.Hi, s.Tail, s.Full, s.Empty, st.Keys.Load(), st.Batches.Load(), sec(st.ProbeNs.Load()),
 			s.TailProbes.Load(), s.WrapProbes.Load())
 	}
+	if e.node != nil {
+		e.node.report()
+		fmt.Fprintf(os.Stderr, "ak2-engine\trendezvous\trequests\t%d\n", e.rvRequests)
+		fmt.Fprintf(os.Stderr, "ak2-engine\tload\tseconds\t%.6f\trequests\t%d\tretries\t%d\tbytes\t%d\n",
+			e.loadS, e.loadRequests, e.loadRetries, e.loadBytes)
+	}
 	r := &e.router.Stats
+	transport := e.conf.transport
+	if e.node != nil {
+		transport = "nodes" // own shard in-process, every other shard over TCP
+	}
 	fmt.Fprintf(os.Stderr, "ak2-engine\troute\ttransport\t%s\tcalls\t%d\tkeys\t%d\tbatches\t%d\troute_s\t%.6f\twait_s\t%.6f\tgather_s\t%.6f\n",
-		e.conf.transport, r.Calls.Load(), r.Keys.Load(), r.Batches.Load(), sec(r.RouteNs.Load()), sec(r.WaitNs.Load()), sec(r.GatherNs.Load()))
+		transport, r.Calls.Load(), r.Keys.Load(), r.Batches.Load(), sec(r.RouteNs.Load()), sec(r.WaitNs.Load()), sec(r.GatherNs.Load()))
 	fmt.Fprintf(os.Stderr, "ak2-engine\tworker\tscan_s\t%.6f\tlookup_s\t%.6f\tclassify_s\t%.6f\n",
 		sec(e.scanNs.Load()), sec(e.lookupNs.Load()), sec(e.classifyNs.Load()))
 }

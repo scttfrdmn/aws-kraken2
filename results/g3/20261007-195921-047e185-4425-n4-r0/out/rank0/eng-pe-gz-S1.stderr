@@ -1,0 +1,23 @@
+Loading database information...ak2-timing	opts	0.000047	0.000025	4	0	0.000000	0.000028
+ak2-timing	taxo	0.000080	0.002646	2622	0	0.000000	0.003261
+ak2-timing	shard-load-0	0.198354	7.613220	1451	0	0.639790	0.882918
+ak2-timing	rendezvous	9.163124	6.544731	75	0	0.004075	0.005752
+ak2-timing	connect	15.707872	1.013656	256	0	0.000000	0.002999
+ak2-timing	hash	0.002741	16.718835	2831	0	0.644752	0.907974
+ done.
+ak2-timing	setup	16.721582	0.000218	63	0	0.000000	0.000523
+ak2-timing	classify	16.721809	2.200116	146539	0	0.711883	0.223305
+ak2-timing	barrier	18.921973	0.000013	0	0	0.000006	0.000005
+ak2-engine	shard	0	n	4	lo	0	hi	500000000	tail	302	full	false	empty_at	500000001	keys	162724	batches	7	probe_s	0.002852	tail_probes	0	wrap_probes	0
+ak2-engine	node	rank	0	n	4	emitter	true	blocks_cut	7	blocks_mine	2	read_s	0.186798	window_wait_s	0.000001	send_s	0.000000	sent_bytes	0	emit_wait_s	0.221432	emit_s	1.972805
+ak2-engine	rendezvous	requests	12
+ak2-engine	load	seconds	7.613214	requests	48	retries	0	bytes	2000066808
+ak2-engine	route	transport	local	calls	2	keys	212487	batches	8	route_s	0.002670	wait_s	0.003810	gather_s	0.000971
+ak2-engine	worker	scan_s	0.239260	lookup_s	0.007452	classify_s	0.093340
+ak2-timing	close	18.922057	4.292492	3	0	0.007467	0.006258
+200000 sequences (40.00 Mbp) processed in 2.200s (5454.3 Kseq/m, 1090.85 Mbp/m).
+  159879 sequences classified (79.94%)
+  40121 sequences unclassified (20.06%)
+ak2-timing	report	23.214588	0.000488	1	0	0.000274	0.000230
+ak2-timing	unmap	23.215080	0.003046	0	0	0.001702	0.001426
+ak2-timing	total	0.000001	23.218138	152080	0	1.366187	1.143188

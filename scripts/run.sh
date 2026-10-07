@@ -184,9 +184,22 @@ DS_JSON=$(echo "$DS_JSON" | jq -s .)
 SHA=$(git rev-parse HEAD)
 DIRTY=false; git diff --quiet HEAD || DIRTY=true
 RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$(git rev-parse --short=7 HEAD)"
+# Cohort member (scripts/run-multi.sh, docs/run.md "Multi-node runs"): one of N coordinated
+# instances. The run id is <cohort>-r<rank>; the instance gets the engine's rank, shard count and
+# rendezvous (the cohort prefix) in its env.
+COHORT_ID=${AK2_COHORT_ID:-}; COHORT_RANK=${AK2_COHORT_RANK:-}; COHORT_N=${AK2_COHORT_N:-}; COHORT_PREFIX=""
+if [ -n "$COHORT_ID$COHORT_RANK$COHORT_N" ]; then
+  [[ "$COHORT_ID" =~ ^[0-9]{8}-[0-9]{6}-[0-9a-f]{7}-[0-9a-f]{4}-n[0-9]+$ ]] || die "AK2_COHORT_ID '$COHORT_ID' is not <yyyymmdd-hhmmss>-<sha7>-<rand4>-n<N> (use scripts/run-multi.sh)"
+  [[ "$COHORT_N" =~ ^[1-9][0-9]*$ ]] && [[ "$COHORT_RANK" =~ ^[0-9]+$ ]] && [ "$COHORT_RANK" -lt "$COHORT_N" ] ||
+    die "AK2_COHORT_RANK=$COHORT_RANK AK2_COHORT_N=$COHORT_N: want 0 <= rank < n"
+  [ "${COHORT_ID##*-n}" = "$COHORT_N" ] || die "AK2_COHORT_ID $COHORT_ID does not end in -n$COHORT_N"
+  RUN_ID="$COHORT_ID-r$COHORT_RANK"
+  COHORT_PREFIX="s3://$RESULTS_BUCKET/$AK2_RESULTS_ROOT/$GATE/$COHORT_ID"
+fi
 TASK_ID="${AK2_TASK_PREFIX}${GATE}-${RUN_ID}"
 PREFIX="s3://$RESULTS_BUCKET/$AK2_RESULTS_ROOT/$GATE/$RUN_ID"
 RUN_DIR="results/$GATE/$RUN_ID"
+[ ! -e "$RUN_DIR" ] || die "$RUN_DIR exists"
 mkdir -p "$RUN_DIR" || die "cannot create $RUN_DIR"
 M="$RUN_DIR/manifest.json"
 say "run $RUN_ID  task $TASK_ID  ->  $PREFIX"
@@ -217,7 +230,8 @@ PAYLOAD_URL=$(aws s3 presign "$PAYLOAD_URI" --region "$REGION" --expires-in $((T
 jq --rawfile stub scripts/stub.sh --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
    --arg expect "$EXPECT" --arg buckets "$BUCKETS" --arg allowed "$ALLOWED_BUCKETS" \
    --arg run "$RUN_ID" --arg gate "$GATE" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
-   --arg purl "$PAYLOAD_URL" '
+   --arg purl "$PAYLOAD_URL" --arg cid "$COHORT_ID" --arg crank "$COHORT_RANK" --arg cn "$COHORT_N" \
+   --arg cprefix "$COHORT_PREFIX" '
   .task_id = $tid
   | .results_prefix = ($prefix + "/spawn")
   | .lifecycle.on_complete = "terminate"
@@ -225,6 +239,8 @@ jq --rawfile stub scripts/stub.sh --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
   | .env += {AK2_EXPECT_REGION: $expect, AK2_BUCKETS: $buckets, AK2_ALLOWED_BUCKETS: $allowed,
              AK2_S3_PREFIX: $prefix, AK2_RUN_ID: $run, AK2_GATE: $gate,
              AK2_PAYLOAD_URI: $puri, AK2_PAYLOAD_URL: $purl, AK2_PAYLOAD_SHA256: $psha}
+  | if $cid != "" then .env += {AK2_COHORT_ID: $cid, AK2_COHORT_PREFIX: $cprefix,
+        AK2_ENGINE_N: $cn, AK2_ENGINE_RANK: $crank, AK2_ENGINE_RENDEZVOUS: ($cprefix + "/rendezvous")} else . end
   | if .outputs then .outputs |= map(.destination |= gsub("\\$\\{AK2_OUT\\}"; $prefix + "/out")) else . end
 ' "$SPEC" > "$LIVE_SPEC" && write_resolved || die "could not resolve spec"
 cp "$SPEC" "$RUN_DIR/spec.json"
@@ -266,6 +282,12 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
     payload:{uri:$puri, sha256:$psha, bytes:($pbytes|tonumber)}, user_data:$ud,
     datasets:$ds, bucket_payer:$payer, manifest_created_at:$created
   }' > "$M" || die "could not write $M"
+if [ -n "$COHORT_ID" ]; then
+  mset_early() { local tmp; tmp=$(mktemp) && jq "$@" "$M" > "$tmp" && mv "$tmp" "$M"; }
+  mset_early --arg id "$COHORT_ID" --argjson r "$COHORT_RANK" --argjson n "$COHORT_N" --arg p "$COHORT_PREFIX" \
+    '.cohort = {id:$id, rank:$r, n:$n, prefix:$p, rendezvous:($p + "/rendezvous"), dir:("results/" + .gate + "/" + $id)}' ||
+    die "could not record the cohort in $M"
+fi
 # After launch a manifest write failure must not abandon the instance: record it, carry on,
 # and exit non-zero at the end.
 LATE_FAIL=0

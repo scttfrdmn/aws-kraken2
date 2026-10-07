@@ -1,0 +1,94 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-07T20:21:48Z] wrapper start
+spawn: [2026-10-07T20:21:48Z] stage-in start
+spawn: [2026-10-07T20:21:48Z] stage-in done rc=0
+spawn: [2026-10-07T20:21:48Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 2e2d86307c7dd3577d9ecc6bbfe5ba07ff93377866caf708336eaf72c8921fcd); exec
+ak2: log tee up
+ak2-phase	2026-10-07T20:21:48Z	1791404508	preamble	no
+ak2: [2026-10-07T20:21:48Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-07T20:21:48Z] after set +e $-=hBc
+ak2: [2026-10-07T20:21:48Z] gate=g3 run=20261007-202107-5faa28c-1b65-n8-r5
+ak2: [2026-10-07T20:21:48Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-07T20:21:48Z] imds region=us-west-2 az=us-west-2a instance=i-03df17fde65a2ae7c type=x8g.4xlarge ami=ami-09325776a00699513
+ak2: [2026-10-07T20:21:48Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-07T20:21:49Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-07T20:21:49Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-07T20:21:49Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-07T20:21:49Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-07T20:21:49Z] region assert passed
+ak2: [2026-10-07T20:21:49Z] drop_caches_ok=true
+ak2: [2026-10-07T20:21:50Z] preamble done; spec body starts
+ak2-phase	2026-10-07T20:21:50Z	1791404510	body	no
+ak2: [2026-10-07T20:21:50Z] cohort 20261007-202107-5faa28c-1b65-n8 rank 5 of 8, commit 5faa28c; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205, reads aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads
+ak2-phase	2026-10-07T20:21:50Z	1791404510	setup	no
+ak2: [2026-10-07T20:22:18Z] built 5faa28c5f02b24513cfbb005519aa414a492dcb7; go version go1.27.1 linux/arm64; ip 172.31.22.103; nproc 16; mem_gib 247
+ak2-phase	2026-10-07T20:22:18Z	1791404538	fetch	no
+ak2: [2026-10-07T20:22:19Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-07T20:22:19Z] RODA opts.k2d bytes=56 sha256=719d8210ab7fa1ac97d9f7647ec5b9485935265be767fe4ce056f20bed513b0b
+ak2: [2026-10-07T20:22:20Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-07T20:22:21Z] RODA taxo.k2d bytes=179150665 sha256=6eacc5ef55db3cb2d05ebd85f7f2eac529e3d325087af58cee98d5615b27e53e
+ak2: [2026-10-07T20:22:21Z] pushed out/rank5/head-hash.k2d.json
+ak2: [2026-10-07T20:22:21Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800 version=null
+ak2: [2026-10-07T20:22:22Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000.SOURCE -> /home/ec2-user/ak2/reads/SRR062634_8000000.SOURCE (403 bytes)
+ak2: [2026-10-07T20:22:22Z] staged aws-kraken2/data/reads/SRR062634_8000000.SOURCE bytes=403 sha256=b876392120fdf2feac00e45502dcb444259d14eeb49ec4f502f05613a74928a9 object-metadata=b876392120fdf2feac00e45502dcb444259d14eeb49ec4f502f05613a74928a9
+ak2: [2026-10-07T20:22:25Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_1.fq -> /home/ec2-user/ak2/reads/SRR062634_8000000_1.fq (2093755239 bytes)
+ak2: [2026-10-07T20:22:27Z] staged aws-kraken2/data/reads/SRR062634_8000000_1.fq bytes=2093755239 sha256=4adae422162ed57988a5b808ee761e54307d31c81e21f0988c1835cb722b598b object-metadata=4adae422162ed57988a5b808ee761e54307d31c81e21f0988c1835cb722b598b
+ak2: [2026-10-07T20:22:30Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_2.fq -> /home/ec2-user/ak2/reads/SRR062634_8000000_2.fq (2093755239 bytes)
+ak2: [2026-10-07T20:22:32Z] staged aws-kraken2/data/reads/SRR062634_8000000_2.fq bytes=2093755239 sha256=ad320f634269e530a1f5c683bee8d212137e28da897aa40926d6b0420bc38728 object-metadata=ad320f634269e530a1f5c683bee8d212137e28da897aa40926d6b0420bc38728
+ak2: [2026-10-07T20:22:32Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000.SOURCE -> /home/ec2-user/ak2/reads/ERR478965_200000.SOURCE (400 bytes)
+ak2: [2026-10-07T20:22:33Z] staged aws-kraken2/data/reads/ERR478965_200000.SOURCE bytes=400 sha256=19128ba212d865300b586dcb73d4e9543137f500e03f48cde8ce33c7e2fb3d89 object-metadata=19128ba212d865300b586dcb73d4e9543137f500e03f48cde8ce33c7e2fb3d89
+ak2: [2026-10-07T20:22:33Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_1.fq.gz -> /home/ec2-user/ak2/reads/ERR478965_200000_1.fq.gz (13868909 bytes)
+ak2: [2026-10-07T20:22:33Z] staged aws-kraken2/data/reads/ERR478965_200000_1.fq.gz bytes=13868909 sha256=12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9 object-metadata=12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9
+ak2: [2026-10-07T20:22:34Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/ERR478965_200000_2.fq.gz -> /home/ec2-user/ak2/reads/ERR478965_200000_2.fq.gz (13801673 bytes)
+ak2: [2026-10-07T20:22:34Z] staged aws-kraken2/data/reads/ERR478965_200000_2.fq.gz bytes=13801673 sha256=64b73612b72ce90efcd8af1e3a8ae85a92227b6367a136936ea3307c65bf99ae object-metadata=64b73612b72ce90efcd8af1e3a8ae85a92227b6367a136936ea3307c65bf99ae
+ak2: [2026-10-07T20:22:39Z] subset SRR062634_2000000: 73b7b8af194f9d8e0082b62532f3d140a44e1d5848b2cded1ce54276c497ffd6 bdd4b2d9a1e984dfa342bd104b92dec71f76171bc7753074d98d1d84a9f91e6b 
+ak2-phase	2026-10-07T20:22:39Z	1791404559	case-SRR062634_2000000-fq	no
+ak2: [2026-10-07T20:22:39Z] case SRR062634_2000000-fq: /home/ec2-user/ak2/repo/bin/aws-kraken2 --db /home/ec2-user/ak2/db/roda --threads 16 --paired --output <cohort>/out/SRR062634_2000000-fq/output.txt --report <local> /home/ec2-user/ak2/reads/SRR062634_2000000_1.fq /home/ec2-user/ak2/reads/SRR062634_2000000_2.fq
+ak2: [2026-10-07T20:24:16Z] case SRR062634_2000000-fq rank 5 exit 0
+[SRR062634_2000000-fq] ak2-timing	taxo	0.000072	0.101072	87847	0	0.040387	0.074549
+[SRR062634_2000000-fq] ak2-timing	shard-load-5	0.168402	81.029781	78049	0	74.254641	72.908322
+[SRR062634_2000000-fq] ak2-timing	rendezvous	81.680388	8.294912	118	0	0.001002	0.010108
+[SRR062634_2000000-fq] ak2-timing	connect	89.975323	0.013036	553	0	0.000000	0.006437
+[SRR062634_2000000-fq] ak2-timing	hash	0.101188	89.887189	80928	0	74.269357	72.925809
+[SRR062634_2000000-fq] ak2-timing	setup	89.988382	0.000037	3	0	0.000000	0.000039
+[SRR062634_2000000-fq] ak2-timing	classify	89.988423	2.018017	349069	0	2.778705	0.390484
+[SRR062634_2000000-fq] ak2-timing	barrier	92.007516	4.594987	366	0	0.077231	0.000000
+[SRR062634_2000000-fq] ak2-engine	shard	0	n	8	lo	185795573713	hi	222954688456	tail	302	full	false	empty_at	37159114743	keys	11140062	batches	63	probe_s	0.276162	tail_probes	0	wrap_probes	0
+[SRR062634_2000000-fq] ak2-engine	node	rank	5	n	8	emitter	false	blocks_cut	63	blocks_mine	8	read_s	0.457002	window_wait_s	0.000001	send_s	11.377763	sent_bytes	40113204	emit_wait_s	0.000000	emit_s	0.000000
+[SRR062634_2000000-fq] ak2-engine	rendezvous	requests	17
+[SRR062634_2000000-fq] ak2-engine	load	seconds	81.029778	requests	2233	retries	0	bytes	148636525780
+[SRR062634_2000000-fq] ak2-engine	route	transport	nodes	calls	8	keys	11512527	batches	64	route_s	0.137162	wait_s	0.092321	gather_s	0.045197
+[SRR062634_2000000-fq] ak2-engine	worker	scan_s	1.149144	lookup_s	0.274687	classify_s	0.895968
+[SRR062634_2000000-fq] ak2-timing	unmap	96.602571	0.275257	1	0	0.007765	0.266723
+[SRR062634_2000000-fq] ak2-timing	total	0.000001	96.877870	518264	0	77.174201	73.658211
+[SRR062634_2000000-fq stderr] Loading database information...ak2-timing	opts	0.000040	0.000025	4	0	0.000027	0.000000
+[SRR062634_2000000-fq stderr]  done.
+ak2: [2026-10-07T20:24:16Z] pushed out/rank5/eng-SRR062634_2000000-fq.stderr
+ak2-phase	2026-10-07T20:24:16Z	1791404656	case-ERR478965_200000-gz	no
+ak2: [2026-10-07T20:24:16Z] case ERR478965_200000-gz: /home/ec2-user/ak2/repo/bin/aws-kraken2 --db /home/ec2-user/ak2/db/roda --threads 16 --paired --output <cohort>/out/ERR478965_200000-gz/output.txt --report <local> /home/ec2-user/ak2/reads/ERR478965_200000_1.fq.gz /home/ec2-user/ak2/reads/ERR478965_200000_2.fq.gz
+ak2: [2026-10-07T20:25:47Z] case ERR478965_200000-gz rank 5 exit 0
+[ERR478965_200000-gz] ak2-timing	taxo	0.000069	0.111977	87880	0	0.051614	0.075063
+[ERR478965_200000-gz] ak2-timing	shard-load-5	0.208372	82.973838	78099	0	108.985322	122.251094
+[ERR478965_200000-gz] ak2-timing	rendezvous	83.717340	3.518143	83	0	0.002126	0.002384
+[ERR478965_200000-gz] ak2-timing	connect	87.235512	2.073345	15	0	0.001508	0.001691
+[ERR478965_200000-gz] ak2-timing	hash	0.112104	89.196780	80456	0	109.001549	122.257305
+[ERR478965_200000-gz] ak2-timing	setup	89.308889	0.000046	3	0	0.000033	0.000037
+[ERR478965_200000-gz] ak2-timing	classify	89.308939	0.319187	70667	0	0.522707	0.039394
+[ERR478965_200000-gz] ak2-timing	barrier	89.628547	0.404382	3	0	0.000081	0.000090
+[ERR478965_200000-gz] ak2-engine	shard	0	n	8	lo	185795573713	hi	222954688456	tail	302	full	false	empty_at	37159114743	keys	954710	batches	6	probe_s	0.030586	tail_probes	0	wrap_probes	0
+[ERR478965_200000-gz] ak2-engine	node	rank	5	n	8	emitter	false	blocks_cut	6	blocks_mine	1	read_s	0.160696	window_wait_s	0.000000	send_s	0.001699	sent_bytes	2039876	emit_wait_s	0.000000	emit_s	0.000000
+[ERR478965_200000-gz] ak2-engine	rendezvous	requests	10
+[ERR478965_200000-gz] ak2-engine	load	seconds	82.973835	requests	2233	retries	0	bytes	148636525780
+[ERR478965_200000-gz] ak2-engine	route	transport	nodes	calls	1	keys	842946	batches	8	route_s	0.013997	wait_s	0.008886	gather_s	0.005825
+[ERR478965_200000-gz] ak2-engine	worker	scan_s	0.078647	lookup_s	0.028710	classify_s	0.042389
+[ERR478965_200000-gz] ak2-timing	unmap	90.032974	0.270851	2	0	0.000000	0.271018
+[ERR478965_200000-gz] ak2-timing	total	0.000001	90.303863	239094	0	109.576313	122.643244
+[ERR478965_200000-gz stderr] Loading database information...ak2-timing	opts	0.000037	0.000024	3	0	0.000023	0.000000
+[ERR478965_200000-gz stderr]  done.
+ak2: [2026-10-07T20:25:47Z] pushed out/rank5/eng-ERR478965_200000-gz.stderr
+ak2: [2026-10-07T20:25:47Z] rank 5 done: 0 failed case(s)
+spawn: [2026-10-07T20:25:48Z] command exit rc=0

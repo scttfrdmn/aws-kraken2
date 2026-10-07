@@ -198,9 +198,11 @@ unexpected-file and control rules. Our outputs for N go to `<case>/n<N>/`.
   the informational stderr comparison. `checks.tsv` adds, per N > 1, the number of real lookups
   whose probe ended in a shard's overlap tail (the lookups a shard without its tail would get
   wrong), and how many of them ended in the wrapped part of the last shard's tail. These rows
-  are informational. Real reads reach a tail only rarely: at the first run, 15 to 17 lookups per
-  N on Viral and none on Standard-8. So the real-read matrix alone cannot see a tail defect, and
-  two tests carry that evidence:
+  are informational. Real reads reach a tail only rarely: in the runs at a6894c2, 15 to 17
+  lookups per N > 2 on Viral and none at N = 2. On Standard-8, `tail_probes` is 0 at every N, so
+  there the read-level oracle cannot show the tail path is correct at all. A generated
+  `engine resolution` row in `checks.tsv` (and so in `summary.md`) states this from each run's own
+  numbers. The evidence for the tail path is two tests, not the read matrix:
   - `TestRealDBBoundaries` (`internal/engine/realdb_test.go`, run by `make test` when the
     pinned databases are present) works on the real Viral and Standard-8 tables. It inverts
     fmix64 to build lookups whose home slots cover every cell of the run crossing each shard
