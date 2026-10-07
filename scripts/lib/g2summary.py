@@ -132,11 +132,15 @@ def main():
     # drops the cache, so a warm rung measures its own input's cached table pages only if the
     # rung executed just before it (a profile rung included) read the same file set: the same
     # input and the same database copy (the NVMe file for load/mmap/madv, the tmpfs for ram).
-    # ram is exempt: drop_caches does not touch tmpfs. A warm rung after its own cold rung is
-    # still physically cold when that cold rung's working set (major faults x 4 KiB) exceeded
-    # 80% of RAM: the cache could not keep it.
+    # ram is exempt: drop_caches does not touch tmpfs. Even after a rung on the same file set, a
+    # warm rung is physically cold when the cache could not keep that rung's data:
+    #   - the preceding rung (cold or warm) read more from disk than 80% of RAM (disk read bytes,
+    #     which include read-around, or major faults x 4 KiB, whichever is larger), or
+    #   - the warm rung itself took many major faults: more than 10% of RAM's worth (x 4 KiB), or
+    #     more than 10% of the preceding rung's faults, or it timed out.
     mem_b = float((man.get("host") or {}).get("mem_kib") or 0) * 1024
     dbclass = lambda r: "tmpfs" if r["regime"].startswith("ram") else "nvme"
+    majf = lambda r: ((r.get("vmstat") or {}).get("pgmajfault") or 0)
     prev = None
     for r in runs:
         if r.get("skipped"):
@@ -150,9 +154,16 @@ def main():
             elif prev["input"] != r["input"] or dbclass(prev) != dbclass(r):
                 why = "follows %s on %s: the cache held another file set" % (prev.get("tag"), prev["input"])
             else:
-                ws = ((prev.get("vmstat") or {}).get("pgmajfault") or 0) * 4096.0
-                if prev["state"] == "cold" and mem_b and ws > 0.8 * mem_b:
-                    why = "physically cold: the preceding cold rung's working set %.0f GiB exceeds 80%% of RAM (%.0f GiB)" % (ws / 2**30, mem_b / 2**30)
+                ws = max(float(prev.get("disk_rd_bytes") or 0), majf(prev) * 4096.0)
+                own = majf(r)
+                if mem_b and ws > 0.8 * mem_b:
+                    why = ("physically cold: the preceding rung %s read %.0f GiB from disk, more than 80%% of RAM "
+                           "(%.0f GiB), so the cache could not keep it" % (prev.get("tag"), ws / 2**30, mem_b / 2**30))
+                elif r.get("timed_out"):
+                    why = "physically cold: the warm rung itself timed out"
+                elif mem_b and (own * 4096.0 > 0.1 * mem_b or (majf(prev) >= 1000 and own > 0.1 * majf(prev))):
+                    why = ("physically cold: the warm rung took %d major faults itself (the preceding rung %d)"
+                           % (own, majf(prev)))
             r["warm_invalid"] = why
         prev = r
     excluded = [r for r in runs if r.get("kind") == "run" and not r.get("skipped") and r.get("warm_invalid")]
@@ -190,7 +201,7 @@ def main():
         rows.append(row)
         ss = [sig(r) for r in ok] or [sig(r) for r in rs]
         srow = {"regime": key[0], "input": key[1], "state": key[2], "threads": T, "n": len(ss),
-                "blocks_ok": (B >= 2 * T) if B else None, "busy_max": min(T, B) if B else T}
+                "blocks_ok": (B >= 2 * T) if B else None, "busy_max": min(T, B) if B else T, "quant": quant}
         for k in ss[0].keys():
             srow[k] = med([s.get(k) for s in ss])
         sigrows.append(srow)
@@ -286,20 +297,77 @@ def main():
                 e = (g - 1) / (tr - 1)
                 eff = f(e, 2)
                 sep = (r["classify_max"] < rs[i - 1]["classify_min"]) or (r["classify_min"] > rs[i - 1]["classify_max"])
-                res = "yes" if sep else "no (ranges overlap)"
+                if min(r["n"], rs[i - 1]["n"]) < 2:
+                    sep = None
+                    res = "not resolvable (n=1)"
+                else:
+                    res = "yes" if sep else "no (ranges overlap)"
+                # The best gain block quantization allows: ceil(B/T1) / ceil(B/T2) block rounds.
+                B = r["blocks"]
+                qi = (math.ceil(B / rs[i - 1]["threads"]) / math.ceil(B / r["threads"])) if B else None
                 if knee is None and e < 0.5:
-                    knee = (rs[i - 1]["threads"], r["threads"], e, sep, r["blocks_ok"],
-                            max(r["quant"] or 1, rs[i - 1]["quant"] or 1))
+                    knee = (rs[i - 1]["threads"], r["threads"], e, sep, r["blocks_ok"], qi, g)
             md.append("| %d | %s [%s-%s] | %s | %s | %s | %s | %s |" % (
                 r["threads"], f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]), f(r["pairs_per_s"], 0),
                 f(sp, 2), eff, res, r["blocks_ok"]))
         if knee:
-            qn = ("; **coincides with block quantization** (ceil(B/T)/(B/T) up to %.2f, or < 2 blocks per thread): "
-                  "not a scaling limit of the code" % knee[5]) if (knee[5] > 1.1 or knee[4] is False) else ""
+            # Coincides with quantization when the quantized ideal itself is small (the step could
+            # not gain much) and the observed gain reached at least 90% of it.
+            qi, g = knee[5], knee[6]
+            qn = ""
+            if qi is not None and qi < (knee[1] / knee[0]) * 0.75 and g >= 0.9 * qi:
+                qn = ("; **coincides with block quantization**: the quantized ideal gain ceil(B/T1)/ceil(B/T2) is %.2f "
+                      "and the observed gain %.2f" % (qi, g))
+            elif qi is not None:
+                qn = "; quantized ideal gain %.2f, observed %.2f: not explained by quantization" % (qi, g)
+            rs_txt = {True: "resolved", False: "NOT resolved: ranges overlap", None: "not resolvable: n=1 at an end of the step"}[knee[3]]
             md.append("\nKnee: first step below 50%% efficiency is T=%d -> %d (efficiency %.2f; %s; blocks/T >= 2 at %d: %s%s).\n" % (
-                knee[0], knee[1], knee[2], "resolved" if knee[3] else "NOT resolved: ranges overlap", knee[1], knee[4], qn))
+                knee[0], knee[1], knee[2], rs_txt, knee[1], knee[4], qn))
         else:
             md.append("\nNo step below 50% efficiency on this ladder.\n")
+
+    # ---- execution order and drift ----
+    # Rungs run in plan order, so a cell measured late in a run differs from an early one by
+    # whatever drifted in between. load_s (each load reads the same 1.19 TB) is a drift probe:
+    # when it rose by more than 1.5x over the run, a tuned cell that ran entirely after its base
+    # cell, with no interleaved base re-run, is confounded with the drift.
+    pos = {id(r): i + 1 for i, r in enumerate(done)}
+    cellpos = {}
+    for r in done:
+        cellpos.setdefault((r["regime"], r["input"], r["state"], r["threads"]), []).append(pos[id(r)])
+    drift = None
+    lr = [r for r in done if r.get("load_s") and r["regime"].startswith("load")]
+    if len(lr) >= 6:
+        a, b = med([r["load_s"] for r in lr[:3]]), med([r["load_s"] for r in lr[-3:]])
+        if a and b / a > 1.5:
+            drift = (a, b, min(r["load_s"] for r in lr), max(r["load_s"] for r in lr))
+    confounded = {}
+    if drift:
+        for key, ps in cellpos.items():
+            if "[" not in key[0]:
+                continue
+            bk = (key[0].split("[")[0],) + key[1:]
+            bp = cellpos.get(bk)
+            if bp and min(ps) > max(bp):
+                confounded[key] = bk
+    md.append("## Execution order and drift\n")
+    md.append("Rung order is plan order (position 1 = first completed rung). The *Repeated plan lines* column names "
+              "cells whose reps came from separate plan lines: their tags all end in -r1, and their rep order is the "
+              "execution order shown.\n")
+    if drift:
+        md.append("**Drift:** load_s of the `load` rungs rose from a median %.1f s (first 3) to %.1f s (last 3), range "
+                  "%.1f-%.1f s, over the run. Cells that ran entirely after their base cell, with no interleaved base "
+                  "re-run, are **confounded with this drift**: their difference from the base is not attributable to "
+                  "the tune, and a slower result shows no gain rather than a measured loss.\n" % drift)
+    md.append("| cell | positions | median load_s | repeated plan lines | drift |\n|---|---|---|---|---|")
+    for key in sorted(cellpos, key=lambda k: min(cellpos[k])):
+        rs_ = [r for r in done if (r["regime"], r["input"], r["state"], r["threads"]) == key]
+        lines_ = sorted(set(r.get("line") for r in rs_))
+        md.append("| %s / %s / %s / T=%d | %s | %s | %s | %s |" % (
+            key[0], key[1], key[2], key[3], ",".join(str(x) for x in cellpos[key]),
+            f(med([r.get("load_s") for r in rs_])), ("L" + ", L".join(str(x) for x in lines_)) if len(lines_) > 1 else "-",
+            ("confounded (ran after %s)" % confounded[key][0]) if key in confounded else "-"))
+    md.append("")
 
     # gz vs fq
     md.append("## gzip vs plain input (single-stream gzip candidate)\n")
@@ -314,10 +382,11 @@ def main():
             continue
         seen_gz = True
         sep = (r["classify_min"] > q["classify_max"]) or (r["classify_max"] < q["classify_min"])
+        sept = ("not resolvable (n=1)" if min(r["n"], q["n"]) < 2 else ("yes" if sep else "no"))
         md.append("| %s | %s | %d | %s | %s [%s-%s] | %s [%s-%s] | %s | %s |" % (
             rg, st, T, inp[:-3], f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]),
             f(q["classify_med"]), f(q["classify_min"]), f(q["classify_max"]), f(r["classify_med"] / q["classify_med"], 3),
-            "yes" if sep else "no"))
+            sept))
     if not seen_gz:
         md.append("| (no cell ran both -gz and -fq: the gzip candidate is unresolved here) | | | | | | | |")
     md.append("")
@@ -346,9 +415,18 @@ def main():
         if "thp=never" in rg_ and in_.endswith("-fq"):
             q = byk.get((rg_.replace("thp=never", "thp=always"), st_, T_, in_))
             if q and r["classify_med"] and q["classify_med"]:
+                csep = (r["classify_min"] > q["classify_max"]) or (r["classify_max"] < q["classify_min"])
+                ia = ipc_reps.get((rg_, in_, st_), {}).get(T_, [])
+                ib = ipc_reps.get((rg_.replace("thp=never", "thp=always"), in_, st_), {}).get(T_, [])
+                isep = bool(ia and ib) and (max(ia) < min(ib) or min(ia) > max(ib))
                 contrast.setdefault(rg_.split("[")[0], []).append(
-                    "%s T=%d: 4 KiB pages (thp=never) %s s vs THP %s s (x%s)" % (in_, T_, f(r["classify_med"]), f(q["classify_med"]),
-                                                                               f(r["classify_med"] / q["classify_med"], 2)))
+                    "%s T=%d: 4 KiB pages (thp=never) %s s [%s-%s] vs THP %s s [%s-%s] (x%s; classify ranges %s); "
+                    "per-rep IPC %s vs %s (%s)" % (
+                        in_, T_, f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]),
+                        f(q["classify_med"]), f(q["classify_min"]), f(q["classify_max"]),
+                        f(r["classify_med"] / q["classify_med"], 2), "separated" if csep else "overlap",
+                        ",".join(f(x, 2) for x in sorted(ia)) or "-", ",".join(f(x, 2) for x in sorted(ib)) or "-",
+                        "separated: the page-size effect is resolved in IPC" if isep else "not separated"))
 
     # mechanical verdicts per regime
     md.append("## Candidates per regime (mechanical reading; see docs/g2.md for the rules)\n")
@@ -378,6 +456,8 @@ def main():
                 verdict = "seen: outstanding I/O = blocked threads at every T, so queue depth is capped by the thread count"
             elif rat and all(x > 1.25 for x in rat):
                 verdict = "not seen: aqu-sz exceeds the blocked threads (asynchronous read-around I/O), so threads do not cap the queue"
+            elif not rat:
+                verdict = "unresolved"
             else:
                 verdict = "mixed"
             md.append("| %s | sync faults cap NVMe QD (aqu-sz ~ T x D) | %s: %s | %s |" % (
@@ -406,6 +486,16 @@ def main():
                      "on the wrapper's gzip pipes (see the gz/fq table); not lock contention in classify") if grow else "not seen"
             else:
                 v = "seen" if grow else "not seen"
+                cq = [s_ for s_ in sm if (s_.get("quant") or 1) > 1.1]
+                cd = [s_ for s_ in sm if (lk[0], lk[1], lk[2], s_["threads"]) in confounded]
+                if grow and (cq or cd):
+                    why_ = []
+                    if cq:
+                        why_.append("end-of-round idle threads (quantization %s at T=%s)" % (
+                            ",".join(f(s_["quant"], 2) for s_ in cq), ",".join(str(s_["threads"]) for s_ in cq)))
+                    if cd:
+                        why_.append("drift (the cell ran after its base cell)")
+                    v = "seen but confounded by " + " and ".join(why_)
             md.append("| %s | critical sections | %s: %s | yes (>= 50 samples at >= 2 T) |" % (rg, v, ev))
         else:
             md.append("| %s | critical sections | too few sampler samples | no |" % rg)
@@ -416,7 +506,8 @@ def main():
             ipcs = [s["ipc"] for s in pm]
             walks = [s["dtlb_walk_pki"] for s in pm if s["dtlb_walk_pki"] is not None]
             # resolution: the IPC spread across reps of one cell bounds the smallest detectable change
-            spread = max([(max(x) - min(x)) for x in ipc_reps.get(lk, {}).values() if len(x) > 1] or [0])
+            spreads = [(max(x) - min(x)) for x in ipc_reps.get(lk, {}).values() if len(x) > 1]
+            spread = max(spreads or [0])
             ev = "IPC %s..%s, dTLB walks %s..%s per kinst over T=%d..%d" % (
                 f(min(ipcs), 2), f(max(ipcs), 2), f(min(walks) if walks else None, 2), f(max(walks) if walks else None, 2),
                 pm[0]["threads"], pm[-1]["threads"])
@@ -426,7 +517,8 @@ def main():
                       "whether DRAM/TLB is a lever at all (absolute cost) needs a page-size contrast: %s | "
                       "%s |" % (rg, "flat (no growth with T)" if flat else "changes with T", ev,
                                 ("; ".join(ctr)) if ctr else "none in this run, so unresolved",
-                                "yes for growth with T (IPC rep spread %s; changes above max(spread, 0.10) resolve)" % f(spread, 2)))
+                                ("yes for growth with T (IPC rep spread %s measured; changes above max(spread, 0.10) resolve)" % f(spread, 2))
+                                if spreads else "assumed: every cell has n=1, so the rep spread is not measured; 0.10 is assumed"))
         else:
             md.append("| %s | DRAM/TLB limits | no perf counters | no |" % rg)
         gz = [(k, r) for k, r in byk.items() if k[0] == lk[0] and k[1] == lk[2] and k[3] == lk[1]

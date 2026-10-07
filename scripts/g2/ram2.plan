@@ -8,7 +8,7 @@
 #   - the page-size contrast at fq T = 64: THP never (4 KiB pages) vs THP always;
 #   - upstream's equivalent host tune: THP enabled=always plus numactl --interleave=all (the
 #     table spread evenly over both nodes), fq T = 64 and 96, gz T = 8.
-# Each rung loads the 1.19 TB table (about 50 s; the page cache cannot keep the file beside the
+# Each rung loads the 1.19 TB table (32-50 s on a fresh box; in results/g2/20261007-070143-699c0c0 it rose to 240-300 s over the run, see that summary's drift note; the page cache cannot keep the file beside the
 # resident table, so every load reads NVMe). Last: a perf record of the load itself, to see why
 # it takes 50 s at any K2_DB_READ_THREADS.
 note #22 load regime n=3: host default, uninstrumented control, THP never vs always, THP always + numactl --interleave=all; perf record of the load
