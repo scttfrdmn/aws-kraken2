@@ -298,5 +298,46 @@ Exit status: the task's exit code, or one of these harness codes:
   `aws`.
 - `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
 
+## Multi-node runs: make run … NODES=n
+
+```bash
+make run GATE=g3 SPEC=runs/g3-std8.json NODES=2            # a cohort of 2 coordinated instances
+make run GATE=g3 SPEC=runs/g3-std8.json NODES=2 DRY_RUN=1  # checks + rank 0's plan, launch nothing
+```
+
+`NODES` makes `make run` call `scripts/run-multi.sh`, which runs `scripts/run.sh` once per member
+of the cohort, in parallel. Each member is a complete single run, with everything above: its own
+`results/<gate>/<cohort>-r<k>/`, manifest, log stream, TTL, `cost_limit`, region and Payer
+asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
+- **Identity.** The cohort id is `<UTC>-<sha7>-n<n>`. Member k's run id is `<cohort>-r<k>`, and
+  its manifest has `.cohort = {id, rank, n, prefix, rendezvous, dir}`.
+- **Engine env.** run.sh adds these from `AK2_COHORT_*`; a spec cannot set them:
+  - `AK2_ENGINE_N`, `AK2_ENGINE_RANK`;
+  - `AK2_ENGINE_RENDEZVOUS` = `<cohort prefix>/rendezvous`;
+  - `AK2_COHORT_ID`, `AK2_COHORT_PREFIX` = `s3://<results bucket>/aws-kraken2/<gate>/<cohort>`.
+
+  The spec body passes them to `bin/aws-kraken2` ([engine.md](engine.md)). The body takes the
+  launch commit from the cohort id (`cut -d- -f3`), not from `AK2_RUN_ID`.
+- **Preconditions,** checked before any launch:
+  - the spec pins `resources.instance_type` and `placement.availability_zone`, so every member is
+    the same box in one AZ;
+  - n × `cost_limit` ≤ `AK2_MAX_COST_USD`;
+  - the region's default-VPC default security group admits itself (all traffic, or all TCP).
+    `spawn task run` puts every instance in that group, and spawn adds no rules (spawn
+    v0.123.0, `cmd/task.go` `taskLaunchConfig`, `pkg/aws/client.go` `Launch`). So without that
+    rule members could not reach each other. us-west-2's group `sg-5059b179` has the stock
+    self-referencing rule. It also admits SSH and ICMP from anywhere; that is account config,
+    and the engine's ports are reachable only from inside the group.
+- **Rendezvous reads.** The instance role has only `PutObject` on the results bucket, so the spec
+  lists the bucket in `resources.s3_read_write`; spawn's grant is bucket-wide. That is how
+  members read each other's rendezvous records.
+- **After the members:** the cohort prefix (rendezvous records and the emitter's outputs) is
+  fetched to `results/<gate>/<cohort>/prefix/`. Unfinished multipart uploads under it are aborted
+  from the launch host, because the instance role cannot abort them. The prefix is tagged.
+  `results/<gate>/<cohort>/cohort.json` records the members (run id, exit, instance, AZ, cost)
+  and `cost_usd`, the sum of the members' costs. Then the **global** `make orphans` runs. Each
+  member's driver output is in `rank-<k>.run.log`.
+- **Exit:** the worst member exit; 3 if orphans were found; 4 if the prefix could not be fetched.
+
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
 rebase commits that a run under `results/` cites. Merge them as they are.

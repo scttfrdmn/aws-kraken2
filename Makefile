@@ -91,8 +91,10 @@ sortfuzz:
 ami:
 	scripts/ami.sh
 
+# NODES=<n>: a cohort of n coordinated instances, one run.sh run each (scripts/run-multi.sh;
+# docs/run.md, "Multi-node runs").
 run:
-	scripts/run.sh "$(GATE)" "$(SPEC)"
+	$(if $(NODES),scripts/run-multi.sh "$(GATE)" "$(SPEC)" "$(NODES)",scripts/run.sh "$(GATE)" "$(SPEC)")
 
 orphans:
 	scripts/orphans.sh
