@@ -1,0 +1,145 @@
+{
+  "gate": "g1",
+  "what": "make oracle-engine: upstream kraken2 vs bin/aws-kraken2 through the sharded engine at each N, byte-identity (Law 1, #24)",
+  "invocation": "scripts/oracle.sh all",
+  "case_filter": "",
+  "threads": 8,
+  "commit": "30df696dc264a9b781a5f66c234d4c09f4d3ba3b",
+  "dirty": false,
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+  "upstream_describe": "2.17.2-20-g2731b35",
+  "upstream": {
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35",
+    "classify_sha256": "765d9fd606ca48c1a533762e59877359c9f7a8e0c8c1fda850aafb8fdefc6681",
+    "kraken2_sha256": "552c39a4aa54ca56af49d5d61a7627ede37238c67978930eb020f8e7b567263f",
+    "build": "pin 2731b35f7abb26ec926517274f3d87e78d42fd76\ndescribe 2.17.2-20-g2731b35\ncxx g++-16 (Homebrew GCC 16.2.0) 16.2.0\nversion Kraken version 2.17.1\nbuilt 2026-10-06T00:14:07Z Darwin arm64\n",
+    "compiler": "g++-16 (Homebrew GCC 16.2.0) 16.2.0"
+  },
+  "ours": {
+    "aws_kraken2_sha256": "b4736fd1e47ac3f1a19cae58d176d5bd934e7a325bba5634f7e80536e5c41e6b",
+    "go": "go version go1.27.1 darwin/arm64"
+  },
+  "host": {
+    "os": "Darwin",
+    "arch": "arm64",
+    "kernel": "27.0.0",
+    "model": "Mac16,6",
+    "canonical_platform": false,
+    "note": "NOT the canonical platform (Linux aarch64): development evidence only"
+  },
+  "gzip": {
+    "version": "gzip 1.12",
+    "path": "/tmp/gnugzip/inst/bin/gzip"
+  },
+  "db": {
+    "name": "standard8",
+    "dir": "k2_standard_08_GB_20260626",
+    "source": "source s3://genome-idx/kraken/k2_standard_08_GB_20260626.tar.gz\netag \"815577bbfd245c6e337f1bea41fae968-709\"\nfetched 2026-10-06T01:19:22Z\n",
+    "etag": "815577bbfd245c6e337f1bea41fae968-709",
+    "opts": {
+      "k": 35,
+      "l": 31,
+      "spaced_seed_mask": 4611686018212639539,
+      "toggle_mask": 16392584516609989165,
+      "dna_db": true,
+      "dna_db_byte": 1,
+      "minimum_acceptable_hash_value": 17113767929583441920,
+      "revcom_version": 1,
+      "db_version": 0,
+      "db_type": 0,
+      "file_size": 64,
+      "absent_fields": [],
+      "layout": "v2.1.0+",
+      "padding_fields": [],
+      "spaced_seed_mask_hex": "0x3ffffffff3333333",
+      "toggle_mask_hex": "0xe37e28c4271b5a2d"
+    }
+  },
+  "reads": [
+    {
+      "stem": "SRR062634_200000",
+      "source": "accession SRR062634\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz\nsha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq\nsha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq\nfetched 2026-10-06T00:20:27Z\n"
+    },
+    {
+      "stem": "ERR478965_200000",
+      "source": "accession ERR478965\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_2.fastq.gz\nsha256 385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be ERR478965_200000_1.fq\nsha256 71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 ERR478965_200000_2.fq\nfetched 2026-10-06T00:29:07Z\n"
+    },
+    {
+      "stem": "SRR28305653_200000",
+      "source": "accession SRR28305653\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/053/SRR28305653/SRR28305653_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/053/SRR28305653/SRR28305653_2.fastq.gz\nsha256 ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946 SRR28305653_200000_1.fq\nsha256 d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a SRR28305653_200000_2.fq\nfetched 2026-10-06T00:32:45Z\n"
+    }
+  ],
+  "variants": [
+    {
+      "file": "slash_1.fq",
+      "sha256": "14e6006ea97720359ba35d310af4f851402fbac7a9aa33477687bd124eea0b89"
+    },
+    {
+      "file": "slash_2.fq",
+      "sha256": "e361fe333729f87ef4eac6c06df927c7a936a78a2182f6e4031d95eda8b39340"
+    },
+    {
+      "file": "short_1.fq",
+      "sha256": "1a9663887a8ce3891fa8ea727c3dc881d72562f7bf7d246e04605047ea3bd67f"
+    },
+    {
+      "file": "short_2.fq",
+      "sha256": "15b9006a8a8b47372a340e3972f7755fc1176465a854c2f7e8c59fa11af2ac11"
+    },
+    {
+      "file": "mates_1.fq",
+      "sha256": "385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be"
+    },
+    {
+      "file": "mates_2.fq",
+      "sha256": "d324ad4600e75f628650477aa66545871bd6e70cf0290da68a2ceb41f1ec2444"
+    },
+    {
+      "file": "fasta_1.fa",
+      "sha256": "28d9d1f452403ec4c62fa6ab2646e81c96ba0c0c7d8101b8d5129cde151eccb9"
+    },
+    {
+      "file": "fasta_2.fa",
+      "sha256": "ddbc48fd15719de67b72d55c3eb9f75bd25caed25512187436ceab8387bf465b"
+    },
+    {
+      "file": "fastaw_1.fa",
+      "sha256": "ca8bdecdb97ab2797b2f5f86172002f4f05750765bb7fe27fd6b514dc44f46a4"
+    },
+    {
+      "file": "fastaw_2.fa",
+      "sha256": "8dfab2c2e4ac786abf87999dc8bb0d7e259c12225e0b22a9a52aa9cb54383690"
+    },
+    {
+      "file": "bz_1.fq.bz2",
+      "sha256": "c43c53504ad84b2be254b9bf60067287886ae7b512180f4e1edef7eedf2f23bf"
+    },
+    {
+      "file": "bz_2.fq.bz2",
+      "sha256": "1bd573fda073a8e680b0868bd88ccc9ac978e506064b29223bb93918273a5f6c"
+    }
+  ],
+  "start": "2026-10-07T23:27:12Z",
+  "stop": "2026-10-07T23:30:48Z",
+  "cases": 305,
+  "cases_passed": 305,
+  "upstream_unexpected_exit": 0,
+  "cases_defined": 305,
+  "case_kinds_defined": 61,
+  "coverage_checks_failed": 0,
+  "failed": false,
+  "mode": "engine",
+  "engine": {
+    "shard_counts": [
+      1,
+      2,
+      3,
+      4,
+      8
+    ],
+    "transport": "procs",
+    "tail_cells": "default (engine.DefaultTail, 302)",
+    "note": "upstream ran once per case; ours ran once per shard count, each compared with it (one cases.tsv row per case and N)"
+  }
+}
