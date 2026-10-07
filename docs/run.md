@@ -153,7 +153,7 @@ So `command[2]` is `scripts/stub.sh`, about 1.9 KB, and the **payload** (`script
 - `run.sh` uploads the payload before launch and checks the uploaded sha256.
 - It passes the stub `AK2_PAYLOAD_URI`, `AK2_PAYLOAD_SHA256`, and `AK2_PAYLOAD_URL`, a presigned
   GET for that one object valid for TTL + 1 h. The instance needs no extra IAM grant on the
-  shared bucket.
+  results bucket.
 - The URL-bearing spec that spawn reads is a `mktemp` file outside `results/`, removed by an
   EXIT trap. `spec.resolved.json` under `results/` is only ever written with the URL redacted.
 - The stub checks that the URL is `https://<bucket>.s3.<region>.amazonaws.com/…` for the
@@ -243,7 +243,7 @@ On the instance, `preamble.sh` runs first:
 spec pushed, plus `requests.tsv`), `spawn/<task_id>/{completion.json,command.log,.exitcode}`,
 `completion.json`, `orphans.txt` (the post-run orphan check), `tables/phases.tsv`, `tables/requests.tsv`, plus `decoded/` and `tables/` from
 a post script. In S3, the same tree is under
-`s3://cookbook-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>/`.
+`s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>/`.
 
 Exit status: the task's exit code, or one of these harness codes:
 

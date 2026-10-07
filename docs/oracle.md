@@ -220,7 +220,7 @@ neither genome-idx nor ENA; every input comes from in-region copies in the resul
 Prerequisites, run once from a machine that has the fetched inputs:
 - `make stage-db DB=viral` and `make stage-db DB=standard8` (`scripts/stage-db.sh`) copy
   `hash.k2d`, `opts.k2d`, `taxo.k2d` and `SOURCE` from `.cache/db/<name>/` to
-  `s3://cookbook-942542972736-us-west-2/aws-kraken2/data/<name>/`. The pinned genome-idx objects
+  `s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/<name>/`. The pinned genome-idx objects
   are in us-east-1, so they cannot be declared for a us-west-2 run. `SOURCE` keeps the
   genome-idx origin and ETag.
 - `make stage-reads` (`scripts/stage-reads.sh`) copies the read subsets
