@@ -197,9 +197,19 @@ refuses if the result exceeds
    (`launch.json`) and tags the instance `ak2:project/gate/run-id`. **If spawn reports a region
    other than `AK2_REGION`, it terminates the instance, runs orphans and exits 2.** Otherwise it
    adds instance type and count, AMI, AZ, launch time and the truffle on-demand price.
-5. Tails `<run prefix>/log/run.log` every 15 s until `completion.json` appears, the instance
-   terminates, or TTL + 3 min passes. It then waits for `terminated` and copies the run prefix
-   into the run dir.
+5. Tails `<run prefix>/log/run.log` every 15 s until one of these happens:
+   - `completion.json` appears;
+   - the instance terminates, or EC2 no longer describes it (it has aged out);
+   - TTL + 3 min passes **while S3 answers that the record is absent**.
+
+   Every AWS call in the wait has connect and read timeouts. A failed call (as opposed to a
+   "not found") is logged with its reason, at most once a minute, and the poll backs off from
+   15 s up to 120 s. Each attempt is a fresh process, so DNS is re-resolved. If calls are
+   failing, the poll keeps going for up to `AK2_POLL_GRACE_S` (6 h) past TTL + 3 min. This
+   matters because the record may already be in S3: on 2026-10-07, a launch-host network outage
+   made three drivers give up at TTL + 3 min and spin in the termination wait. It then waits for
+   `terminated` (extending while calls fail) and copies the run prefix into the run dir, with 5
+   tries.
 6. Derives `tables/phases.tsv` and `tables/requests.tsv`, then finalises the manifest with the
    completion record, preflight, phases, requests, stop time (from `StateTransitionReason`),
    billed seconds and `cost_usd`. `cost_usd` is the truffle price × (terminate − launch) with a
@@ -256,9 +266,16 @@ Exit status: the task's exit code, or one of these harness codes:
 - `manifest.json` without `manifest_finalised_at`: run.sh was interrupted, or its finalisation
   failed. Run `make orphans` now. If the instance fields are null (DescribeInstances answered
   `InvalidInstanceID.NotFound` right after launch; run.sh now retries for 2 minutes), run
-  `scripts/refinalise.sh results/<gate>/<run-id>` within about an hour of termination. It fills
-  the null fields from DescribeInstances, applies run.sh's finalisation, and records itself in
-  `.manifest_repair`.
+  `scripts/refinalise.sh results/<gate>/<run-id>`. Run it the same way when the driver died or
+  its fetch failed. It:
+  - fetches and tags the run prefix;
+  - derives `tables/`;
+  - fills only null fields (from DescribeInstances while EC2 still describes the instance,
+    about an hour after termination);
+  - applies run.sh's finalisation.
+
+  If the instance has aged out, `stop` is the completion record's `ended_at` (`stop_basis`
+  says so), and the gap is listed in `.manifest_repair.gaps`.
 - `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or

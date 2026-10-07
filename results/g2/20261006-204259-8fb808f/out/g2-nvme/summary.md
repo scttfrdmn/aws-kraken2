@@ -1,0 +1,287 @@
+# make g2: g2-nvme-20261006T205831Z
+
+| | |
+|---|---|
+| commit | `8fb808f90da02755827965820fd925bc5490c1b5` (dirty: False) |
+| upstream pin | `2731b35f7abb26ec926517274f3d87e78d42fd76` (`2.17.2-20-g2731b35`) |
+| madvrandom (diagnostic) | yes: /home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76-madvrandom |
+| host | r8gd.16xlarge, 64 CPUs, 518833360 KiB, kernel 6.18.51-120.163.amzn2023.aarch64, THP [always [madvise] never] defrag [always defer defer+madvise [madvise] never] |
+| storage | instance-store NVMe 2x ( 1.7T Amazon EC2 NVMe Instance Storage) mdadm RAID0 chunk 512K as md0; xfs noatime at /mnt/nvme; read_ahead_kb: md0=2048KiB nvme1n1=128KiB nvme0n1=128KiB; scheduler: md0= nvme1n1=[none]mq-deadlinekyberbfq nvme0n1=[none]mq-deadlinekyberbfq |
+| make run id | 20261006-204259-8fb808f |
+| cold | True (ak2_drop_caches) |
+| rungs / skipped / failures | 26 / 51 / 0 |
+| note | #21/#23 r8gd.16xlarge NVMe RAID0; regimes mmap (baseline) and madv (diagnostic) |
+
+## Inputs
+
+| input | pairs | mate-1 bytes | 8 MiB blocks | max busy threads |
+|---|---|---|---|---|
+| ERR478965_200000-gz | 200000 | 47238491 | 6 | 6 |
+| ERR598966_200000-gz | 200000 | 51418954 | 7 | 7 |
+| SRR062634_200000-gz | 200000 | 51895574 | 7 | 7 |
+| SRR062634_2000000-fq | 2000000 | 521103409 | 63 | 63 |
+| SRR062634_2000000-gz | 2000000 | 521103409 | 63 | 63 |
+| SRR062634_250000-gz | 250000 | 64902524 | 8 | 8 |
+| SRR28305653_200000-gz | 200000 | 72980506 | 9 | 9 |
+
+## Cells (classify_s = upstream's own `processed in`; median [min-max])
+
+| regime | input | state | T | n | classify_s | pairs/s | load_s | wall_s | blocks/T | quant | output sha256 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| madv | SRR062634_2000000-fq | cold | 64 | 1 | 122.432 [122.432-122.432] | 16336 | 0.241 [0.241-0.241] | 135.537 | 0.98 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-fq | warm | 8 | 1 | 7.053 [7.053-7.053] | 283567 | 0.018 [0.018-0.018] | 19.697 | 7.88 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-fq | warm | 64 | 1 | 3.035 [3.035-3.035] | 658979 | 0.018 [0.018-0.018] | 15.661 | 0.98 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 8 | 1 | 787.397 [787.397-787.397] | 2540 | 0.228 [0.228-0.228] | 800.351 | 7.88 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 12 | 1 | 575.763 [575.763-575.763] | 3474 | 0.265 [0.265-0.265] | 588.808 | 5.25 | 1.14 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 16 | 1 | 405.599 [405.599-405.599] | 4931 | 0.253 [0.253-0.253] | 418.636 | 3.94 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 24 | 1 | 306.366 [306.366-306.366] | 6528 | 0.307 [0.307-0.307] | 319.839 | 2.62 | 1.14 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 32 | 1 | 215.732 [215.732-215.732] | 9271 | 0.271 [0.271-0.271] | 229.464 | 1.97 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 48 | 1 | 207.341 [207.341-207.341] | 9646 | 0.280 [0.280-0.280] | 220.614 | 1.31 | 1.52 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | cold | 64 | 1 | 124.081 [124.081-124.081] | 16119 | 0.230 [0.230-0.230] | 137.297 | 0.98 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | warm | 8 | 1 | 8.765 [8.765-8.765] | 228180 | 0.018 [0.018-0.018] | 21.385 | 7.88 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_2000000-gz | warm | 64 | 1 | 5.735 [5.735-5.735] | 348736 | 0.019 [0.019-0.019] | 18.405 | 0.98 | 1.02 | 1d6d1b9291a7 |
+| madv | SRR062634_250000-gz | cold | 1 | 1 | 908.801 [908.801-908.801] | 275 | 0.207 [0.207-0.207] | 911.639 | 8.00 | 1.00 | 4bcdea23a77f |
+| madv | SRR062634_250000-gz | cold | 2 | 1 | 472.025 [472.025-472.025] | 530 | 0.274 [0.274-0.274] | 474.936 | 4.00 | 1.00 | 4bcdea23a77f |
+| madv | SRR062634_250000-gz | cold | 4 | 1 | 236.186 [236.186-236.186] | 1058 | 0.208 [0.208-0.208] | 239.110 | 2.00 | 1.00 | 4bcdea23a77f |
+| madv | SRR062634_250000-gz | cold | 8 | 1 | 121.766 [121.766-121.766] | 2053 | 0.202 [0.202-0.202] | 124.554 | 1.00 | 1.00 | 4bcdea23a77f |
+| madv | SRR062634_250000-gz | warm | 1 | 1 | 12.577 [12.577-12.577] | 19878 | 0.019 [0.019-0.019] | 15.077 | 8.00 | 1.00 | 4bcdea23a77f |
+| madv | SRR062634_250000-gz | warm | 8 | 1 | 2.259 [2.259-2.259] | 110668 | 0.019 [0.019-0.019] | 4.797 | 1.00 | 1.00 | 4bcdea23a77f |
+| mmap | SRR062634_2000000-fq | cold | 64 | 0 (+1 censored) | - [---] | - | - [---] | - | 0.98 | 1.02 |  |
+| mmap | SRR062634_2000000-fq | warm | 64 | 0 (+1 censored) | - [---] | - | - [---] | - | 0.98 | 1.02 |  |
+| mmap | SRR062634_2000000-gz | cold | 64 | 0 (+1 censored) | - [---] | - | - [---] | - | 0.98 | 1.02 |  |
+| mmap | SRR062634_2000000-gz | warm | 64 | 0 (+1 censored) | - [---] | - | - [---] | - | 0.98 | 1.02 |  |
+| mmap | SRR062634_250000-gz | cold | 1 | 0 (+1 censored) | - [---] | - | - [---] | - | 8.00 | 1.00 |  |
+| mmap | SRR062634_250000-gz | cold | 2 | 1 | 1629.781 [1629.781-1629.781] | 153 | 0.179 [0.179-0.179] | 1631.371 | 4.00 | 1.00 | 4bcdea23a77f |
+| mmap | SRR062634_250000-gz | cold | 4 | 1 | 1527.452 [1527.452-1527.452] | 164 | 0.212 [0.212-0.212] | 1529.297 | 2.00 | 1.00 | 4bcdea23a77f |
+| mmap | SRR062634_250000-gz | cold | 8 | 1 | 1630.781 [1630.781-1630.781] | 153 | 0.266 [0.266-0.266] | 1632.766 | 1.00 | 1.00 | 4bcdea23a77f |
+
+## Output identity
+
+`--output` must not depend on thread count or regime (all oracle-identical builds; madvrandom changes only page-fault read-around).
+
+| input | distinct --output sha256 over all rungs |
+|---|---|
+| SRR062634_2000000-fq | 1 (identical) |
+| SRR062634_2000000-gz | 1 (identical) |
+| SRR062634_250000-gz | 1 (identical) |
+
+## Ladders (speedup and step efficiency)
+
+Step efficiency = (throughput gain - 1) / (thread ratio - 1) between consecutive rungs: 1 = linear, 0 = flat, < 0 = slower. A step is *resolved* when the two rungs' classify_s ranges are separated; rungs with fewer than 2 blocks per thread cannot resolve scaling (8 MiB input blocks).
+
+**madv / SRR062634_2000000-fq / warm**
+
+| T | classify_s | pairs/s | speedup vs T=8 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 8 | 7.053 [7.053-7.053] | 283567 | 1.00 | - | - | True |
+| 64 | 3.035 [3.035-3.035] | 658979 | 2.32 | 0.19 | yes | False |
+
+Knee: first step below 50% efficiency is T=8 -> 64 (efficiency 0.19; resolved; blocks/T >= 2 at 64: False).
+
+**madv / SRR062634_2000000-gz / cold**
+
+| T | classify_s | pairs/s | speedup vs T=8 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 8 | 787.397 [787.397-787.397] | 2540 | 1.00 | - | - | True |
+| 12 | 575.763 [575.763-575.763] | 3474 | 1.37 | 0.74 | yes | True |
+| 16 | 405.599 [405.599-405.599] | 4931 | 1.94 | 1.26 | yes | True |
+| 24 | 306.366 [306.366-306.366] | 6528 | 2.57 | 0.65 | yes | True |
+| 32 | 215.732 [215.732-215.732] | 9271 | 3.65 | 1.26 | yes | False |
+| 48 | 207.341 [207.341-207.341] | 9646 | 3.80 | 0.08 | yes | False |
+| 64 | 124.081 [124.081-124.081] | 16119 | 6.35 | 2.01 | yes | False |
+
+Knee: first step below 50% efficiency is T=32 -> 48 (efficiency 0.08; resolved; blocks/T >= 2 at 48: False).
+
+**madv / SRR062634_2000000-gz / warm**
+
+| T | classify_s | pairs/s | speedup vs T=8 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 8 | 8.765 [8.765-8.765] | 228180 | 1.00 | - | - | True |
+| 64 | 5.735 [5.735-5.735] | 348736 | 1.53 | 0.08 | yes | False |
+
+Knee: first step below 50% efficiency is T=8 -> 64 (efficiency 0.08; resolved; blocks/T >= 2 at 64: False).
+
+**madv / SRR062634_250000-gz / cold**
+
+| T | classify_s | pairs/s | speedup vs T=1 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 1 | 908.801 [908.801-908.801] | 275 | 1.00 | - | - | True |
+| 2 | 472.025 [472.025-472.025] | 530 | 1.93 | 0.93 | yes | True |
+| 4 | 236.186 [236.186-236.186] | 1058 | 3.85 | 1.00 | yes | True |
+| 8 | 121.766 [121.766-121.766] | 2053 | 7.46 | 0.94 | yes | False |
+
+No step below 50% efficiency on this ladder.
+
+**madv / SRR062634_250000-gz / warm**
+
+| T | classify_s | pairs/s | speedup vs T=1 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 1 | 12.577 [12.577-12.577] | 19878 | 1.00 | - | - | True |
+| 8 | 2.259 [2.259-2.259] | 110668 | 5.57 | 0.65 | yes | False |
+
+No step below 50% efficiency on this ladder.
+
+**mmap / SRR062634_250000-gz / cold**
+
+| T | classify_s | pairs/s | speedup vs T=1 | step eff. | resolved | blocks/T >= 2 |
+|---|---|---|---|---|---|---|
+| 1 | - [---] | - | - | - | - | True |
+| 2 | 1629.781 [1629.781-1629.781] | 153 | - | - | - | True |
+| 4 | 1527.452 [1527.452-1527.452] | 164 | - | 0.07 | yes | True |
+| 8 | 1630.781 [1630.781-1630.781] | 153 | - | -0.06 | yes | False |
+
+Knee: first step below 50% efficiency is T=2 -> 4 (efficiency 0.07; resolved; blocks/T >= 2 at 4: True).
+
+## gzip vs plain input (single-stream gzip candidate)
+
+| regime | state | T | input | gz classify_s | fq classify_s | gz/fq | separated |
+|---|---|---|---|---|---|---|---|
+| madv | cold | 64 | SRR062634_2000000 | 124.081 [124.081-124.081] | 122.432 [122.432-122.432] | 1.013 | yes |
+| madv | warm | 8 | SRR062634_2000000 | 8.765 [8.765-8.765] | 7.053 [7.053-7.053] | 1.243 | yes |
+| madv | warm | 64 | SRR062634_2000000 | 5.735 [5.735-5.735] | 3.035 [3.035-3.035] | 1.890 | yes |
+
+## Candidate signatures per cell (medians over reps; classify window only)
+
+| regime | input | state | T | aqu-sz (NVMe) | aqu/T | r/s | KiB/IO | MiB/s | majflt | bytes/majflt (x 4 KiB) | off-CPU | R | D | S futex | S read | gzip R | IPC | dTLB miss | dTLB walk/kinst | futex/s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| madv | SRR062634_2000000-fq | cold | 64 | 44.1 | 0.69 | 519629 | 4.0 | 2038 | 63612576 | 4112 (1.0) | 0.74 | 0.25 | 0.69 | 0.06 | 0.00 | - | 1.61 | 0.0343 | 0.75 | 3 |
+| madv | SRR062634_2000000-fq | warm | 8 | 0 | 0.00 | 0 | - | 0 | 0 | - (-) | 0.02 | 0.98 | 0.00 | 0.02 | 0.00 | - | 1.47 | 0.0150 | 1.49 | 13 |
+| madv | SRR062634_2000000-fq | warm | 64 | 0 | 0.00 | 0 | - | 0 | 0 | - (-) | 0.13 | 0.88 | 7.50e-03 | 0.11 | 0.00 | - | 0.49 | 0.0150 | 1.35 | 224 |
+| madv | SRR062634_2000000-gz | cold | 8 | 5.5 | 0.69 | 80791 | 4.0 | 316 | 63612581 | 4101 (1.0) | 0.72 | 0.28 | 0.69 | 0.03 | 6.00e-04 | 3.50e-03 | 1.74 | 0.0334 | 0.72 | 5.97e-02 |
+| madv | SRR062634_2000000-gz | cold | 12 | 7.7 | 0.64 | 110488 | 4.0 | 432 | 63612552 | 4101 (1.0) | 0.74 | 0.26 | 0.64 | 0.10 | 5.00e-04 | 4.80e-03 | 1.71 | 0.0340 | 0.71 | 1.60e-01 |
+| madv | SRR062634_2000000-gz | cold | 16 | 11.0 | 0.69 | 156842 | 4.0 | 613 | 63612566 | 4101 (1.0) | 0.72 | 0.28 | 0.69 | 0.04 | 6.00e-04 | 6.30e-03 | 1.70 | 0.0329 | 0.69 | 3.35e-01 |
+| madv | SRR062634_2000000-gz | cold | 24 | 15.0 | 0.62 | 207643 | 4.0 | 812 | 63612629 | 4101 (1.0) | 0.75 | 0.25 | 0.62 | 0.13 | 5.00e-04 | 9.00e-03 | 1.65 | 0.0328 | 0.68 | 5.32e-01 |
+| madv | SRR062634_2000000-gz | cold | 32 | 22.0 | 0.69 | 294878 | 4.0 | 1153 | 63612549 | 4101 (1.0) | 0.73 | 0.27 | 0.69 | 0.05 | 5.00e-04 | 0.01 | 1.66 | 0.0334 | 0.68 | 9.78e-01 |
+| madv | SRR062634_2000000-gz | cold | 48 | 24.0 | 0.50 | 306810 | 4.0 | 1200 | 63612560 | 4101 (1.0) | 0.81 | 0.19 | 0.50 | 0.31 | 4.00e-04 | 0.01 | 1.63 | 0.0332 | 0.70 | 1 |
+| madv | SRR062634_2000000-gz | cold | 64 | 43.5 | 0.68 | 512682 | 4.0 | 2005 | 63612694 | 4101 (1.0) | 0.75 | 0.25 | 0.68 | 0.07 | 4.00e-04 | 0.02 | 1.62 | 0.0335 | 0.70 | 3 |
+| madv | SRR062634_2000000-gz | warm | 8 | 0 | 0.00 | 0 | - | 0 | 0 | - (-) | 0.14 | 0.77 | 0.00 | 0.16 | 0.06 | 0.30 | 1.54 | 0.0126 | 1.09 | 16 |
+| madv | SRR062634_2000000-gz | warm | 64 | 0 | 0.00 | 0 | - | 0 | 0 | - (-) | 0.79 | 0.19 | 0.01 | 0.78 | 0.01 | 0.46 | 1.23 | 0.0134 | 1.24 | 73 |
+| madv | SRR062634_250000-gz | cold | 1 | 0.7 | 0.72 | 10626 | 4.0 | 42 | 9656521 | 4100 (1.0) | 0.71 | 0.28 | 0.72 | 0.00 | 5.00e-04 | 3.00e-04 | 1.86 | 0.0326 | 0.83 | 1.10e-03 |
+| madv | SRR062634_250000-gz | cold | 2 | 1.4 | 0.69 | 20458 | 4.0 | 80 | 9656472 | 4100 (1.0) | 0.72 | 0.29 | 0.68 | 0.03 | 6.00e-04 | 8.00e-04 | 1.76 | 0.0348 | 0.68 | 1.27e-02 |
+| madv | SRR062634_250000-gz | cold | 4 | 2.8 | 0.69 | 40886 | 4.0 | 160 | 9656468 | 4100 (1.0) | 0.72 | 0.28 | 0.69 | 0.03 | 5.00e-04 | 1.60e-03 | 1.80 | 0.0337 | 0.71 | 7.20e-02 |
+| madv | SRR062634_250000-gz | cold | 8 | 5.4 | 0.68 | 79305 | 4.0 | 310 | 9656445 | 4100 (1.0) | 0.73 | 0.27 | 0.68 | 0.05 | 6.00e-04 | 2.90e-03 | 1.80 | 0.0347 | 0.66 | 2.46e-01 |
+| madv | SRR062634_250000-gz | warm | 1 | 0 | 0.00 | 0 | - | 0 | 0 | - (-) | -0.01 | 0.96 | 0.00 | 0.00 | 0.04 | 0.03 | 1.29 | 0.0198 | 1.23 | 7.95e-02 |
+| madv | SRR062634_250000-gz | warm | 8 | 0 | 0.00 | 0 | - | 0 | 0 | - (-) | 0.21 | 0.75 | 0.00 | 0.22 | 0.03 | 0.16 | 1.16 | 0.0235 | 1.80 | 12 |
+| mmap | SRR062634_2000000-fq | cold | 64 | 47.4 | 0.74 | 51769 | 111.5 | 5637 | 6172045 | 1725246 (421.2) | - | 0.91 | 0.07 | 0.02 | 0.00 | - | - | - | - | - |
+| mmap | SRR062634_2000000-fq | warm | 64 | 13.9 | 0.22 | 50287 | 109.0 | 5353 | 6149274 | 1644828 (401.6) | - | 0.96 | 0.02 | 0.02 | 0.00 | - | - | - | - | - |
+| mmap | SRR062634_2000000-gz | cold | 64 | 48.9 | 0.76 | 51981 | 111.5 | 5660 | 6200565 | 1724326 (421.0) | - | 0.91 | 0.07 | 0.02 | 0.00 | 1.50e-03 | - | - | - | - |
+| mmap | SRR062634_2000000-gz | warm | 64 | 14.0 | 0.22 | 50563 | 109.1 | 5385 | 6227286 | 1633906 (398.9) | - | 0.96 | 0.02 | 0.02 | 2.00e-04 | 7.80e-03 | - | - | - | - |
+| mmap | SRR062634_250000-gz | cold | 1 | 5.5 | 5.46 | 30252 | 113.2 | 3345 | 3525315 | 1791503 (437.4) | - | 0.47 | 0.53 | 0.00 | 2.00e-04 | 1.00e-04 | - | - | - | - |
+| mmap | SRR062634_250000-gz | cold | 2 | 10.3 | 5.15 | 54694 | 112.8 | 6025 | 5768065 | 1785219 (435.8) | 0.45 | 0.54 | 0.43 | 0.03 | 2.00e-04 | 2.00e-04 | 2.27 | 0.0030 | 0.06 | 4.91e-03 |
+| mmap | SRR062634_250000-gz | cold | 4 | 13.0 | 3.25 | 58521 | 112.6 | 6434 | 5779362 | 1782986 (435.3) | 0.27 | 0.73 | 0.25 | 0.03 | 1.00e-04 | 2.00e-04 | 1.36 | 0.0042 | 0.09 | 1.05e-02 |
+| mmap | SRR062634_250000-gz | cold | 8 | 14.5 | 1.82 | 54895 | 112.3 | 6020 | 5784425 | 1779508 (434.5) | 0.18 | 0.82 | 0.14 | 0.04 | 0.00 | 2.00e-04 | 0.93 | 0.0059 | 0.15 | 2.15e-02 |
+
+## Candidates per regime (mechanical reading; see docs/g2.md for the rules)
+
+One block of rows per ladder (regime / input / state). Critical sections are read only on rungs with >= 2 input blocks per thread: with fewer, idle threads wait at the OpenMP barrier in futex and would look like lock contention.
+
+| ladder | candidate | evidence | could the probe resolve it? |
+|---|---|---|---|
+| madv / SRR062634_2000000-fq / cold | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=64 aqu=44.1 (0.70 per busy-able thread, 63) | yes (>= 1000 read IOs per rung) |
+| madv / SRR062634_2000000-fq / cold | read-around amplification | not seen: T=64 1.0 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| madv / SRR062634_2000000-fq / cold | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| madv / SRR062634_2000000-fq / cold | DRAM/TLB limits | T=64 IPC 1.61 dTLB-miss 0.0343 walk/kinst 0.75 | yes (perf counters present) |
+| madv / SRR062634_2000000-fq / warm | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| madv / SRR062634_2000000-fq / warm | read-around amplification | < 1000 major faults | no |
+| madv / SRR062634_2000000-fq / warm | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| madv / SRR062634_2000000-fq / warm | DRAM/TLB limits | T=8 IPC 1.47 dTLB-miss 0.0150 walk/kinst 1.49; T=64 IPC 0.49 dTLB-miss 0.0150 walk/kinst 1.35 | yes (perf counters present) |
+| madv / SRR062634_2000000-gz / cold | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=8 aqu=5.5 (0.69 per busy-able thread, 8); T=12 aqu=7.7 (0.64 per busy-able thread, 12); T=16 aqu=11.0 (0.69 per busy-able thread, 16); T=24 aqu=15.0 (0.62 per busy-able thread, 24); T=32 aqu=22.0 (0.69 per busy-able thread, 32); T=48 aqu=24.0 (0.50 per busy-able thread, 48); T=64 aqu=43.5 (0.69 per busy-able thread, 63) | yes (>= 1000 read IOs per rung) |
+| madv / SRR062634_2000000-gz / cold | read-around amplification | not seen: T=8 1.0 x 4 KiB per major fault; T=12 1.0 x 4 KiB per major fault; T=16 1.0 x 4 KiB per major fault; T=24 1.0 x 4 KiB per major fault; T=32 1.0 x 4 KiB per major fault; T=48 1.0 x 4 KiB per major fault; T=64 1.0 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| madv / SRR062634_2000000-gz / cold | critical sections | not seen: S-futex 0.03 -> 0.13, off-CPU 0.72 -> 0.75 (T=8 -> 24) | yes (>= 50 samples at >= 2 T) |
+| madv / SRR062634_2000000-gz / cold | DRAM/TLB limits | T=8 IPC 1.74 dTLB-miss 0.0334 walk/kinst 0.72; T=12 IPC 1.71 dTLB-miss 0.0340 walk/kinst 0.71; T=16 IPC 1.70 dTLB-miss 0.0329 walk/kinst 0.69; T=24 IPC 1.65 dTLB-miss 0.0328 walk/kinst 0.68; T=32 IPC 1.66 dTLB-miss 0.0334 walk/kinst 0.68; T=48 IPC 1.63 dTLB-miss 0.0332 walk/kinst 0.70; T=64 IPC 1.62 dTLB-miss 0.0335 walk/kinst 0.70 | yes (perf counters present) |
+| madv / SRR062634_2000000-gz / cold | single-stream gzip | cold T=64 gz/fq 1.013 | yes (gz and fq at the same T) |
+| madv / SRR062634_2000000-gz / warm | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| madv / SRR062634_2000000-gz / warm | read-around amplification | < 1000 major faults | no |
+| madv / SRR062634_2000000-gz / warm | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| madv / SRR062634_2000000-gz / warm | DRAM/TLB limits | T=8 IPC 1.54 dTLB-miss 0.0126 walk/kinst 1.09; T=64 IPC 1.23 dTLB-miss 0.0134 walk/kinst 1.24 | yes (perf counters present) |
+| madv / SRR062634_2000000-gz / warm | single-stream gzip | warm T=8 gz/fq 1.243; warm T=64 gz/fq 1.890 | yes (gz and fq at the same T) |
+| madv / SRR062634_250000-gz / cold | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=1 aqu=0.7 (0.72 per busy-able thread, 1); T=2 aqu=1.4 (0.69 per busy-able thread, 2); T=4 aqu=2.8 (0.69 per busy-able thread, 4); T=8 aqu=5.4 (0.68 per busy-able thread, 8) | yes (>= 1000 read IOs per rung) |
+| madv / SRR062634_250000-gz / cold | read-around amplification | not seen: T=1 1.0 x 4 KiB per major fault; T=2 1.0 x 4 KiB per major fault; T=4 1.0 x 4 KiB per major fault; T=8 1.0 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| madv / SRR062634_250000-gz / cold | critical sections | not seen: S-futex 0.00 -> 0.03, off-CPU 0.71 -> 0.72 (T=1 -> 4) | yes (>= 50 samples at >= 2 T) |
+| madv / SRR062634_250000-gz / cold | DRAM/TLB limits | T=1 IPC 1.86 dTLB-miss 0.0326 walk/kinst 0.83; T=2 IPC 1.76 dTLB-miss 0.0348 walk/kinst 0.68; T=4 IPC 1.80 dTLB-miss 0.0337 walk/kinst 0.71; T=8 IPC 1.80 dTLB-miss 0.0347 walk/kinst 0.66 | yes (perf counters present) |
+| madv / SRR062634_250000-gz / cold | single-stream gzip | no gz/fq pair | no |
+| madv / SRR062634_250000-gz / warm | sync faults cap NVMe QD | no disk reads in the window | no: no I/O to measure |
+| madv / SRR062634_250000-gz / warm | read-around amplification | < 1000 major faults | no |
+| madv / SRR062634_250000-gz / warm | critical sections | confounded: fewer than 2 blocks per thread at T=8 | no |
+| madv / SRR062634_250000-gz / warm | DRAM/TLB limits | T=1 IPC 1.29 dTLB-miss 0.0198 walk/kinst 1.23; T=8 IPC 1.16 dTLB-miss 0.0235 walk/kinst 1.80 | yes (perf counters present) |
+| madv / SRR062634_250000-gz / warm | single-stream gzip | no gz/fq pair | no |
+| mmap / SRR062634_2000000-fq / cold | sync faults cap NVMe QD (aqu-sz ~ T) | seen: T=64 aqu=47.4 (0.75 per busy-able thread, 63) | yes (>= 1000 read IOs per rung) |
+| mmap / SRR062634_2000000-fq / cold | read-around amplification | seen: T=64 421.2 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| mmap / SRR062634_2000000-fq / cold | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| mmap / SRR062634_2000000-fq / cold | DRAM/TLB limits | no perf counters | no |
+| mmap / SRR062634_2000000-fq / warm | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=64 aqu=13.9 (0.22 per busy-able thread, 63) | yes (>= 1000 read IOs per rung) |
+| mmap / SRR062634_2000000-fq / warm | read-around amplification | seen: T=64 401.6 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| mmap / SRR062634_2000000-fq / warm | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| mmap / SRR062634_2000000-fq / warm | DRAM/TLB limits | no perf counters | no |
+| mmap / SRR062634_2000000-gz / cold | sync faults cap NVMe QD (aqu-sz ~ T) | seen: T=64 aqu=48.9 (0.78 per busy-able thread, 63) | yes (>= 1000 read IOs per rung) |
+| mmap / SRR062634_2000000-gz / cold | read-around amplification | seen: T=64 421.0 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| mmap / SRR062634_2000000-gz / cold | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| mmap / SRR062634_2000000-gz / cold | DRAM/TLB limits | no perf counters | no |
+| mmap / SRR062634_2000000-gz / cold | single-stream gzip |  | yes (gz and fq at the same T) |
+| mmap / SRR062634_2000000-gz / warm | sync faults cap NVMe QD (aqu-sz ~ T) | not seen at every T: T=64 aqu=14.0 (0.22 per busy-able thread, 63) | yes (>= 1000 read IOs per rung) |
+| mmap / SRR062634_2000000-gz / warm | read-around amplification | seen: T=64 398.9 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| mmap / SRR062634_2000000-gz / warm | critical sections | confounded: fewer than 2 blocks per thread at T=64 | no |
+| mmap / SRR062634_2000000-gz / warm | DRAM/TLB limits | no perf counters | no |
+| mmap / SRR062634_2000000-gz / warm | single-stream gzip |  | yes (gz and fq at the same T) |
+| mmap / SRR062634_250000-gz / cold | sync faults cap NVMe QD (aqu-sz ~ T) | seen: T=1 aqu=5.5 (5.46 per busy-able thread, 1); T=2 aqu=10.3 (5.15 per busy-able thread, 2); T=4 aqu=13.0 (3.25 per busy-able thread, 4); T=8 aqu=14.5 (1.82 per busy-able thread, 8) | yes (>= 1000 read IOs per rung) |
+| mmap / SRR062634_250000-gz / cold | read-around amplification | seen: T=1 437.4 x 4 KiB per major fault; T=2 435.8 x 4 KiB per major fault; T=4 435.3 x 4 KiB per major fault; T=8 434.5 x 4 KiB per major fault | yes (>= 1000 major faults) |
+| mmap / SRR062634_250000-gz / cold | critical sections | not seen: S-futex 0.00 -> 0.03, off-CPU - -> 0.27 (T=1 -> 4) | yes (>= 50 samples at >= 2 T) |
+| mmap / SRR062634_250000-gz / cold | DRAM/TLB limits | T=2 IPC 2.27 dTLB-miss 0.0030 walk/kinst 0.06; T=4 IPC 1.36 dTLB-miss 0.0042 walk/kinst 0.09; T=8 IPC 0.93 dTLB-miss 0.0059 walk/kinst 0.15 | yes (perf counters present) |
+| mmap / SRR062634_250000-gz / cold | single-stream gzip | no gz/fq pair | no |
+
+## Skipped rungs
+
+| tag | why |
+|---|---|
+| L20-run-mmap-SRR062634_2000000-gz-cold-t48-r1 | t64 timed out at 1800s |
+| L20-run-mmap-SRR062634_2000000-gz-cold-t32-r1 | t64 timed out at 1800s |
+| L20-run-mmap-SRR062634_2000000-gz-cold-t24-r1 | t64 timed out at 1800s |
+| L20-run-mmap-SRR062634_2000000-gz-cold-t16-r1 | t64 timed out at 1800s |
+| L20-run-mmap-SRR062634_2000000-gz-cold-t12-r1 | t64 timed out at 1800s |
+| L20-run-mmap-SRR062634_2000000-gz-cold-t8-r1 | t64 timed out at 1800s |
+| L21-run-mmap-SRR062634_2000000-gz-warm-t8-r1 | t64 timed out at 1800s |
+| L23-run-mmap-SRR062634_2000000-fq-warm-t8-r1 | t64 timed out at 1800s |
+| L25-run-mmap-SRR062634_250000-gz-warm-t8-r1 | deadline |
+| L25-run-mmap-SRR062634_250000-gz-warm-t1-r1 | deadline |
+| L27-run-mmap-SRR062634_200000-gz-cold-t64-r1 | deadline |
+| L27-run-mmap-SRR062634_200000-gz-cold-t64-r2 | deadline |
+| L28-run-mmap-ERR478965_200000-gz-cold-t64-r1 | deadline |
+| L28-run-mmap-ERR478965_200000-gz-cold-t64-r2 | deadline |
+| L29-run-mmap-ERR598966_200000-gz-cold-t64-r1 | deadline |
+| L29-run-mmap-ERR598966_200000-gz-cold-t64-r2 | deadline |
+| L30-run-mmap-SRR28305653_200000-gz-cold-t64-r1 | deadline |
+| L30-run-mmap-SRR28305653_200000-gz-cold-t64-r2 | deadline |
+| L31-run-mmap-SRR062634_200000-gz-warm-t64-r1 | deadline |
+| L31-run-mmap-SRR062634_200000-gz-warm-t64-r2 | deadline |
+| L32-run-mmap-ERR478965_200000-gz-warm-t64-r1 | deadline |
+| L32-run-mmap-ERR478965_200000-gz-warm-t64-r2 | deadline |
+| L33-run-mmap-ERR598966_200000-gz-warm-t64-r1 | deadline |
+| L33-run-mmap-ERR598966_200000-gz-warm-t64-r2 | deadline |
+| L34-run-mmap-SRR28305653_200000-gz-warm-t64-r1 | deadline |
+| L34-run-mmap-SRR28305653_200000-gz-warm-t64-r2 | deadline |
+| L36-profile-madv-SRR062634_2000000-gz-cold-t64-r1 | deadline |
+| L37-profile-mmap-SRR062634_2000000-gz-warm-t64-r1 | deadline |
+| L38-profile-mmap-SRR062634_2000000-gz-warm-t8-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t64-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t48-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t32-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t24-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t16-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t12-r1 | deadline |
+| L40-run-madv-SRR062634_2000000-gz-cold-t8-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t64-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t48-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t32-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t24-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t16-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t12-r1 | deadline |
+| L41-run-mmap-SRR062634_2000000-gz-cold-t8-r1 | deadline |
+| L42-run-madv-SRR062634_250000-gz-cold-t8-r1 | deadline |
+| L42-run-madv-SRR062634_250000-gz-cold-t4-r1 | deadline |
+| L42-run-madv-SRR062634_250000-gz-cold-t2-r1 | deadline |
+| L42-run-madv-SRR062634_250000-gz-cold-t1-r1 | deadline |
+| L43-run-mmap-SRR062634_250000-gz-cold-t8-r1 | deadline |
+| L43-run-mmap-SRR062634_250000-gz-cold-t4-r1 | deadline |
+| L43-run-mmap-SRR062634_250000-gz-cold-t2-r1 | deadline |
+| L43-run-mmap-SRR062634_250000-gz-cold-t1-r1 | deadline |
+

@@ -1,0 +1,43 @@
+# runs/g2-nvme.json (r8gd.16xlarge: 64 vCPU, 512 GiB, 2x1900 GB instance-store NVMe as RAID0).
+# #21 NVMe baseline (regime b: upstream --memory-mapping, pristine) and #23 H-knee regimes (b) and
+# (c) (kraken2-madvrandom, diagnostic only), RODA v205, SRR062634.
+#
+# Workloads (same reads at every thread count of a ladder; prefixes of one real sample):
+#   SRR062634_2000000  62 blocks of 8 MiB: the T >= 8 ladder (>= 2 blocks/thread up to T = 31;
+#                      T = 48/64 are quantization-limited, shown per rung as ceil(B/T)/(B/T))
+#   SRR062634_250000   8 blocks: the T <= 8 ladder (a cold 1-thread rung on 2M pairs would take
+#                      hours); T = 8 is on both ladders, so the workload-size effect is measured
+# Cheapest rung first: madv before mmap (no read-around), the highest T first (IO-bound: the
+# fastest), the small workload's T = 1 last. Rep 1 of everything, then rep 2 of the cold ladders.
+# Rung timeout (spec) censors a slow rung and skips the same line's smaller T.
+note #21/#23 r8gd.16xlarge NVMe RAID0; regimes mmap (baseline) and madv (diagnostic)
+run madv SRR062634_2000000-gz cold 1 64 48 32 24 16 12 8
+run madv SRR062634_2000000-gz warm 1 64 8
+run madv SRR062634_2000000-fq cold 1 64
+run madv SRR062634_2000000-fq warm 1 64 8
+run madv SRR062634_250000-gz cold 1 8 4 2 1
+run madv SRR062634_250000-gz warm 1 8 1
+run mmap SRR062634_2000000-gz cold 1 64 48 32 24 16 12 8
+run mmap SRR062634_2000000-gz warm 1 64 8
+run mmap SRR062634_2000000-fq cold 1 64
+run mmap SRR062634_2000000-fq warm 1 64 8
+run mmap SRR062634_250000-gz cold 1 8 4 2 1
+run mmap SRR062634_250000-gz warm 1 8 1
+# #21 per-accession baseline, 200k pairs each (7 blocks: at most 7 busy threads, T = 64 given)
+run mmap SRR062634_200000-gz cold 2 64
+run mmap ERR478965_200000-gz cold 2 64
+run mmap ERR598966_200000-gz cold 2 64
+run mmap SRR28305653_200000-gz cold 2 64
+run mmap SRR062634_200000-gz warm 2 64
+run mmap ERR478965_200000-gz warm 2 64
+run mmap ERR598966_200000-gz warm 2 64
+run mmap SRR28305653_200000-gz warm 2 64
+# off-CPU / hot-symbol profiles (not timed into any cell)
+profile madv SRR062634_2000000-gz cold 64
+profile mmap SRR062634_2000000-gz warm 64
+profile mmap SRR062634_2000000-gz warm 8
+# rep 2 of the cold ladders
+run madv SRR062634_2000000-gz cold 1 64 48 32 24 16 12 8
+run mmap SRR062634_2000000-gz cold 1 64 48 32 24 16 12 8
+run madv SRR062634_250000-gz cold 1 8 4 2 1
+run mmap SRR062634_250000-gz cold 1 8 4 2 1

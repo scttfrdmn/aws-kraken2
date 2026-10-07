@@ -1,0 +1,22 @@
+# runs/g2-c8gd.json / runs/g2-c9gd.json (c8gd.8xlarge / c9gd.8xlarge: 32 vCPU, 64 GiB, 1 x 1900 GB
+# instance-store NVMe; no RAID, so read_ahead_kb is the device default of 128). #21 on the
+# cheapest c8gd/c9gd sizes with >= 1.2 TB NVMe. Pristine upstream -M at the host default first,
+# then with read_ahead_kb=4 (the tune results/g2/20261006-204259-8fb808f pointed to), and the
+# per-accession baseline at that tune. Cheapest first; the pristine 2M-pair rung goes last, capped.
+note #21 c-family: pristine -M at read_ahead_kb default (128) and 4; madv as the reference
+run madv SRR062634_250000-gz cold 1 8
+run mmap SRR062634_250000-gz cold 1 8
+readahead 4
+run mmap SRR062634_250000-gz cold 1 8
+run mmap SRR062634_2000000-gz cold 1 64 32
+run mmap SRR062634_2000000-gz warm 1 32
+run mmap SRR062634_200000-gz cold 1 32
+run mmap ERR478965_200000-gz cold 1 32
+run mmap ERR598966_200000-gz cold 1 32
+run mmap SRR28305653_200000-gz cold 1 32
+run mmap SRR062634_200000-gz warm 1 32
+run mmap ERR478965_200000-gz warm 1 32
+run mmap ERR598966_200000-gz warm 1 32
+run mmap SRR28305653_200000-gz warm 1 32
+readahead default
+run mmap SRR062634_2000000-gz cold 1 32
