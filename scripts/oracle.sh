@@ -268,7 +268,7 @@ firstdiff() {
 }
 
 # Normalized stderr (informational): timing figures and program names removed.
-normerr() { perl -0pe 's/ak2-(timing|engine)\t[^\n]*\n//g' "$1" | sed -E 's/processed in [0-9.]+s \([^)]*\)/processed/; s#^[^ :]*(kraken2|aws-kraken2): #PROG: #; s#\r##g; s#/(n[0-9]+/)?(upstream|ours)\.#/SIDE.#g'; }
+normerr() { perl -0pe 's/ak2-(timing|engine)\t[^\n]*\n//g' "$1" | sed -E 's/processed in [0-9.]+s \([^)]*\)/processed/; s#^[^ :]*(kraken2|aws-kraken2): #PROG: #; s#\r##g; s#/(n[0-9]+/)?(nodir/)?(upstream|ours)\.#/\2SIDE.#g'; }
 
 STATUS=0
 declare -A ETP EWP

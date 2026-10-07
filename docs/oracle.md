@@ -198,8 +198,18 @@ unexpected-file and control rules. Our outputs for N go to `<case>/n<N>/`.
   the informational stderr comparison. `checks.tsv` adds, per N > 1, the number of real lookups
   whose probe ended in a shard's overlap tail (the lookups a shard without its tail would get
   wrong), and how many of them ended in the wrapped part of the last shard's tail. These rows
-  are informational. Real reads reach a tail only rarely, so the boundary, tail-length, wrap and
-  full-table cases are covered on synthetic tables by `go test ./internal/engine`.
+  are informational. Real reads reach a tail only rarely: at the first run, 15 to 17 lookups per
+  N on Viral and none on Standard-8. So the real-read matrix alone cannot see a tail defect, and
+  two tests carry that evidence:
+  - `TestRealDBBoundaries` (`internal/engine/realdb_test.go`, run by `make test` when the
+    pinned databases are present) works on the real Viral and Standard-8 tables. It inverts
+    fmix64 to build lookups whose home slots cover every cell of the run crossing each shard
+    boundary, wrap included, both misses and hits. Their engine values must equal
+    `chash.Table.Get` at N = 2, 3, 4, 5, 8 and 16, using the tightest tail G0c's definition
+    allows (the same values as `results/g0c/local-*/<db>/tails.tsv`) and also the default.
+    Some of these lookups must end in a tail.
+  - The synthetic-table tests in `internal/engine` cover tails one cell short (refused), a probe
+    ending exactly at a shard boundary, the wrap, and full tables.
 
 ## Canonical run (Linux aarch64, Graviton)
 
