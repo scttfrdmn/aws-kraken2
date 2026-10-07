@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -64,6 +64,11 @@ g0c:
 # In-region copy of a pinned database for runs in us-west-2 (docs/oracle.md, "Canonical run").
 stage-db:
 	scripts/stage-db.sh $(DB)
+
+# The G3 sweep's real cohort (docs/cohort.md, #25): PART=record (once, before use) or stage
+# (default), PROJECT (default PRJNA398089), COUNT (record: 1000; stage: 10).
+stage-cohort:
+	scripts/stage-cohort.sh $(or $(PART),stage) $(or $(PROJECT),PRJNA398089) $(COUNT)
 
 # In-region copy of the oracle's read subsets (docs/oracle.md, "Canonical run").
 stage-reads:
