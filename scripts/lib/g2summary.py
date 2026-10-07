@@ -337,7 +337,8 @@ def main():
         cellpos.setdefault((r["regime"], r["input"], r["state"], r["threads"]), []).append(pos[id(r)])
     drift = None
     lr = [r for r in done if r.get("load_s") and r["regime"].startswith("load")]
-    if len(lr) >= 6:
+    probed = len(lr) >= 6
+    if probed:
         a, b = med([r["load_s"] for r in lr[:3]]), med([r["load_s"] for r in lr[-3:]])
         if a and b / a > 1.5:
             drift = (a, b, min(r["load_s"] for r in lr), max(r["load_s"] for r in lr))
@@ -359,6 +360,11 @@ def main():
                   "%.1f-%.1f s, over the run. Cells that ran entirely after their base cell, with no interleaved base "
                   "re-run, are **confounded with this drift**: their difference from the base is not attributable to "
                   "the tune, and a slower result shows no gain rather than a measured loss.\n" % drift)
+    elif probed:
+        md.append("**Drift:** probed on %d `load` rungs; load_s did not rise by more than 1.5x over the run.\n" % len(lr))
+    else:
+        md.append("**Drift: not probed** (fewer than 6 `load` rungs; the probe is the load time of the default "
+                  "load). Cells here may still differ by whatever drifted between them; nothing below rules it out.\n")
     md.append("| cell | positions | median load_s | repeated plan lines | drift |\n|---|---|---|---|---|")
     for key in sorted(cellpos, key=lambda k: min(cellpos[k])):
         rs_ = [r for r in done if (r["regime"], r["input"], r["state"], r["threads"]) == key]
@@ -366,7 +372,7 @@ def main():
         md.append("| %s / %s / %s / T=%d | %s | %s | %s | %s |" % (
             key[0], key[1], key[2], key[3], ",".join(str(x) for x in cellpos[key]),
             f(med([r.get("load_s") for r in rs_])), ("L" + ", L".join(str(x) for x in lines_)) if len(lines_) > 1 else "-",
-            ("confounded (ran after %s)" % confounded[key][0]) if key in confounded else "-"))
+            ("confounded (ran after %s)" % confounded[key][0]) if key in confounded else ("-" if probed else "not probed")))
     md.append("")
 
     # gz vs fq
@@ -419,14 +425,24 @@ def main():
                 ia = ipc_reps.get((rg_, in_, st_), {}).get(T_, [])
                 ib = ipc_reps.get((rg_.replace("thp=never", "thp=always"), in_, st_), {}).get(T_, [])
                 isep = bool(ia and ib) and (max(ia) < min(ib) or min(ia) > max(ib))
+                pa = cellpos.get((rg_, in_, st_, T_), [])
+                pb = cellpos.get((rg_.replace("thp=never", "thp=always"), in_, st_, T_), [])
+                if pa and pb and (max(pa) < min(pb) or max(pb) < min(pa)):
+                    order = "the two cells ran sequentially, not interleaved (positions %s, then %s)" % (
+                        "-".join(str(x) for x in (min(pa), max(pa))) if max(pa) < min(pb) else "-".join(str(x) for x in (min(pb), max(pb))),
+                        "-".join(str(x) for x in (min(pb), max(pb))) if max(pa) < min(pb) else "-".join(str(x) for x in (min(pa), max(pa))))
+                    if drift:
+                        order += ", both after drift onset"
+                else:
+                    order = "the two cells' rungs were interleaved"
                 contrast.setdefault(rg_.split("[")[0], []).append(
                     "%s T=%d: 4 KiB pages (thp=never) %s s [%s-%s] vs THP %s s [%s-%s] (x%s; classify ranges %s); "
-                    "per-rep IPC %s vs %s (%s)" % (
+                    "per-rep IPC %s vs %s (%s); %s" % (
                         in_, T_, f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]),
                         f(q["classify_med"]), f(q["classify_min"]), f(q["classify_max"]),
                         f(r["classify_med"] / q["classify_med"], 2), "separated" if csep else "overlap",
                         ",".join(f(x, 2) for x in sorted(ia)) or "-", ",".join(f(x, 2) for x in sorted(ib)) or "-",
-                        "separated: the page-size effect is resolved in IPC" if isep else "not separated"))
+                        "separated: the page-size effect is resolved in IPC" if isep else "not separated", order))
 
     # mechanical verdicts per regime
     md.append("## Candidates per regime (mechanical reading; see docs/g2.md for the rules)\n")
