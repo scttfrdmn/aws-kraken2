@@ -1,3 +1,12 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-07T07:02:51Z] wrapper start
+spawn: [2026-10-07T07:02:51Z] stage-in start
+spawn: [2026-10-07T07:02:51Z] stage-in done rc=0
+spawn: [2026-10-07T07:02:51Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket cookbook-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 51145b9e8b659eab288929ade7a65feda2892c7842fbfa8ce1e7466534bcd667); exec
 ak2: log tee up
 ak2-phase	2026-10-07T07:02:52Z	1791356572	preamble	no
 ak2: [2026-10-07T07:02:52Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
@@ -142,5 +151,4 @@ g2: plan line 26: read_ahead_kb now: md0=2048 nvme0n1=128 nvme2n1=128
 g2: 24 rungs, 0 skipped, 0 failures; /home/ec2-user/ak2/repo/results/g2/g2-nvme3-20261007T071804Z
 ak2: [2026-10-07T08:51:55Z] g2 nvme3 rc=0
 ak2-phase	2026-10-07T08:51:55Z	1791363115	push	no
-ak2: [2026-10-07T08:51:55Z] spec body exit rc=0
-ak2-phase	2026-10-07T08:51:55Z	1791363115	end	no
+spawn: [2026-10-07T08:51:56Z] command exit rc=0

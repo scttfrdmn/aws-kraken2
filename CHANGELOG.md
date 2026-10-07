@@ -161,7 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instance setup (NVMe RAID0, RODA v205 staged and checked against its ETag with
   `scripts/lib/etagcheck.py`, reads and derived subsets, builds). `scripts/madvrandom-build.sh`
   builds the diagnostic `upstream/madvrandom.patch` variant into its own directory; the oracle
-  build stays pristine. Plans can set the host `read_ahead_kb` (`readahead`), and the summary flags warm cells that did not follow their own input. Specs `runs/g2-{smoke,nvme,nvme2,ram,c8gd,c9gd}.json`. `make stage-reads` takes
+  build stays pristine. Plans can set the host `read_ahead_kb` (`readahead`), and the summary flags warm cells that did not follow their own input. Plans can also set THP, a command prefix (numactl) and switch instrumentation off for a control. Specs `runs/g2-{smoke,nvme,nvme2,nvme3,ram,ram2,c8gd,c9gd}.json`. `make stage-reads` takes
   `STAGE_READS_N` and `STAGE_READS_RUNS` (the SRR062634 8M-pair subset).
 
 ### Changed
