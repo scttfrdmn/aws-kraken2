@@ -323,7 +323,54 @@ if [ "$LREGION" != "$REGION" ]; then
   die "launch region $LREGION != $REGION"
 fi
 
-DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json)
+# aws_try OUTVAR ARGS...: one AWS CLI call with connect/read timeouts (a fresh process, so DNS
+# and connections are re-resolved after an error). Sets OUTVAR to stdout. Returns 0 on success,
+# 1 when the thing is authoritatively absent, 2 when the call failed (logged with its reason,
+# at most once a minute). "Absent" is per service: for s3, NoSuchKey / 404 / Not Found (the
+# object is not there); for ec2, only InvalidInstanceID.NotFound or a --query that prints None
+# (EC2 has aged the instance out). A generic ec2 error, a 404 included, is a failed call.
+AWS_TO=(--cli-connect-timeout 10 --cli-read-timeout 30)
+FAILS_IN_ROW=0; LAST_ERR_LOG=0; AWS_TRY_ERR=""
+aws_try() {
+  local __v=$1 out err rc svc; shift
+  svc=$1
+  err=$(mktemp)
+  out=$(aws "${AWS_TO[@]}" "$@" 2>"$err"); rc=$?
+  AWS_TRY_ERR=$(tr '\n' ' ' < "$err" | cut -c1-200)
+  rm -f "$err"
+  if [ $rc = 0 ]; then
+    FAILS_IN_ROW=0; printf -v "$__v" '%s' "$out"
+    if [ "$svc" = ec2 ]; then
+      case "$out" in None|null) printf -v "$__v" '%s' ""; AWS_TRY_ERR="query printed $out"; return 1 ;; esac
+    fi
+    return 0
+  fi
+  printf -v "$__v" '%s' ""
+  case "$svc" in
+    s3) echo "$AWS_TRY_ERR" | grep -qE 'NoSuchKey|\(404\)|Not Found' && { FAILS_IN_ROW=0; return 1; } ;;
+    ec2) echo "$AWS_TRY_ERR" | grep -q 'InvalidInstanceID\.NotFound' && { FAILS_IN_ROW=0; return 1; } ;;
+  esac
+  FAILS_IN_ROW=$((FAILS_IN_ROW + 1))
+  if [ $(( $(date +%s) - LAST_ERR_LOG )) -ge 60 ] || [ "$FAILS_IN_ROW" = 1 ]; then
+    say "aws $1 $2 failed (rc $rc, $FAILS_IN_ROW in a row): $AWS_TRY_ERR"
+    LAST_ERR_LOG=$(date +%s)
+  fi
+  return 2
+}
+poll_sleep() { local s=15 i; for ((i = 1; i < FAILS_IN_ROW && s < 120; i++)); do s=$((s * 2)); done; [ $s -gt 120 ] && s=120; sleep $s; }
+
+# EC2 is eventually consistent: right after RunInstances, DescribeInstances can answer
+# InvalidInstanceID.NotFound (g2 run 20261006-210414-2058d42), so retry for up to 2 minutes.
+DESC=""
+for i in $(seq 1 24); do
+  aws_try DESC ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json
+  case $? in
+    0) break ;;
+    1) say "launch describe $i/24: $IID not visible yet ($AWS_TRY_ERR)" ;;
+  esac
+  sleep 5
+done
+[ -n "$DESC" ] || say "WARNING: DescribeInstances never found $IID; instance fields stay null (scripts/refinalise.sh fills them after the run)"
 PRICE_ERR=$(mktemp)
 PRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2> "$PRICE_ERR" | jq '.[0].on_demand_price // null')
 mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg type "$ITYPE" --arg lr "$LREGION" \
@@ -335,38 +382,77 @@ mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg type "$ITYPE" --arg lr "$LREGIO
   | .truffle_price_usd_per_hour = $price | .truffle_price_note = $perr'
 rm -f "$PRICE_ERR"
 
-# ---- wait: tail the streamed log until the completion record lands or TTL+3m passes ----
+# ---- wait: tail the streamed log until the completion record lands or the instance is gone ----
+# Every AWS call here goes through aws_try, so a failure is logged with its reason and is never
+# mistaken for "not there yet". A network outage on the launch host (the g2 runs of 2026-10-07:
+# ENOTFOUND for hours) used to look like a run still in flight: the poll gave up at TTL+3m while
+# S3 was unreachable and missed a completion record already written, and the termination wait
+# then spun on failing describe calls. Now:
+#   - consecutive failures back off (15 s doubling to 120 s), each logged (rate-limited);
+#   - every attempt is a fresh `aws` process with connect/read timeouts, so DNS and connections
+#     are re-resolved after an error;
+#   - the TTL+3m deadline only ends the poll when the last calls succeeded (the record really is
+#     absent); while calls fail the poll keeps trying until TTL+3m plus AK2_POLL_GRACE_S (6 h);
+#   - "instance not found" after launch means EC2 has aged out the terminated instance: gone.
 DEADLINE=$(( $(date +%s) + TTL_S + 180 ))
+HARD_DEADLINE=$(( DEADLINE + ${AK2_POLL_GRACE_S:-21600} ))
 COMPLETION="$PREFIX/spawn/$TASK_ID/completion.json"
 mkdir -p "$RUN_DIR/log"
-SHOWN=0
+SHOWN=0; GONE=""; FINAL_BASIS=""
 while :; do
-  if aws s3 cp --only-show-errors "$PREFIX/log/run.log" "$RUN_DIR/log/run.log" 2>/dev/null; then
+  if aws_try OUT s3 cp --only-show-errors "$PREFIX/log/run.log" "$RUN_DIR/log/run.log"; then
     LINES=$(wc -l < "$RUN_DIR/log/run.log")
     [ "$LINES" -gt "$SHOWN" ] && sed -n "$((SHOWN+1)),${LINES}p" "$RUN_DIR/log/run.log" | sed 's/^/  | /' >&2
     SHOWN=$LINES
   fi
-  aws s3 cp --only-show-errors "$COMPLETION" "$RUN_DIR/completion.json" 2>/dev/null && break
-  if [ "$(date +%s)" -gt "$DEADLINE" ]; then say "no completion record by TTL+3m"; break; fi
-  STATE=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0].State.Name' --output text 2>/dev/null)
-  case "$STATE" in shutting-down|terminated) sleep 10
-    aws s3 cp --only-show-errors "$COMPLETION" "$RUN_DIR/completion.json" 2>/dev/null
-    say "instance is $STATE"; break ;; esac
-  sleep 15
+  aws_try OUT s3 cp --only-show-errors "$COMPLETION" "$RUN_DIR/completion.json"; CRC=$?
+  [ $CRC = 0 ] && break
+  NOW=$(date +%s)
+  if [ "$NOW" -gt "$DEADLINE" ] && [ $CRC = 1 ]; then say "no completion record by TTL+3m (S3 reachable; the record is absent)"; break; fi
+  if [ "$NOW" -gt "$HARD_DEADLINE" ]; then say "no completion record by TTL+3m+grace; AWS calls were failing ($FAILS_IN_ROW in a row)"; break; fi
+  aws_try STATE ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0].State.Name' --output text; SRC=$?
+  [ $SRC = 0 ] && FINAL_BASIS=observed
+  [ $SRC = 1 ] && [ -n "$DESC" ] && { STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; }
+  case "$STATE" in shutting-down|terminated)
+    for _ in 1 2 3 4 5 6; do
+      sleep 10
+      aws_try OUT s3 cp --only-show-errors "$COMPLETION" "$RUN_DIR/completion.json"; [ $? = 2 ] || break
+    done
+    say "instance is $STATE${GONE:+ ($GONE)}"; break ;; esac
+  poll_sleep
 done
 
 # ---- wait for termination, fetch everything, finalise the manifest ----
-for _ in $(seq 1 40); do
-  STATE=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0].State.Name' --output text 2>/dev/null)
+TERM_DEADLINE=$(( $(date +%s) + 600 ))
+while [ "$(date +%s)" -lt "$TERM_DEADLINE" ]; do
+  aws_try STATE ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0].State.Name' --output text; SRC=$?
+  [ $SRC = 0 ] && FINAL_BASIS=observed
+  [ $SRC = 1 ] && [ -n "$DESC" ] && { STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; }
   [ "$STATE" = terminated ] && break
-  sleep 15
+  # While calls fail, wait for the network rather than burning the 10 minutes.
+  [ $SRC = 2 ] && [ "$(date +%s)" -lt "$HARD_DEADLINE" ] && TERM_DEADLINE=$(( $(date +%s) + 600 ))
+  poll_sleep
 done
-aws s3 cp --only-show-errors --recursive "$PREFIX/" "$RUN_DIR/" || say "WARNING: fetch of $PREFIX failed"
+FETCHED=no
+for i in 1 2 3 4 5; do
+  if aws "${AWS_TO[@]}" s3 cp --only-show-errors --recursive "$PREFIX/" "$RUN_DIR/"; then FETCHED=yes; break; fi
+  say "fetch of $PREFIX failed (attempt $i of 5); retrying in $((30 * i)) s"; sleep $((30 * i))
+done
+[ "$FETCHED" = yes ] || say "WARNING: fetch of $PREFIX failed; finish later with scripts/refinalise.sh $RUN_DIR"
 # The instance role has PutObject but not PutObjectTagging, so what the preamble and spawn wrote
 # under the run prefix is tagged here, after the run.
 TAGLINE=$(scripts/tag-objects.sh "$PREFIX/" 2>&1); TAG_OK=$?
 if [ "$TAG_OK" = 0 ]; then say "$TAGLINE"; else say "WARNING: object tagging failed: $TAGLINE"; fi
-DESC=$(aws ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json)
+FDESC=""
+for i in 1 2 3 4 5; do
+  aws_try FDESC ec2 describe-instances --region "$LREGION" --instance-ids "$IID" --query 'Reservations[0].Instances[0]' --output json
+  case $? in
+    0) [ "$(echo "$FDESC" | jq -r '.State.Name // empty')" = terminated ] && FINAL_BASIS=observed; break ;;
+    1) say "final describe: $IID no longer describable ($AWS_TRY_ERR); terminated_at unknown"; FDESC=""; break ;;
+  esac
+  sleep $((10 * i))
+done
+DESC=$FDESC
 # StateTransitionReason carries the termination time: "User initiated (2026-10-05 18:40:12 GMT)".
 END_AT=$(echo "$DESC" | jq -r '.StateTransitionReason' | sed -n 's/.*(\([0-9-]* [0-9:]*\) GMT).*/\1/p')
 END_ISO=""; [ -n "$END_AT" ] && END_ISO="${END_AT/ /T}Z"
@@ -401,12 +487,13 @@ mset --argjson ok "$([ "$TAG_OK" = 0 ] && echo true || echo false)" --arg line "
 # Derived tables first and separately: a bad table must never block finalisation below.
 mset --argjson phases "${PHASES:-null}" --argjson reqs "${REQS:-null}" '.phases = $phases | .requests = $reqs' ||
   say "WARNING: could not record phases/requests in the manifest"
-mset --arg state "$STATE" --arg end "$END_ISO" --argjson rec "$REC" --argjson pre "$PRE" --arg fin "$(now)" '
-  .instance.final_state = $state
+mset --arg state "$STATE" --arg basis "$FINAL_BASIS" --arg end "$END_ISO" --argjson rec "$REC" --argjson pre "$PRE" --arg fin "$(now)" '
+  .instance.final_state = (if $state == "" then null else $state end)
+  | .instance.final_state_basis = (if $basis == "" then "unknown" else $basis end)
   | .instance.terminated_at = (if $end == "" then null else $end end)
   | .task = $rec | .preflight = $pre
   | .start = (.instance.launch_time) | .stop = .instance.terminated_at
-  | .billed_seconds = (if .stop then ((.stop|sub("\\+00:00$";"Z")|fromdateiso8601) - (.start|sub("\\.[0-9]+";"")|sub("\\+00:00$";"Z")|fromdateiso8601)) else null end)
+  | .billed_seconds = (if .stop and .start then ((.stop|sub("\\+00:00$";"Z")|fromdateiso8601) - (.start|sub("\\.[0-9]+";"")|sub("\\+00:00$";"Z")|fromdateiso8601)) else null end)
   | .cost_usd = (if .billed_seconds and .truffle_price_usd_per_hour then
        ((([.billed_seconds, 60]|max) * .truffle_price_usd_per_hour / 3600) * 1e6 | round / 1e6) else null end)
   | .cost_basis = "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests"

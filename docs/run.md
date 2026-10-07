@@ -197,9 +197,25 @@ refuses if the result exceeds
    (`launch.json`) and tags the instance `ak2:project/gate/run-id`. **If spawn reports a region
    other than `AK2_REGION`, it terminates the instance, runs orphans and exits 2.** Otherwise it
    adds instance type and count, AMI, AZ, launch time and the truffle on-demand price.
-5. Tails `<run prefix>/log/run.log` every 15 s until `completion.json` appears, the instance
-   terminates, or TTL + 3 min passes. It then waits for `terminated` and copies the run prefix
-   into the run dir.
+5. Tails `<run prefix>/log/run.log` every 15 s until one of these happens:
+   - `completion.json` appears;
+   - the instance terminates, or EC2 no longer describes it (it has aged out);
+   - TTL + 3 min passes **while S3 answers that the record is absent**.
+
+   Every AWS call from the launch describe on has connect and read timeouts (`aws_try`). The
+   call either returns, is authoritatively absent, or failed.
+   - **Absent** is decided per service. For s3 it is NoSuchKey, 404 or Not Found. For ec2 it is
+     only `InvalidInstanceID.NotFound`, or a `--query` that prints `None`.
+   - **Failed** covers everything else, including a generic ec2 404. A failed call is logged
+     with its reason, at most once a minute, and the poll backs off from 15 s up to 120 s.
+
+   `instance.final_state_basis` records how the final state was decided: `observed`
+   (DescribeInstances said so), `aged_out` (EC2 no longer knows the instance), or `unknown`. Each attempt is a fresh process, so DNS is re-resolved. If calls are
+   failing, the poll keeps going for up to `AK2_POLL_GRACE_S` (6 h) past TTL + 3 min. This
+   matters because the record may already be in S3: on 2026-10-07, a launch-host network outage
+   made three drivers give up at TTL + 3 min and spin in the termination wait. It then waits for
+   `terminated` (extending while calls fail) and copies the run prefix into the run dir, with 5
+   tries.
 6. Derives `tables/phases.tsv` and `tables/requests.tsv`, then finalises the manifest with the
    completion record, preflight, phases, requests, stop time (from `StateTransitionReason`),
    billed seconds and `cost_usd`. `cost_usd` is the truffle price × (terminate − launch) with a
@@ -253,7 +269,30 @@ Exit status: the task's exit code, or one of these harness codes:
 - `no completion record by TTL+3m`: the TTL or cost limit killed the task. `log/run.log` and
   `spawn/<task_id>/command.log` (from spored's pre-stop flush) show how far it got. Raise the TTL
   only after reading them.
-- `manifest.json` without `manifest_finalised_at`: run.sh was interrupted. Run `make orphans` now.
+- `manifest.json` without `manifest_finalised_at`: run.sh was interrupted, or its finalisation
+  failed. Run `make orphans` now. If the instance fields are null (DescribeInstances answered
+  `InvalidInstanceID.NotFound` right after launch; run.sh now retries for 2 minutes), run
+  `scripts/refinalise.sh results/<gate>/<run-id>`. Run it the same way when the driver died or
+  its fetch failed. It:
+  - fetches and tags the run prefix;
+  - derives `tables/`;
+  - fills only unset fields (null or `""`), from DescribeInstances while EC2 still describes
+    the instance (about an hour after termination);
+  - applies run.sh's finalisation;
+  - runs the scoped orphan check and records `.orphan_check` when the manifest has none;
+  - writes one repair record, with its gaps, `stop_basis` and object-tag result, to
+    `.manifest_repair`.
+
+  If the instance has aged out:
+  - `final_state` is `terminated`, with `final_state_basis` `aged_out`;
+  - `stop` is the completion record's `ended_at` (`stop_basis` says so);
+  - `cost_basis` says the cost undercounts the shutdown.
+
+  A generic describe error leaves the instance fields alone and is listed as a gap. The script
+  refuses a manifest that already has `.manifest_repair`, or that is finalised with its
+  completion record. `--force` appends a further repair to `.manifest_repairs[]` and never
+  overwrites set fields. `make test` runs `scripts/lib/harness_poll_test.sh` against a stubbed
+  `aws`.
 - `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
