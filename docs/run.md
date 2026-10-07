@@ -352,12 +352,15 @@ asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
   - if the cohort did not end normally: TERM every member driver's process group, wait (KILL
     after 60 s). Their run dirs may then need `scripts/refinalise.sh`;
   - sweep: terminate every member instance still alive or shutting down (by tag), `aws ec2 wait
-    instance-terminated` for them, then sweep again;
+    instance-terminated` for them, then sweep again and wait for anything the second sweep found;
   - only then abort unfinished multipart uploads under the cohort prefix, so an instance that was
     shutting down cannot start an upload after the abort. The bucket's lifecycle rule would
     abort them after 7 days; this does it at once, so no parts are billed in between;
-  - it fetches the cohort prefix (rendezvous records and the emitter's outputs) to
-    `results/<gate>/<cohort>/prefix/` and tags it;
+  - it fetches the cohort prefix (rendezvous records) to `results/<gate>/<cohort>/prefix/` and
+    tags it. The emitter's outputs under `out/` are not fetched: sample outputs do not belong in
+    git. `outputs.tsv` lists each output's key, VersionId (the bucket is versioned), size and
+    ETag. Their byte-identity is checked on the instance and recorded in the members'
+    `out/identity.tsv`; a file only one side wrote counts as a difference;
   - it writes `results/<gate>/<cohort>/cohort.json`: members (run id, exit, instance, AZ, cost,
     finalised), `cost_usd` (the sum of the members' costs), `ended`, `terminated_early`,
     `sweep_failures` (every describe, terminate or wait that failed) and the multipart abort
