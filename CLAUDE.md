@@ -97,14 +97,14 @@ targets; ad hoc commands only during exploration.
 | `make g0c [PART=local\|runs\|probes]` | [docs/g0c.md](docs/g0c.md) |
 | `make equiv-seqout` | [docs/equiv-seqout.md](docs/equiv-seqout.md) |
 | `make oracle-classify` | [docs/oracle-classify.md](docs/oracle-classify.md) |
-| `make oracle-engine [DB=…] [NS=…] [TRANSPORT=local\|tcp]` | [docs/oracle.md](docs/oracle.md) ("Engine mode") |
+| `make oracle-engine [DB=…] [NS=…] [TRANSPORT=local\|tcp\|procs]` | [docs/oracle.md](docs/oracle.md) ("Engine mode") |
 | `make bracken-check` | [docs/bracken-check.md](docs/bracken-check.md) |
 | `make tag-objects [PREFIX=…]` | [docs/tag-objects.md](docs/tag-objects.md) |
 | `make sortfuzz [SORTFUZZ=quick\|full]` | [docs/sortfuzz.md](docs/sortfuzz.md) |
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
 | `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
-| `make run GATE=… SPEC=…` | [docs/run.md](docs/run.md) |
+| `make run GATE=… SPEC=… [NODES=n]` | [docs/run.md](docs/run.md) ("Multi-node runs"), [docs/engine.md](docs/engine.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
 | `make report GATE=… RUN=…` | [docs/report.md](docs/report.md) |
 | spore.host usage notes | [docs/spore-host.md](docs/spore-host.md) |
@@ -128,7 +128,8 @@ tables. **Reports cite only these files; a number not traceable to a manifest is
 | `internal/seqio` | FASTA/FASTQ reader, paired input, gzip (klauspost/compress), `-Q` masking |
 | `internal/seqout` | `--classified-out` / `--unclassified-out` formatting |
 | `internal/report` | kraken-style and mpa-style `--report` |
-| `internal/engine` | sharded resident table: slot-range shards with overlap tails, router, TCP transport |
+| `internal/engine` | sharded resident table: slot-range shards with overlap tails, router, TCP transport, S3 rendezvous, emitter protocol |
+| `internal/objstore` | S3 multipart writer (lazy create, parts in read order) and its local emulation |
 | `internal/oracletest` | locates the shared oracle artifacts for tests (same rule as `scripts/paths.sh`) |
 | `upstream/` | oracle harnesses (C++ linked against upstream at the pin; not in the core path) |
 | `scripts/` | everything a make target runs |
