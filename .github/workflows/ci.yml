@@ -1,4 +1,4 @@
-# CI (#20): build, test, lint and the Viral oracle on Linux aarch64, the canonical oracle
+# CI (#20): build, test, lint and the Viral oracle (plain and through the engine) on Linux aarch64, the canonical oracle
 # platform. Runbooks: docs/build.md, docs/oracle.md.
 name: ci
 
@@ -122,6 +122,10 @@ jobs:
 
       - name: make oracle DB=viral
         run: make oracle DB=viral
+
+      # Law 1 through the sharded engine (#24), including a non-power-of-two N.
+      - name: make oracle-engine DB=viral NS="1 3 4"
+        run: make oracle-engine DB=viral NS="1 3 4"
 
       # Only the result directories this run created (untracked), not the committed ones.
       - name: List this run's results
