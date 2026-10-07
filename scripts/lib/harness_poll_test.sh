@@ -86,6 +86,9 @@ STUB_EC2=terminated aws_try STATE ec2 describe-instances --instance-ids i-1 --qu
 [ "$STATE" = terminated ] && [ "$FINAL_BASIS" = observed ] && ok "poll describe answering terminated is observed" || bad "note_state 0: STATE=$STATE BASIS=$FINAL_BASIS"
 STUB_EC2=notfound aws_try STATE ec2 describe-instances --instance-ids i-1 --query State.Name --output text; note_state $?
 [ "$STATE" = terminated ] && [ "$FINAL_BASIS" = aged_out ] && ok "poll describe not found after launch: aged out" || bad "note_state 1: STATE=$STATE BASIS=$FINAL_BASIS"
+DESC=''
+STATE=running FINAL_BASIS=observed; STUB_EC2=notfound aws_try STATE ec2 describe-instances --instance-ids i-1 --query State.Name --output text; note_state $?
+[ -z "$STATE" ] && [ -z "$FINAL_BASIS" ] && ok "poll describe not found before launch was seen: unknown (no stale observed)" || bad "note_state 1 without DESC: STATE=$STATE BASIS=$FINAL_BASIS"
 
 # ---- refinalise.sh on a fixture run dir ----
 fixture() {  # fixture DIR FINAL_STATE [BASIS]: a manifest as a TTL-killed / outage run leaves it

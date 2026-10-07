@@ -378,12 +378,13 @@ final_describe() {
 }
 # note_state RC: what a State.Name describe (aws_try rc) says about the instance. 0: STATE is what
 # EC2 answered (observed). 1: not found after launch was seen (DESC set): aged out, so
-# terminated. 2: the call failed: STATE is unknown (aws_try emptied it), and so is its basis, so
+# terminated; not found before launch was ever seen (DESC empty): unknown (aws_try emptied STATE,
+# and the basis is cleared too). 2: the call failed: STATE is unknown (aws_try emptied it), and so is its basis, so
 # a stale basis from an earlier answer never labels an unknown state.
 note_state() {
   case $1 in
     0) FINAL_BASIS=observed ;;
-    1) [ -n "$DESC" ] && { STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; } ;;
+    1) if [ -n "$DESC" ]; then STATE=terminated; FINAL_BASIS=aged_out; GONE="instance no longer describable: $AWS_TRY_ERR"; else FINAL_BASIS=""; fi ;;
     *) FINAL_BASIS="" ;;
   esac
 }
