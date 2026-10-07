@@ -152,7 +152,7 @@ mode, kernel, CPU count and disks. If an instance-store NVMe device exists, it f
 mounts it at `/mnt/nvme` (mode 1777) and stages there; otherwise it stages into the checkout's
 `.cache`. It clones the launch commit and stages Standard-8 and the SRR062634 reads with
 `ak2_stage` from
-`s3://cookbook-942542972736-us-west-2/aws-kraken2/data/`, checking each file against its sha256
+`s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/`, checking each file against its sha256
 metadata. Then it builds upstream and ours and *sources* `scripts/loadbench.sh` with
 `LB_DB`/`LB_READS` pointing at the staged copies,
 `LB_LADDER=scripts/loadbench.ladder LB_PROFILE=1 LB_PROFILE_IMPLS="upstream base final"`, so cold rungs use `ak2_drop_caches` and each

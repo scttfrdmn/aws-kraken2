@@ -96,7 +96,7 @@ fixture() {  # fixture DIR FINAL_STATE [BASIS]: a manifest as a TTL-killed / out
   printf '{"exit_code":0,"ended_at":"2026-10-07T01:50:00Z"}\n' > "$T/prefix/spawn/ak2-g9-x/completion.json"
   printf 'ak2-phase\t2026-10-07T01:01:00Z\t1791334860\tsetup\tno\nak2-phase\t2026-10-07T01:49:00Z\t1791337740\tend\tno\n' > "$T/prefix/log/run.log"
   printf 'phase\top\tcount\tbucket\nsetup\tGetObject\t3\tb\n' > "$T/prefix/out/requests.tsv"
-  jq -n --arg fs "$2" --arg fb "${3:-}" '{task_id:"ak2-g9-x", s3_prefix:"s3://cookbook-942542972736-us-west-2/aws-kraken2/g9/x",
+  jq -n --arg fs "$2" --arg fb "${3:-}" '{task_id:"ak2-g9-x", s3_prefix:"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g9/x",
     launch:{instance_id:"i-1", region:"us-west-2"}, truffle_price_usd_per_hour:3.6,
     instance:{type:"t", count:1, ami:"ami-1", az:"us-west-2b", launch_time:"2026-10-07T01:00:00+00:00",
               architecture:"arm64", lifecycle:"on-demand", final_state:$fs}}

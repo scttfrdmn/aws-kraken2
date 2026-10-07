@@ -69,16 +69,20 @@ launch host records the Payer too.
   end-of-run `command.log`.
 - `ak2_push FILE` streams a result to `<run prefix>/out/` as soon as it exists, so a TTL kill loses
   at most the step in flight.
-- `<run prefix>` is `s3://cookbook-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>`. After the
+- `<run prefix>` is `s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>`. After the
   run, `run.sh` copies the whole prefix into `results/<gate>/<run-id>/`.
 
 ## Results bucket
 
-We reuse the cookbook's `COOKBOOK_BUCKET` (`cookbook-942542972736-us-west-2`, us-west-2,
-`Payer: BucketOwner`) under the prefix `aws-kraken2/`, rather than creating
-`aws-kraken2-<account>-<region>`. It has no lifecycle rule, and we did not add one: the bucket is
-shared, and the durable copy of every run is the checked-in `results/` tree. If the prefix grows,
-deleting `aws-kraken2/` is safe. Runs in another region need their own in-region bucket, named in
+Runs use the dedicated bucket `aws-kraken2-942542972736-us-west-2` (us-west-2, `Payer: BucketOwner`,
+tag `project=aws-kraken2`) under the prefix `aws-kraken2/`. It was created on 2026-10-07 by Scott's
+decision, because multi-node runs need spawn's `s3_read_write` grant, and that grant is bucket-wide:
+a dedicated bucket keeps the blast radius to this project's data. It has versioning on, an
+AbortIncompleteMultipartUpload rule at 7 days and noncurrent-version expiry at 30 days. The
+staged data (`aws-kraken2/data/`) was copied server-side from the earlier cookbook-bucket prefix,
+and all 38 objects' sizes and sha256 metadata matched. Runs before that date (results/ manifests)
+name `cookbook-942542972736-us-west-2`, where their data lived. The durable copy of every run is
+the checked-in `results/` tree. Runs in another region need their own in-region bucket, named in
 `scripts/ak2.env` as `AK2_RESULTS_BUCKET_<region>`; until then `run.sh` refuses that region.
 
 ## Tagging and finding instances

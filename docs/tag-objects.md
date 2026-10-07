@@ -2,7 +2,7 @@
 
 **What:** tags every object under the project's S3 prefix so its storage and requests can be
 accounted to the project. The default prefix is
-`s3://cookbook-942542972736-us-west-2/aws-kraken2/`; that bucket is shared with the cookbook.
+`s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/`, in the dedicated project bucket.
 Each object gets:
 
 | tag | value |
