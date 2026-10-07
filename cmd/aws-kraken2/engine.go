@@ -191,8 +191,12 @@ func (e *engineIndex) report() {
 			e.loadS, e.loadRequests, e.loadRetries, e.loadBytes)
 	}
 	r := &e.router.Stats
+	transport := e.conf.transport
+	if e.node != nil {
+		transport = "nodes" // own shard in-process, every other shard over TCP
+	}
 	fmt.Fprintf(os.Stderr, "ak2-engine\troute\ttransport\t%s\tcalls\t%d\tkeys\t%d\tbatches\t%d\troute_s\t%.6f\twait_s\t%.6f\tgather_s\t%.6f\n",
-		e.conf.transport, r.Calls.Load(), r.Keys.Load(), r.Batches.Load(), sec(r.RouteNs.Load()), sec(r.WaitNs.Load()), sec(r.GatherNs.Load()))
+		transport, r.Calls.Load(), r.Keys.Load(), r.Batches.Load(), sec(r.RouteNs.Load()), sec(r.WaitNs.Load()), sec(r.GatherNs.Load()))
 	fmt.Fprintf(os.Stderr, "ak2-engine\tworker\tscan_s\t%.6f\tlookup_s\t%.6f\tclassify_s\t%.6f\n",
 		sec(e.scanNs.Load()), sec(e.lookupNs.Load()), sec(e.classifyNs.Load()))
 }
