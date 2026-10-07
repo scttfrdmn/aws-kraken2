@@ -25,6 +25,7 @@ case "$args" in
       notfound) echo "An error occurred (InvalidInstanceID.NotFound) when calling the DescribeInstances operation: The instance ID 'i-1' does not exist" >&2; exit 254 ;;
       none) echo None; exit 0 ;;
       404) echo "An error occurred (404) when calling the DescribeInstances operation: Not Found" >&2; exit 254 ;;
+      running) echo '{"ImageId":"ami-1","State":{"Name":"running"},"StateTransitionReason":""}'; exit 0 ;;
       down) echo "Could not connect to the endpoint URL: \"https://ec2.us-west-2.amazonaws.com/\"" >&2; exit 255 ;;
       terminated) case "$args" in *State.Name*) echo terminated ;; *)
           echo '{"ImageId":"ami-1","Placement":{"AvailabilityZone":"us-west-2b"},"LaunchTime":"2026-10-07T01:00:00+00:00","Architecture":"arm64","State":{"Name":"terminated"},"StateTransitionReason":"User initiated (2026-10-07 02:00:00 GMT)"}' ;; esac; exit 0 ;;
@@ -64,16 +65,30 @@ STUB_S3=missing expect 1 "s3 404 is absent" s3 cp s3://b/k "$T/x"
 STUB_S3=down expect 2 "s3 unreachable is a failed call" s3 cp s3://b/k "$T/x"
 STUB_S3=present expect 0 "s3 present" s3 cp s3://b/k "$T/x"
 
+# ---- run.sh's final_describe: an answer always sets STATE and FINAL_BASIS=observed ----
+LREGION=us-west-2 IID=i-1 FD_BACKOFF_S=0
+STATE=terminated FINAL_BASIS=aged_out; STUB_EC2=running final_describe; rc=$?
+[ "$rc" = 0 ] && [ "$STATE" = running ] && [ "$FINAL_BASIS" = observed ] &&
+  ok "final describe answering running replaces an inferred terminated/aged_out" || bad "final_describe running: rc $rc STATE=$STATE BASIS=$FINAL_BASIS"
+STATE=terminated FINAL_BASIS=aged_out; STUB_EC2=notfound final_describe; rc=$?
+[ "$rc" = 1 ] && [ "$STATE" = terminated ] && [ "$FINAL_BASIS" = aged_out ] && [ -z "$FDESC" ] &&
+  ok "final describe not found keeps aged_out" || bad "final_describe notfound: rc $rc STATE=$STATE BASIS=$FINAL_BASIS"
+STATE="" FINAL_BASIS=""; STUB_EC2=terminated final_describe; rc=$?
+[ "$rc" = 0 ] && [ "$STATE" = terminated ] && [ "$FINAL_BASIS" = observed ] && ok "final describe terminated is observed" || bad "final_describe terminated"
+STATE="" FINAL_BASIS=""; STUB_EC2=down final_describe; rc=$?
+[ "$rc" = 2 ] && [ -z "$STATE" ] && [ -z "$FINAL_BASIS" ] && ok "final describe failing leaves the state unknown" || bad "final_describe down: rc $rc"
+
 # ---- refinalise.sh on a fixture run dir ----
-fixture() {  # fixture DIR FINAL_STATE: a manifest as a TTL-killed / outage run leaves it
+fixture() {  # fixture DIR FINAL_STATE [BASIS]: a manifest as a TTL-killed / outage run leaves it
   mkdir -p "$1" "$T/prefix/spawn/ak2-g9-x/log" "$T/prefix/log" "$T/prefix/out"
   printf '{"exit_code":0,"ended_at":"2026-10-07T01:50:00Z"}\n' > "$T/prefix/spawn/ak2-g9-x/completion.json"
   printf 'ak2-phase\t2026-10-07T01:01:00Z\t1791334860\tsetup\tno\nak2-phase\t2026-10-07T01:49:00Z\t1791337740\tend\tno\n' > "$T/prefix/log/run.log"
   printf 'phase\top\tcount\tbucket\nsetup\tGetObject\t3\tb\n' > "$T/prefix/out/requests.tsv"
-  jq -n --arg fs "$2" '{task_id:"ak2-g9-x", s3_prefix:"s3://cookbook-942542972736-us-west-2/aws-kraken2/g9/x",
+  jq -n --arg fs "$2" --arg fb "${3:-}" '{task_id:"ak2-g9-x", s3_prefix:"s3://cookbook-942542972736-us-west-2/aws-kraken2/g9/x",
     launch:{instance_id:"i-1", region:"us-west-2"}, truffle_price_usd_per_hour:3.6,
     instance:{type:"t", count:1, ami:"ami-1", az:"us-west-2b", launch_time:"2026-10-07T01:00:00+00:00",
-              architecture:"arm64", lifecycle:"on-demand", final_state:$fs}}' > "$1/manifest.json"
+              architecture:"arm64", lifecycle:"on-demand", final_state:$fs}}
+    | if $fb != "" then .instance.final_state_basis = $fb else . end' > "$1/manifest.json"
 }
 R="$T/run"; fixture "$R" ""
 export STUB_PREFIX_DIR="$T/prefix"
@@ -105,5 +120,10 @@ M2="$R2/manifest.json"
 [ "$(jq -r .instance.final_state_basis "$M2")" = observed ] && [ "$(jq -r .stop_basis "$M2")" = terminated_at ] &&
   [ "$(jq -r .billed_seconds "$M2")" = 3600 ] && jq -r .cost_basis "$M2" | grep -q '(terminated_at - launch_time)' &&
   ok "observed termination: terminated_at stop, 3600 s, terminated_at cost_basis" || bad "observed: $(jq -c '{instance,stop_basis,billed_seconds,cost_basis}' "$M2")"
+
+R3="$T/run3"; fixture "$R3" running unknown
+STUB_EC2=none "$ROOT/scripts/refinalise.sh" "$R3" > "$T/out5" 2>&1 || bad "refinalise (basis unknown) failed: $(cat "$T/out5")"
+[ "$(jq -r .instance.final_state "$R3/manifest.json")" = terminated ] && [ "$(jq -r .instance.final_state_basis "$R3/manifest.json")" = aged_out ] &&
+  ok "final_state with basis unknown counts as unset (filled: terminated/aged_out)" || bad "basis unknown: $(jq -c .instance "$R3/manifest.json")"
 
 [ "$FAIL" = 0 ] && echo "harness_poll_test: all passed" || { echo "harness_poll_test: FAILED"; exit 1; }
