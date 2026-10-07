@@ -101,6 +101,7 @@ targets; ad hoc commands only during exploration.
 | `make tag-objects [PREFIX=…]` | [docs/tag-objects.md](docs/tag-objects.md) |
 | `make sortfuzz [SORTFUZZ=quick\|full]` | [docs/sortfuzz.md](docs/sortfuzz.md) |
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
+| `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make run GATE=… SPEC=…` | [docs/run.md](docs/run.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
