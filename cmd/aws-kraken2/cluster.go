@@ -58,8 +58,9 @@ type clusterConf struct {
 	hashSize   int64
 }
 
-func clusterFromEnv(n int) (*clusterConf, error) {
-	rs, ok := os.LookupEnv("AK2_ENGINE_RANK")
+func clusterFromEnv(n int, lookup func(string) (string, bool)) (*clusterConf, error) {
+	getenv := func(k string) string { v, _ := lookup(k); return v }
+	rs, ok := lookup("AK2_ENGINE_RANK")
 	if !ok {
 		return nil, nil
 	}
@@ -67,38 +68,38 @@ func clusterFromEnv(n int) (*clusterConf, error) {
 	if err != nil || r < 0 || r >= n {
 		return nil, fmt.Errorf("AK2_ENGINE_RANK=%q: want 0 to %d", rs, n-1)
 	}
-	c := &clusterConf{rank: r, rendezvous: os.Getenv("AK2_ENGINE_RENDEZVOUS"), listen: "127.0.0.1",
+	c := &clusterConf{rank: r, rendezvous: getenv("AK2_ENGINE_RENDEZVOUS"), listen: "127.0.0.1",
 		window: 64, timeout: 15 * time.Minute}
 	if c.rendezvous == "" {
 		return nil, fmt.Errorf("AK2_ENGINE_RANK needs AK2_ENGINE_RENDEZVOUS")
 	}
-	if v := os.Getenv("AK2_ENGINE_LISTEN"); v != "" {
+	if v := getenv("AK2_ENGINE_LISTEN"); v != "" {
 		c.listen = v
 	}
 	c.advertise = c.listen
-	if v := os.Getenv("AK2_ENGINE_ADVERTISE"); v != "" {
+	if v := getenv("AK2_ENGINE_ADVERTISE"); v != "" {
 		c.advertise = v
 	}
 	if ip := net.ParseIP(c.advertise); ip != nil && ip.IsUnspecified() {
 		return nil, fmt.Errorf("AK2_ENGINE_ADVERTISE: peers cannot dial %s; give this node's address", c.advertise)
 	}
-	if v := os.Getenv("AK2_ENGINE_WINDOW"); v != "" {
+	if v := getenv("AK2_ENGINE_WINDOW"); v != "" {
 		w, err := strconv.ParseUint(v, 10, 32)
 		if err != nil || w < 1 {
 			return nil, fmt.Errorf("AK2_ENGINE_WINDOW=%q: want a positive block count", v)
 		}
 		c.window = w
 	}
-	if v := os.Getenv("AK2_ENGINE_TIMEOUT"); v != "" {
+	if v := getenv("AK2_ENGINE_TIMEOUT"); v != "" {
 		d, err := time.ParseDuration(v)
 		if err != nil || d <= 0 {
 			return nil, fmt.Errorf("AK2_ENGINE_TIMEOUT=%q: want a duration", v)
 		}
 		c.timeout = d
 	}
-	if c.hashURL = os.Getenv("AK2_ENGINE_HASH_URL"); c.hashURL != "" {
-		c.hashETag = os.Getenv("AK2_ENGINE_HASH_ETAG")
-		sz, err := strconv.ParseInt(os.Getenv("AK2_ENGINE_HASH_SIZE"), 10, 64)
+	if c.hashURL = getenv("AK2_ENGINE_HASH_URL"); c.hashURL != "" {
+		c.hashETag = getenv("AK2_ENGINE_HASH_ETAG")
+		sz, err := strconv.ParseInt(getenv("AK2_ENGINE_HASH_SIZE"), 10, 64)
 		if c.hashETag == "" || err != nil || sz <= 0 {
 			return nil, fmt.Errorf("AK2_ENGINE_HASH_URL needs AK2_ENGINE_HASH_ETAG and AK2_ENGINE_HASH_SIZE")
 		}
@@ -163,20 +164,85 @@ type inbox struct {
 	done   map[int]*engine.Done
 	lost   map[int]error
 	failed func() bool
+
+	n     int           // nodes: block seq belongs to rank seq % n
+	files int           // inputs in the run (blocks name an input below it)
+	seen  map[bkey]bool // every block ever put: each is put once
+	// What arrived from each rank, per input: blocks and output-stream bytes (Done is checked
+	// against these and against the emitter's own cut).
+	recv map[int]map[uint32]*engine.FileCount
 }
 
-func newInbox(failed func() bool) *inbox {
+func newInbox(n, files int, failed func() bool) *inbox {
 	b := &inbox{m: map[bkey]*result{}, total: map[uint32]uint64{}, cut: map[uint32]uint64{}, done: map[int]*engine.Done{},
-		lost: map[int]error{}, failed: failed}
+		lost: map[int]error{}, failed: failed, n: n, files: files, seen: map[bkey]bool{},
+		recv: map[int]map[uint32]*engine.FileCount{}}
 	b.cond = sync.NewCond(&b.mu)
 	return b
 }
 
-func (b *inbox) put(k bkey, r *result) {
+// streamBytes is the size of a block's output streams.
+func streamBytes(r *result) uint64 {
+	return uint64(len(r.kraken) + len(r.batch.C1) + len(r.batch.C2) + len(r.batch.U1) + len(r.batch.U2))
+}
+
+// put stores block k, sent by rank from. A block that is not from its home rank, names an input
+// the run does not have, or was put before is refused (the run fails).
+func (b *inbox) put(k bkey, r *result, from int) error {
 	b.mu.Lock()
+	defer b.cond.Broadcast()
+	defer b.mu.Unlock()
+	switch {
+	case int(k.seq%uint64(b.n)) != from:
+		return fmt.Errorf("rank %d sent block %d of input %d, which belongs to rank %d", from, k.seq, k.file, k.seq%uint64(b.n))
+	case int(k.file) >= b.files:
+		return fmt.Errorf("rank %d sent a block of input %d; the run has %d", from, k.file, b.files)
+	case b.seen[k]:
+		return fmt.Errorf("rank %d sent block %d of input %d twice", from, k.seq, k.file)
+	}
+	b.seen[k] = true
 	b.m[k] = r
-	b.mu.Unlock()
-	b.cond.Broadcast()
+	fc := b.recv[from]
+	if fc == nil {
+		fc = map[uint32]*engine.FileCount{}
+		b.recv[from] = fc
+	}
+	c := fc[k.file]
+	if c == nil {
+		c = &engine.FileCount{}
+		fc[k.file] = c
+	}
+	c.Blocks++
+	c.Bytes += streamBytes(r)
+	return nil
+}
+
+// owned is how many of an input's total blocks belong to rank.
+func owned(total uint64, rank, n int) uint64 {
+	if total <= uint64(rank) {
+		return 0
+	}
+	return (total-1-uint64(rank))/uint64(n) + 1
+}
+
+// checkDone verifies rank's Done against what arrived and against the emitter's own cut of each
+// of the files inputs. Called with b.mu held.
+func (b *inbox) checkDone(rank int, d *engine.Done, files int) error {
+	if len(d.Files) != files {
+		return fmt.Errorf("rank %d reports %d inputs, the emitter processed %d", rank, len(d.Files), files)
+	}
+	for f := 0; f < files; f++ {
+		want := owned(b.total[uint32(f)], rank, b.n)
+		got := engine.FileCount{}
+		if c := b.recv[rank][uint32(f)]; c != nil {
+			got = *c
+		}
+		if d.Files[f].Blocks != want || got.Blocks != want || d.Files[f].Bytes != got.Bytes {
+			return fmt.Errorf("rank %d, input %d: the cut gives it %d blocks; it reports %d blocks (%d bytes), %d blocks (%d bytes) arrived",
+				rank, f, want, d.Files[f].Blocks, d.Files[f].Bytes, got.Blocks, got.Bytes)
+		}
+	}
+	return nil
 }
 
 func (b *inbox) setTotal(f uint32, n uint64) {
@@ -243,7 +309,11 @@ type node struct {
 	stopped bool
 
 	file    uint32      // the current input's index (processFilesCluster calls, in order)
+	files   int         // inputs in the run
 	aborted atomic.Bool // a block failed here (runner.fail)
+
+	smu  sync.Mutex
+	sent []engine.FileCount // home node: per input, the blocks sent and their stream bytes
 
 	// Counters (AK2_TIMINGS=1).
 	readNs, windowNs, takeNs, emitNs, sendNs atomic.Int64
@@ -282,6 +352,12 @@ func (nd *node) setProgress(f uint32, next uint64) {
 	}
 }
 
+func (nd *node) isStopped() bool {
+	nd.pmu.Lock()
+	defer nd.pmu.Unlock()
+	return nd.stopped
+}
+
 func (nd *node) stop() {
 	nd.pmu.Lock()
 	nd.stopped = true
@@ -292,9 +368,9 @@ func (nd *node) stop() {
 // startNode connects this node to the run: rendezvous, shard clients, and the emitter
 // connections.
 func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, srv *engine.Server,
-	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads int) (*node, *engine.Router, []*engine.TCPClient, error) {
+	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads, files int) (*node, *engine.Router, []*engine.TCPClient, error) {
 	nd := &node{rank: cc.rank, n: n, window: cc.window, emitter: cc.rank == 0, timeout: cc.timeout,
-		finish: make(chan int32, 1)}
+		finish: make(chan int32, 1), files: files}
 	nd.pcond = sync.NewCond(&nd.pmu)
 	var emitLn net.Listener
 	if nd.emitter {
@@ -341,7 +417,7 @@ func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, sr
 	}
 	router := engine.NewRouter(sh.Layout.Capacity, clients)
 	if nd.emitter {
-		nd.box = newInbox(nd.aborted.Load)
+		nd.box = newInbox(n, files, nd.aborted.Load)
 		nd.peers = make([]*ctlConn, n)
 		if tl, ok := emitLn.(*net.TCPListener); ok {
 			_ = tl.SetDeadline(time.Now().Add(cc.timeout))
@@ -408,7 +484,13 @@ func (nd *node) readPeer(rank int, k *ctlConn) {
 			if x.Err != "" {
 				res.err = fmt.Errorf("rank %d: %s", rank, x.Err)
 			}
-			nd.box.put(bkey{x.File, x.Seq}, res)
+			if err := nd.box.put(bkey{x.File, x.Seq}, res, rank); err != nil {
+				nd.box.mu.Lock()
+				nd.box.lost[rank] = err
+				nd.box.mu.Unlock()
+				nd.box.wake()
+				return
+			}
 		case engine.MsgDone:
 			nd.box.mu.Lock()
 			nd.box.done[rank] = f.Done
@@ -453,6 +535,13 @@ func (nd *node) sendResult(file uint32, res *result) error {
 		x.Err = res.err.Error()
 	}
 	x.Streams = [engine.NumStreams][]byte{res.kraken, res.batch.C1, res.batch.C2, res.batch.U1, res.batch.U2}
+	nd.smu.Lock()
+	for len(nd.sent) <= int(file) {
+		nd.sent = append(nd.sent, engine.FileCount{})
+	}
+	nd.sent[file].Blocks++
+	nd.sent[file].Bytes += streamBytes(res)
+	nd.smu.Unlock()
 	b := engine.AppendResult(nil, x)
 	putBuf(res.kraken)
 	err := nd.up.send(b)
@@ -516,7 +605,9 @@ func (r *runner) processFilesCluster(name1, name2 string) int {
 			for j := range jobs {
 				res := r.work(ws, j, printing)
 				if nd.emitter {
-					nd.box.put(bkey{f, res.seq}, res)
+					if err := nd.box.put(bkey{f, res.seq}, res, 0); err != nil {
+						r.fail(fmt.Errorf("engine: %w", err))
+					}
 				} else if err := nd.sendResult(f, res); err != nil {
 					r.fail(fmt.Errorf("engine: send block %d to the emitter: %w", res.seq, err))
 				}
@@ -527,9 +618,10 @@ func (r *runner) processFilesCluster(name1, name2 string) int {
 	if !nd.emitter {
 		wg.Wait()
 		if err := r.failure(); err != nil {
+			r.out.abandon() // no truncated object is completed
 			return classifyErr(exitFailure, "%v", err)
 		}
-		if nd.stopped {
+		if nd.isStopped() {
 			return classifyErr(exitFailure, "engine: the emitter ended the run")
 		}
 		return r.finishInput(in, fault, false)
@@ -564,6 +656,7 @@ func (r *runner) processFilesCluster(name1, name2 string) int {
 		return classifyErr(exIOErr, "%v", err)
 	}
 	if err := r.failure(); err != nil {
+		r.out.abandon() // no truncated object is completed
 		return classifyErr(exitFailure, "%v", err)
 	}
 	return r.finishInput(in, fault, true)
@@ -576,6 +669,10 @@ func (r *runner) processFilesCluster(name1, name2 string) int {
 func (nd *node) endRun(status int, counts map[uint64]*classify.TaxonCount) (map[uint64]*classify.TaxonCount, int, error) {
 	if !nd.emitter {
 		d := &engine.Done{Status: int32(status)}
+		nd.smu.Lock()
+		d.Files = make([]engine.FileCount, nd.file) // every input processed, blocks or not
+		copy(d.Files, nd.sent)
+		nd.smu.Unlock()
 		for t, c := range counts {
 			d.Counts = append(d.Counts, engine.Count{Taxon: t, Reads: c.Reads, Kmers: c.Kmers})
 		}
@@ -598,6 +695,8 @@ func (nd *node) endRun(status int, counts map[uint64]*classify.TaxonCount) (map[
 			return nil, exitFailure, fmt.Errorf("engine: lost the emitter before it finished the run")
 		case fin == -2:
 			return nil, exitFailure, fmt.Errorf("engine: no Finish from the emitter within %s", nd.timeout)
+		case fin != 0:
+			return nil, exitFailure, fmt.Errorf("engine: the emitter ended the run with status %d", fin)
 		}
 		return nil, status, nil
 	}
@@ -626,6 +725,9 @@ func (nd *node) endRun(status int, counts map[uint64]*classify.TaxonCount) (map[
 			return nil, exitFailure, fmt.Errorf("engine: no Done from rank %d within %s", rank, nd.timeout)
 		case d.Status != 0:
 			return nil, exitFailure, fmt.Errorf("engine: rank %d ended with status %d", rank, d.Status)
+		}
+		if err := b.checkDone(rank, d, int(nd.file)); err != nil {
+			return nil, exitFailure, fmt.Errorf("engine: %w", err)
 		}
 		for _, c := range d.Counts { // the sum-reduce, zero-read taxa included
 			m := merged[c.Taxon]
@@ -667,7 +769,7 @@ func (nd *node) report() {
 }
 
 // loadNode loads this node's shard and joins the run.
-func loadNode(path string, conf *engineConf, readThreads, threads int) (*engineIndex, error) {
+func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*engineIndex, error) {
 	cc := conf.cluster
 	ctx := context.Background()
 	var src rangeread.Source
@@ -719,7 +821,7 @@ func loadNode(path string, conf *engineConf, readThreads, threads int) (*engineI
 	go srv.Serve(ln)
 	e.servers = append(e.servers, srv)
 	e.stats = append(e.stats, &srv.Stats)
-	nd, router, tcps, err := startNode(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads)
+	nd, router, tcps, err := startNode(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, files)
 	if err != nil {
 		e.close()
 		return nil, err

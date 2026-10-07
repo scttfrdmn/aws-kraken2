@@ -13,7 +13,9 @@ package engine
 //	                           streams (--output, classified 1/2, unclassified 1/2), each
 //	                           length-prefixed bytes
 //	  Done     node → emitter  status i32, then the node's per-taxon counters (count u64, then
-//	                           taxon/reads/kmers u64 each), after its last block
+//	                           taxon/reads/kmers u64 each), then per input the blocks it sent and
+//	                           their stream bytes (count u64, then blocks/bytes u64 each), after
+//	                           its last block
 //	  Progress emitter → node  file u32, next seq u64: everything before it is written; the
 //	                           node may send blocks up to Window past it (flow control)
 //	  Finish   emitter → node  status i32: no node needs any shard any more; exit
@@ -69,7 +71,11 @@ type Count struct{ Taxon, Reads, Kmers uint64 }
 type Done struct {
 	Status int32
 	Counts []Count
+	Files  []FileCount // per input, in order: what the node sent
 }
+
+// FileCount is what a node sent for one input: blocks, and the bytes of their output streams.
+type FileCount struct{ Blocks, Bytes uint64 }
 
 // Progress is the emitter's write position.
 type Progress struct {
@@ -104,11 +110,15 @@ func AppendResult(b []byte, r *BlockResult) []byte {
 // AppendDone encodes d.
 func AppendDone(b []byte, d *Done) []byte {
 	b = putU32(b, MsgDone)
-	b = putU64(b, uint64(4+8+24*len(d.Counts)))
+	b = putU64(b, uint64(4+8+24*len(d.Counts)+8+16*len(d.Files)))
 	b = putU32(b, uint32(d.Status))
 	b = putU64(b, uint64(len(d.Counts)))
 	for _, c := range d.Counts {
 		b = putU64(putU64(putU64(b, c.Taxon), c.Reads), c.Kmers)
+	}
+	b = putU64(b, uint64(len(d.Files)))
+	for _, f := range d.Files {
+		b = putU64(putU64(b, f.Blocks), f.Bytes)
 	}
 	return b
 }
@@ -204,6 +214,14 @@ func ReadFrame(br *bufio.Reader) (*Frame, error) {
 		d.Counts = make([]Count, k)
 		for i := range d.Counts {
 			d.Counts[i] = Count{r.u64(), r.u64(), r.u64()}
+		}
+		nf := r.u64()
+		if nf > n/16 {
+			return nil, errors.New("engine: Done frame file count too large")
+		}
+		d.Files = make([]FileCount, nf)
+		for i := range d.Files {
+			d.Files[i] = FileCount{r.u64(), r.u64()}
 		}
 		f.Done = d
 	case MsgProgress:

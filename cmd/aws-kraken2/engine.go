@@ -36,8 +36,9 @@ type engineConf struct {
 }
 
 // engineFromEnv returns nil when AK2_ENGINE_N is unset.
-func engineFromEnv() (*engineConf, error) {
-	ns, ok := os.LookupEnv("AK2_ENGINE_N")
+func engineFromEnv(lookup func(string) (string, bool)) (*engineConf, error) {
+	getenv := func(k string) string { v, _ := lookup(k); return v }
+	ns, ok := lookup("AK2_ENGINE_N")
 	if !ok {
 		return nil, nil
 	}
@@ -46,20 +47,20 @@ func engineFromEnv() (*engineConf, error) {
 		return nil, fmt.Errorf("AK2_ENGINE_N=%q: want an integer from 1 to 65536", ns)
 	}
 	c := &engineConf{n: n, transport: "local", tail: engine.DefaultTail}
-	if t := os.Getenv("AK2_ENGINE_TRANSPORT"); t != "" {
+	if t := getenv("AK2_ENGINE_TRANSPORT"); t != "" {
 		if t != "local" && t != "tcp" {
 			return nil, fmt.Errorf("AK2_ENGINE_TRANSPORT=%q: want local or tcp", t)
 		}
 		c.transport = t
 	}
-	if ts, ok := os.LookupEnv("AK2_ENGINE_TAIL"); ok {
+	if ts, ok := lookup("AK2_ENGINE_TAIL"); ok {
 		v, err := strconv.ParseUint(ts, 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("AK2_ENGINE_TAIL=%q: want a cell count", ts)
 		}
 		c.tail = v
 	}
-	if c.cluster, err = clusterFromEnv(n); err != nil {
+	if c.cluster, err = clusterFromEnv(n, lookup); err != nil {
 		return nil, err
 	}
 	return c, nil

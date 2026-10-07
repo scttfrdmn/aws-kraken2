@@ -191,6 +191,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     cohort prefix, aborts unfinished uploads, writes `cohort.json` and runs the global orphan
     check;
   - spec `runs/g3-std8.json`.
+  - review of b78afbc:
+    - `run-multi.sh` has a finish trap on every exit path (aborts unfinished uploads, writes
+      `cohort.json`, runs the orphan check, terminates the members if interrupted), fails fast
+      (terminates the other members when one fails), and refuses a security group that admits
+      more than itself, 22/tcp and ICMP;
+    - presigned URLs are redacted from `rangeread` errors (URL query, `*url.Error`, S3 error
+      bodies);
+    - the multipart upload is created lazily, so an empty output is one PutObject;
+    - after an engine failure, uploads are aborted rather than completed truncated;
+    - the emitter validates Result frames (owner rank, input, once) and checks each node's Done
+      against what arrived and its own cut;
+    - a race in `nd.stopped` is fixed, and an in-process 3-node test runs under -race.
 
 ### Changed
 

@@ -42,6 +42,16 @@ type classifyArgs struct {
 	gzipFlag, bzip2Flag          bool
 	// nil = option not given. kraken2Output "" or nil is standard output; "-" silences it.
 	kraken2Output, classifiedOut, unclassifiedOut, reportFile *string
+	// env looks up the engine's AK2_ENGINE_* settings (nil: the process environment). Tests run
+	// several nodes in one process, each with its own.
+	env func(string) (string, bool)
+}
+
+func (c *classifyArgs) lookupEnv() func(string) (string, bool) {
+	if c.env != nil {
+		return c.env
+	}
+	return os.LookupEnv
 }
 
 func (c *classifyArgs) reportName() string {
@@ -102,18 +112,23 @@ func loadIndex(c *classifyArgs) (*index, int) {
 		copt.ReadThreads = v
 	}
 	ph := phase("hash")
-	if ec, err := engineFromEnv(); err != nil {
+	if ec, err := engineFromEnv(c.lookupEnv()); err != nil {
 		return fail(exUsage, "%v", err)
 	} else if ec != nil {
 		readThreads := copt.ReadThreads
 		if readThreads <= 0 {
 			readThreads = 8
 		}
-		load := loadEngine
+		var eng *engineIndex
 		if ec.cluster != nil {
-			load = loadNode
+			inputs := len(c.files)
+			if c.paired {
+				inputs /= 2
+			}
+			eng, err = loadNode(c.hashFile, ec, readThreads, c.threads, inputs)
+		} else {
+			eng, err = loadEngine(c.hashFile, ec, readThreads, c.threads)
 		}
-		eng, err := load(c.hashFile, ec, readThreads, c.threads)
 		if err != nil {
 			return fail(exitFailure, "%v", err)
 		}
@@ -239,6 +254,7 @@ func classifyRun(c *classifyArgs) int {
 		merged, st, err := nd.endRun(status, counts)
 		idx.eng.report()
 		if err != nil {
+			r.out.abandon()
 			return classifyErr(st, "%v", err)
 		}
 		if !nd.emitter || st != 0 {
@@ -452,6 +468,7 @@ func (r *runner) processFiles(name1, name2 string) int {
 		return classifyErr(exIOErr, "%v", err)
 	}
 	if err := r.failure(); err != nil {
+		r.out.abandon() // no truncated object is completed
 		return classifyErr(exitFailure, "%v", err)
 	}
 	return r.finishInput(in, fault, true)

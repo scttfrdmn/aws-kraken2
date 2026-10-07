@@ -26,7 +26,8 @@ oracle:
 	scripts/oracle.sh $(DB)
 
 # Law 1 through the sharded engine (docs/oracle.md, "Engine mode", #24): every oracle case, ours
-# at each shard count in NS (default 1 2 3 4 8), TRANSPORT=local|tcp, TAIL=<cells> (default 302).
+# at each shard count in NS (default 1 2 3 4 8), TRANSPORT=local|tcp|procs (procs: N processes
+# over loopback, the multi-node engine), TAIL=<cells> (default 302).
 oracle-engine:
 	ORACLE_ENGINE="$(or $(NS),1 2 3 4 8)" ORACLE_ENGINE_TRANSPORT=$(or $(TRANSPORT),local) \
 		ORACLE_ENGINE_TAIL=$(TAIL) scripts/oracle.sh $(DB)

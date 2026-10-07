@@ -16,7 +16,7 @@ func TestFramesRoundTrip(t *testing.T) {
 		FaultFirst: "bad record", Err: ""}
 	r.Streams[StreamKraken] = []byte("C\tr1\t9606\t100\t9606:5\n")
 	r.Streams[StreamU2] = []byte("@r2\nACGT\n+\nIIII\n")
-	d := &Done{Status: 65, Counts: []Count{{1, 2, 3}, {9606, 0, 17}}}
+	d := &Done{Status: 65, Counts: []Count{{1, 2, 3}, {9606, 0, 17}}, Files: []FileCount{{3, 1000}, {0, 0}}}
 	var b []byte
 	b = AppendResult(b, r)
 	b = AppendDone(b, d)

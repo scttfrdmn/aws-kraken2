@@ -59,6 +59,21 @@ classify seconds); `node` (blocks cut and owned, `read_s`, window wait, bytes se
 emit seconds); `rendezvous` (object-store requests). Together with the spec's `ak2_phase` (boot,
 setup, fetch) they give #25's decomposition: boot, load, scan, probe, gather, emit, tail.
 
+## Security
+
+The engine's TCP ports have no authentication. The **run token** is FNV-64a of the rendezvous
+location (`Rendezvous.Token`), and anyone who knows the location can compute it, so it is **not a
+secret**. With the table id, it only keeps a connection from reaching the wrong run, table or
+shard by mistake. What protects the ports is the security group: on AWS, the default-VPC default
+group, which admits only itself (plus 22/tcp and ICMP). `make run … NODES=n` refuses a group that
+admits more (docs/run.md). The group is account-wide, so every `task run` instance in the region
+can reach a running engine.
+
+A presigned `AK2_ENGINE_HASH_URL` is a credential. Errors never carry its query string
+(`rangeread.Redact`): the URL in `*url.Error`, the 412 and status messages, and S3 error bodies,
+of which only the `<Code>` is kept, because a SignatureDoesNotMatch body echoes the credential.
+Spec bodies must not log it.
+
 ## Failure
 
 Each failure ends the run with exit 1 and a `classify: engine: …` message, rather than hanging:
@@ -66,7 +81,16 @@ Each failure ends the run with exit 1 and a `classify: engine: …` message, rat
 - a hello mismatch: shard, n, capacity, table id or run token;
 - a lookup that times out (2 min) or a peer that disconnects;
 - a node that ends without a block the emitter needs;
-- a missing rendezvous record after the timeout.
+- a missing rendezvous record after the timeout;
+- a Result frame from a rank that does not own the block, for an input the run lacks, or sent
+  twice;
+- a Done whose per-input block and byte counts disagree with what arrived or with the emitter's
+  own cut.
+
+After an engine failure, the emitter aborts its `s3://` uploads instead of completing a truncated
+object. An upstream-style data error (exit 65: malformed records, mates that differ) still
+completes them, as upstream writes its outputs then. An output that stays empty is one
+PutObject: the multipart upload is created with the first part, so an empty output has none.
 
 ## AWS runs
 

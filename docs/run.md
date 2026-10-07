@@ -322,22 +322,41 @@ asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
   - the spec pins `resources.instance_type` and `placement.availability_zone`, so every member is
     the same box in one AZ;
   - n × `cost_limit` ≤ `AK2_MAX_COST_USD`;
-  - the region's default-VPC default security group admits itself (all traffic, or all TCP).
-    `spawn task run` puts every instance in that group, and spawn adds no rules (spawn
-    v0.123.0, `cmd/task.go` `taskLaunchConfig`, `pkg/aws/client.go` `Launch`). So without that
-    rule members could not reach each other. us-west-2's group `sg-5059b179` has the stock
-    self-referencing rule. It also admits SSH and ICMP from anywhere; that is account config,
-    and the engine's ports are reachable only from inside the group.
-- **Rendezvous reads.** The instance role has only `PutObject` on the results bucket, so the spec
-  lists the bucket in `resources.s3_read_write`; spawn's grant is bucket-wide. That is how
-  members read each other's rendezvous records.
-- **After the members:** the cohort prefix (rendezvous records and the emitter's outputs) is
-  fetched to `results/<gate>/<cohort>/prefix/`. Unfinished multipart uploads under it are aborted
-  from the launch host, because the instance role cannot abort them. The prefix is tagged.
-  `results/<gate>/<cohort>/cohort.json` records the members (run id, exit, instance, AZ, cost)
-  and `cost_usd`, the sum of the members' costs. Then the **global** `make orphans` runs. Each
-  member's driver output is in `rank-<k>.run.log`.
-- **Exit:** the worst member exit; 3 if orphans were found; 4 if the prefix could not be fetched.
+  - the region's default-VPC default security group admits itself (all traffic) and nothing
+    beyond 22/tcp and ICMP. `spawn task run` puts every instance in that group, and spawn adds no
+    rules (spawn v0.123.0, `cmd/task.go` `taskLaunchConfig`, `pkg/aws/client.go` `Launch`). The
+    group is **account-wide**: every `task run` instance in the region, of any project, shares it
+    and can reach the engine's ports, which have no authentication (docs/engine.md). us-west-2's
+    `sg-5059b179` has the stock self-referencing rule, plus SSH and ICMP from anywhere (account
+    configuration). Any other ingress rule makes run-multi refuse the launch.
+- **What the instance role can do in the results bucket** (spawn v0.123.0 `cmd/task.go`
+  `taskStagingPolicy`). Without `s3_read_write`, it gets only `s3:PutObject`, bucket-wide. That
+  covers the run's own writes, including CreateMultipartUpload, UploadPart and
+  CompleteMultipartUpload. A cohort spec also lists the bucket in `resources.s3_read_write`, so
+  members can read each other's rendezvous records. That grant is `GetObject`,
+  `GetObjectVersion`, `PutObject` and `DeleteObject` on the whole bucket, plus `ListBucket` and
+  `GetBucketLocation`. Neither grant includes `s3:AbortMultipartUpload`, so only the launch host
+  can abort an upload.
+- **Fail fast.** Once any member's run.sh exits non-zero while others are still running, the
+  others' instances are terminated (found by their `spawn:task-id` tag). Their run.sh then
+  finalise as for any terminated instance, and `cohort.json` records `terminated_early`. The
+  spec body stops a member at its first failed case.
+- **On every exit** (normal, error, INT, TERM or HUP), the `finish` trap does the following:
+  - if the cohort did not end normally, it terminates every member instance still alive and
+    stops the member drivers (their run dirs may then need `scripts/refinalise.sh`);
+  - it aborts unfinished multipart uploads under the cohort prefix (the bucket has no
+    lifecycle rule, so stale parts would be billed indefinitely);
+  - it fetches the cohort prefix (rendezvous records and the emitter's outputs) to
+    `results/<gate>/<cohort>/prefix/` and tags it;
+  - it writes `results/<gate>/<cohort>/cohort.json`: members (run id, exit, instance, AZ, cost,
+    finalised), `cost_usd` (the sum of the members' costs), `ended`, `terminated_early`, and the
+    multipart abort counts;
+  - it runs the **global** `make orphans`.
+
+  Each member's driver output is in `rank-<k>.run.log`.
+- **Exit:** the worst member exit. Otherwise 3 if orphans were found, 4 if the prefix could not be
+  fetched, 5 if an unfinished upload could not be listed or aborted, and 130, 143 or 129 when
+  interrupted.
 
 **Never rewrite cited history.** `manifest.json` records the launch commit, so do not squash or
 rebase commits that a run under `results/` cites. Merge them as they are.

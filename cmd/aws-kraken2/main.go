@@ -80,7 +80,11 @@ func main() {
 	os.Exit(status)
 }
 
-func run(args []string) int {
+func run(args []string) int { return runEnv(args, nil) }
+
+// runEnv is run with the engine's AK2_ENGINE_* settings looked up through env (nil: the
+// process environment), so a test can run several nodes of a multi-node run in one process.
+func runEnv(args []string, env func(string) (string, bool)) int {
 	o := options{confidence: "0.0", minimumBaseQuality: "0", minimumHitGroups: "2"}
 	set := func(b *bool) func(string) { return func(string) { *b = true } }
 	specs := []optSpec{
@@ -171,6 +175,7 @@ func run(args []string) int {
 		classifiedOut:   o.classifiedOut,
 		unclassifiedOut: o.unclassifiedOut,
 		reportFile:      o.report,
+		env:             env,
 	}
 	if c.threads < 1 {
 		return classifyErr(exUsage, "number of threads can't be less than 1")

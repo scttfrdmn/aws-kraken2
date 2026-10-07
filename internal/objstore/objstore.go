@@ -318,7 +318,12 @@ func (d *Dir) Complete(_ context.Context, bucket, key, id string, parts []Part) 
 }
 
 // Abort implements Store.
-func (d *Dir) Abort(_ context.Context, _, _, id string) error { return os.RemoveAll(d.uploadDir(id)) }
+func (d *Dir) Abort(_ context.Context, _, _, id string) error {
+	if id == "" || strings.ContainsAny(id, `/\.`) {
+		return fmt.Errorf("objstore: no upload %q", id)
+	}
+	return os.RemoveAll(d.uploadDir(id))
+}
 
 // Pending lists the emulated uploads not completed or aborted (tests: none may be left).
 func (d *Dir) Pending() []string {

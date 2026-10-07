@@ -275,6 +275,16 @@ func (o *outputs) flush() error {
 	return o.err
 }
 
+// abandon aborts every s3:// output after an engine failure: a truncated object is never
+// completed (an upload with parts left behind is aborted by make run, docs/run.md). Local files
+// keep upstream's behaviour, and an upstream-style data error (exit 65) still completes them.
+func (o *outputs) abandon() {
+	o.wg.Wait()
+	for _, s := range o.s3 {
+		_ = s.mw.Abort()
+	}
+}
+
 // close flushes and closes every file. Safe to call more than once.
 func (o *outputs) close() error {
 	if o.closed {

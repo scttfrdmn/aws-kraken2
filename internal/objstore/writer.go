@@ -36,7 +36,9 @@ type Writer struct {
 	UploadNs, BlockedNs int64 // summed part-upload time; time Write waited for a slot
 }
 
-// NewWriter starts a multipart upload of s3://bucket/key.
+// NewWriter returns a writer for s3://bucket/key. The multipart upload is created with the
+// first part, so an object that stays empty never has one (and needs no Abort, which the
+// instance role is not granted).
 func NewWriter(ctx context.Context, st Store, url string, partSize, inFlight int) (*Writer, error) {
 	b, k, err := ParseURL(url)
 	if err != nil {
@@ -45,11 +47,7 @@ func NewWriter(ctx context.Context, st Store, url string, partSize, inFlight int
 	if partSize < MinPartSize {
 		return nil, fmt.Errorf("objstore: part size %d below S3's minimum %d", partSize, MinPartSize)
 	}
-	id, err := st.CreateMultipart(ctx, b, k)
-	if err != nil {
-		return nil, err
-	}
-	return &Writer{st: st, ctx: ctx, bucket: b, key: k, id: id, partSize: partSize, next: 1,
+	return &Writer{st: st, ctx: ctx, bucket: b, key: k, partSize: partSize, next: 1,
 		sem: make(chan struct{}, max(inFlight, 1))}, nil
 }
 
@@ -80,6 +78,13 @@ func (w *Writer) upload(data []byte) error {
 	n := w.next
 	if n > 10000 {
 		return w.fail(fmt.Errorf("objstore: s3://%s/%s needs more than 10000 parts", w.bucket, w.key))
+	}
+	if w.id == "" {
+		id, err := w.st.CreateMultipart(w.ctx, w.bucket, w.key)
+		if err != nil {
+			return w.fail(fmt.Errorf("objstore: s3://%s/%s: %w", w.bucket, w.key, err))
+		}
+		w.id = id
 	}
 	w.next++
 	t := time.Now()
@@ -133,18 +138,15 @@ func (w *Writer) Parts() []Part {
 func (w *Writer) Size() int64 { return w.total }
 
 // Close uploads the last part and completes the upload. An object with no bytes cannot be a
-// multipart upload (S3 needs at least one part; a lone empty part is not portable), so an empty
-// object is aborted and written with one PutObject instead. On any error the upload is aborted.
+// multipart upload (S3 needs at least one part; a lone empty part is not portable), and has
+// none (it is created with the first part), so it is written with one PutObject. On any error
+// the upload is aborted (best effort: make run aborts what is left, docs/run.md).
 func (w *Writer) Close() error {
 	if w.done {
 		return w.Err()
 	}
 	w.done = true
 	if w.total == 0 {
-		w.wg.Wait()
-		if err := w.st.Abort(w.ctx, w.bucket, w.key, w.id); err != nil {
-			return w.fail(err)
-		}
 		if err := w.st.Put(w.ctx, w.bucket, w.key, nil); err != nil {
 			return w.fail(err)
 		}
@@ -155,13 +157,13 @@ func (w *Writer) Close() error {
 		w.buf = nil
 		if err := w.upload(last); err != nil {
 			w.wg.Wait()
-			_ = w.st.Abort(w.ctx, w.bucket, w.key, w.id)
+			w.abortUpload()
 			return err
 		}
 	}
 	w.wg.Wait()
 	if err := w.Err(); err != nil {
-		_ = w.st.Abort(w.ctx, w.bucket, w.key, w.id)
+		w.abortUpload()
 		return err
 	}
 	w.mu.Lock()
@@ -169,18 +171,28 @@ func (w *Writer) Close() error {
 	parts := append([]Part(nil), w.parts...)
 	w.mu.Unlock()
 	if err := w.st.Complete(w.ctx, w.bucket, w.key, w.id, parts); err != nil {
-		_ = w.st.Abort(w.ctx, w.bucket, w.key, w.id)
+		w.abortUpload()
 		return w.fail(err)
 	}
 	return nil
 }
 
-// Abort abandons the upload.
+// abortUpload aborts the multipart upload if one was created (best effort).
+func (w *Writer) abortUpload() {
+	if w.id != "" {
+		_ = w.st.Abort(w.ctx, w.bucket, w.key, w.id)
+	}
+}
+
+// Abort abandons the upload: no object is written. Without parts there is nothing to abort.
 func (w *Writer) Abort() error {
 	if w.done {
 		return nil
 	}
 	w.done = true
 	w.wg.Wait()
+	if w.id == "" {
+		return nil
+	}
 	return w.st.Abort(w.ctx, w.bucket, w.key, w.id)
 }
