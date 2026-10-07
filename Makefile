@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -24,6 +24,12 @@ lint:
 DB ?= viral
 oracle:
 	scripts/oracle.sh $(DB)
+
+# Law 1 through the sharded engine (docs/oracle.md, "Engine mode", #24): every oracle case, ours
+# at each shard count in NS (default 1 2 3 4 8), TRANSPORT=local|tcp, TAIL=<cells> (default 302).
+oracle-engine:
+	ORACLE_ENGINE="$(or $(NS),1 2 3 4 8)" ORACLE_ENGINE_TRANSPORT=$(or $(TRANSPORT),local) \
+		ORACLE_ENGINE_TAIL=$(TAIL) scripts/oracle.sh $(DB)
 
 # Oracle harnesses (docs/harness.md): NAME="a b" builds those (default all); VARIANTS=lp|dh|lp,dh.
 VARIANTS ?= lp

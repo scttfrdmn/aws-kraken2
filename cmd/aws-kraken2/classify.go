@@ -18,6 +18,7 @@ import (
 
 	"github.com/scttfrdmn/aws-kraken2/internal/chash"
 	"github.com/scttfrdmn/aws-kraken2/internal/classify"
+	"github.com/scttfrdmn/aws-kraken2/internal/engine"
 	"github.com/scttfrdmn/aws-kraken2/internal/kdb"
 	"github.com/scttfrdmn/aws-kraken2/internal/mmscan"
 	"github.com/scttfrdmn/aws-kraken2/internal/report"
@@ -54,6 +55,15 @@ type index struct {
 	opts  kdb.Options
 	tax   *taxo.Taxonomy
 	table *chash.Table
+	eng   *engineIndex // the sharded engine, instead of table (AK2_ENGINE_N)
+}
+
+func (x *index) close() {
+	if x.eng != nil {
+		x.eng.close()
+		return
+	}
+	x.table.Close()
 }
 
 // loadIndex is load_index. Upstream reads opts.k2d, taxo.k2d, then hash.k2d.
@@ -91,6 +101,21 @@ func loadIndex(c *classifyArgs) (*index, int) {
 		copt.ReadThreads = v
 	}
 	ph := phase("hash")
+	if ec, err := engineFromEnv(); err != nil {
+		return fail(exUsage, "%v", err)
+	} else if ec != nil {
+		readThreads := copt.ReadThreads
+		if readThreads <= 0 {
+			readThreads = 8
+		}
+		eng, err := loadEngine(c.hashFile, ec, readThreads, c.threads)
+		if err != nil {
+			return fail(exitFailure, "%v", err)
+		}
+		ph.end()
+		fmt.Fprintln(os.Stderr, " done.")
+		return &index{opts: o, tax: tax, eng: eng}, 0
+	}
 	var tab *chash.Table
 	if c.memoryMapping {
 		tab, err = chash.Mmap(c.hashFile, copt)
@@ -118,6 +143,11 @@ type workerState struct {
 	tokens  *classify.Tokens
 	w       classify.Worker
 	batch   chash.BatchScratch
+	// engine path: one token stream per read of the block, the block's keys and values
+	toks []*classify.Tokens
+	keys []uint64
+	vals []uint32
+	rs   engine.RouteScratch
 }
 
 type job struct {
@@ -131,6 +161,7 @@ type result struct {
 	batch  seqout.Batch
 	st     stats
 	fault  seqio.Fault
+	err    error // the engine could not resolve the block's lookups
 }
 
 func classifyRun(c *classifyArgs) int {
@@ -140,7 +171,7 @@ func classifyRun(c *classifyArgs) int {
 	}
 	defer func() {
 		p := phase("unmap")
-		idx.table.Close()
+		idx.close()
 		p.end()
 	}()
 	ps := phase("setup")
@@ -193,6 +224,9 @@ func classifyRun(c *classifyArgs) int {
 	}
 	elapsed := time.Since(start)
 	pc.end()
+	if idx.eng != nil {
+		idx.eng.report()
+	}
 	pf := phase("close")
 	if err := r.out.close(); err != nil {
 		return classifyErr(exIOErr, "%v", err)
@@ -346,6 +380,7 @@ func (r *runner) processFiles(name1, name2 string) int {
 
 	// Ordered emission: results arrive in any order and are written in input order.
 	var fault seqio.Fault
+	var fatal error
 	pending := map[uint64]*result{}
 	next := uint64(0)
 	for res := range results {
@@ -357,6 +392,12 @@ func (r *runner) processFiles(name1, name2 string) int {
 			}
 			delete(pending, next)
 			next++
+			if p.err != nil && fatal == nil {
+				fatal = p.err
+			}
+			if fatal != nil {
+				continue // drain; nothing after a failed block is written
+			}
 			r.st.sequences += p.st.sequences
 			r.st.bases += p.st.bases
 			r.st.classified += p.st.classified
@@ -372,6 +413,9 @@ func (r *runner) processFiles(name1, name2 string) int {
 	}
 	if err := r.out.flush(); err != nil {
 		return classifyErr(exIOErr, "%v", err)
+	}
+	if fatal != nil {
+		return classifyErr(exitFailure, "%v", fatal)
 	}
 
 	// The end-of-run problems, reported once everything readable is written.
@@ -435,6 +479,10 @@ func (r *runner) work(ws *workerState, j job, printing bool) *result {
 	} else {
 		m1, res.fault = j.b1.Parse()
 	}
+	if r.idx.eng != nil {
+		r.workEngine(ws, res, m1, m2, printing)
+		return res
+	}
 	paired := r.c.paired
 	minQ := r.c.minQuality
 	tab := r.idx.table
@@ -476,6 +524,79 @@ func (r *runner) work(ws *workerState, j job, printing bool) *result {
 	res.kraken = ws.w.Out
 	ws.w.Out = nil
 	return res
+}
+
+// workEngine is work's engine path: scan every read of the block, route all of the block's
+// lookups at once, then classify each read with its values, in order.
+func (r *runner) workEngine(ws *workerState, res *result, m1, m2 []seqio.Record, printing bool) {
+	eng := r.idx.eng
+	paired := r.c.paired
+	minQ := r.c.minQuality
+	t0 := time.Now()
+	for len(ws.toks) < len(m1) {
+		ws.toks = append(ws.toks, ws.cl.NewTokens())
+	}
+	ws.keys = ws.keys[:0]
+	for i := range m1 {
+		s1 := &m1[i]
+		var s2 *seqio.Record
+		if paired {
+			s2 = &m2[i]
+		}
+		if minQ > 0 {
+			seqio.MaskLowQuality(s1, minQ)
+			if paired {
+				seqio.MaskLowQuality(s2, minQ)
+			}
+		}
+		tk := ws.toks[i]
+		tk.Reset()
+		tk.Scan(ws.scanner, s1.Seq)
+		if paired {
+			tk.MateBorder()
+			tk.Scan(ws.scanner, s2.Seq)
+		}
+		ws.keys = append(ws.keys, tk.Keys...)
+	}
+	t1 := time.Now()
+	vals, err := eng.router.Lookup(ws.keys, ws.vals[:0], &ws.rs)
+	ws.vals = vals
+	t2 := time.Now()
+	eng.scanNs.Add(int64(t1.Sub(t0)))
+	eng.lookupNs.Add(int64(t2.Sub(t1)))
+	if err != nil {
+		res.err = err
+		return
+	}
+	before := ws.w.Classified
+	ws.w.Out = getBuf()
+	off := 0
+	for i := range m1 {
+		s1 := &m1[i]
+		var s2 *seqio.Record
+		var len2 uint32
+		if paired {
+			s2 = &m2[i]
+			len2 = uint32(len(s2.Seq))
+		}
+		res.st.sequences++
+		tk := ws.toks[i]
+		k := len(tk.Keys)
+		tk.Vals = vals[off : off+k : off+k]
+		off += k
+		call := ws.cl.Classify(tk, s1.ID, uint32(len(s1.Seq)), len2, &ws.w)
+		if printing {
+			res.batch.Add(s1, s2, call != 0, r.idx.tax.ExternalID(call))
+		}
+		res.st.bases += uint64(len(s1.Seq))
+		if paired {
+			res.st.bases += uint64(len(s2.Seq))
+		}
+	}
+	res.st.classified = ws.w.Classified - before
+	res.kraken = ws.w.Out
+	ws.w.Out = nil
+	eng.classifyNs.Add(int64(time.Since(t2)))
 }
 
 var bufPool = sync.Pool{New: func() any { return []byte(nil) }}

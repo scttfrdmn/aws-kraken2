@@ -163,6 +163,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   builds the diagnostic `upstream/madvrandom.patch` variant into its own directory; the oracle
   build stays pristine. Plans can set the host `read_ahead_kb` (`readahead`), and the summary flags warm cells that did not follow their own input. Plans can also set THP, a command prefix (numactl) and switch instrumentation off for a control. Specs `runs/g2-{smoke,nvme,nvme2,nvme3,ram,ram2,c8gd,c9gd}.json`. `make stage-reads` takes
   `STAGE_READS_N` and `STAGE_READS_RUNS` (the SRR062634 8M-pair subset).
+- G3 engine, in-process (#24, checkpoint 1). `internal/engine` provides:
+  - the sharded resident table: floor-cut slot ranges (`Cut`, `Owner`), each loaded with its
+    overlap tail and wraparound through a context-aware parallel ranged-read `Filler` into an
+    off-heap huge-page region (`chash.AllocRegion`). The tail is verified at load (an empty cell
+    at or after the last owned slot), so a probe never leaves its shard;
+  - a router that batches each input block's lookups by owner shard and gathers the values back
+    in order;
+  - in-process and TCP transports, the TCP one with length-prefixed batches and a hello that
+    checks the shard, shard count, capacity and run token.
+
+  `bin/aws-kraken2` uses the engine when `AK2_ENGINE_N` is set (`AK2_ENGINE_TRANSPORT`,
+  `AK2_ENGINE_TAIL`; `AK2_TIMINGS=1` adds per-shard load phases and `ak2-engine` counters).
+  `make oracle-engine` runs the whole oracle matrix through it at each N
+  (`scripts/oracle.sh` `ORACLE_ENGINE`; docs/oracle.md, "Engine mode").
 
 ### Changed
 
