@@ -65,9 +65,8 @@ func Load(path string, opt Options) (*Table, error) {
 // several goroutines, but it must not return until every write to dst has finished (the
 // table is read as soon as it returns), and it must not retain dst.
 //
-// Not yet covered (the sharded engine will need both): filling a slot range plus its
-// overlap tail with wraparound, rather than the whole image, and cancellation (a context)
-// for a load abandoned midway.
+// The sharded engine's loader (internal/engine) fills a slot range plus its overlap tail, with
+// wraparound and cancellation, into an AllocRegion buffer of the same kind.
 type Filler interface {
 	Fill(dst []byte, off int64) error
 }
@@ -124,6 +123,37 @@ func allocTable(n int) (cells, region []byte, err error) {
 	cells = region[off : off+n : off+n]
 	adviseHuge(cells)
 	return cells, region, nil
+}
+
+// Region is off-heap cell memory of the kind LoadFrom gives a table (allocTable): anonymous,
+// 2 MiB aligned and huge-page advised. The sharded engine (internal/engine) fills one per shard.
+type Region struct {
+	cells, region []byte
+}
+
+// AllocRegion returns a Region of n bytes.
+func AllocRegion(n int) (*Region, error) {
+	if n < 0 {
+		return nil, fmt.Errorf("chash: region of %d bytes", n)
+	}
+	cells, region, err := allocTable(n)
+	if err != nil {
+		return nil, fmt.Errorf("chash: allocate %d bytes: %w", n, err)
+	}
+	return &Region{cells: cells, region: region}, nil
+}
+
+// Bytes is the region's memory. It must not be used after Close.
+func (r *Region) Bytes() []byte { return r.cells }
+
+// Close releases the region. Safe to call more than once.
+func (r *Region) Close() error {
+	m := r.region
+	r.cells, r.region = nil, nil
+	if m == nil {
+		return nil
+	}
+	return syscall.Munmap(m)
 }
 
 // Mmap maps hash.k2d read-only, as upstream's LoadTable does with memory mapping.

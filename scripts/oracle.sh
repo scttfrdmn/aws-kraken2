@@ -11,6 +11,12 @@
 #        DECOMP_BIN      a directory holding the gzip/bzip2 to put first on PATH (else
 #                        /tmp/gnugzip/inst/bin when present, else the system's)
 #        ORACLE_KEEP     1 = keep every case's outputs (default: only those of failing cases)
+#        ORACLE_ENGINE   a list of shard counts, e.g. "1 2 3 4 8" (make oracle-engine): upstream
+#                        runs once per case and ours runs once per N through the sharded engine
+#                        (AK2_ENGINE_N=N, cmd/aws-kraken2/engine.go), each byte-compared with it;
+#                        one cases.tsv row per (case, N). Results go to oracle-engine-<db>-<UTC>.
+#        ORACLE_ENGINE_TRANSPORT  local (default) | tcp: AK2_ENGINE_TRANSPORT for those runs
+#        ORACLE_ENGINE_TAIL       AK2_ENGINE_TAIL (overlap tail cells; default the engine's 302)
 # Writes results/g1/oracle-<db>-<UTC timestamp>/{manifest.json,cases.tsv,checks.tsv,summary.md}
 # (every number in them is computed here; nothing is typed in) and large outputs under
 # .cache/oracle/. Exits non-zero on any difference, on any upstream exit status other than the
@@ -36,6 +42,21 @@ esac
 TH=${ORACLE_THREADS:-8}
 FILTER=${ORACLE_CASES:-}
 KEEP=${ORACLE_KEEP:-0}
+# Engine mode: ENG_NS holds the shard counts; plain mode is one pass with no engine ("").
+ETR=${ORACLE_ENGINE_TRANSPORT:-local}
+ETAIL=${ORACLE_ENGINE_TAIL:-}
+if [ -n "${ORACLE_ENGINE:-}" ]; then
+  read -r -a ENG_NS <<< "$ORACLE_ENGINE"
+  for n in "${ENG_NS[@]}"; do
+    [[ $n =~ ^[1-9][0-9]*$ ]] || { echo "oracle: ORACLE_ENGINE: bad shard count '$n'" >&2; exit 2; }
+  done
+  case "$ETR" in local|tcp) ;; *) echo "oracle: ORACLE_ENGINE_TRANSPORT=$ETR: want local or tcp" >&2; exit 2 ;; esac
+  [ -z "$ETAIL" ] || [[ $ETAIL =~ ^[0-9]+$ ]] || { echo "oracle: ORACLE_ENGINE_TAIL=$ETAIL: want a cell count" >&2; exit 2; }
+  MODE=engine
+else
+  ENG_NS=("")
+  MODE=plain
+fi
 
 if [ -n "${DECOMP_BIN:-}" ]; then PATH="$DECOMP_BIN:$PATH"
 elif [ -x /tmp/gnugzip/inst/bin/gzip ]; then PATH="/tmp/gnugzip/inst/bin:$PATH"; fi
@@ -247,15 +268,19 @@ firstdiff() {
 }
 
 # Normalized stderr (informational): timing figures and program names removed.
-normerr() { sed -E 's/processed in [0-9.]+s \([^)]*\)/processed/; s#^[^ :]*(kraken2|aws-kraken2): #PROG: #; s#\r##g; s#/(upstream|ours)\.#/SIDE.#g' "$1"; }
+normerr() { perl -0pe 's/ak2-(timing|engine)\t[^\n]*\n//g' "$1" | sed -E 's/processed in [0-9.]+s \([^)]*\)/processed/; s#^[^ :]*(kraken2|aws-kraken2): #PROG: #; s#\r##g; s#/(n[0-9]+/)?(upstream|ours)\.#/SIDE.#g'; }
 
 STATUS=0
+declare -A ETP EWP
+NROWS=$(( ${#CASES[@]} * ${#ENG_NS[@]} ))
 run_db() {
   local db=$1 dbdir; dbdir=$(db_dir "$db")
   if [ ! -s "$dbdir/SOURCE" ]; then
     scripts/fetch-db.sh "$db" >/dev/null || { echo "oracle: cannot fetch db $db" >&2; STATUS=1; return; }
   fi
+  ETP=(); EWP=()
   local RES="results/g1/oracle-$db-$TS" W="$WORKROOT/$db"
+  [ "$MODE" = engine ] && RES="results/g1/oracle-engine-$db-$TS"
   if [ -e "$RES" ]; then echo "oracle: $RES exists" >&2; STATUS=1; return; fi
   mkdir -p "$RES" "$W"
   "$ROOT/bin/k2probe" opts "$dbdir/opts.k2d" > "$RES/opts.json"
@@ -269,7 +294,7 @@ run_db() {
   {
     printf 'case\tsample\tlayout\tform\targs\texpected_exit\tupstream_exit\tours_exit\tupstream_s\tours_s'
     for k in "${KINDS[@]}"; do printf '\t%s_upstream_sha256\t%s_ours_sha256' "$k" "$k"; done
-    printf '\tfiles_compared\tidentical\tupstream_exit_ok\tstderr_same\tcontrol\tpass\tupstream_classify_s\tours_classify_s\trequested_outputs_ok\tunexpected_files\n'
+    printf '\tfiles_compared\tidentical\tupstream_exit_ok\tstderr_same\tcontrol\tpass\tupstream_classify_s\tours_classify_s\trequested_outputs_ok\tunexpected_files\tengine_n\ttail_probes\twrap_probes\n'
   } > "$T"
   local ran=0
   local c name sample layout form expect outs extra ctl
@@ -309,21 +334,32 @@ run_db() {
     local U_out=$P_output U_rep=$P_report U_c1=$P_c1 U_c2=$P_c2 U_u1=$P_u1 U_u2=$P_u2 U_std=$P_stdout
     local R_output=$Q_output R_report=$Q_report R_c1=$Q_c1 R_c2=$Q_c2 R_u1=$Q_u1 R_u2=$Q_u2 R_stdout=$Q_stdout
     echo "+ ${envs[*]} ${up[*]}" >> "$LOG"
-    local t0 t1 t2 ue oe
-    t0=$(now); env "${envs[@]}" "${up[@]}" > "$U_std" 2> "$d/upstream.stderr"; ue=$?; t1=$(now)
-    # ours, identical arguments but its own output names
-    outargs ours "$d" "$layout" "$outs"
+    local t0 tu t1 t2 ue oe
+    t0=$(now); env "${envs[@]}" "${up[@]}" > "$U_std" 2> "$d/upstream.stderr"; ue=$?; tu=$(now)
+    # Coverage evidence is taken from upstream's own outputs before they are deleted.
+    coverage "$db" "$cname" "$d" "$U_out" "$U_c1" "$U_u1"
+    # ours, identical arguments but its own output names: once (plain), or once per shard count
+    # through the engine, each in its own directory n<N>.
+    local EN allpass=yes
+    for EN in "${ENG_NS[@]}"; do
+    local od=$d lab=$cname eenv=()
+    if [ -n "$EN" ]; then
+      od="$d/n$EN"; rm -rf "$od"; mkdir -p "$od"; lab="$cname@n$EN"
+      eenv=(AK2_ENGINE_N="$EN" AK2_ENGINE_TRANSPORT="$ETR" AK2_TIMINGS=1)
+      [ -n "$ETAIL" ] && eenv+=(AK2_ENGINE_TAIL="$ETAIL")
+    fi
+    outargs ours "$od" "$layout" "$outs"
     # shellcheck disable=SC2206
     local ca=($ctl)
     local ou=("$OURS" "${base[@]}" "${ca[@]}" "${OUTARGS[@]}" "${inputs[@]}")
     local O_out=$P_output O_rep=$P_report O_c1=$P_c1 O_c2=$P_c2 O_u1=$P_u1 O_u2=$P_u2 O_std=$P_stdout
-    echo "+ ${envs[*]} ${ou[*]}" >> "$LOG"
-    env "${envs[@]}" "${ou[@]}" > "$O_std" 2> "$d/ours.stderr"; oe=$?; t2=$(now)
+    echo "+ ${envs[*]} ${eenv[*]} ${ou[*]}" >> "$LOG"
+    t1=$(now); env "${envs[@]}" "${eenv[@]}" "${ou[@]}" > "$O_std" 2> "$od/ours.stderr"; oe=$?; t2=$(now)
 
     local ident=yes nfiles=0 ndiff=0 reqok=yes row k us os
-    row=$(printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$cname" "$sample" "$layout" "$form" \
+    row=$(printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$lab" "$sample" "$layout" "$form" \
       "${extra:--}" "$expect" "$ue" "$oe" \
-      "$(awk -v a="$t0" -v b="$t1" 'BEGIN{printf "%.3f", b-a}')" \
+      "$(awk -v a="$t0" -v b="$tu" 'BEGIN{printf "%.3f", b-a}')" \
       "$(awk -v a="$t1" -v b="$t2" 'BEGIN{printf "%.3f", b-a}')")
     for k in "${KINDS[@]}"; do
       local uv="U_$k" ov="O_$k" rv="R_$k"
@@ -336,7 +372,7 @@ run_db() {
         nfiles=$((nfiles + 1))
         if [ "$us" != "$os" ]; then
           ident=no; ndiff=$((ndiff + 1))
-          log "${ctl:+(control, expected) }DIFF $db $cname $k:"; firstdiff "${!uv}" "${!ov}" | tee -a "$LOG"
+          log "${ctl:+(control, expected) }DIFF $db $lab $k:"; firstdiff "${!uv}" "${!ov}" | tee -a "$LOG"
         fi
       fi
       # Existence (only when the case expects success): a requested output must be there on
@@ -344,24 +380,26 @@ run_db() {
       if [ "$expect" = 0 ]; then
         case "${!rv}" in
           must)
-            if [ "$k" = stdout ]; then [ -s "${!uv}" ] && [ -s "${!ov}" ] || { reqok=no; log "MISSING $db $cname: $k empty"; }
-            else [ -f "${!uv}" ] && [ -f "${!ov}" ] || { reqok=no; log "MISSING $db $cname: $k (upstream $us, ours $os)"; }; fi ;;
+            if [ "$k" = stdout ]; then [ -s "${!uv}" ] && [ -s "${!ov}" ] || { reqok=no; log "MISSING $db $lab: $k empty"; }
+            else [ -f "${!uv}" ] && [ -f "${!ov}" ] || { reqok=no; log "MISSING $db $lab: $k (upstream $us, ours $os)"; }; fi ;;
           absent)
-            [ ! -e "${!uv}" ] && [ ! -e "${!ov}" ] || { reqok=no; log "PRESENT $db $cname: $k should be absent (upstream $us, ours $os)"; } ;;
+            [ ! -e "${!uv}" ] && [ ! -e "${!ov}" ] || { reqok=no; log "PRESENT $db $lab: $k should be absent (upstream $us, ours $os)"; } ;;
         esac
       fi
     done
-    [ "$ue" = "$oe" ] || { ident=no; log "DIFF $db $cname exit: upstream $ue, ours $oe"; }
-    # Anything else written into the case directory is unexpected.
+    [ "$ue" = "$oe" ] || { ident=no; log "DIFF $db $lab exit: upstream $ue, ours $oe"; }
+    # Anything else written into the case directory (or this N's directory) is unexpected.
     local known extra_files f
-    known=$(printf '%s\n' "$d/upstream.stderr" "$d/ours.stderr" "$U_std" "$O_std" "$U_out" "$O_out" "$U_rep" "$O_rep" \
+    known=$(printf '%s\n' "$d/upstream.stderr" "$od/ours.stderr" "$U_std" "$O_std" "$U_out" "$O_out" "$U_rep" "$O_rep" \
       "$U_c1" "$U_c2" "$U_u1" "$U_u2" "$O_c1" "$O_c2" "$O_u1" "$O_u2" | grep -v '^$')
-    extra_files=$(find "$d" -mindepth 1 | while read -r f; do printf '%s\n' "$known" | grep -qxF -- "$f" || echo "${f#"$d"/}"; done | tr '\n' ' ')
+    extra_files=$( { if [ "$MODE" = engine ]; then find "$d" -mindepth 1 -path "$d/n[0-9]*" -prune -o -print
+                     find "$od" -mindepth 1; else find "$d" -mindepth 1; fi; } |
+      while read -r f; do printf '%s\n' "$known" | grep -qxF -- "$f" || echo "${f#"$d"/}"; done | tr '\n' ' ')
     extra_files=${extra_files% }
-    [ -z "$extra_files" ] || log "UNEXPECTED FILES $db $cname: $extra_files"
-    local upok=yes; [ "$ue" = "$expect" ] || { upok=no; log "UNEXPECTED $db $cname: upstream exit $ue, case expects $expect"; }
+    [ -z "$extra_files" ] || log "UNEXPECTED FILES $db $lab: $extra_files"
+    local upok=yes; [ "$ue" = "$expect" ] || { upok=no; log "UNEXPECTED $db $lab: upstream exit $ue, case expects $expect"; }
     local errsame=yes
-    cmp -s <(normerr "$d/upstream.stderr") <(normerr "$d/ours.stderr") || errsame=no
+    cmp -s <(normerr "$d/upstream.stderr") <(normerr "$od/ours.stderr") || errsame=no
     local isctl=no pass=no
     [ -n "$ctl" ] && isctl=yes
     # A control passes only if both sides exit alike and at least one output file differs.
@@ -369,21 +407,33 @@ run_db() {
        { { [ $isctl = no ] && [ "$ident" = yes ]; } || { [ $isctl = yes ] && [ "$ue" = "$oe" ] && [ "$ndiff" -gt 0 ]; }; }; then pass=yes; fi
     local uc oc
     uc=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$d/upstream.stderr" | tail -1)
-    oc=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$d/ours.stderr" | tail -1)
-    row+=$(printf '\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$nfiles" "$ident" "$upok" "$errsame" "$isctl" "$pass" "${uc:--}" "${oc:--}" "$reqok" "${extra_files:--}")
+    oc=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$od/ours.stderr" | tail -1)
+    # Engine evidence (Law 4): lookups whose probe ended in a shard's overlap tail, and those
+    # that ended in the wrapped part of the last shard's tail (cmd/aws-kraken2/engine.go).
+    local tp=- wp=-
+    if [ -n "$EN" ]; then
+      read -r tp wp < <(awk -F'\t' '$1=="ak2-engine" && $2=="shard" {
+          for (i = 3; i < NF; i++) { if ($i=="tail_probes") t += $(i+1); if ($i=="wrap_probes") w += $(i+1) } }
+        END { print t+0, w+0 }' "$od/ours.stderr")
+      ETP[$EN]=$(( ${ETP[$EN]:-0} + tp )); EWP[$EN]=$(( ${EWP[$EN]:-0} + wp ))
+    fi
+    row+=$(printf '\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$nfiles" "$ident" "$upok" "$errsame" "$isctl" "$pass" "${uc:--}" "${oc:--}" "$reqok" "${extra_files:--}" "${EN:--}" "$tp" "$wp")
     echo "$row" >> "$T"
-    log "case $db $cname: upstream exit $ue, ours $oe, $nfiles files, identical=$ident, control=$isctl, pass=$pass, stderr_same=$errsame"
-    [ "$pass" = yes ] || STATUS=1
-    # Coverage evidence is taken from upstream's own outputs before they are deleted.
-    coverage "$db" "$cname" "$d" "$U_out" "$U_c1" "$U_u1"
-    if [ "$KEEP" != 1 ] && [ "$pass" = yes ]; then rm -rf "$d"/*.fq "$d"/*.output "$d"/*.stdout; fi
+    log "case $db $lab: upstream exit $ue, ours $oe, $nfiles files, identical=$ident, control=$isctl, pass=$pass, stderr_same=$errsame"
+    if [ "$pass" = yes ]; then
+      [ "$KEEP" = 1 ] || [ "$od" = "$d" ] || rm -rf "$od"/*.fq "$od"/*.output "$od"/*.stdout
+    else
+      STATUS=1; allpass=no
+    fi
+    done
+    if [ "$KEEP" != 1 ] && [ "$allpass" = yes ]; then rm -rf "$d"/*.fq "$d"/*.output "$d"/*.stdout; fi
   done
   # The matrix itself: a filter that matches nothing, or an unfiltered run that did not record
   # every case, is a failure.
   local rows; rows=$(awk 'NR>1' "$T" | wc -l | tr -d ' ')
   MATRIX_OK=yes
   if [ "$ran" = 0 ]; then log "FAIL: no case matched filter '$FILTER'"; MATRIX_OK=no; fi
-  if [ -z "$FILTER" ] && [ "$rows" != "${#CASES[@]}" ]; then log "FAIL: $rows rows recorded, ${#CASES[@]} cases defined"; MATRIX_OK=no; fi
+  if [ -z "$FILTER" ] && [ "$rows" != "$NROWS" ]; then log "FAIL: $rows rows recorded, $NROWS expected (${#CASES[@]} cases x ${#ENG_NS[@]})"; MATRIX_OK=no; fi
   checks "$db" "$RES"
   local stop; stop=$(date -u +%FT%TZ)
   manifest "$db" "$dbdir" "$RES" "$start" "$stop"
@@ -440,6 +490,14 @@ checks() {
   ck "pe-t1 (1 thread, plain) vs pe-default-gz (${TH} threads, gzip), S1: same --output" "${EVID[$db|pe-t1-S1|output_sha]:-a}" eq "${EVID[$db|pe-default-gz-S1|output_sha]:-b}"
   ck "pe-mmap vs pe-default-gz, S1: same --output" "${EVID[$db|pe-mmap-S1|output_sha]:-a}" eq "${EVID[$db|pe-default-gz-S1|output_sha]:-b}"
   ck "pe-quick vs pe-default-gz, S1: --quick changes --output" "${EVID[$db|pe-quick-S1|output_sha]:-}" ne "${EVID[$db|pe-default-gz-S1|output_sha]:-x}"
+  local EN
+  if [ "$MODE" = engine ]; then
+    for EN in "${ENG_NS[@]}"; do
+      [ "$EN" = 1 ] && continue
+      printf '%s\t%s\t%s\t%s\n' "engine N=$EN: lookups whose probe ended in a shard's overlap tail, summed over cases (real-data reach of the tail path; synthetic coverage: internal/engine tests)" "${ETP[$EN]:-0}" "info" "-" >> "$f"
+      printf '%s\t%s\t%s\t%s\n' "engine N=$EN: of those, ended past slot C-1 in the last shard's wrapped tail" "${EWP[$EN]:-0}" "info" "-" >> "$f"
+    done
+  fi
   local mh; mh=$(jq -r .minimum_acceptable_hash_value "$RES/opts.json")
   printf '%s\t%s\t%s\t%s\n' "minimum_acceptable_hash_value (nonzero: the subthreshold skip path runs)" "$mh" "info" "-" >> "$f"
 }
@@ -464,7 +522,7 @@ manifest() {
   upbad=$(awk -F'\t' 'NR==1{for(i=1;i<=NF;i++)c[$i]=i} NR>1 && $c["upstream_exit_ok"]!="yes"' "$RES/cases.tsv" | wc -l | tr -d ' ')
   ckbad=$(awk -F'\t' 'NR>1 && $4=="no"' "$RES/checks.tsv" | wc -l | tr -d ' ')
   if [ "$total" = 0 ] || [ "$ident" != "$total" ] || [ "$upbad" != 0 ] || [ "$MATRIX_OK" != yes ] ||
-     { [ -z "$FILTER" ] && [ "$total" != "${#CASES[@]}" ]; } || { [ "$ckbad" != 0 ] && [ -z "$FILTER" ]; }; then failed=true; fi
+     { [ -z "$FILTER" ] && [ "$total" != "$NROWS" ]; } || { [ "$ckbad" != 0 ] && [ -z "$FILTER" ]; }; then failed=true; fi
   jq -n \
     --arg gate g1 --arg what "make oracle: upstream kraken2 vs bin/aws-kraken2, byte-identity (Law 1, #17)" \
     --arg invocation "$INVOCATION" --arg filter "$FILTER" --argjson threads "$TH" \
@@ -483,7 +541,8 @@ manifest() {
     --argjson reads "$reads" --argjson variants "$variants" \
     --arg start "$start" --arg stop "$stop" \
     --argjson cases "$total" --argjson identical "$ident" --argjson upstream_unexpected "$upbad" \
-    --argjson ckbad "$ckbad" --argjson failed "$failed" --argjson defined "${#CASES[@]}" \
+    --argjson ckbad "$ckbad" --argjson failed "$failed" --argjson defined "$NROWS" --argjson ncases "${#CASES[@]}" \
+    --arg mode "$MODE" --arg engine_ns "${ENG_NS[*]}" --arg engine_transport "$ETR" --arg engine_tail "$ETAIL" \
     '{gate:$gate, what:$what, invocation:$invocation, case_filter:$filter, threads:$threads,
       commit:$commit, dirty:$dirty, upstream_pin:$pin, upstream_describe:$describe,
       upstream:{sha:$pin, describe:$describe, classify_sha256:$classify_sha, kraken2_sha256:$kraken2_sha, build:$upbuild, compiler:$compiler},
@@ -496,14 +555,24 @@ manifest() {
       reads:$reads, variants:$variants,
       start:$start, stop:$stop,
       cases:$cases, cases_passed:$identical, upstream_unexpected_exit:$upstream_unexpected,
-      cases_defined:$defined, coverage_checks_failed:$ckbad, failed:$failed}' > "$RES/manifest.json"
+      cases_defined:$defined, case_kinds_defined:$ncases, coverage_checks_failed:$ckbad, failed:$failed,
+      mode:$mode,
+      engine:(if $mode == "engine" then {shard_counts:($engine_ns | split(" ") | map(tonumber)),
+               transport:$engine_transport,
+               tail_cells:(if $engine_tail == "" then "default (engine.DefaultTail, 302)" else ($engine_tail | tonumber) end),
+               note:"upstream ran once per case; ours ran once per shard count, each compared with it (one cases.tsv row per case and N)"}
+              else null end)}' > "$RES/manifest.json"
 }
 
 # summarize DB RES: summary.md, every number derived from cases.tsv and checks.tsv.
 summarize() {
   local db=$1 RES=$2
   local man="$RES/manifest.json"
-  echo "# make oracle: $db, $TS"
+  if [ "$MODE" = engine ]; then
+    echo "# make oracle-engine: $db, $TS (shard counts ${ENG_NS[*]}, transport $ETR, tail ${ETAIL:-302 default})"
+  else
+    echo "# make oracle: $db, $TS"
+  fi
   echo
   echo "Upstream \`kraken2\` at \`$UPSTREAM_SHA\` (\`$UPSTREAM_DESCRIBE\`) vs \`bin/aws-kraken2\` at \`$(jq -r .commit "$man")\`" \
        "(dirty: $(jq -r .dirty "$man")), on $(jq -r '.host.os + " " + .host.arch' "$man")."

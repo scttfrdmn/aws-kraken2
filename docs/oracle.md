@@ -166,6 +166,41 @@ passing case's large files are deleted.
 `make oracle DB=viral` on `ubuntu-24.04-arm`; `runs/g1-oracle.json` runs `DB=all` on Graviton
 through `make run`.
 
+## Engine mode: make oracle-engine (#24)
+
+```bash
+make oracle-engine DB=viral|standard8|all              # NS="1 2 3 4 8", TRANSPORT=local
+make oracle-engine DB=standard8 TRANSPORT=tcp          # each shard behind a loopback TCP server
+make oracle-engine DB=viral NS="5 7" TAIL=254           # other shard counts, an explicit tail
+```
+
+Law 1 holds at every shard count. This mode runs the same matrix, but each case runs upstream
+once and ours once per shard count N in `NS`, through the sharded engine
+(`internal/engine`, enabled in `bin/aws-kraken2` by `AK2_ENGINE_N=N`,
+`AK2_ENGINE_TRANSPORT`, `AK2_ENGINE_TAIL`; see `cmd/aws-kraken2/engine.go`). Every run is
+compared with upstream's outputs as in plain mode, with the same exit-status, existence,
+unexpected-file and control rules. Our outputs for N go to `<case>/n<N>/`.
+
+- In-process: N shards in one process. Each holds its floor-cut slot range plus the tail and
+  is loaded from the local `hash.k2d` with parallel ranged reads. Each input block's lookups are
+  routed to the shards that own their home slots (`local`: direct calls; `tcp`: the length-prefixed
+  TCP protocol over loopback, the same one nodes use). The worker that scanned the block then
+  classifies it.
+- **Tail.** The default is 302 cells, RODA v205's global longest run, which also bounds Viral
+  (216) and Standard-8 (254) (`results/g0c/local-*/<db>/tails.tsv`). Whatever tail is given,
+  every shard checks at load that it holds an empty cell at or after its last owned slot. A tail
+  too short for the table is a load error (exit 1), never a wrong answer.
+- Results: `results/g1/oracle-engine-<db>-<UTC>/`. `cases.tsv` has one row per case and N:
+  `case` is `<case>@n<N>`, plus `engine_n`, `tail_probes` and `wrap_probes`. The manifest has
+  `mode: engine` and an `engine` object (shard counts, transport, tail), and `cases_defined` =
+  61 × the number of shard counts.
+- **Resolution (Law 4).** The engine runs with `AK2_TIMINGS=1`; these lines are removed before
+  the informational stderr comparison. `checks.tsv` adds, per N > 1, the number of real lookups
+  whose probe ended in a shard's overlap tail (the lookups a shard without its tail would get
+  wrong), and how many of them ended in the wrapped part of the last shard's tail. These rows
+  are informational. Real reads reach a tail only rarely, so the boundary, tail-length, wrap and
+  full-table cases are covered on synthetic tables by `go test ./internal/engine`.
+
 ## Canonical run (Linux aarch64, Graviton)
 
 `runs/g1-oracle.json` runs `make oracle DB=all` (Viral and Standard-8) on a Graviton instance in
