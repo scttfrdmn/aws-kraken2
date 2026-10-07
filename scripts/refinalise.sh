@@ -14,7 +14,8 @@
 # final_state becomes "terminated" with instance.final_state_basis "aged_out"; terminated_at
 # stays null; stop and billed_seconds end at the completion record's ended_at (else the last
 # phase start), cost_basis says so, and the gap is named. Any other describe error is a gap, not
-# a state. Set fields are never overwritten.
+# a state. Set fields are never overwritten; final_state with final_state_basis "unknown" (run.sh
+# never got an answer) counts as unset.
 # It refuses a manifest that already has .manifest_repair, or is finalised with its completion
 # record, unless --force. The first repair is .manifest_repair; a forced later one is appended
 # to .manifest_repairs[].

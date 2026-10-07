@@ -210,7 +210,10 @@ refuses if the result exceeds
      with its reason, at most once a minute, and the poll backs off from 15 s up to 120 s.
 
    `instance.final_state_basis` records how the final state was decided: `observed`
-   (DescribeInstances said so), `aged_out` (EC2 no longer knows the instance), or `unknown`. Each attempt is a fresh process, so DNS is re-resolved. If calls are
+   (DescribeInstances said so), `aged_out` (EC2 no longer knows the instance), or `unknown`.
+   The end-of-run describe overrides an earlier inference: whatever state EC2 answers becomes
+   `final_state`, with basis `observed`. `scripts/refinalise.sh` treats a `final_state` whose
+   basis is `unknown` as unset. Each attempt is a fresh process, so DNS is re-resolved. If calls are
    failing, the poll keeps going for up to `AK2_POLL_GRACE_S` (6 h) past TTL + 3 min. This
    matters because the record may already be in S3: on 2026-10-07, a launch-host network outage
    made three drivers give up at TTL + 3 min and spin in the termination wait. It then waits for
