@@ -1,4 +1,4 @@
-# make g2: g2-nvme-20261006T205831Z
+# make g2: g2-nvme
 
 | | |
 |---|---|
@@ -25,6 +25,8 @@
 | SRR28305653_200000-gz | 200000 | 72980506 | 9 | 9 |
 
 ## Cells (classify_s = upstream's own `processed in`; median [min-max])
+
+`warm!` marks a warm cell with a rung that did not follow a rung on its own input (the cache held another input's pages): not a warm measurement.
 
 | regime | input | state | T | n | classify_s | pairs/s | load_s | wall_s | blocks/T | quant | output sha256 |
 |---|---|---|---|---|---|---|---|---|---|---|---|

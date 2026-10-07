@@ -113,6 +113,17 @@ def main():
     inputs = json.load(open(os.path.join(d, "inputs.json")))
     man = json.load(open(os.path.join(d, "manifest.json"))) if os.path.exists(os.path.join(d, "manifest.json")) else {}
     done = [r for r in runs if r.get("kind") == "run" and not r.get("skipped")]
+    # A warm rung is warm for its input only if the rung before it (in run order) read the same
+    # input in the same regime: every cold rung drops the page cache, so a warm rung that follows
+    # another input's cold rung finds that input's pages, not its own.
+    prev = None
+    for r in done:
+        if r["state"] == "warm":
+            # ram: the table is on tmpfs, which drop_caches does not touch, so only file-backed
+            # regimes are checked.
+            r["warm_ok"] = r["regime"].startswith("ram") or (
+                bool(prev) and prev["input"] == r["input"] and prev["regime"] == r["regime"])
+        prev = r
     skipped = [r for r in runs if r.get("skipped")]
     cells = {}
     for r in done:
@@ -142,7 +153,8 @@ def main():
                "pairs": pairs, "pairs_per_s": (pairs / med(cl)) if pairs and med(cl) else None,
                "blocks": B, "quant": quant, "blocks_ok": (B >= 2 * T) if B else None,
                "outputs": sorted(set(r.get("output_sha256") or "-" for r in ok)),
-               "timeout_s": max([r.get("wall_s") or 0 for r in rs if r.get("timed_out")] or [0]) or None}
+               "timeout_s": max([r.get("wall_s") or 0 for r in rs if r.get("timed_out")] or [0]) or None,
+               "warm_invalid": sum(1 for r in rs if r["state"] == "warm" and not r.get("warm_ok"))}
         rows.append(row)
         ss = [sig(r) for r in ok] or [sig(r) for r in rs]
         srow = {"regime": key[0], "input": key[1], "state": key[2], "threads": T, "n": len(ss),
@@ -187,12 +199,14 @@ def main():
         md.append("| %s | %s | %s | %s | %s |" % (k, v["pairs"], v["mate1_bytes"], v["blocks_8mib"], v["blocks_8mib"]))
     md.append("")
     md.append("## Cells (classify_s = upstream's own `processed in`; median [min-max])\n")
+    md.append("`warm!` marks a warm cell with a rung that did not follow a rung on its own input "
+              "(the cache held another input's pages): not a warm measurement.\n")
     md.append("| regime | input | state | T | n | classify_s | pairs/s | load_s | wall_s | blocks/T | quant | output sha256 |")
     md.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         bt = (r["blocks"] / r["threads"]) if r["blocks"] else None
         md.append("| %s | %s | %s | %d | %d%s | %s [%s-%s] | %s | %s [%s-%s] | %s | %s | %s | %s |" % (
-            r["regime"], r["input"], r["state"], r["threads"], r["n"],
+            r["regime"], r["input"], r["state"] + ("!" if r["warm_invalid"] else ""), r["threads"], r["n"],
             (" (+%d censored)" % r["censored"]) if r["censored"] else "",
             f(r["classify_med"]), f(r["classify_min"]), f(r["classify_max"]), f(r["pairs_per_s"], 0),
             f(r["load_med"]), f(r["load_min"]), f(r["load_max"]), f(r["wall_med"]), f(bt, 2), f(r["quant"], 2),
