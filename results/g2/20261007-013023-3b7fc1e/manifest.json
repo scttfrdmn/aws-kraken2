@@ -289,7 +289,9 @@
     "az": "us-west-2a",
     "launch_time": "2026-10-07T01:30:59+00:00",
     "architecture": "arm64",
-    "lifecycle": "on-demand"
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "final_state_basis": "aged_out"
   },
   "truffle_price_usd_per_hour": 1.56768,
   "truffle_price_note": "",
@@ -852,7 +854,7 @@
   "stop": "2026-10-07T03:07:17Z",
   "billed_seconds": 5778,
   "cost_usd": 2.516126,
-  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "cost_basis": "on-demand truffle price x (completion ended_at - launch_time), 60 s minimum; the instance was no longer describable, so this undercounts the shutdown (about 10-15 s); compute only, excludes EBS and S3 requests",
   "manifest_finalised_at": "2026-10-07T06:24:42Z",
   "manifest_repair": {
     "by": "scripts/refinalise.sh",
@@ -889,6 +891,73 @@
     ],
     "gaps": [
       "instance i-00cf89855d9941618 no longer describable (): terminated_at unknown; stop = completion ended_at (else last phase start), so billed_seconds and cost_usd undercount by the shutdown time (about 10-15 s)"
-    ]
+    ],
+    "hand_edit": {
+      "edited_by": "hand",
+      "edited_at": "2026-10-07T06:51:11Z",
+      "field": "cost_basis",
+      "old_value": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+      "why": "the first refinalise.sh wrote the terminated_at text although stop_basis is the completion ended_at; refinalise.sh never overwrites a set field, so the corrected text is applied by hand",
+      "fixed_in": "d8598e2 (harness-poll-resilience: cost_basis follows stop_basis)"
+    }
+  },
+  "manifest_repairs": [
+    {
+      "by": "scripts/refinalise.sh",
+      "at": "2026-10-07T06:50:30Z",
+      "forced": true,
+      "fields_unset_before": [
+        "datasets.0.version_id",
+        "datasets.1.version_id",
+        "datasets.2.version_id",
+        "datasets.3.version_id",
+        "datasets.4.version_id",
+        "datasets.5.version_id",
+        "datasets.6.version_id",
+        "datasets.7.version_id",
+        "datasets.8.version_id",
+        "datasets.9.version_id",
+        "datasets.10.version_id",
+        "datasets.11.version_id",
+        "datasets.12.version_id",
+        "datasets.13.version_id",
+        "datasets.14.version_id",
+        "datasets.15.version_id",
+        "datasets.16.version_id",
+        "datasets.17.version_id",
+        "datasets.18.version_id",
+        "datasets.19.version_id",
+        "datasets.20.version_id",
+        "datasets.21.version_id",
+        "datasets.22.version_id",
+        "datasets.23.version_id",
+        "datasets.24.version_id",
+        "datasets.25.version_id",
+        "datasets.26.version_id",
+        "datasets.27.version_id",
+        "truffle_price_note",
+        "task.retry_class"
+      ],
+      "gaps": [
+        "instance i-00cf89855d9941618 aged out of EC2 (query printed None): terminated_at unknown; stop = completion ended_at (else last phase start), so billed_seconds and cost_usd undercount by the shutdown time (about 10-15 s)"
+      ],
+      "stop_basis": "kept",
+      "final_state_basis": "aged_out",
+      "object_tags": {
+        "ok": true,
+        "line": "tag-objects: s3://cookbook-942542972736-us-west-2/aws-kraken2/g2/20261007-013023-3b7fc1e/: 17 objects, 0 tagged now, 17 already tagged, 0 failed"
+      }
+    }
+  ],
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g2-20261007-013023-3b7fc1e",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-07T06:50:32Z",
+    "recorded_by": "scripts/refinalise.sh"
   }
 }
