@@ -44,6 +44,7 @@ case "$1 $2" in
   "s3api list-multipart-uploads") if [ -s "$S/uploads" ]; then cat "$S/uploads"; fi; exit 0 ;;
   "s3api abort-multipart-upload") echo "abort $(arg --key "$@") $(arg --upload-id "$@")" >> "$S/log"; : > "$S/uploads" ;;
   "s3 cp") exit 0 ;;
+  "s3api list-objects-v2") printf 'aws-kraken2/t/x/out/o.txt\t3\t"e"\n' ;;
   *) echo "stub aws: unexpected $*" >&2; exit 2 ;;
 esac
 EOF

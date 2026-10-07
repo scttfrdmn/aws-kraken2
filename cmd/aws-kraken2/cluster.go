@@ -828,5 +828,12 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 	}
 	e.node, e.router, e.tcp = nd, router, tcps
 	e.rvRequests = rv.Requests
+	e.loadS = loadS
+	switch s := src.(type) {
+	case *rangeread.HTTPSource:
+		e.loadRequests, e.loadRetries, e.loadBytes = s.Requests.Load(), s.Retries.Load(), s.Bytes.Load()
+	case *rangeread.FileSource:
+		e.loadRequests, e.loadBytes = s.Requests.Load(), s.Bytes.Load()
+	}
 	return e, nil
 }

@@ -77,6 +77,10 @@ type engineIndex struct {
 	node    *node // multi-node only
 
 	rvRequests int64
+	// The node's shard load: seconds, and the source's request counters (ranged GETs or preads,
+	// including the table id's samples, which are read after the load).
+	loadS                                float64
+	loadRequests, loadRetries, loadBytes int64
 
 	scanNs, lookupNs, classifyNs atomic.Int64
 }
@@ -183,6 +187,8 @@ func (e *engineIndex) report() {
 	if e.node != nil {
 		e.node.report()
 		fmt.Fprintf(os.Stderr, "ak2-engine\trendezvous\trequests\t%d\n", e.rvRequests)
+		fmt.Fprintf(os.Stderr, "ak2-engine\tload\tseconds\t%.6f\trequests\t%d\tretries\t%d\tbytes\t%d\n",
+			e.loadS, e.loadRequests, e.loadRetries, e.loadBytes)
 	}
 	r := &e.router.Stats
 	fmt.Fprintf(os.Stderr, "ak2-engine\troute\ttransport\t%s\tcalls\t%d\tkeys\t%d\tbatches\t%d\troute_s\t%.6f\twait_s\t%.6f\tgather_s\t%.6f\n",

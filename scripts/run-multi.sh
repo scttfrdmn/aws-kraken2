@@ -201,7 +201,12 @@ finish() {
   fi
   local FETCHED=no i
   for i in 1 2 3; do
-    if aws s3 cp --only-show-errors --recursive --region "$REGION" "$CPREFIX/" "$CDIR/prefix/"; then FETCHED=yes; break; fi
+    # Everything but the emitter's outputs (out/: sample outputs, hundreds of MB, which do not
+    # belong in git); those are listed with size and ETag instead. Their byte-identity is checked
+    # on the instance and recorded in the members' out/identity.tsv.
+    if aws s3 cp --only-show-errors --recursive --region "$REGION" --exclude 'out/*' "$CPREFIX/" "$CDIR/prefix/" &&
+       aws s3api list-objects-v2 --region "$REGION" --bucket "$RESULTS_BUCKET" --prefix "${CPREFIX#s3://$RESULTS_BUCKET/}/out/" \
+         --query 'Contents[].[Key,Size,ETag]' --output text > "$CDIR/outputs.tsv"; then FETCHED=yes; break; fi
     sleep $((10 * i))
   done
   local TAGLINE; TAGLINE=$("$TAG_SH" "$CPREFIX/" 2>&1) || say "WARNING: tagging: $TAGLINE"
