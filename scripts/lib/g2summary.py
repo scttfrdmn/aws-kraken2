@@ -141,7 +141,9 @@ def main():
     for r in runs:
         if r.get("skipped"):
             continue
-        if r.get("kind") == "run" and r["state"] == "warm" and not r["regime"].startswith("ram"):
+        # Only mmap and madv classify through the page cache; load reads the whole table into RAM
+        # (warm only shortens its load_s), and ram is on tmpfs.
+        if r.get("kind") == "run" and r["state"] == "warm" and r["regime"].split("[")[0] in ("mmap", "madv"):
             why = None
             if prev is None:
                 why = "first rung of the run"
