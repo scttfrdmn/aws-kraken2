@@ -21,8 +21,9 @@ type Peer struct {
 	Emit      string  `json:"emit_addr"`
 	Host      string  `json:"host"`
 	PID       int     `json:"pid"`
-	Published string  `json:"published"` // RFC 3339, UTC
-	LoadS     float64 `json:"load_s"`    // seconds the node took to load its shard
+	Published string  `json:"published"`        // RFC 3339, UTC
+	LoadS     float64 `json:"load_s"`           // seconds the node took to load its shard
+	Status    int     `json:"status,omitempty"` // barriers: the node's failure count
 }
 
 // Rendezvous is peer discovery through an object store: each node writes

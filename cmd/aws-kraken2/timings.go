@@ -29,6 +29,7 @@ type phaseMark struct {
 	name string
 	t    time.Time
 	ru   syscall.Rusage
+	rec  *sampleRec // cohort mode: the phase is recorded there instead of printed
 }
 
 // phase starts timing a phase; call end on the result. It costs nothing when timings are off.
@@ -43,6 +44,10 @@ func phase(name string) *phaseMark {
 
 func (p *phaseMark) end() {
 	if p == nil {
+		return
+	}
+	if p.rec != nil {
+		p.rec.add(p.name, time.Since(p.t))
 		return
 	}
 	now := time.Now()

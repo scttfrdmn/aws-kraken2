@@ -33,6 +33,7 @@ type engineConf struct {
 	transport string
 	tail      uint64
 	cluster   *clusterConf // multi-node (AK2_ENGINE_RANK; cluster.go); nil = in-process
+	cohort    bool         // AK2_COHORT: control sessions per block-striped sample (cohort.go)
 }
 
 // engineFromEnv returns nil when AK2_ENGINE_N is unset.
@@ -63,6 +64,7 @@ func engineFromEnv(lookup func(string) (string, bool)) (*engineConf, error) {
 	if c.cluster, err = clusterFromEnv(n, lookup); err != nil {
 		return nil, err
 	}
+	_, c.cohort = lookup("AK2_COHORT")
 	return c, nil
 }
 

@@ -132,6 +132,10 @@ jobs:
       - name: make oracle-engine DB=viral NS="2 3" TRANSPORT=procs
         run: make oracle-engine DB=viral NS="2 3" TRANSPORT=procs
 
+      # Cohort mode (#25): per-sample byte-identity at N=1 and N=3 (parallel, striped, SDK path).
+      - name: make oracle-cohort DB=viral
+        run: make oracle-cohort DB=viral
+
       # Only the result directories this run created (untracked), not the committed ones.
       - name: List this run's results
         if: always()

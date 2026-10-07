@@ -44,7 +44,7 @@ case "$1 $2" in
   "s3api list-multipart-uploads") if [ -s "$S/uploads" ]; then cat "$S/uploads"; fi; exit 0 ;;
   "s3api abort-multipart-upload") echo "abort $(arg --key "$@") $(arg --upload-id "$@")" >> "$S/log"; : > "$S/uploads" ;;
   "s3 cp") exit 0 ;;
-  "s3api list-objects-v2") printf 'aws-kraken2/t/x/out/o.txt\t3\t"e"\n' ;;
+  "s3api list-object-versions") printf 'aws-kraken2/t/x/out/o.txt\tV1\t3\t"e"\n' ;;
   *) echo "stub aws: unexpected $*" >&2; exit 2 ;;
 esac
 EOF
@@ -95,7 +95,8 @@ run_scenario() {
   sleep 6  # any late launch would land in here
   ALIVE=$(for i in "$S"/inst/*; do [ -e "$i" ] || continue; read -r t st < "$i"; [ "$st" = terminated ] || basename "$i"; done | tr '\n' ' ')
   COHORT=$(ls -d "$R"/results/t/*/cohort.json 2>/dev/null | tail -1)
-  CJ=$(cat "$COHORT" 2>/dev/null); rm -rf "$R/results"
+  CJ=$(cat "$COHORT" 2>/dev/null)
+  OUTTSV=$(cat "$(dirname "$COHORT")/outputs.tsv" 2>/dev/null); rm -rf "$R/results"
 }
 expect() {  # name rc_want
   local name=$1 want=$2
@@ -134,6 +135,9 @@ run_scenario uploads none 0 "1 2 0" "1 2 0" "1 2 0" 'printf "aws-kraken2/t/x/out
 expect uploads 0
 grep -q 'abort aws-kraken2/t/x/out/o.txt UPLOAD1' "$S/log" && [ "$(echo "$CJ" | jq .multipart_aborted)" = 1 ] &&
   ok "uploads: the unfinished upload was aborted" || bad "uploads: log $(grep abort "$S/log"), multipart_aborted $(echo "$CJ" | jq .multipart_aborted)"
+
+[ "$(echo "$OUTTSV" | awk -F'\t' 'NR==1{print NF, $2}')" = "4 V1" ] && ok "uploads: outputs.tsv records key, VersionId, size, ETag" ||
+  bad "uploads: outputs.tsv is '$OUTTSV'"
 
 echo "run_multi_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]

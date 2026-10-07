@@ -213,6 +213,32 @@ unexpected-file and control rules. Our outputs for N go to `<case>/n<N>/`.
   - The synthetic-table tests in `internal/engine` cover tails one cell short (refused), a probe
     ending exactly at a shard boundary, the wrap, and full tables.
 
+## Cohort mode: make oracle-cohort (#25)
+
+```bash
+make oracle-cohort DB=viral|standard8|all
+```
+
+This is Law 1 for the engine's cohort mode ([cohort.md](cohort.md)), per sample.
+- **Samples:** 9 samples on the oracle's real reads (SRR062634, ERR478965, SRR28305653, 200k
+  pairs), varying layout, compression and options, plus a control.
+- **Upstream side:** upstream runs each sample alone (`scripts/upstream-cohort.sh`).
+- **Engine side:** the engine runs them as one cohort in four ways:
+  - `n1`: one process, `AK2_ENGINE_N=1`, 3 in flight;
+  - `n3`: 3 processes, sample-parallel, 2 in flight;
+  - `n3-striped`: 3 processes, every sample block-striped;
+  - `n3-sdk`: 3 processes, sample-parallel, every output `s3://` through the SDK path
+    (aws-sdk-go-v2) to a local fake S3 (`k2probe fakes3`).
+- **A sample passes when** its exit equals upstream's, its file set equals upstream's, and every
+  file is identical. The control gets `--confidence 0.05` on the engine side only and must differ
+  (Law 4).
+- **Results:** `results/g1/oracle-cohort-<db>-<UTC>/{manifest.json,samples.tsv,summary.md,run.log}`.
+- **Further coverage:**
+  - `go test ./cmd/aws-kraken2` runs `TestCohortInProcess`: 3 nodes in one process, parallel with
+    2 in flight, striped, and SDK batches against the fake S3, under `-race` in CI;
+  - `go test ./internal/objstore` runs the SDK store against the fake, plus the allow-list
+    guard.
+
 ## Canonical run (Linux aarch64, Graviton)
 
 `runs/g1-oracle.json` runs `make oracle DB=all` (Viral and Standard-8) on a Graviton instance in

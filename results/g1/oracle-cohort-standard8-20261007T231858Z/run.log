@@ -1,0 +1,27 @@
+shell flags: huB
+upstream-cohort: shell flags huB
+upstream-cohort: s1-pe exit 0
+upstream-cohort: s1-pe-gz exit 0
+upstream-cohort: s2-se-conf exit 0
+upstream-cohort: s2-pe-zero exit 0
+upstream-cohort: s3-pe-gz-names exit 0
+upstream-cohort: s3-se-mhg3 exit 0
+upstream-cohort: s1-se-quick-mpa exit 0
+upstream-cohort: s2-pe-q20 exit 0
+upstream-cohort: s3-pe-conf05 exit 0
+upstream-cohort: control exit 0
+upstream:       10 samples
+n1: cohort exit 0 in 2 s
+n3: cohort exit 0 in 0 s
+n3-striped: cohort exit 0 in 2 s
+fakes3: serving /Users/scttfrdmn/src/aws-kraken2/.cache/oracle-cohort/20261007T231858Z/standard8/n3-sdk/s3 at http://127.0.0.1:52907
+n3-sdk: cohort exit 0 in 1 s
+DIFF standard8 n1 control output
+DIFF standard8 n1 control report
+DIFF standard8 n3 control output
+DIFF standard8 n3 control report
+DIFF standard8 n3-striped control output
+DIFF standard8 n3-striped control report
+DIFF standard8 n3-sdk control output
+DIFF standard8 n3-sdk control report
+results: results/g1/oracle-cohort-standard8-20261007T231858Z (40 of 40 rows pass)

@@ -369,22 +369,51 @@ func (nd *node) stop() {
 // connections.
 func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, srv *engine.Server,
 	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads, files int) (*node, *engine.Router, []*engine.TCPClient, error) {
-	nd := &node{rank: cc.rank, n: n, window: cc.window, emitter: cc.rank == 0, timeout: cc.timeout,
-		finish: make(chan int32, 1), files: files}
-	nd.pcond = sync.NewCond(&nd.pmu)
-	var emitLn net.Listener
-	if nd.emitter {
-		var err error
-		if emitLn, err = net.Listen("tcp", net.JoinHostPort(cc.listen, "0")); err != nil {
-			return nil, nil, nil, fmt.Errorf("engine: emitter listen: %w", err)
-		}
+	emitLn, err := emitListen(cc)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	if emitLn != nil {
 		defer emitLn.Close()
 	}
-	port := func(ln net.Listener) string { return strconv.Itoa(ln.Addr().(*net.TCPAddr).Port) }
-	me := engine.Peer{Rank: cc.rank, N: n, Shard: net.JoinHostPort(cc.advertise, port(shardLn)), PID: os.Getpid(), LoadS: loadS}
+	peers, router, tcps, err := connectShards(ctx, cc, n, sh, srv, shardLn, rv, loadS, threads, emitLn)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	pc := phase("connect-control")
+	nd, err := attachControl(cc, n, files, emitLn, peers, rv.Token())
+	if err != nil {
+		for _, t := range tcps {
+			t.Close()
+		}
+		return nil, nil, nil, err
+	}
+	pc.end()
+	return nd, router, tcps, nil
+}
+
+// emitListen is rank 0's emitter listener (nil on other ranks).
+func emitListen(cc *clusterConf) (net.Listener, error) {
+	if cc.rank != 0 {
+		return nil, nil
+	}
+	ln, err := net.Listen("tcp", net.JoinHostPort(cc.listen, "0"))
+	if err != nil {
+		return nil, fmt.Errorf("engine: emitter listen: %w", err)
+	}
+	return ln, nil
+}
+
+func listenPort(ln net.Listener) string { return strconv.Itoa(ln.Addr().(*net.TCPAddr).Port) }
+
+// connectShards publishes this node's shard address (and emitLn's, if any), waits for every
+// rank, and dials every other shard: the router over all n shards.
+func connectShards(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, srv *engine.Server,
+	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads int, emitLn net.Listener) ([]engine.Peer, *engine.Router, []*engine.TCPClient, error) {
+	me := engine.Peer{Rank: cc.rank, N: n, Shard: net.JoinHostPort(cc.advertise, listenPort(shardLn)), PID: os.Getpid(), LoadS: loadS}
 	me.Host, _ = os.Hostname()
 	if emitLn != nil {
-		me.Emit = net.JoinHostPort(cc.advertise, port(emitLn))
+		me.Emit = net.JoinHostPort(cc.advertise, listenPort(emitLn))
 	}
 	wctx, cancel := context.WithTimeout(ctx, cc.timeout)
 	defer cancel()
@@ -415,7 +444,16 @@ func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, sr
 		tcps = append(tcps, c)
 		clients[i] = c
 	}
-	router := engine.NewRouter(sh.Layout.Capacity, clients)
+	pc.end()
+	return peers, engine.NewRouter(sh.Layout.Capacity, clients), tcps, nil
+}
+
+// attachControl builds the emitter-protocol side of a node: rank 0 accepts n-1 control
+// connections on emitLn, the others dial rank 0's emitter address from peers.
+func attachControl(cc *clusterConf, n, files int, emitLn net.Listener, peers []engine.Peer, token uint64) (*node, error) {
+	nd := &node{rank: cc.rank, n: n, window: cc.window, emitter: cc.rank == 0, timeout: cc.timeout,
+		finish: make(chan int32, 1), files: files}
+	nd.pcond = sync.NewCond(&nd.pmu)
 	if nd.emitter {
 		nd.box = newInbox(n, files, nd.aborted.Load)
 		nd.peers = make([]*ctlConn, n)
@@ -425,10 +463,11 @@ func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, sr
 		for got := 0; got < n-1; {
 			c, err := emitLn.Accept()
 			if err != nil {
-				return nil, nil, nil, fmt.Errorf("engine: emitter: %d of %d nodes connected: %w", got, n-1, err)
+				nd.closeControl()
+				return nil, fmt.Errorf("engine: emitter: %d of %d nodes connected: %w", got, n-1, err)
 			}
 			_ = c.SetDeadline(time.Now().Add(engine.HelloTimeout))
-			rank, err := engine.AcceptControl(c, n, rv.Token())
+			rank, err := engine.AcceptControl(c, n, token)
 			if err != nil || nd.peers[rank] != nil || rank == 0 {
 				c.Close()
 				continue
@@ -442,22 +481,64 @@ func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, sr
 				go nd.readPeer(rank, p)
 			}
 		}
-	} else {
-		c, err := net.DialTimeout("tcp", peers[0].Emit, engine.HelloTimeout)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("engine: dial emitter %s: %w", peers[0].Emit, err)
-		}
-		_ = c.SetDeadline(time.Now().Add(engine.HelloTimeout))
-		if err := engine.HelloControl(c, cc.rank, n, rv.Token()); err != nil {
-			c.Close()
-			return nil, nil, nil, err
-		}
-		_ = c.SetDeadline(time.Time{})
-		nd.up = newCtl(c)
-		go nd.readEmitter()
+		return nd, nil
 	}
-	pc.end()
-	return nd, router, tcps, nil
+	c, err := net.DialTimeout("tcp", peers[0].Emit, engine.HelloTimeout)
+	if err != nil {
+		return nil, fmt.Errorf("engine: dial emitter %s: %w", peers[0].Emit, err)
+	}
+	_ = c.SetDeadline(time.Now().Add(engine.HelloTimeout))
+	if err := engine.HelloControl(c, cc.rank, n, token); err != nil {
+		c.Close()
+		return nil, err
+	}
+	_ = c.SetDeadline(time.Time{})
+	nd.up = newCtl(c)
+	go nd.readEmitter()
+	return nd, nil
+}
+
+// startSession is a block-striped sample's emitter session in cohort mode: a rendezvous of its
+// own (loc) for rank 0's emitter address, then the control connections. The shards and the
+// router stay those connectShards made once.
+func startSession(ctx context.Context, cc *clusterConf, n, files int, loc string) (*node, error) {
+	rv, err := engine.NewRendezvous(loc)
+	if err != nil {
+		return nil, err
+	}
+	emitLn, err := emitListen(cc)
+	if err != nil {
+		return nil, err
+	}
+	if emitLn != nil {
+		defer emitLn.Close()
+	}
+	me := engine.Peer{Rank: cc.rank, N: n, PID: os.Getpid()}
+	if emitLn != nil {
+		me.Emit = net.JoinHostPort(cc.advertise, listenPort(emitLn))
+	}
+	wctx, cancel := context.WithTimeout(ctx, cc.timeout)
+	defer cancel()
+	if err := rv.Publish(wctx, me); err != nil {
+		return nil, fmt.Errorf("engine: session publish: %w", err)
+	}
+	peers, err := rv.Wait(wctx, n)
+	if err != nil {
+		return nil, err
+	}
+	return attachControl(cc, n, files, emitLn, peers, rv.Token())
+}
+
+// closeControl closes the session's control connections.
+func (nd *node) closeControl() {
+	for _, p := range nd.peers {
+		if p != nil {
+			p.c.Close()
+		}
+	}
+	if nd.up != nil {
+		nd.up.c.Close()
+	}
 }
 
 // readPeer is the emitter's reader for one home node.
@@ -821,7 +902,15 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 	go srv.Serve(ln)
 	e.servers = append(e.servers, srv)
 	e.stats = append(e.stats, &srv.Stats)
-	nd, router, tcps, err := startNode(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, files)
+	var nd *node
+	var router *engine.Router
+	var tcps []*engine.TCPClient
+	if conf.cohort {
+		// Cohort mode: the shards once; control sessions per block-striped sample (cohort.go).
+		_, router, tcps, err = connectShards(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, nil)
+	} else {
+		nd, router, tcps, err = startNode(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, files)
+	}
 	if err != nil {
 		e.close()
 		return nil, err

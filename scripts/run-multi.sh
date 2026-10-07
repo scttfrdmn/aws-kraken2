@@ -182,7 +182,16 @@ finish() {
     aws ec2 wait instance-terminated --region "$REGION" --instance-ids $FOUND_IDS 2>/dev/null ||
       sweep_fail all wait-instance-terminated "$FOUND_IDS"
   fi
+  local before="$FOUND_IDS"
   terminate_members "second sweep (${ENDED})"
+  # Anything the second sweep found is waited for too, so no instance can still be shutting down
+  # (and able to open an upload) when the uploads are listed.
+  if [ "$FOUND_IDS" != "$before" ]; then
+    local late=${FOUND_IDS#"$before"}
+    # shellcheck disable=SC2086
+    aws ec2 wait instance-terminated --region "$REGION" --instance-ids $late 2>/dev/null ||
+      sweep_fail all wait-instance-terminated "$late"
+  fi
   local STOP; STOP=$(now)
   # Unfinished multipart uploads under the cohort prefix, aborted here: the instance role has no
   # s3:AbortMultipartUpload. The bucket's lifecycle rule aborts them after 7 days; this does it
@@ -202,11 +211,11 @@ finish() {
   local FETCHED=no i
   for i in 1 2 3; do
     # Everything but the emitter's outputs (out/: sample outputs, hundreds of MB, which do not
-    # belong in git); those are listed with size and ETag instead. Their byte-identity is checked
+    # belong in git); those are listed instead: key, VersionId (the bucket is versioned), size, ETag. Their byte-identity is checked
     # on the instance and recorded in the members' out/identity.tsv.
     if aws s3 cp --only-show-errors --recursive --region "$REGION" --exclude 'out/*' "$CPREFIX/" "$CDIR/prefix/" &&
-       aws s3api list-objects-v2 --region "$REGION" --bucket "$RESULTS_BUCKET" --prefix "${CPREFIX#s3://$RESULTS_BUCKET/}/out/" \
-         --query 'Contents[].[Key,Size,ETag]' --output text > "$CDIR/outputs.tsv"; then FETCHED=yes; break; fi
+       aws s3api list-object-versions --region "$REGION" --bucket "$RESULTS_BUCKET" --prefix "${CPREFIX#s3://$RESULTS_BUCKET/}/out/" \
+         --query 'Versions[?IsLatest].[Key,VersionId,Size,ETag]' --output text > "$CDIR/outputs.tsv"; then FETCHED=yes; break; fi
     sleep $((10 * i))
   done
   local TAGLINE; TAGLINE=$("$TAG_SH" "$CPREFIX/" 2>&1) || say "WARNING: tagging: $TAGLINE"
@@ -232,6 +241,13 @@ finish() {
       cost_basis:"sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
       prefix_fetched:($fetched == "yes"), multipart_aborted:$aborted, multipart_abort_failures:$abort_fail,
       orphans_rc:$orc}' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
+  # A cohort-level post script, scripts/post/<spec>.cohort.sh, gets the cohort dir (after
+  # cohort.json, so it can find the members).
+  local CPOST="scripts/post/$(basename "$SPEC" .json).cohort.sh" POSTRC=0
+  if [ -f "$CPOST" ]; then
+    bash "$CPOST" "$CDIR" > "$CDIR/post.log" 2>&1; POSTRC=$?
+    say "cohort post: $CPOST rc $POSTRC ($(tail -1 "$CDIR/post.log"))"
+  fi
   say "cohort dir: $CDIR  ended: $ENDED  cost \$$(jq -r .cost_usd "$CDIR/cohort.json" 2>/dev/null)  orphans rc $ORC"
   local WORST=$rc r
   for r in "${RCS[@]}"; do [[ "$r" =~ ^[0-9]+$ ]] && [ "$r" -gt "$WORST" ] && WORST=$r; done
@@ -239,6 +255,7 @@ finish() {
   [ "$FETCHED" = yes ] || { say "WARNING: cohort prefix not fetched"; [ "$WORST" = 0 ] && WORST=4; }
   [ "$ABORT_FAIL" = 0 ] || { [ "$WORST" = 0 ] && WORST=5; }
   [ "$SWEEP_FAILURES" = "[]" ] || { say "sweep failures: $SWEEP_FAILURES"; [ "$WORST" = 0 ] && WORST=6; }
+  [ "$POSTRC" = 0 ] || { say "cohort post script failed (see $CDIR/post.log)"; [ "$WORST" = 0 ] && WORST=98; }
   exit "$WORST"
 }
 trap finish EXIT

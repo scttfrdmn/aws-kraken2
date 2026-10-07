@@ -1,0 +1,11 @@
+{
+  "project": "PRJNA398089",
+  "query_url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=PRJNA398089&result=read_run&fields=run_accession,sample_accession,library_strategy,library_layout,read_count,base_count,fastq_ftp,fastq_bytes,fastq_md5&format=tsv&limit=0",
+  "queried_at": "2026-10-07T22:37:46Z",
+  "ena_rows": 2979,
+  "raw_response_sha256": "12b2bba3681015ad30809a638ecd6ee28c3ced33508afb971d880aacc103a147",
+  "rule": "library_layout PAIRED, library_strategy WGS, exactly two files <run>_1.fastq.gz and <run>_2.fastq.gz with md5s; ordered by run accession numerically; the first count",
+  "count": 1000,
+  "runs_tsv_sha256": "fb2957ae8202c18be05641e85b0e9fcfdba7ecfe6b0f93d6349287c99422bd96",
+  "recorded_at_commit": "9c2846635f0b035062bb44acad124d607d5bd422"
+}

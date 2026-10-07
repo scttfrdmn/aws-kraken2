@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"strconv"
@@ -45,6 +46,23 @@ type classifyArgs struct {
 	// env looks up the engine's AK2_ENGINE_* settings (nil: the process environment). Tests run
 	// several nodes in one process, each with its own.
 	env func(string) (string, bool)
+
+	// Cohort mode (cohort.go): the index loaded once for every sample, the block-striped
+	// sample's session (nil for a sample-parallel one), the S3 client for this sample's s3://
+	// outputs ("" = AK2_S3_CLIENT), and the sample's record (phases, counts).
+	pre      *index
+	node     *node
+	s3client string
+	rec      *sampleRec
+}
+
+// phase times a phase: into the sample's record in cohort mode (several samples run at once, so
+// global phase lines would be ambiguous), else as an ak2-timing line.
+func (c *classifyArgs) phase(name string) *phaseMark {
+	if c.rec != nil {
+		return &phaseMark{name: name, t: time.Now(), rec: c.rec}
+	}
+	return phase(name)
 }
 
 func (c *classifyArgs) lookupEnv() func(string) (string, bool) {
@@ -185,16 +203,18 @@ type result struct {
 }
 
 func classifyRun(c *classifyArgs) int {
-	idx, status := loadIndex(c)
+	idx, status := c.pre, 0
 	if idx == nil {
-		return status
+		if idx, status = loadIndex(c); idx == nil {
+			return status
+		}
+		defer func() {
+			p := phase("unmap")
+			idx.close()
+			p.end()
+		}()
 	}
-	defer func() {
-		p := phase("unmap")
-		idx.close()
-		p.end()
-	}()
-	ps := phase("setup")
+	ps := c.phase("setup")
 
 	comp, err := seqio.ResolveCompression(c.gzipFlag, c.bzip2Flag, c.files[0])
 	if err != nil {
@@ -225,12 +245,18 @@ func classifyRun(c *classifyArgs) int {
 	}
 
 	r := &runner{c: c, idx: idx, opt: opt, comp: comp, workers: workers, tty: isTTY(os.Stderr)}
-	if idx.eng != nil {
+	switch {
+	case c.pre != nil:
+		r.node = c.node // cohort mode: a block-striped sample's session, or nil
+	case idx.eng != nil:
 		r.node = idx.eng.node
+	}
+	if c.rec != nil {
+		defer func() { c.rec.st = r.st }()
 	}
 	defer r.out.close()
 	ps.end()
-	pc := phase("classify")
+	pc := c.phase("classify")
 	start := time.Now()
 	status = 0
 	if c.paired {
@@ -252,7 +278,9 @@ func classifyRun(c *classifyArgs) int {
 		// Every node waits here until no node needs its shard; the emitter collects the others'
 		// counters (the report's sum-reduce).
 		merged, st, err := nd.endRun(status, counts)
-		idx.eng.report()
+		if c.pre == nil {
+			idx.eng.report()
+		}
 		if err != nil {
 			r.out.abandon()
 			return classifyErr(st, "%v", err)
@@ -261,28 +289,39 @@ func classifyRun(c *classifyArgs) int {
 			return st
 		}
 		counts = merged
-	} else if idx.eng != nil {
+	} else if idx.eng != nil && c.pre == nil {
 		idx.eng.report()
 	}
 	if status != 0 {
 		return status
 	}
-	pf := phase("close")
+	pf := c.phase("close")
 	if err := r.out.close(); err != nil {
 		return classifyErr(exIOErr, "%v", err)
 	}
 	pf.end()
 	reportStats(elapsed, r.st, r.tty)
+	if timingsOn && idx.eng != nil && c.pre == nil {
+		fmt.Fprintf(os.Stderr, "ak2-engine\tresult\tsequences\t%d\tbases\t%d\tclassified\t%d\n",
+			r.st.sequences, r.st.bases, r.st.classified)
+	}
 
 	if name := c.reportName(); name != "" {
-		pr := phase("report")
+		pr := c.phase("report")
 		defer pr.end()
 		calls := classify.Calls(counts)
 		// Upstream writes the report through an unchecked ofstream: a report that cannot be
-		// created is silently not written, and the run still exits 0.
-		f, err := os.Create(name)
-		if err != nil {
-			return 0
+		// created is silently not written, and the run still exits 0. An s3:// report (the
+		// engine's) is one PutObject of the same bytes.
+		var f io.WriteCloser
+		if isS3(name) {
+			f = &s3Report{name: name, client: c.s3client}
+		} else {
+			lf, err := os.Create(name)
+			if err != nil {
+				return 0
+			}
+			f = lf
 		}
 		bw := bufio.NewWriterSize(f, 1<<20)
 		ropt := report.Options{ZeroCounts: c.zeroCounts}
