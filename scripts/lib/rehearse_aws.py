@@ -34,6 +34,29 @@ while i < len(args):
     else:
         pos.append(a)
         i += 1
+if args[:1] == ["--version"]:
+    print("aws-cli/rehearse-stub")
+    sys.exit(0)
+if len(pos) >= 3 and pos[0] == "s3" and pos[1] == "cp":
+    # s3 cp s3://bucket/key LOCAL (the hash object from AK2T_HASH_FILE), or LOCAL s3://bucket/key.
+    import shutil
+    src, dst = pos[2], pos[3]
+    def split(u):
+        b, _, k = u[len("s3://"):].partition("/")
+        return b, k
+    if src.startswith("s3://"):
+        b, k = split(src)
+        f = os.environ["AK2T_HASH_FILE"] if (b == os.environ.get("AK2T_HASH_BUCKET") and k == os.environ.get("AK2T_HASH_KEY")) \
+            else os.path.join(root, b, k)
+        if not os.path.exists(f):
+            print(f"fatal error: An error occurred (404) when calling the HeadObject operation: Key \"{k}\" does not exist", file=sys.stderr)
+            sys.exit(1)
+        shutil.copyfile(f, dst)
+    else:
+        b, k = split(dst)
+        os.makedirs(os.path.dirname(os.path.join(root, b, k)), exist_ok=True)
+        shutil.copyfile(src, os.path.join(root, b, k))
+    sys.exit(0)
 if len(pos) < 2 or pos[0] != "s3api":
     sys.exit(f"rehearse aws stub: unsupported: {' '.join(args)}")
 op = pos[1]
@@ -67,6 +90,8 @@ if op == "head-object":
              "Metadata": {"sha256": hashlib.sha256(data).hexdigest(), "md5": hashlib.md5(data).hexdigest()}}
     if opt("--query") == "Metadata.sha256":
         print(h.get("Metadata", {}).get("sha256", "None"))
+    elif opt("--query") == "ETag":
+        print(h["ETag"])
     else:
         print(json.dumps(h))
 elif op == "put-object":
