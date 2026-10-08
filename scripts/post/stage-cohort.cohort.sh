@@ -3,7 +3,7 @@
 # runs it with the cohort dir): merges every member's out/staged.tsv into
 # results/cohort/PRJNA398089/staged.tsv and checks ranks 11..1000 (scripts/lib/stage_merge.py;
 # tables/staged-check.tsv). Then tag the objects from the launch host:
-# make tag-objects PREFIX=aws-kraken2/data/cohort/.
+# make tag-objects PREFIX=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/.
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1

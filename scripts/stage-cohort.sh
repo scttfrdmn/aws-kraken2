@@ -31,7 +31,7 @@ cd "$(dirname "$0")/.." || exit 1
 . scripts/lib/tags.sh
 # On an instance launched by make run (AK2_RUN_ID set; runs/stage-cohort.json) the instance role
 # is the credential, not the launch host's profile, and the role cannot tag objects (tag them
-# from the launch host afterwards: make tag-objects PREFIX=aws-kraken2/data/cohort/).
+# from the launch host afterwards: make tag-objects PREFIX=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/).
 ON_INSTANCE=0
 if [ -n "${AK2_RUN_ID:-}" ]; then ON_INSTANCE=1; unset AWS_PROFILE; else export AWS_PROFILE; fi
 echo "stage-cohort: shell flags $- (on instance: $ON_INSTANCE)"
