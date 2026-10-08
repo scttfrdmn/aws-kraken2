@@ -1,0 +1,16 @@
+Loading database information...ak2-timing	opts	0.000082	0.000011	4	0	0.000011	0.000000
+ak2-timing	taxo	0.000099	0.113397	87884	0	0.043787	0.084752
+ak2-timing	shard-load-1	0.180501	80.457250	78141	0	74.471803	72.635243
+ak2-timing	rendezvous	81.720132	4.029594	1547	0	0.030376	0.009386
+ak2-timing	connect	85.749740	0.102717	3	0	0.018515	0.000000
+ak2-timing	hash	0.113576	85.738898	81859	0	74.532597	72.647803
+ done.
+ak2-timing	batch-barrier-0	85.852480	6.875329	2535	0	1.457866	0.133666
+ak2-engine	shard	0	n	8	lo	37159114742	hi	74318229485	tail	302	full	false	empty_at	37159114742	keys	51922358	batches	276	probe_s	1.445208	tail_probes	0	wrap_probes	0
+ak2-engine	rendezvous	puts	2	gets	38
+ak2-engine	s3	client	sdk	put	2	get	38	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	load	seconds	80.457246	requests	2233	retries	0	bytes	148636525780
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000001	93.005682	172312	0	76.034401	73.143157

@@ -57,6 +57,9 @@ tab-separated, one sample per line:
   parsed and run exactly as a separate invocation with those arguments, so its outputs are
   upstream's (`make oracle-cohort`). Every sample names its `--output`. Outputs, the report
   included, may be `s3://` objects.
+- **Check-only mode:** `AK2_COHORT_CHECK=1` parses the manifest and every sample's arguments,
+  then exits without loading anything. E1 checks its manifests this way before the first shard
+  load.
 - **Per-sample record:** one `ak2-sample` line per sample on stderr: batch, name, mode, client,
   rank, role, inflight, threads, start, wall, setup, classify, close and report seconds, exit
   status, sequences, bases, classified.

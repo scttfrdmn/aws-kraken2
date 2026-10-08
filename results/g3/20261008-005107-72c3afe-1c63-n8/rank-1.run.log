@@ -1,0 +1,79 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-005107-72c3afe-1c63-n8-r1  task ak2-g3-20261008-005107-72c3afe-1c63-n8-r1  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-005107-72c3afe-1c63-n8-r1
+make run: user data: 12374 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: x8g.4xlarge (0 vCPU, 0 GiB)
+make run: launched i-0a250e39af89a6981 (x8g.4xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T00:51:47Z	1791420707	preamble	no
+  | ak2: [2026-10-08T00:51:47Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T00:51:47Z] after set +e $-=hBc
+  | ak2: [2026-10-08T00:51:47Z] gate=g3 run=20261008-005107-72c3afe-1c63-n8-r1
+  | ak2: [2026-10-08T00:51:47Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T00:51:47Z] imds region=us-west-2 az=us-west-2a instance=i-0a250e39af89a6981 type=x8g.4xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-08T00:51:47Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T00:51:47Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T00:51:47Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T00:51:47Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-08T00:51:48Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-08T00:51:48Z] region assert passed
+  | ak2: [2026-10-08T00:51:48Z] drop_caches_ok=true
+  | ak2: [2026-10-08T00:51:49Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T00:51:49Z	1791420709	body	no
+  | ak2: [2026-10-08T00:51:49Z] cohort 20261008-005107-72c3afe-1c63-n8 rank 1 of 8, commit 72c3afe; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+  | ak2-phase	2026-10-08T00:51:49Z	1791420709	setup	no
+  | ak2: [2026-10-08T00:52:25Z] built 72c3afe1c79f570e50b5d6dd7568e57134442eca; go version go1.27.1 linux/arm64; ip 172.31.19.151; nproc 16; mem_gib 247
+  | ak2-phase	2026-10-08T00:52:25Z	1791420745	fetch	no
+  | ak2: [2026-10-08T00:52:25Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+  | ak2: [2026-10-08T00:52:27Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+  | ak2: [2026-10-08T00:52:27Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+  | ak2: [2026-10-08T00:52:28Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935740_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935740_1.fastq.gz (495118282 bytes)
+  | ak2: [2026-10-08T00:52:30Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935740_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935740_2.fastq.gz (502062672 bytes)
+  | ak2: [2026-10-08T00:52:33Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935741_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935741_1.fastq.gz (837416271 bytes)
+  | ak2: [2026-10-08T00:52:36Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935741_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935741_2.fastq.gz (827325968 bytes)
+  | ak2: [2026-10-08T00:52:38Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935742_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935742_1.fastq.gz (575178581 bytes)
+  | ak2: [2026-10-08T00:52:40Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935742_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935742_2.fastq.gz (583688553 bytes)
+  | ak2: [2026-10-08T00:52:41Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935743_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935743_1.fastq.gz (8679627 bytes)
+  | ak2: [2026-10-08T00:52:42Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935743_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935743_2.fastq.gz (8611159 bytes)
+  | ak2: [2026-10-08T00:52:44Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935744_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935744_1.fastq.gz (745495793 bytes)
+  | ak2: [2026-10-08T00:52:47Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935744_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935744_2.fastq.gz (755587542 bytes)
+  | ak2: [2026-10-08T00:52:49Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935745_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935745_1.fastq.gz (520125014 bytes)
+  | ak2: [2026-10-08T00:52:52Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935745_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935745_2.fastq.gz (524678126 bytes)
+  | ak2: [2026-10-08T00:52:54Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935746_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935746_1.fastq.gz (524886352 bytes)
+  | ak2: [2026-10-08T00:52:57Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935746_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935746_2.fastq.gz (523074338 bytes)
+  | ak2: [2026-10-08T00:52:59Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935747_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935747_1.fastq.gz (145394201 bytes)
+  | ak2: [2026-10-08T00:53:00Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935747_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935747_2.fastq.gz (147979881 bytes)
+  | ak2: [2026-10-08T00:53:02Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935748_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935748_1.fastq.gz (558312578 bytes)
+  | ak2: [2026-10-08T00:53:05Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935748_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935748_2.fastq.gz (574516567 bytes)
+  | ak2: [2026-10-08T00:53:08Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935749_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935749_1.fastq.gz (897225885 bytes)
+  | ak2: [2026-10-08T00:53:12Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935749_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935749_2.fastq.gz (893278004 bytes)
+  | ak2: [2026-10-08T00:53:13Z] cohort samples staged and verified: SRR5935740 SRR5935741 SRR5935742 SRR5935743 SRR5935744 SRR5935745 SRR5935746 SRR5935747 SRR5935748 SRR5935749
+  | ak2-phase	2026-10-08T00:53:13Z	1791420793	inv-c1-striped-sdk	no
+  | ak2: [2026-10-08T00:54:51Z] inv c1-striped-sdk rank 1 exit 0
+  | [c1-striped-sdk stderr] Loading database information...ak2-timing	opts	0.000039	0.000028	4	0	0.000030	0.000000
+  | [c1-striped-sdk stderr]  done.
+  | ak2: [2026-10-08T00:54:52Z] pushed out/rank1/eng-c1-striped-sdk.stderr
+  | ak2-phase	2026-10-08T00:54:52Z	1791420892	inv-c1-striped-cli	no
+  | ak2: [2026-10-08T00:56:34Z] inv c1-striped-cli rank 1 exit 0
+  | [c1-striped-cli stderr] Loading database information...ak2-timing	opts	0.000039	0.000042	12	0	0.000043	0.000000
+  | [c1-striped-cli stderr]  done.
+  | ak2: [2026-10-08T00:56:35Z] pushed out/rank1/eng-c1-striped-cli.stderr
+  | ak2-phase	2026-10-08T00:56:35Z	1791420995	inv-c1-parallel-sdk	no
+  | ak2: [2026-10-08T00:58:09Z] inv c1-parallel-sdk rank 1 exit 0
+  | [c1-parallel-sdk stderr] Loading database information...ak2-timing	opts	0.000082	0.000011	4	0	0.000011	0.000000
+  | [c1-parallel-sdk stderr]  done.
+  | ak2: [2026-10-08T00:58:09Z] pushed out/rank1/eng-c1-parallel-sdk.stderr
+  | ak2: [2026-10-08T00:58:10Z] pushed out/rank1/c10.tsv
+  | ak2-phase	2026-10-08T00:58:10Z	1791421090	inv-c10	no
+  | ak2: [2026-10-08T00:58:11Z] inv c10 rank 1 exit 64
+  | [c10 stderr] aws-kraken2: AK2_COHORT: /home/ec2-user/ak2/c10.tsv:11: sample name "SRR5935740" (empty, with a space or /, or repeated)
+  | ak2: [2026-10-08T00:58:11Z] pushed out/rank1/eng-c10.stderr
+  | ak2: [2026-10-08T00:58:11Z] inv c10 FAILED on rank 1: stopping
+  | ak2: [2026-10-08T00:58:11Z] rank 1 done (failed=1)
+  | ak2: [2026-10-08T00:58:11Z] spec body exit rc=1
+  | ak2-phase	2026-10-08T00:58:11Z	1791421091	end	no
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-005107-72c3afe-1c63-n8-r1/: 12 objects, 11 tagged now, 1 already tagged, 0 failed
+make run: post: scripts/post/g3-e1.sh results/g3/20261008-005107-72c3afe-1c63-n8-r1
+tidy: 214 rows -> results/g3/20261008-005107-72c3afe-1c63-n8-r1/tables/tidy.tsv
+make run: run dir: results/g3/20261008-005107-72c3afe-1c63-n8-r1  (task exit 1, state terminated, cost $0.202348)
+orphans: this run's instance(s) and task ak2-g3-20261008-005107-72c3afe-1c63-n8-r1 are gone (18 regions checked)

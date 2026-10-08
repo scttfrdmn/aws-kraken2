@@ -1,0 +1,27 @@
+Loading database information...ak2-timing	opts	0.000039	0.000026	4	0	0.000026	0.000000
+ak2-timing	taxo	0.000075	0.110091	87888	0	0.039336	0.085536
+ak2-timing	shard-load-0	0.176549	80.506124	78049	0	74.971599	72.872797
+ak2-timing	rendezvous	81.788420	4.050792	87	0	0.003549	0.002718
+ak2-timing	connect	85.839225	0.102700	1	0	0.000000	0.000693
+ak2-timing	connect-control	85.941934	1.654851	3955	0	0.199699	0.044484
+ak2-timing	hash	0.110256	87.486564	84279	0	75.183692	72.927126
+ done.
+ak2-timing	setup	87.596824	0.000056	98	0	0.000182	0.000177
+ak2-timing	classify	87.596886	12.966878	1199745	0	21.765790	1.693315
+ak2-timing	barrier	100.568842	0.004653	4	0	0.004652	0.000000
+ak2-engine	shard	0	n	8	lo	0	hi	37159114742	tail	302	full	false	empty_at	37159114756	keys	51999377	batches	276	probe_s	1.482202	tail_probes	0	wrap_probes	0
+ak2-engine	rendezvous	puts	1	gets	10
+ak2-engine	s3	client	sdk	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	1	get	10	create_multipart	1	upload_part	112	complete_multipart	0	abort_multipart	0	part_bytes	939524096
+ak2-engine	node	rank	0	n	8	emitter	true	blocks_cut	276	blocks_mine	35	read_s	5.171453	window_wait_s	5.064099	send_s	0.000000	sent_bytes	0	emit_wait_s	0.296492	emit_s	12.657476
+ak2-engine	load	seconds	80.506121	requests	2233	retries	0	bytes	148636525776
+ak2-engine	route	transport	nodes	calls	35	keys	52844485	batches	280	route_s	0.546226	wait_s	0.486500	gather_s	0.140187
+ak2-engine	worker	scan_s	3.952154	lookup_s	1.172948	classify_s	2.755456
+ak2-timing	close	100.573664	1.221752	4	0	0.000446	0.006447
+10532910 sequences (1945.09 Mbp) processed in 12.967s (48737.6 Kseq/m, 9000.29 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-engine	result	sequences	10532910	bases	1945093294	classified	9366399
+ak2-timing	report	101.795449	0.472944	121	0	0.088213	0.000000
+ak2-timing	unmap	102.268413	0.271358	0	0	0.000000	0.271489
+ak2-timing	total	0.000001	102.539796	1372176	0	97.087922	74.988263
