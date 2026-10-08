@@ -9,7 +9,8 @@ cohort 1000 is modelled from real upstream runs at 1, 10 and 100 and flagged as 
 ```bash
 make stage-cohort PART=record            # once, before any use: results/cohort/PRJNA398089/
 make stage-cohort COUNT=10               # stage the first 10 (from the launch host: slow, see below)
-make run GATE=g3 SPEC=runs/stage-cohort.json   # the same, on an instance (ENA is fast from AWS)
+make run GATE=g3 SPEC=runs/stage-cohort.json NODES=8   # ranks 11..1000 on 8 instances, one slice each
+make tag-objects PREFIX=aws-kraken2/data/cohort/        # afterwards, from the launch host
 ```
 
 - **PRJNA398089** is IBDMDB/HMP2 stool metagenomes, from ENA.
@@ -27,8 +28,16 @@ make run GATE=g3 SPEC=runs/stage-cohort.json   # the same, on an instance (ENA i
   `results/cohort/PRJNA398089/staged.tsv` (run, mate, bytes, md5, sha256, key, VersionId). It is
   idempotent.
   - On an instance (`runs/stage-cohort.json`), the role is the credential and cannot tag. Tag
-    afterwards with `make tag-objects PREFIX=aws-kraken2/data/cohort/`, and commit the run's
-    `out/staged.tsv` as `results/cohort/PRJNA398089/staged.tsv`.
+    afterwards with `make tag-objects PREFIX=aws-kraken2/data/cohort/`.
+  - **Slices.** STAGE_FROM, STAGE_STRIDE and STAGE_OFFSET select the ranks r in STAGE_FROM..COUNT
+    with (r − STAGE_FROM) mod STRIDE = OFFSET. The spec stages ranks 11..1000 and, with
+    `NODES=n`, gives member k the slice STRIDE = n, OFFSET = k. The spec's body records the
+    requests from its log: RANGES ranged GETs to ENA per fetched file; per upload, one PutObject,
+    or CreateMultipartUpload + ceil(bytes / 8 MiB) UploadPart + Complete; and the HeadObjects.
+  - The cohort post (`scripts/post/stage-cohort.cohort.sh`, `scripts/lib/stage_merge.py`) merges
+    every member's `out/staged.tsv` into `results/cohort/PRJNA398089/staged.tsv`, in cohort order
+    and one row per object version. It checks that every rank 11..1000 has both mates with
+    runs.tsv's bytes and md5 (`tables/staged-check.tsv`), and exits 1 otherwise.
   - From an instance in us-west-2, one ENA stream is about 1 MB/s (2026-10-08), so `stage`
     fetches STAGE_PARALLEL files at once (default 4) in STAGE_RANGES ranged streams (default 8).
     An object already staged is not fetched again but is recorded from its metadata.

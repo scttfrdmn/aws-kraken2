@@ -18,6 +18,9 @@
 #       mate, bytes, md5, sha256, key, version, at), one row per object version, in cohort order.
 #       STAGE_PARALLEL files at once (default 4), each in STAGE_RANGES ranged streams (default 8).
 #       Downloads go to the shared .cache/cohort/ and are deleted once staged (STAGE_KEEP=1 keeps).
+#       A slice of the first COUNT: STAGE_FROM (default 1) skips ranks below it, and STAGE_STRIDE /
+#       STAGE_OFFSET (default 1 / 0) keep the ranks with (rank - STAGE_FROM) % STRIDE == OFFSET, so
+#       N instances can each stage one slice (runs/stage-cohort.json uses AK2_ENGINE_N/RANK).
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
@@ -98,6 +101,11 @@ stage)
   # STAGE_PARALLEL files (default 4) are fetched at once, each as STAGE_RANGES ranged streams
   # (default 8), joined and then checked whole.
   PAR=${STAGE_PARALLEL:-4}; RANGES=${STAGE_RANGES:-8}
+  FROM=${STAGE_FROM:-1}; STRIDE=${STAGE_STRIDE:-1}; OFFSET=${STAGE_OFFSET:-0}
+  [[ "$FROM$STRIDE$OFFSET" =~ ^[0-9]+$ ]] && [ "$FROM" -ge 1 ] && [ "$STRIDE" -ge 1 ] && [ "$OFFSET" -lt "$STRIDE" ] ||
+    { echo "stage-cohort: bad slice FROM=$FROM STRIDE=$STRIDE OFFSET=$OFFSET" >&2; exit 2; }
+  picked() { [ "$1" -ge "$FROM" ] && [ "$1" -le "$COUNT" ] && [ $(( ($1 - FROM) % STRIDE )) = "$OFFSET" ]; }
+  echo "stage-cohort: ranks $FROM..$COUNT, every ${STRIDE}th from offset $OFFSET; $PAR files at once, $RANGES ranges each"
   ROWS="$CACHE/rows.$$"; mkdir -p "$ROWS" || exit 1
   [ -s "$DIR/staged.tsv" ] || printf 'run\tmate\tbytes\tmd5\tsha256\tkey\tversion_id\tat\n' > "$DIR/staged.tsv"
   # stage_one RUN MATE URL BYTES MD5: one file; writes its staged.tsv row to $ROWS/<file>.
@@ -146,6 +154,7 @@ stage)
   while IFS=$'\t' read -r rank run sample reads bases u1 b1 m1 u2 b2 m2; do
     [ "$rank" = rank ] && continue
     [ "$rank" -le "$COUNT" ] || break
+    picked "$rank" || continue
     for m in 1 2; do
       if [ $m = 1 ]; then u=$u1; b=$b1; want=$m1; else u=$u2; b=$b2; want=$m2; fi
       stage_one "$run" "$m" "$u" "$b" "$want" &
@@ -158,6 +167,7 @@ stage)
   while IFS=$'\t' read -r rank run rest; do
     [ "$rank" = rank ] && continue
     [ "$rank" -le "$COUNT" ] || break
+    picked "$rank" || continue
     for m in 1 2; do
       r="$ROWS/${run}_$m.fastq.gz"
       if [ -s "$r" ]; then
