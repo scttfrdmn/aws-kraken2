@@ -1,0 +1,701 @@
+{
+  "cohort_id": "20261008-161358-a8e9217-721c-n32",
+  "gate": "g3",
+  "spec": "runs/g3-e4-c8g.12xlarge-n32.json",
+  "commit": "a8e92175898ee28c86050ac8c4b55d65b21e2986",
+  "nodes": 32,
+  "instance_type": "c8g.12xlarge",
+  "az": "us-west-2a",
+  "region": "us-west-2",
+  "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-161358-a8e9217-721c-n32",
+  "network": {
+    "vpc": "vpc-e7e2999f",
+    "security_group": "sg-5059b179",
+    "admits": "itself, 22/tcp, ICMP"
+  },
+  "start": "2026-10-08T16:13:58Z",
+  "stop": "2026-10-08T16:20:03Z",
+  "ended": "members done (fail fast: rank 28 exited 2)",
+  "terminated_early": [
+    {
+      "rank": 0,
+      "instances": "i-029f3c6b202d8d04f",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 1,
+      "instances": "i-0a5267d0387a595bf",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 2,
+      "instances": "i-084ddab4035d27b16",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 3,
+      "instances": "i-07a9b08119cbbfe67",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0d0bc2d0eb1c5abdb",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 5,
+      "instances": "i-0427fa60c8bda8fb0",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 6,
+      "instances": "i-026fc3b32b1e3db4a",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 7,
+      "instances": "i-09e938aa79c05aa68",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 8,
+      "instances": "i-069ae5b7f4e17e8b5",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 9,
+      "instances": "i-05f2cc6a3fc2919a5",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 10,
+      "instances": "i-0758080821c62fbb1",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 11,
+      "instances": "i-0bd6c30b4d7b763ce",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 12,
+      "instances": "i-0933001bafdabe155",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 13,
+      "instances": "i-030e087a023d7a1f1",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 14,
+      "instances": "i-03743ec99e1d6fa9f",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08644adf8e138a19e",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 16,
+      "instances": "i-0872c6af210cd2712",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 17,
+      "instances": "i-0600aa96486af5b6c",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 18,
+      "instances": "i-076d09167d0ab2a24",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 19,
+      "instances": "i-035e2c0bd50794225",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 20,
+      "instances": "i-09d62c382e8e3aa9e",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 21,
+      "instances": "i-02e253cb029c37c58",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 22,
+      "instances": "i-0b6f64360d5568c68",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 23,
+      "instances": "i-07d7c5c3592a5158a",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 24,
+      "instances": "i-037e605cadd179506",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 25,
+      "instances": "i-06d7e88dc146ae827",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 26,
+      "instances": "i-0315646a20a55a117",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 27,
+      "instances": "i-0e631523e5fbbb48e",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 29,
+      "instances": "i-0fb750dd41bcc3646",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 0,
+      "instances": "i-029f3c6b202d8d04f",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 1,
+      "instances": "i-0a5267d0387a595bf",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 2,
+      "instances": "i-084ddab4035d27b16",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0d0bc2d0eb1c5abdb",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 5,
+      "instances": "i-0427fa60c8bda8fb0",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 6,
+      "instances": "i-026fc3b32b1e3db4a",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 7,
+      "instances": "i-09e938aa79c05aa68",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 8,
+      "instances": "i-069ae5b7f4e17e8b5",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 9,
+      "instances": "i-05f2cc6a3fc2919a5",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 10,
+      "instances": "i-0758080821c62fbb1",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 11,
+      "instances": "i-0bd6c30b4d7b763ce",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 12,
+      "instances": "i-0933001bafdabe155",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 13,
+      "instances": "i-030e087a023d7a1f1",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 14,
+      "instances": "i-03743ec99e1d6fa9f",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08644adf8e138a19e",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 16,
+      "instances": "i-0872c6af210cd2712",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 17,
+      "instances": "i-0600aa96486af5b6c",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 18,
+      "instances": "i-076d09167d0ab2a24",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 19,
+      "instances": "i-035e2c0bd50794225",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 20,
+      "instances": "i-09d62c382e8e3aa9e",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 21,
+      "instances": "i-02e253cb029c37c58",
+      "why": "fail fast: rank 28 exited 2"
+    },
+    {
+      "rank": 26,
+      "instances": "i-0315646a20a55a117",
+      "why": "fail fast: rank 28 exited 2"
+    }
+  ],
+  "sweep_failures": [],
+  "members": [
+    {
+      "rank": 0,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r0",
+      "rc": "99",
+      "instance_id": "i-029f3c6b202d8d04f",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.037753,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 1,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r1",
+      "rc": "99",
+      "instance_id": "i-0a5267d0387a595bf",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038285,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 2,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r2",
+      "rc": "99",
+      "instance_id": "i-084ddab4035d27b16",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.03988,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 3,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r3",
+      "rc": "99",
+      "instance_id": "i-07a9b08119cbbfe67",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 4,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r4",
+      "rc": "99",
+      "instance_id": "i-0d0bc2d0eb1c5abdb",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.03988,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 5,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r5",
+      "rc": "99",
+      "instance_id": "i-0427fa60c8bda8fb0",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 6,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r6",
+      "rc": "99",
+      "instance_id": "i-026fc3b32b1e3db4a",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 7,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r7",
+      "rc": "99",
+      "instance_id": "i-09e938aa79c05aa68",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 8,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r8",
+      "rc": "99",
+      "instance_id": "i-069ae5b7f4e17e8b5",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 9,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r9",
+      "rc": "99",
+      "instance_id": "i-05f2cc6a3fc2919a5",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 10,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r10",
+      "rc": "99",
+      "instance_id": "i-0758080821c62fbb1",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 11,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r11",
+      "rc": "99",
+      "instance_id": "i-0bd6c30b4d7b763ce",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 12,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r12",
+      "rc": "99",
+      "instance_id": "i-0933001bafdabe155",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 13,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r13",
+      "rc": "99",
+      "instance_id": "i-030e087a023d7a1f1",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 14,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r14",
+      "rc": "99",
+      "instance_id": "i-03743ec99e1d6fa9f",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 15,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r15",
+      "rc": "99",
+      "instance_id": "i-08644adf8e138a19e",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 16,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r16",
+      "rc": "99",
+      "instance_id": "i-0872c6af210cd2712",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 17,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r17",
+      "rc": "99",
+      "instance_id": "i-0600aa96486af5b6c",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038817,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 18,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r18",
+      "rc": "99",
+      "instance_id": "i-076d09167d0ab2a24",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 19,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r19",
+      "rc": "99",
+      "instance_id": "i-035e2c0bd50794225",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 20,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r20",
+      "rc": "99",
+      "instance_id": "i-09d62c382e8e3aa9e",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 21,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r21",
+      "rc": "99",
+      "instance_id": "i-02e253cb029c37c58",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.037753,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 22,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r22",
+      "rc": "99",
+      "instance_id": "i-0b6f64360d5568c68",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.040412,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 23,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r23",
+      "rc": "99",
+      "instance_id": "i-07d7c5c3592a5158a",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.039348,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 24,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r24",
+      "rc": "99",
+      "instance_id": "i-037e605cadd179506",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038285,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 25,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r25",
+      "rc": "99",
+      "instance_id": "i-06d7e88dc146ae827",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.036158,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 26,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r26",
+      "rc": "99",
+      "instance_id": "i-0315646a20a55a117",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.03669,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 27,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r27",
+      "rc": "99",
+      "instance_id": "i-0e631523e5fbbb48e",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.038285,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 28,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r28",
+      "rc": "2",
+      "instance_id": null,
+      "type": null,
+      "az": null,
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 29,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r29",
+      "rc": "99",
+      "instance_id": "i-0fb750dd41bcc3646",
+      "type": "c8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.040412,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 30,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r30",
+      "rc": "2",
+      "instance_id": null,
+      "type": null,
+      "az": null,
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 31,
+      "run_id": "20261008-161358-a8e9217-721c-n32-r31",
+      "rc": "2",
+      "instance_id": null,
+      "type": null,
+      "az": null,
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    }
+  ],
+  "cost_usd": null,
+  "cost_basis": "sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
+  "prefix_fetched": true,
+  "multipart_aborted": 0,
+  "multipart_abort_failures": 0,
+  "orphans_rc": 0
+}
