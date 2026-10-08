@@ -1,0 +1,494 @@
+{
+  "gate": "g3",
+  "run_id": "20261008-054457-805d7a2-7357-n12-r5",
+  "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r5",
+  "spec": "runs/stage-cohort.json",
+  "spec_sha256": "5f751d25b31eb491b250fed4685f0fb48ac1c562361d74992cf97b4cb332ace9",
+  "commit": "805d7a21f998bdf579010be42b675e3d2af64f42",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "truffle": "0.57.1"
+  },
+  "region": "us-west-2",
+  "ttl": "4h",
+  "cost_limit_usd": 0.5,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12-r5",
+  "sample_accessions": [],
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12-r5/payload.sh",
+    "sha256": "c2cc43bff2ac6f95de1c0e8a1482e008691c006392de997458b115c8472d1e86",
+    "bytes": 16998
+  },
+  "user_data": {
+    "base64_bytes": 16368,
+    "bootstrap_bytes": 37496,
+    "gzip_bytes": 12274
+  },
+  "datasets": [
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/",
+      "kind": "prefix"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-08T05:45:10Z",
+  "cohort": {
+    "id": "20261008-054457-805d7a2-7357-n12",
+    "rank": 5,
+    "n": 12,
+    "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12",
+    "rendezvous": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12/rendezvous",
+    "dir": "results/g3/20261008-054457-805d7a2-7357-n12"
+  },
+  "launch": {
+    "requested_at": "2026-10-08T05:45:12Z",
+    "instance_id": "i-0e6ec64ad525cf9b6",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "c8g.large",
+    "count": 1,
+    "ami": "ami-09325776a00699513",
+    "az": "us-west-2a",
+    "launch_time": "2026-10-08T05:45:15+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-08T05:50:00Z"
+  },
+  "truffle_price_usd_per_hour": 0.07976,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12-r5/: 9 objects, 8 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-08T05:45:27Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-08T05:45:29Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-08T05:45:29Z",
+      "seconds": 24,
+      "cold": false
+    },
+    {
+      "phase": "stage",
+      "start": "2026-10-08T05:45:53Z",
+      "seconds": 193,
+      "cold": false
+    },
+    {
+      "phase": "push",
+      "start": "2026-10-08T05:49:06Z",
+      "seconds": 1,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 187,
+    "unparsed_rows": 0,
+    "by_op": {
+      "CompleteMultipartUpload": 0,
+      "CreateMultipartUpload": 0,
+      "GetBucketRequestPayment": 2,
+      "GetObject-ENA": 12,
+      "HeadBucket-anon": 1,
+      "HeadObject": 169,
+      "PutObject": 3,
+      "UploadPart": 0
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject-ENA",
+        "count": 12,
+        "bucket": ""
+      },
+      {
+        "phase": "stage",
+        "op": "PutObject",
+        "count": 3,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "CreateMultipartUpload",
+        "count": 0,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "UploadPart",
+        "count": 0,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "CompleteMultipartUpload",
+        "count": 0,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "HeadObject",
+        "count": 169,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r5",
+    "run_id": "1e777bb4-cb9c-4b46-86db-378ff5c99f64",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-08T05:45:27Z",
+    "ended_at": "2026-10-08T05:49:07Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12-r5/spawn/ak2-g3-20261008-054457-805d7a2-7357-n12-r5/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2a",
+    "instance_id": "i-0e6ec64ad525cf9b6",
+    "instance_type": "c8g.large",
+    "ami": "ami-09325776a00699513",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-08T05:45:29Z"
+  },
+  "start": "2026-10-08T05:45:15+00:00",
+  "stop": "2026-10-08T05:50:00Z",
+  "billed_seconds": 285,
+  "cost_usd": 0.006314,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-08T05:50:34Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r5",
+    "rc": 0,
+    "own_gone": true,
+    "others": [
+      {
+        "region": "us-west-2",
+        "id": "i-08824d9960345169f",
+        "task_id": "ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r0",
+        "state": "running",
+        "launch": "2026-10-08T05:43:17+00:00",
+        "ttl_deadline": "2026-10-08T06:43:16Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0dfb460d428694d0e",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r2",
+        "state": "running",
+        "launch": "2026-10-08T05:45:09+00:00",
+        "ttl_deadline": "2026-10-08T09:45:08Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0e814278362045a51",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r0",
+        "state": "running",
+        "launch": "2026-10-08T05:43:35+00:00",
+        "ttl_deadline": "2026-10-08T06:43:34Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0b010d33399e85695",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r10",
+        "state": "running",
+        "launch": "2026-10-08T05:43:56+00:00",
+        "ttl_deadline": "2026-10-08T06:43:55Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0d969d4c4bc34cdf1",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r2",
+        "state": "running",
+        "launch": "2026-10-08T05:43:40+00:00",
+        "ttl_deadline": "2026-10-08T06:43:38Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-07e400a56b844c1ed",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r13",
+        "state": "running",
+        "launch": "2026-10-08T05:44:02+00:00",
+        "ttl_deadline": "2026-10-08T06:44:01Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-09506ef288adb5d51",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r15",
+        "state": "running",
+        "launch": "2026-10-08T05:44:07+00:00",
+        "ttl_deadline": "2026-10-08T06:44:06Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-039c69cf575e28826",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r7",
+        "state": "running",
+        "launch": "2026-10-08T05:45:19+00:00",
+        "ttl_deadline": "2026-10-08T09:45:18Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0e7f9701d24a4e4b9",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r5",
+        "state": "running",
+        "launch": "2026-10-08T05:43:46+00:00",
+        "ttl_deadline": "2026-10-08T06:43:45Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-04a2917ebbdec9c18",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r9",
+        "state": "running",
+        "launch": "2026-10-08T05:43:54+00:00",
+        "ttl_deadline": "2026-10-08T06:43:53Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-09092ec19d2b4e67d",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r10",
+        "state": "running",
+        "launch": "2026-10-08T05:45:25+00:00",
+        "ttl_deadline": "2026-10-08T09:45:24Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0dd976f3315d13686",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r1",
+        "state": "running",
+        "launch": "2026-10-08T05:45:07+00:00",
+        "ttl_deadline": "2026-10-08T09:45:06Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0c9f32453a685b9fe",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r3",
+        "state": "running",
+        "launch": "2026-10-08T05:43:42+00:00",
+        "ttl_deadline": "2026-10-08T06:43:41Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0ee5374f3668134b9",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r14",
+        "state": "running",
+        "launch": "2026-10-08T05:44:05+00:00",
+        "ttl_deadline": "2026-10-08T06:44:03Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0e2cfec7710fe8f7e",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r12",
+        "state": "running",
+        "launch": "2026-10-08T05:44:01+00:00",
+        "ttl_deadline": "2026-10-08T06:43:59Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-05c62a2767abff068",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r4",
+        "state": "running",
+        "launch": "2026-10-08T05:43:44+00:00",
+        "ttl_deadline": "2026-10-08T06:43:43Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-09df2bf2b12cc67f0",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r11",
+        "state": "running",
+        "launch": "2026-10-08T05:45:27+00:00",
+        "ttl_deadline": "2026-10-08T09:45:26Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-066300005bd0bb25a",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r4",
+        "state": "running",
+        "launch": "2026-10-08T05:45:13+00:00",
+        "ttl_deadline": "2026-10-08T09:45:12Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-08873d738233955bb",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r7",
+        "state": "running",
+        "launch": "2026-10-08T05:43:50+00:00",
+        "ttl_deadline": "2026-10-08T06:43:49Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-091e369b1bef67147",
+        "task_id": "ak2-g3-20261008-050900-9c4a5c7",
+        "state": "running",
+        "launch": "2026-10-08T05:09:08+00:00",
+        "ttl_deadline": "2026-10-08T07:09:07Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-01e4f4adc84cd50f9",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r11",
+        "state": "running",
+        "launch": "2026-10-08T05:43:58+00:00",
+        "ttl_deadline": "2026-10-08T06:43:57Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-04e5d3ee15efc55cd",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r8",
+        "state": "running",
+        "launch": "2026-10-08T05:43:53+00:00",
+        "ttl_deadline": "2026-10-08T06:43:51Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0e96eaa7bd23dd1f3",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r6",
+        "state": "running",
+        "launch": "2026-10-08T05:43:48+00:00",
+        "ttl_deadline": "2026-10-08T06:43:47Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0fc1dfeb17b781bd6",
+        "task_id": "ak2-g3-20261008-054327-1a4dbfe-0536-n16-r1",
+        "state": "running",
+        "launch": "2026-10-08T05:43:38+00:00",
+        "ttl_deadline": "2026-10-08T06:43:37Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-000187921ca0a2bea",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r3",
+        "state": "running",
+        "launch": "2026-10-08T05:45:11+00:00",
+        "ttl_deadline": "2026-10-08T09:45:10Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-094cfba0b82a06210",
+        "task_id": "ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r3",
+        "state": "running",
+        "launch": "2026-10-08T05:43:21+00:00",
+        "ttl_deadline": "2026-10-08T06:43:19Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-051a0e8e2b31d47a5",
+        "task_id": "ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r1",
+        "state": "running",
+        "launch": "2026-10-08T05:43:17+00:00",
+        "ttl_deadline": "2026-10-08T06:43:16Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0035332e09db71e12",
+        "task_id": "ak2-g3-20261008-054457-805d7a2-7357-n12-r6",
+        "state": "running",
+        "launch": "2026-10-08T05:45:17+00:00",
+        "ttl_deadline": "2026-10-08T09:45:16Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0c576ebbdf04e57e6",
+        "task_id": "ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r2",
+        "state": "running",
+        "launch": "2026-10-08T05:43:19+00:00",
+        "ttl_deadline": "2026-10-08T06:43:18Z",
+        "flag": "within_ttl"
+      }
+    ],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T05:50:36Z"
+  }
+}

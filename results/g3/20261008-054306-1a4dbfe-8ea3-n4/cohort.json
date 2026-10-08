@@ -1,0 +1,102 @@
+{
+  "cohort_id": "20261008-054306-1a4dbfe-8ea3-n4",
+  "gate": "g3",
+  "spec": "runs/g3-e2-x8g.8xlarge-n4.json",
+  "commit": "805d7a21f998bdf579010be42b675e3d2af64f42",
+  "nodes": 4,
+  "instance_type": "x8g.8xlarge",
+  "az": "us-west-2a",
+  "region": "us-west-2",
+  "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054306-1a4dbfe-8ea3-n4",
+  "network": {
+    "vpc": "vpc-e7e2999f",
+    "security_group": "sg-5059b179",
+    "admits": "itself, 22/tcp, ICMP"
+  },
+  "start": "2026-10-08T05:43:06Z",
+  "stop": "2026-10-08T05:55:34Z",
+  "ended": "interrupted (exit 130)",
+  "terminated_early": [
+    {
+      "rank": 0,
+      "instances": "i-08824d9960345169f",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 1,
+      "instances": "i-051a0e8e2b31d47a5",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0c576ebbdf04e57e6",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 3,
+      "instances": "i-094cfba0b82a06210",
+      "why": "final sweep (interrupted (exit 130))"
+    }
+  ],
+  "sweep_failures": [],
+  "members": [
+    {
+      "rank": 0,
+      "run_id": "20261008-054306-1a4dbfe-8ea3-n4-r0",
+      "rc": "interrupted",
+      "instance_id": "i-08824d9960345169f",
+      "type": "x8g.8xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 1,
+      "run_id": "20261008-054306-1a4dbfe-8ea3-n4-r1",
+      "rc": "interrupted",
+      "instance_id": "i-051a0e8e2b31d47a5",
+      "type": "x8g.8xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 2,
+      "run_id": "20261008-054306-1a4dbfe-8ea3-n4-r2",
+      "rc": "interrupted",
+      "instance_id": "i-0c576ebbdf04e57e6",
+      "type": "x8g.8xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 3,
+      "run_id": "20261008-054306-1a4dbfe-8ea3-n4-r3",
+      "rc": "interrupted",
+      "instance_id": "i-094cfba0b82a06210",
+      "type": "x8g.8xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    }
+  ],
+  "cost_usd": null,
+  "cost_basis": "sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
+  "prefix_fetched": true,
+  "multipart_aborted": 0,
+  "multipart_abort_failures": 0,
+  "orphans_rc": 1
+}

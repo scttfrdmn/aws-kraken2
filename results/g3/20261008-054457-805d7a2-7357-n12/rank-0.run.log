@@ -1,0 +1,232 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: run 20261008-054457-805d7a2-7357-n12-r0  task ak2-g3-20261008-054457-805d7a2-7357-n12-r0  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12-r0
+make run: user data: 12273 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c8g.large (0 vCPU, 0 GiB)
+make run: launched i-0384d4568d9bbc713 (c8g.large) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T05:45:19Z	1791438319	preamble	no
+  | ak2: [2026-10-08T05:45:19Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T05:45:19Z] after set +e $-=hBc
+  | ak2: [2026-10-08T05:45:19Z] gate=g3 run=20261008-054457-805d7a2-7357-n12-r0
+  | ak2: [2026-10-08T05:45:19Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T05:45:19Z] imds region=us-west-2 az=us-west-2a instance=i-0384d4568d9bbc713 type=c8g.large ami=ami-09325776a00699513
+  | ak2: [2026-10-08T05:45:19Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T05:45:20Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T05:45:20Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T05:45:20Z] region assert passed
+  | ak2: [2026-10-08T05:45:20Z] drop_caches_ok=true
+  | ak2: [2026-10-08T05:45:20Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T05:45:20Z	1791438320	body	no
+  | ak2-phase	2026-10-08T05:45:20Z	1791438320	setup	no
+  | ak2: [2026-10-08T05:45:38Z] checkout 805d7a2; nproc 2; disk /dev/nvme0n1p1 40G 2.5G 38G 7% /; slice 0 of 12, ranks 11..1000
+  | ak2-phase	2026-10-08T05:45:38Z	1791438338	stage	no
+  | stage-cohort: shell flags huB (on instance: 1)
+  | stage-cohort: ranks 11..1000, every 12th from offset 0; 6 files at once, 4 ranges each
+  | stage-cohort: SRR5935750_2.fastq.gz present (md5 c144f77f863c8e4367ae94b41be10b0d)
+  | stage-cohort: SRR5935774_2.fastq.gz present (md5 ac1c5a73e45830eff69e56428704ced1)
+  | stage-cohort: SRR5935762_2.fastq.gz present (md5 d80f093b5c51a5902b9d74a4cc4142b0)
+  | stage-cohort: SRR5935774_1.fastq.gz present (md5 43837b76452f8c80e936c7baf29500ac)
+  | stage-cohort: SRR5935750_1.fastq.gz present (md5 ad22dc4321ab1245e9039236c6873e00)
+  | stage-cohort: SRR5935762_1.fastq.gz present (md5 63a1b98041ab2d78830de26adbfa9037)
+  | stage-cohort: SRR5935798_1.fastq.gz present (md5 1fea414ac92503e9b8d76f8de9225b6b)
+  | stage-cohort: SRR5935786_1.fastq.gz present (md5 b5391c97751c3fdecdbe3befbd632b0d)
+  | stage-cohort: SRR5935798_2.fastq.gz present (md5 894c2de8a233007800cb1a770397bf1a)
+  | stage-cohort: SRR5935786_2.fastq.gz present (md5 eb15b756a7f36f730584b7ac082d8c76)
+  | stage-cohort: SRR5935810_1.fastq.gz present (md5 2c2c05c044bc12d903d646eb39527eb8)
+  | stage-cohort: SRR5935810_2.fastq.gz present (md5 16aaee85b8968c64acf5e74bd853917e)
+  | stage-cohort: SRR5935822_2.fastq.gz present (md5 7c6ab59e93597557c527a419ee8afd2c)
+  | stage-cohort: SRR5935822_1.fastq.gz present (md5 5b277b5757a72a8b6c9e8798264ecdd2)
+  | stage-cohort: SRR5935834_1.fastq.gz present (md5 a67c220dcc7b92772764accd8fd78031)
+  | stage-cohort: SRR5935834_2.fastq.gz present (md5 137d579e2ff2acd8e03bb0e5dc7ad533)
+  | stage-cohort: SRR5935846_1.fastq.gz present (md5 5d874fc2f387e0e54338ecc88078459f)
+  | stage-cohort: SRR5935846_2.fastq.gz present (md5 ffd9294e6aaab00404d15984f2dc6c29)
+  | stage-cohort: SRR5935858_1.fastq.gz present (md5 5950cde41ae5cc65f46fccf510d84bb7)
+  | stage-cohort: SRR5935858_2.fastq.gz present (md5 fe163b47c05c3fad7ca4527e3a88a200)
+  | stage-cohort: SRR5935882_1.fastq.gz present (md5 b6575cadb065404b0113a617087d39c6)
+  | stage-cohort: SRR5935870_1.fastq.gz present (md5 e03796bcb5a65541595e5633b06a8916)
+  | stage-cohort: SRR5935870_2.fastq.gz present (md5 840a79ae1dab22676958cdea6f8af8fa)
+  | stage-cohort: SRR5935882_2.fastq.gz present (md5 7dbf95540cd66c852301f004484308ef)
+  | stage-cohort: SRR5935894_2.fastq.gz present (md5 6c22f5a75678e10a466eb5b3b01b5c8c)
+  | stage-cohort: SRR5935894_1.fastq.gz present (md5 e0f4ecde773d2534c5bd7a0685d0adc5)
+  | stage-cohort: SRR5935906_1.fastq.gz present (md5 24107b98b0f1da0add794dee7d20ade8)
+  | stage-cohort: SRR5935906_2.fastq.gz present (md5 000b0fb0e1d90d36e17639d216b42b60)
+  | stage-cohort: SRR5935918_1.fastq.gz present (md5 783bf248bc5c9877f38a92d453255ad6)
+  | stage-cohort: SRR5935918_2.fastq.gz present (md5 8f46d6e46f71e2deabbcbded70e6c774)
+  | stage-cohort: SRR5935942_1.fastq.gz present (md5 d9ebf82d398d29e5cebd1bfd5ce0efef)
+  | stage-cohort: SRR5935930_2.fastq.gz present (md5 7b1364870aab971a5f0ab18383d705c3)
+  | stage-cohort: SRR5935930_1.fastq.gz present (md5 a75a4c2dce66c7b96eca5bd421284887)
+  | stage-cohort: SRR5935942_2.fastq.gz present (md5 ebad8b71b187c01dec2044096b165ec6)
+  | stage-cohort: SRR5935954_1.fastq.gz present (md5 b7290a61b20115eadd2f50993b2ac2d4)
+  | stage-cohort: SRR5935954_2.fastq.gz present (md5 fa9e84904a7e44f8e82d3e4f51bcf02c)
+  | stage-cohort: SRR5935966_1.fastq.gz present (md5 050650b06387e527891fa3a0a6741c05)
+  | stage-cohort: SRR5935966_2.fastq.gz present (md5 e14f0eaa27c7d1f8d40097768724db19)
+  | stage-cohort: SRR5935978_1.fastq.gz present (md5 eda27ce84cd3614331c2bcfb04ad7597)
+  | stage-cohort: SRR5935978_2.fastq.gz present (md5 6b30838f25ea5614cf02dbcc3da81d5f)
+  | stage-cohort: SRR5935990_1.fastq.gz present (md5 3285481555fa0962d6eb14dabccb975e)
+  | stage-cohort: SRR5935990_2.fastq.gz present (md5 751bc35152d79b03deb27a74c74a4f07)
+  | stage-cohort: SRR5936002_1.fastq.gz present (md5 8a782411c7a3be81acec35335ca0eb23)
+  | stage-cohort: SRR5936014_1.fastq.gz present (md5 0141f8ebef5c49912a84bf7012cf4539)
+  | stage-cohort: SRR5936002_2.fastq.gz present (md5 3dea77a83d6583f8d8631f972d7c191c)
+  | stage-cohort: SRR5936014_2.fastq.gz present (md5 5c9a9419c7086e8ebcb28ad3606003d6)
+  | stage-cohort: SRR5936026_2.fastq.gz present (md5 06dbe0c0ec75c1408fbde5cb7c29694b)
+  | stage-cohort: SRR5936026_1.fastq.gz present (md5 c726ecf94bbcfbf10630c37534585335)
+  | stage-cohort: SRR5936038_2.fastq.gz present (md5 afc30dd7eff75515b3e589bdd82bb626)
+  | stage-cohort: SRR5936038_1.fastq.gz present (md5 3e446149c676bcd412f5cc3995f73afc)
+  | stage-cohort: SRR5936050_2.fastq.gz present (md5 21225fcc7f44709139c415ef4f80e839)
+  | stage-cohort: SRR5936050_1.fastq.gz present (md5 5e3959e77393cb399f2501a16e8b4cd6)
+  | stage-cohort: SRR5936062_2.fastq.gz present (md5 90aeb53b4d11f0fc4c9779b4b19c0f44)
+  | stage-cohort: SRR5936062_1.fastq.gz present (md5 67bf28b9321d1627da4b5dc6e979bc62)
+  | stage-cohort: SRR5936074_1.fastq.gz present (md5 352e6a91a9417a0484677c5c60b4ffac)
+  | stage-cohort: SRR5936086_1.fastq.gz present (md5 2d9f84143c07c90a07b45bc243382b9b)
+  | stage-cohort: SRR5936074_2.fastq.gz present (md5 0e06e8d130b06218dadb603581e9f9dc)
+  | stage-cohort: SRR5936086_2.fastq.gz present (md5 8cc8702ebede608ad4e6841a660ccb8b)
+  | stage-cohort: SRR5936098_2.fastq.gz present (md5 3a12eceb8cb117caa44ea077c8038a69)
+  | stage-cohort: SRR5936098_1.fastq.gz present (md5 a617de5b985a929fe7d4e638a4e5d77b)
+  | stage-cohort: SRR5936122_2.fastq.gz present (md5 4a1b9585d01dea0b64326a42f93965c6)
+  | stage-cohort: SRR5936110_1.fastq.gz present (md5 1d0344346ca0893bf6ec9093bb21eaec)
+  | stage-cohort: SRR5936110_2.fastq.gz present (md5 72438740eb3229ab71d6b371b7ad6715)
+  | stage-cohort: SRR5936122_1.fastq.gz present (md5 af7a007abb6aee24a7647f7af0bea1d3)
+  | stage-cohort: SRR5936134_1.fastq.gz present (md5 cf848bec64fc2cd56198298aea3291b5)
+  | stage-cohort: SRR5936134_2.fastq.gz present (md5 10fe7a50cf104421298adcc4547468d5)
+  | stage-cohort: SRR5936146_2.fastq.gz present (md5 e6d08ba1f0e3caa841d55dd609266c52)
+  | stage-cohort: SRR5936146_1.fastq.gz present (md5 97297954ff48922a3fb9ae7944f8869a)
+  | stage-cohort: SRR5936170_1.fastq.gz present (md5 d57abb5715bebe2aceeb5fb71d8c3fb3)
+  | stage-cohort: SRR5936158_2.fastq.gz present (md5 660478257f1e8af1eac80dee61ead9df)
+  | stage-cohort: SRR5936158_1.fastq.gz present (md5 d51a8c93eba1eab6818ecbfc03b3ffd5)
+  | stage-cohort: SRR5936170_2.fastq.gz present (md5 5e7fafde36a9f5f3f629d94ed37f62cd)
+  | stage-cohort: SRR5936182_1.fastq.gz present (md5 32533bd2b6582e13b993b6192241011c)
+  | stage-cohort: SRR5936182_2.fastq.gz present (md5 f85dc128f73d7f140c5ddd316e1c6d9c)
+  | stage-cohort: SRR5936194_1.fastq.gz present (md5 1dedce75c62bf46acb16efaf2e4ca054)
+  | stage-cohort: SRR5936194_2.fastq.gz present (md5 b2eec54f1646e9fc746c8657c448d153)
+  | stage-cohort: SRR5936206_1.fastq.gz present (md5 6fe9ddd72cd74bb04f6364e2d88d17d6)
+  | stage-cohort: SRR5936206_2.fastq.gz present (md5 a5f84b93d6d025b5c4a4b0993e4ae91f)
+  | stage-cohort: SRR5936218_1.fastq.gz present (md5 25e8af6f816ec2aa17df6bdc2a348596)
+  | stage-cohort: SRR5936230_1.fastq.gz present (md5 a89873114b21b57110d28931313b0524)
+  | stage-cohort: SRR5936218_2.fastq.gz present (md5 5cbc810d665a3c5b95aaed5f13e882bf)
+  | stage-cohort: SRR5946607_1.fastq.gz present (md5 7ac493b0e041368436434d2f9e9a7880)
+  | stage-cohort: SRR5936230_2.fastq.gz present (md5 5d0cc330a66365b0e81d5c7a79b9999d)
+  | stage-cohort: SRR5946607_2.fastq.gz present (md5 a465c76b450cf9fc21ff2ac68a41ac56)
+  | stage-cohort: SRR5946619_1.fastq.gz present (md5 8240de020ebb04ac8ae87187b3317dd3)
+  | stage-cohort: SRR5946631_1.fastq.gz present (md5 f0542c4ff268f0ac9bc5bae45b3e6ad9)
+  | stage-cohort: SRR5946619_2.fastq.gz present (md5 ad4d9316b2161d2f4c89159ed0f21c1b)
+  | stage-cohort: SRR5946643_1.fastq.gz present (md5 29804d404387022ef25be6681261fa93)
+  | stage-cohort: SRR5946631_2.fastq.gz present (md5 331367ad5cefb747af8a8725c96dbc6f)
+  | stage-cohort: SRR5946643_2.fastq.gz present (md5 45a91f1939aad9cd03dc17fa7ec3e5b9)
+  | stage-cohort: SRR5946655_1.fastq.gz present (md5 4f66d617c0927d37c2864e0eb53672f1)
+  | stage-cohort: SRR5946655_2.fastq.gz present (md5 1dd2f567fedcabaeba6199e33a153044)
+  | stage-cohort: SRR5946667_1.fastq.gz present (md5 e5d2179feb94c5c0bbaf9a17ac1514f4)
+  | stage-cohort: SRR5946679_1.fastq.gz present (md5 fb078d1e0ad74982b65e00e5f349b688)
+  | stage-cohort: SRR5946667_2.fastq.gz present (md5 71dc7542211213eb8008fda323e4da73)
+  | stage-cohort: SRR5946679_2.fastq.gz present (md5 a8341b3b7603cca5b2e2072966003a30)
+  | stage-cohort: SRR5946691_1.fastq.gz present (md5 9c6b104352cbb5a86507fd1aa4ba098c)
+  | stage-cohort: SRR5946703_1.fastq.gz present (md5 a4f5b6806af5911a40b1603dd30ebfed)
+  | stage-cohort: SRR5946691_2.fastq.gz present (md5 af9aab90c502cda2fa4a2a8fa3f90c7a)
+  | stage-cohort: SRR5946703_2.fastq.gz present (md5 64bc71b0fc62b1ae8822ab22d1666426)
+  | stage-cohort: SRR5946715_1.fastq.gz present (md5 8cf15f3d8ee05ebd1482fe91c0a18183)
+  | stage-cohort: SRR5946715_2.fastq.gz present (md5 980f6160bb16040b956d5310d969a07d)
+  | stage-cohort: SRR5946727_1.fastq.gz present (md5 661109fe8e77da93189971a7ea26f67c)
+  | stage-cohort: SRR5946727_2.fastq.gz present (md5 3e3c864eb98020974d0c1d94ae8de63a)
+  | stage-cohort: SRR5946739_1.fastq.gz present (md5 3d5a827ef333c7971e52664f3464ee59)
+  | stage-cohort: SRR5946739_2.fastq.gz present (md5 2ed061d3085435c5dd212015901fc3fe)
+  | stage-cohort: SRR5946751_1.fastq.gz present (md5 11675560fe35026905997b2084560dfd)
+  | stage-cohort: SRR5946751_2.fastq.gz present (md5 af4c12547bcc242631f93a59309ce4c4)
+  | stage-cohort: SRR5946763_1.fastq.gz present (md5 d73e0cfc56c8c50c9348bf86a726dd38)
+  | stage-cohort: SRR5946763_2.fastq.gz present (md5 8ddb9e35ac889cab201c27f3aa90c0bc)
+  | stage-cohort: SRR5946775_1.fastq.gz present (md5 883db2e22a181879ccec0967df971b12)
+  | stage-cohort: SRR5946775_2.fastq.gz present (md5 d20fe0cde455abac6ecbd52996b52a31)
+  | stage-cohort: SRR5946787_1.fastq.gz present (md5 a6b1d00bf3eeebb5492d56782ace8145)
+  | stage-cohort: SRR5946799_1.fastq.gz present (md5 a53e642531c9074a276e76724ad8691e)
+  | stage-cohort: SRR5946787_2.fastq.gz present (md5 2eea2d85354b9fe11c3bfe29f3a9a497)
+  | stage-cohort: SRR5946811_1.fastq.gz present (md5 91ec06c913f39cdacaf6f2a1e3462698)
+  | stage-cohort: SRR5946811_2.fastq.gz present (md5 b039d98a53e36bb6ccdf09ba3f0a9bc8)
+  | stage-cohort: SRR5946799_2.fastq.gz present (md5 e6e8c1e0fa65a1777600a2f274aad11a)
+  | stage-cohort: SRR5946823_2.fastq.gz present (md5 5de6fce5dcc57855191d17e3d0b1b7d2)
+  | stage-cohort: SRR5946823_1.fastq.gz present (md5 e39a92a5f929b778f55439640c5bebfc)
+  | stage-cohort: SRR5946835_1.fastq.gz present (md5 5bb768b8ea12020a92ee083d111b4e52)
+  | stage-cohort: SRR5946835_2.fastq.gz present (md5 7928107b73cc21012d4a99e438a83b0c)
+  | stage-cohort: SRR5946847_1.fastq.gz present (md5 66d92d892001a289e913b31c606fe3a1)
+  | stage-cohort: SRR5946847_2.fastq.gz present (md5 e0f4d57d97f8020c1870bc5c9cabea97)
+  | stage-cohort: SRR5946859_1.fastq.gz present (md5 62bc8857dd32a8259411c57623c44f9e)
+  | stage-cohort: SRR5946859_2.fastq.gz present (md5 7d1ed4703d23c5d13c8b94d525d8e31f)
+  | stage-cohort: SRR5946871_1.fastq.gz present (md5 6b85b783827702741463ff825bfea1d4)
+  | stage-cohort: SRR5946871_2.fastq.gz present (md5 d0d9d4e3c33a7519c92f578073189300)
+  | stage-cohort: SRR5946883_1.fastq.gz present (md5 66279640ace8fefa09c69c9a4cf26236)
+  | stage-cohort: SRR5946883_2.fastq.gz present (md5 f571c63236c8229ca1758a612ec77baa)
+  | stage-cohort: SRR5946895_1.fastq.gz present (md5 8a4de6ccb14153b480d855e8ceb575ec)
+  | stage-cohort: SRR5946907_1.fastq.gz present (md5 de47e9c2279e1cb35449046622ff9172)
+  | stage-cohort: SRR5946895_2.fastq.gz present (md5 68a8861de81921fdd6e48dbe3581ea8a)
+  | stage-cohort: SRR5946907_2.fastq.gz present (md5 97fa4cab4cec85a9be08eb9b0ab12e00)
+  | stage-cohort: SRR5946919_1.fastq.gz present (md5 ccc58a31f0fe3db52bfec34db703de97)
+  | stage-cohort: SRR5946919_2.fastq.gz present (md5 b25c9b0b44c9e316b1e83e9a37d5ea44)
+  | stage-cohort: SRR5946931_1.fastq.gz present (md5 0103a5a29acbd36e78cbcfd460681488)
+  | stage-cohort: SRR5946931_2.fastq.gz present (md5 2a2017c1da7f8df4e058618d08784245)
+  | stage-cohort: SRR5946943_1.fastq.gz present (md5 078a9ac97de1a24ff2d61f2c297c2e28)
+  | stage-cohort: SRR5946955_1.fastq.gz present (md5 1f8dc4cc30a9ac0459386a2443e7b796)
+  | stage-cohort: SRR5946955_2.fastq.gz present (md5 ee58be6c499ac78ae5c8b42746ea2651)
+  | stage-cohort: SRR5946943_2.fastq.gz present (md5 e4e00ffef16de2bbec91f3fd9c0c338e)
+  | stage-cohort: SRR5946967_2.fastq.gz present (md5 bc2da870fc6e256a3259f9f75d8c302a)
+  | stage-cohort: SRR5946967_1.fastq.gz present (md5 808e61ec347c139245c28fede48c4db0)
+  | stage-cohort: SRR5946979_2.fastq.gz present (md5 b5e5b9a64993c06844a28b15016e63ea)
+  | stage-cohort: SRR5946979_1.fastq.gz present (md5 f6c2495d319ddb5ac2c51083079dcbb8)
+  | stage-cohort: SRR5946991_1.fastq.gz present (md5 31e3c1fcbfc5e4ecdd91951254de309c)
+  | stage-cohort: SRR5946991_2.fastq.gz present (md5 953976f847752960b54bbb9cdc15a49b)
+  | stage-cohort: SRR5947003_1.fastq.gz present (md5 cc39d024d57157607cdb700c220661a7)
+  | stage-cohort: SRR5947003_2.fastq.gz present (md5 f7d8ec78c9a026abaeb26ac5e12759a7)
+  | stage-cohort: SRR5947015_1.fastq.gz present (md5 e59f4796d63c85233d42fd0a220a07b7)
+  | stage-cohort: SRR5947015_2.fastq.gz present (md5 ac7dd58767250fda858cb9bbc93a1191)
+  | stage-cohort: SRR5947039_1.fastq.gz present (md5 58b624a7600b1ddaa663107307209a2b)
+  | stage-cohort: SRR5947039_2.fastq.gz present (md5 3635f620e6971b4a21b9ff37b49f42f3)
+  | stage-cohort: SRR5947063_1.fastq.gz present (md5 280a7683dd6106bf8c48c29aa4bf6e8c)
+  | stage-cohort: SRR5947063_2.fastq.gz present (md5 0c09f48e915464a306acf8c10ad06dc1)
+  | stage-cohort: SRR5947075_1.fastq.gz staged (179819923 bytes, md5 306876e99a104f16c474172d15efa8eb, sha256 3d030578e96a631d1ed8f0446e4fef217b712c045e700a2bc943265c2418a4df) at 2026-10-08T05:47:08Z
+  | stage-cohort: SRR5947087_1.fastq.gz present (md5 669e11d8279cbee8a2a9f4879d0bae6e)
+  | stage-cohort: SRR5947087_2.fastq.gz present (md5 62a4ba39321d44fc0b3142c5c5d4e6fb)
+  | stage-cohort: SRR5947075_2.fastq.gz staged (176992076 bytes, md5 d81392475786568e66d83bcf0b9b5794, sha256 cfa12b6e5e4cb9b01e9642244257c5c7fb16da95921bbb48abed240262d945f0) at 2026-10-08T05:47:12Z
+  | stage-cohort: SRR5947027_2.fastq.gz staged (439516059 bytes, md5 28bd60ed48a44bc9f5bbcdd4a46ae1f5, sha256 4d8c96c2382e1a8a5c017fb5656e9e9aabe48b2746a2548aeef8a3513afb80e1) at 2026-10-08T05:47:52Z
+  | stage-cohort: SRR5947027_1.fastq.gz staged (440107334 bytes, md5 2cc88c5cec0fe1d62a66d32bb9de165e, sha256 a9e2406a93f974c206d4c7a871fce9c7467e81824a5b7d0c63ddb10bed706118) at 2026-10-08T05:48:01Z
+  | stage-cohort: SRR5947099_2.fastq.gz staged (266149122 bytes, md5 3d591ed4797bc316a799c670e6be0e41, sha256 fc1374e4ad87d1c85dc32a35d8595edfb0a24be1ae4b8e179a6572439e068b80) at 2026-10-08T05:48:17Z
+  | stage-cohort: SRR5947099_1.fastq.gz staged (270345018 bytes, md5 a7879ed060de787707e428d3063c2bb5, sha256 6d7d1c8b70b37246e4abdc32c73da43ceb4e5bec3df83381e4d72be1213657a4) at 2026-10-08T05:48:26Z
+  | stage-cohort: SRR5947051_2.fastq.gz staged (701811573 bytes, md5 174794cf2b942462b03fa191056468b1, sha256 e58f3ce639be154c0946e48ceda2d0c5cc5f13e55ae8c04ad77b48bc8903496d) at 2026-10-08T05:48:55Z
+  | stage-cohort: SRR5947051_1.fastq.gz staged (699327384 bytes, md5 bd19b99f1c8312b0befe9d9af63e2fd9, sha256 1c3df537526c579d3196e683a39af5b936b7cd12a75aeed65f9a98890d711519) at 2026-10-08T05:49:02Z
+  | s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/
+  | ak2: [2026-10-08T05:49:03Z] stage-cohort: 8 files fetched and staged, 158 present
+  | ak2-phase	2026-10-08T05:49:03Z	1791438543	push	no
+  | ak2: [2026-10-08T05:49:03Z] pushed out/stage.log
+  | ak2: [2026-10-08T05:49:04Z] pushed out/staged.tsv
+  | ak2: [2026-10-08T05:49:04Z] stage-cohort rc=0
+  | ak2: [2026-10-08T05:49:04Z] spec body exit rc=0
+  | ak2-phase	2026-10-08T05:49:04Z	1791438544	end	no
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054457-805d7a2-7357-n12-r0/: 9 objects, 8 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261008-054457-805d7a2-7357-n12-r0  (task exit 0, state terminated, cost $0.006314)
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-08824d9960345169f	running	x8g.8xlarge	2026-10-08T05:43:17+00:00	ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r0	ttl=60m	within TTL
+  us-west-2	i-0dfb460d428694d0e	running	c8g.large	2026-10-08T05:45:09+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r2	ttl=4h	within TTL
+  us-west-2	i-0e814278362045a51	running	c8g.16xlarge	2026-10-08T05:43:35+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r0	ttl=60m	within TTL
+  us-west-2	i-0b010d33399e85695	running	c8g.16xlarge	2026-10-08T05:43:56+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r10	ttl=60m	within TTL
+  us-west-2	i-0d969d4c4bc34cdf1	running	c8g.16xlarge	2026-10-08T05:43:40+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r2	ttl=60m	within TTL
+  us-west-2	i-07e400a56b844c1ed	running	c8g.16xlarge	2026-10-08T05:44:02+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r13	ttl=60m	within TTL
+  us-west-2	i-09506ef288adb5d51	running	c8g.16xlarge	2026-10-08T05:44:07+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r15	ttl=60m	within TTL
+  us-west-2	i-039c69cf575e28826	running	c8g.large	2026-10-08T05:45:19+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r7	ttl=4h	within TTL
+  us-west-2	i-0e7f9701d24a4e4b9	running	c8g.16xlarge	2026-10-08T05:43:46+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r5	ttl=60m	within TTL
+  us-west-2	i-04a2917ebbdec9c18	running	c8g.16xlarge	2026-10-08T05:43:54+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r9	ttl=60m	within TTL
+  us-west-2	i-09092ec19d2b4e67d	running	c8g.large	2026-10-08T05:45:25+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r10	ttl=4h	within TTL
+  us-west-2	i-0dd976f3315d13686	running	c8g.large	2026-10-08T05:45:07+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r1	ttl=4h	within TTL
+  us-west-2	i-0c9f32453a685b9fe	running	c8g.16xlarge	2026-10-08T05:43:42+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r3	ttl=60m	within TTL
+  us-west-2	i-0ee5374f3668134b9	running	c8g.16xlarge	2026-10-08T05:44:05+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r14	ttl=60m	within TTL
+  us-west-2	i-0e2cfec7710fe8f7e	running	c8g.16xlarge	2026-10-08T05:44:01+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r12	ttl=60m	within TTL
+  us-west-2	i-05c62a2767abff068	running	c8g.16xlarge	2026-10-08T05:43:44+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r4	ttl=60m	within TTL
+  us-west-2	i-09df2bf2b12cc67f0	running	c8g.large	2026-10-08T05:45:27+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r11	ttl=4h	within TTL
+  us-west-2	i-066300005bd0bb25a	running	c8g.large	2026-10-08T05:45:13+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r4	ttl=4h	within TTL
+  us-west-2	i-08873d738233955bb	running	c8g.16xlarge	2026-10-08T05:43:50+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r7	ttl=60m	within TTL
+  us-west-2	i-091e369b1bef67147	running	r8gd.16xlarge	2026-10-08T05:09:08+00:00	ak2-g3-20261008-050900-9c4a5c7	ttl=120m	within TTL
+  us-west-2	i-01e4f4adc84cd50f9	running	c8g.16xlarge	2026-10-08T05:43:58+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r11	ttl=60m	within TTL
+  us-west-2	i-04e5d3ee15efc55cd	running	c8g.16xlarge	2026-10-08T05:43:53+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r8	ttl=60m	within TTL
+  us-west-2	i-0e96eaa7bd23dd1f3	running	c8g.16xlarge	2026-10-08T05:43:48+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r6	ttl=60m	within TTL
+  us-west-2	i-0fc1dfeb17b781bd6	running	c8g.16xlarge	2026-10-08T05:43:38+00:00	ak2-g3-20261008-054327-1a4dbfe-0536-n16-r1	ttl=60m	within TTL
+  us-west-2	i-000187921ca0a2bea	running	c8g.large	2026-10-08T05:45:11+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r3	ttl=4h	within TTL
+  us-west-2	i-094cfba0b82a06210	running	x8g.8xlarge	2026-10-08T05:43:21+00:00	ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r3	ttl=60m	within TTL
+  us-west-2	i-051a0e8e2b31d47a5	running	x8g.8xlarge	2026-10-08T05:43:17+00:00	ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r1	ttl=60m	within TTL
+  us-west-2	i-0035332e09db71e12	running	c8g.large	2026-10-08T05:45:17+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r6	ttl=4h	within TTL
+  us-west-2	i-0c576ebbdf04e57e6	running	x8g.8xlarge	2026-10-08T05:43:19+00:00	ak2-g3-20261008-054306-1a4dbfe-8ea3-n4-r2	ttl=60m	within TTL
+  us-west-2	i-010611a2119cfd1e1	shutting-down	c8g.large	2026-10-08T05:45:21+00:00	ak2-g3-20261008-054457-805d7a2-7357-n12-r8	ttl=4h	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261008-054457-805d7a2-7357-n12-r0 are gone (18 regions checked)

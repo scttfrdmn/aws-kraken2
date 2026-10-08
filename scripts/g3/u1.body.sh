@@ -26,17 +26,6 @@ COHORT=100; C10=10
 COHORT=${AK2_REHEARSE_COHORT:-$COHORT}; C10=${AK2_REHEARSE_C10:-$C10}
 fail() { ak2_say "ERROR: $*"; exit 1; }
 hex64() { [[ $1 =~ ^[0-9a-f]{64}$ ]]; }
-# A pool of this body's own background jobs. wait -n without PIDs also returns for any other child
-# of the shell (the preamble's, and finished process substitutions), which miscounted the slots
-# and ended with wait -n on no job (127): E2 N=1's fetch "failed" at 8a6dbe6 with no file failing.
-POOL=()
-pool_wait1() {  # wait for one of POOL's jobs; drop it from POOL; return its status
-  local d="" rc p keep=()
-  wait -n -p d "${POOL[@]}"; rc=$?
-  for p in "${POOL[@]}"; do [ "$p" = "$d" ] || keep+=("$p"); done
-  POOL=("${keep[@]}")
-  return "$rc"
-}
 
 ak2_phase setup
 sudo -n dnf install -y -q git > "$W/dnf0.log" 2>&1 || fail "dnf git failed"
@@ -72,23 +61,19 @@ if [ -n "${AK2_REHEARSE_SAMPLES:-}" ]; then
   read -r -a SAMPLES <<< "$AK2_REHEARSE_SAMPLES"; read -r -a PAIRS <<< "$AK2_REHEARSE_WEIGHTS"
 fi
 [ "${#SAMPLES[@]}" = "$COHORT" ] || fail "want $COHORT cohort runs, got ${#SAMPLES[@]}"
-fetch_one() {
-  local f=$1 want got
-  aws s3 cp --only-show-errors "s3://$B/$CK/$f" "$IN/$f" || { echo "ERROR: get $f"; return 1; }
-  want=$(aws s3api head-object --bucket "$B" --key "$CK/$f" --query Metadata.sha256 --output text)
-  got=$(sha256sum "$IN/$f" | cut -d' ' -f1)
-  hex64 "$want" && [ "$got" = "$want" ] || { echo "ERROR: $f sha256 $got != metadata $want"; return 1; }
-  echo "$f $(stat -c%s "$IN/$f")"
-}
-: > "$W/fetched.txt"; FERR=0
-for s in "${SAMPLES[@]}"; do
-  for m in 1 2; do
-    fetch_one "${s}_$m.fastq.gz" >> "$W/fetched.txt" 2>&1 &
-    POOL+=($!)
-    if [ "${#POOL[@]}" -ge 16 ]; then pool_wait1 || FERR=1; fi
-  done
-done
-while [ "${#POOL[@]}" -gt 0 ]; do pool_wait1 || FERR=1; done
+FILES=()
+for s in "${SAMPLES[@]}"; do FILES+=("${s}_1.fastq.gz" "${s}_2.fastq.gz"); done
+DEST=$IN; LANES=16
+# scripts/g3/fetch.sh, a child process (its lanes are its own jobs, waited for by PID: the
+# body's earlier wait -n, bare and then with -p over a PID list, miscounted at 8a6dbe6 and looped
+# on "no such job" at 1a4dbfe), under a watchdog of FETCH_LIMIT seconds.
+FETCH_LIMIT=1500
+"$W/repo/scripts/g3/fetch.sh" "$B" "$CK" "$DEST" "$LANES" "${FILES[@]}" > "$W/fetched.txt" 2>&1 &
+FP=$!
+( sleep "$FETCH_LIMIT"; kill -TERM "$FP" 2>/dev/null ) > /dev/null 2>&1 &
+WD=$!
+wait "$FP"; FERR=$?
+kill "$WD" 2>/dev/null
 grep ERROR "$W/fetched.txt" | head -5
 [ "$FERR" = 0 ] && [ "$(grep -vc ERROR "$W/fetched.txt")" = $((2 * COHORT)) ] || fail "input fetch failed"
 ak2_req GetObject "$(awk '!/ERROR/{n += int(($2 + 8388607) / 8388608)} END{print n+0}' "$W/fetched.txt")" "$B"
@@ -130,18 +115,28 @@ u1_fq() {
   for m in 1 2; do pigz -dc -p 16 "$IN/${s}_$m.fastq.gz" > "$SCR/fq/${s}_$m.fq" || return 1; done
 }
 u1_fq_rm() { rm -f "$SCR/fq/${SAMPLES[$1]}_"[12].fq; }
-# u1_pass RUNG INPUT T P COHORT ETAG: the first COHORT samples, P at a time (gz), and a u1-rung line.
+# u1_pass RUNG INPUT T P COHORT ETAG: the first COHORT samples on P processes at once (gz), and
+# a u1-rung line. The samples go to the P lanes largest first, each to the lane with the fewest
+# pairs so far (LPT, as the engine places them): upstream at its best with known sizes.
 FAIL=0
 u1_pass() {
-  local rung=$1 input=$2 t=$3 p=$4 c=$5 doetag=$6 j t0 t1
+  local rung=$1 input=$2 t=$3 p=$4 c=$5 doetag=$6 j t0 t1 l best
   ak2_phase "$rung"
-  t0=$(now)
-  for ((j = 0; j < c; j++)); do
-    u1_one "$rung" "$input" "$t" "$j" "$doetag" &
-    POOL+=($!)
-    if [ "${#POOL[@]}" -ge "$p" ]; then pool_wait1 || FAIL=1; fi
+  local -a load lane order
+  for ((l = 0; l < p; l++)); do load[$l]=0; lane[$l]=""; done
+  mapfile -t order < <(for ((j = 0; j < c; j++)); do echo "$j ${PAIRS[$j]}"; done | sort -k2,2nr -k1,1n | cut -d' ' -f1)
+  for j in "${order[@]}"; do
+    best=0
+    for ((l = 1; l < p; l++)); do [ "${load[$l]}" -lt "${load[$best]}" ] && best=$l; done
+    lane[$best]="${lane[$best]} $j"; load[$best]=$(( load[best] + PAIRS[j] ))
   done
-  while [ "${#POOL[@]}" -gt 0 ]; do pool_wait1 || FAIL=1; done
+  t0=$(now)
+  local pids=() pid
+  for ((l = 0; l < p; l++)); do
+    ( r=0; for j in ${lane[$l]}; do u1_one "$rung" "$input" "$t" "$j" "$doetag" || r=1; done; exit "$r" ) &
+    pids+=($!)
+  done
+  for pid in "${pids[@]}"; do wait "$pid" || FAIL=1; done
   t1=$(now)
   u1_rungline "$rung" "$input" "$t" "$p" "$c" "$t0" "$t1"
 }

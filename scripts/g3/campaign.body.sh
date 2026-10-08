@@ -24,17 +24,6 @@ set -- $AK2_DATASETS
 U=${1#s3://}; RB=${U%%/*}; HK=${U#*/}; RP=${HK%/*}
 U=${4#s3://}; B=${U%%/*}; CK=${U#*/}; CK=${CK%/}
 fail() { ak2_say "ERROR: $*"; exit 1; }
-# A pool of this body's own background jobs. wait -n without PIDs also returns for any other child
-# of the shell (the preamble's, and finished process substitutions), which miscounted the slots
-# and ended with wait -n on no job (127): E2 N=1's fetch "failed" at 8a6dbe6 with no file failing.
-POOL=()
-pool_wait1() {  # wait for one of POOL's jobs; drop it from POOL; return its status
-  local d="" rc p keep=()
-  wait -n -p d "${POOL[@]}"; rc=$?
-  for p in "${POOL[@]}"; do [ "$p" = "$d" ] || keep+=("$p"); done
-  POOL=("${keep[@]}")
-  return "$rc"
-}
 hex64() { [[ $1 =~ ^[0-9a-f]{64}$ ]]; }
 # AK2_REHEARSE_* are make rehearse's seams (scripts/lib/cohort_rehearse.sh): run.sh refuses them in
 # a spec's env and never sets them, so on AWS they are always unset.
@@ -117,25 +106,20 @@ mapfile -t NEED < <(python3 "$W/repo/scripts/lib/cohort_place.py" needs "$N" "$R
 ak2_say "manifest $INV: $(grep -c . "$M") lines in $b batches; rank $RANK reads ${#NEED[@]} samples"
 
 ak2_phase fetch
-# Each needed mate: GET, then sha256 against its metadata; 8 at once.
-fetch_one() {
-  local f=$1 want got
-  ak2_stage "s3://$B/$CK/$f" "$CD/$f" > "$W/fetch-$f.log" 2>&1 || { cat "$W/fetch-$f.log"; return 1; }
-  want=$(aws s3api head-object --bucket "$B" --key "$CK/$f" --query Metadata.sha256 --output text)
-  got=$(sha256sum "$CD/$f" | cut -d' ' -f1)
-  hex64 "$want" && [ "$got" = "$want" ] || { echo "ERROR: $f sha256 $got != metadata $want"; return 1; }
-  echo "$f $(stat -c%s "$CD/$f")"
-}
-: > "$W/fetched.txt"
-FERR=0
-for s in "${NEED[@]}"; do
-  for m in 1 2; do
-    fetch_one "${s}_$m.fastq.gz" >> "$W/fetched.txt" 2>&1 &
-    POOL+=($!)
-    if [ "${#POOL[@]}" -ge 8 ]; then pool_wait1 || FERR=1; fi
-  done
-done
-while [ "${#POOL[@]}" -gt 0 ]; do pool_wait1 || FERR=1; done
+# Each needed mate: GET, then sha256 against its metadata; 8 lanes.
+FILES=()
+for s in "${NEED[@]}"; do FILES+=("${s}_1.fastq.gz" "${s}_2.fastq.gz"); done
+DEST=$CD; LANES=8
+# scripts/g3/fetch.sh, a child process (its lanes are its own jobs, waited for by PID: the
+# body's earlier wait -n, bare and then with -p over a PID list, miscounted at 8a6dbe6 and looped
+# on "no such job" at 1a4dbfe), under a watchdog of FETCH_LIMIT seconds.
+FETCH_LIMIT=1500
+"$W/repo/scripts/g3/fetch.sh" "$B" "$CK" "$DEST" "$LANES" "${FILES[@]}" > "$W/fetched.txt" 2>&1 &
+FP=$!
+( sleep "$FETCH_LIMIT"; kill -TERM "$FP" 2>/dev/null ) > /dev/null 2>&1 &
+WD=$!
+wait "$FP"; FERR=$?
+kill "$WD" 2>/dev/null
 grep ERROR "$W/fetched.txt" | head -5
 [ "$FERR" = 0 ] || { ak2_push "$W/fetched.txt" "rank$RANK/fetched.txt"; fail "input fetch failed"; }
 NF=$(grep -vc ERROR "$W/fetched.txt")

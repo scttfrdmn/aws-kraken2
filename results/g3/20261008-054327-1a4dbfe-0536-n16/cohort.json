@@ -1,0 +1,318 @@
+{
+  "cohort_id": "20261008-054327-1a4dbfe-0536-n16",
+  "gate": "g3",
+  "spec": "runs/g3-e3-c8g.16xlarge-n16.json",
+  "commit": "805d7a21f998bdf579010be42b675e3d2af64f42",
+  "nodes": 16,
+  "instance_type": "c8g.16xlarge",
+  "az": "us-west-2a",
+  "region": "us-west-2",
+  "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-054327-1a4dbfe-0536-n16",
+  "network": {
+    "vpc": "vpc-e7e2999f",
+    "security_group": "sg-5059b179",
+    "admits": "itself, 22/tcp, ICMP"
+  },
+  "start": "2026-10-08T05:43:27Z",
+  "stop": "2026-10-08T05:55:41Z",
+  "ended": "interrupted (exit 130)",
+  "terminated_early": [
+    {
+      "rank": 0,
+      "instances": "i-0e814278362045a51",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 1,
+      "instances": "i-0fc1dfeb17b781bd6",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0d969d4c4bc34cdf1",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 3,
+      "instances": "i-0c9f32453a685b9fe",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 4,
+      "instances": "i-05c62a2767abff068",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 5,
+      "instances": "i-0e7f9701d24a4e4b9",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 6,
+      "instances": "i-0e96eaa7bd23dd1f3",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 7,
+      "instances": "i-08873d738233955bb",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 8,
+      "instances": "i-04e5d3ee15efc55cd",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 9,
+      "instances": "i-04a2917ebbdec9c18",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 10,
+      "instances": "i-0b010d33399e85695",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 11,
+      "instances": "i-01e4f4adc84cd50f9",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 12,
+      "instances": "i-0e2cfec7710fe8f7e",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 13,
+      "instances": "i-07e400a56b844c1ed",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 14,
+      "instances": "i-0ee5374f3668134b9",
+      "why": "final sweep (interrupted (exit 130))"
+    },
+    {
+      "rank": 15,
+      "instances": "i-09506ef288adb5d51",
+      "why": "final sweep (interrupted (exit 130))"
+    }
+  ],
+  "sweep_failures": [],
+  "members": [
+    {
+      "rank": 0,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r0",
+      "rc": "interrupted",
+      "instance_id": "i-0e814278362045a51",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 1,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r1",
+      "rc": "interrupted",
+      "instance_id": "i-0fc1dfeb17b781bd6",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 2,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r2",
+      "rc": "interrupted",
+      "instance_id": "i-0d969d4c4bc34cdf1",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 3,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r3",
+      "rc": "interrupted",
+      "instance_id": "i-0c9f32453a685b9fe",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 4,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r4",
+      "rc": "interrupted",
+      "instance_id": "i-05c62a2767abff068",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 5,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r5",
+      "rc": "interrupted",
+      "instance_id": "i-0e7f9701d24a4e4b9",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 6,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r6",
+      "rc": "interrupted",
+      "instance_id": "i-0e96eaa7bd23dd1f3",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 7,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r7",
+      "rc": "interrupted",
+      "instance_id": "i-08873d738233955bb",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 8,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r8",
+      "rc": "interrupted",
+      "instance_id": "i-04e5d3ee15efc55cd",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 9,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r9",
+      "rc": "interrupted",
+      "instance_id": "i-04a2917ebbdec9c18",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 10,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r10",
+      "rc": "interrupted",
+      "instance_id": "i-0b010d33399e85695",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 11,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r11",
+      "rc": "interrupted",
+      "instance_id": "i-01e4f4adc84cd50f9",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 12,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r12",
+      "rc": "interrupted",
+      "instance_id": "i-0e2cfec7710fe8f7e",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 13,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r13",
+      "rc": "interrupted",
+      "instance_id": "i-07e400a56b844c1ed",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 14,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r14",
+      "rc": "interrupted",
+      "instance_id": "i-0ee5374f3668134b9",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    },
+    {
+      "rank": 15,
+      "run_id": "20261008-054327-1a4dbfe-0536-n16-r15",
+      "rc": "interrupted",
+      "instance_id": "i-09506ef288adb5d51",
+      "type": "c8g.16xlarge",
+      "az": "us-west-2a",
+      "final_state": null,
+      "cost_usd": null,
+      "exit_code": null,
+      "own_gone": null,
+      "finalised": false
+    }
+  ],
+  "cost_usd": null,
+  "cost_basis": "sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
+  "prefix_fetched": true,
+  "multipart_aborted": 0,
+  "multipart_abort_failures": 0,
+  "orphans_rc": 1
+}

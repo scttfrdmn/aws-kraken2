@@ -1,0 +1,68 @@
+ak2: log tee up
+ak2-phase	2026-10-08T05:44:19Z	1791438259	preamble	no
+ak2: [2026-10-08T05:44:19Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T05:44:19Z] after set +e $-=hBc
+ak2: [2026-10-08T05:44:19Z] gate=g3 run=20261008-054327-1a4dbfe-0536-n16-r14
+ak2: [2026-10-08T05:44:19Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T05:44:19Z] imds region=us-west-2 az=us-west-2a instance=i-0ee5374f3668134b9 type=c8g.16xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T05:44:19Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T05:44:20Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T05:44:20Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T05:44:20Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T05:44:21Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T05:44:21Z] region assert passed
+ak2: [2026-10-08T05:44:21Z] drop_caches_ok=true
+ak2: [2026-10-08T05:44:21Z] preamble done; spec body starts
+ak2-phase	2026-10-08T05:44:21Z	1791438261	body	no
+ak2: [2026-10-08T05:44:21Z] e3 cohort 20261008-054327-1a4dbfe-0536-n16 rank 14 of 16, commit 1a4dbfe; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+ak2-phase	2026-10-08T05:44:21Z	1791438261	setup	no
+ak2: [2026-10-08T05:44:54Z] built 1a4dbfe0bf36fd5744d2631453752d4e835af8b7; go version go1.27.1 linux/arm64; ip 172.31.27.182; nproc 64; mem_gib 123; threads 16, inflight 4
+ak2-phase	2026-10-08T05:44:54Z	1791438294	manifest	no
+ak2: [2026-10-08T05:44:54Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-08T05:44:55Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-08T05:44:56Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+ak2: [2026-10-08T05:44:56Z] pushed out/rank14/c100.tsv
+ak2: [2026-10-08T05:44:57Z] pushed out/rank14/placement.tsv
+ak2: [2026-10-08T05:44:57Z] manifest c100: 306 lines in 9 batches; rank 14 reads 12 samples
+ak2-phase	2026-10-08T05:44:57Z	1791438297	fetch	no
+ak2: [2026-10-08T05:45:05Z] inputs staged and verified: 24 files, 13.59 GB
+ak2: [2026-10-08T05:45:05Z] manifest c100: cohort: 306 samples in 9 batches check
+ak2-phase	2026-10-08T05:45:05Z	1791438305	inv-c100	no
+[c100] ak2-timing	taxo	0.003413	0.113956	87840	0	0.042909	0.074928
+[c100] ak2-engine	mem	t_s	15.0	rss_kib	51248272	hwm_kib	51248276	heap_inuse	406609920	sys	445053288	avail_kib	75529604
+[c100] ak2-timing	shard-load-14	0.174085	21.586812	42650	0	38.705114	35.838258
+[c100] ak2-engine	mem	t_s	30.0	rss_kib	72978952	hwm_kib	72978956	heap_inuse	410656768	sys	450296168	avail_kib	54003844
+[c100] ak2-engine	mem	t_s	45.0	rss_kib	72979204	hwm_kib	72979208	heap_inuse	410968064	sys	450296168	avail_kib	54413152
+[c100] ak2-engine	mem	t_s	60.0	rss_kib	72979436	hwm_kib	72979440	heap_inuse	411279360	sys	450296168	avail_kib	54585872
+[c100] ak2-engine	mem	t_s	75.0	rss_kib	72979644	hwm_kib	72979648	heap_inuse	411574272	sys	450296168	avail_kib	54591940
+[c100] ak2-engine	mem	t_s	90.0	rss_kib	72979820	hwm_kib	72979820	heap_inuse	411992064	sys	450296168	avail_kib	54599060
+[c100] ak2-engine	mem	t_s	105.0	rss_kib	72979952	hwm_kib	72979952	heap_inuse	412483584	sys	450296168	avail_kib	54601860
+[c100] ak2-engine	mem	t_s	120.0	rss_kib	72980132	hwm_kib	72980136	heap_inuse	413007872	sys	450296168	avail_kib	54609788
+[c100] ak2-engine	mem	t_s	135.0	rss_kib	72981552	hwm_kib	72981556	heap_inuse	190029824	sys	459520360	avail_kib	54630560
+[c100] ak2-engine	mem	t_s	150.0	rss_kib	72981988	hwm_kib	72981996	heap_inuse	190447616	sys	459520360	avail_kib	54626200
+[c100] ak2-engine	mem	t_s	165.0	rss_kib	72982296	hwm_kib	72982300	heap_inuse	190873600	sys	459520360	avail_kib	54581236
+[c100] ak2-engine	mem	t_s	180.0	rss_kib	72982556	hwm_kib	72982556	heap_inuse	191414272	sys	459520360	avail_kib	54617864
+[c100] ak2-engine	mem	t_s	195.0	rss_kib	72982632	hwm_kib	72982632	heap_inuse	192012288	sys	459520360	avail_kib	54628668
+[c100] ak2-engine	mem	t_s	210.0	rss_kib	72982644	hwm_kib	72982644	heap_inuse	192593920	sys	459520360	avail_kib	54599908
+[c100] ak2-engine	mem	t_s	225.0	rss_kib	72982660	hwm_kib	72982660	heap_inuse	193167360	sys	459520360	avail_kib	54635456
+[c100] ak2-engine	mem	t_s	240.0	rss_kib	72982668	hwm_kib	72982668	heap_inuse	193798144	sys	459520360	avail_kib	54626636
+[c100] ak2-engine	mem	t_s	255.0	rss_kib	72799888	hwm_kib	72978316	heap_inuse	187809792	sys	459782504	avail_kib	54791948
+[c100] ak2-engine	mem	t_s	270.0	rss_kib	72799896	hwm_kib	72978316	heap_inuse	188203008	sys	459782504	avail_kib	54828240
+[c100] ak2-engine	mem	t_s	285.0	rss_kib	72799896	hwm_kib	72978316	heap_inuse	188694528	sys	459782504	avail_kib	54782916
+[c100] ak2-engine	mem	t_s	300.0	rss_kib	72799896	hwm_kib	72978316	heap_inuse	189341696	sys	459782504	avail_kib	54828840
+[c100] ak2-engine	mem	t_s	315.0	rss_kib	72799896	hwm_kib	72978316	heap_inuse	189898752	sys	459782504	avail_kib	54827480
+[c100] ak2-engine	mem	t_s	330.0	rss_kib	72799912	hwm_kib	72978316	heap_inuse	190554112	sys	459782504	avail_kib	54783584
+[c100] ak2-engine	mem	t_s	345.0	rss_kib	72799920	hwm_kib	72978316	heap_inuse	191258624	sys	459782504	avail_kib	54816916
+[c100] ak2-engine	mem	t_s	360.0	rss_kib	72799924	hwm_kib	72978316	heap_inuse	191963136	sys	459782504	avail_kib	54796096
+[c100] ak2-engine	mem	t_s	375.0	rss_kib	72797736	hwm_kib	72978316	heap_inuse	187645952	sys	459807080	avail_kib	54795456
+[c100] ak2-engine	mem	t_s	390.0	rss_kib	72797736	hwm_kib	72978316	heap_inuse	188088320	sys	459807080	avail_kib	54838752
+[c100] ak2-engine	mem	t_s	405.0	rss_kib	72797752	hwm_kib	72978316	heap_inuse	188702720	sys	459807080	avail_kib	54795556
+[c100] ak2-engine	mem	t_s	420.0	rss_kib	72797760	hwm_kib	72978316	heap_inuse	189259776	sys	459807080	avail_kib	54809924
+[c100] ak2-engine	mem	t_s	435.0	rss_kib	72797780	hwm_kib	72978316	heap_inuse	189808640	sys	459807080	avail_kib	54800812
+[c100] ak2-engine	mem	t_s	450.0	rss_kib	72797780	hwm_kib	72978316	heap_inuse	190480384	sys	459807080	avail_kib	54833068
+[c100] ak2-engine	mem	t_s	465.0	rss_kib	72797784	hwm_kib	72978316	heap_inuse	191184896	sys	459807080	avail_kib	54812644
+[c100] ak2-engine	mem	t_s	480.0	rss_kib	72797784	hwm_kib	72978316	heap_inuse	191832064	sys	459807080	avail_kib	54791916
+[c100] ak2-engine	mem	t_s	495.0	rss_kib	72797828	hwm_kib	72978316	heap_inuse	187760640	sys	459815272	avail_kib	54837712
+[c100] ak2-engine	mem	t_s	510.0	rss_kib	72797828	hwm_kib	72978316	heap_inuse	188301312	sys	459815272	avail_kib	54815800
+[c100] ak2-engine	mem	t_s	525.0	rss_kib	72797832	hwm_kib	72978316	heap_inuse	188776448	sys	459815272	avail_kib	54823916
+[c100] ak2-engine	mem	t_s	540.0	rss_kib	72797832	hwm_kib	72978316	heap_inuse	189276160	sys	459815272	avail_kib	54832628
