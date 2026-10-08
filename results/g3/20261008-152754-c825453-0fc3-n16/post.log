@@ -1,0 +1,8 @@
+tidy: 9170 rows, 1 invocations -> results/g3/20261008-152754-c825453-0fc3-n16/tables/
+g3_tables: c100, 9 batches, 306 sample runs, consistency 200/200; load 32.1 s, LPT wall 43.17 s, observed T 171 s (derived 160) -> results/g3/20261008-152754-c825453-0fc3-n16/tables/
+lpt_check: batch 0 (lpt): 100 of 100 samples on the expected rank; weight imbalance max/mean 1.03; differs from j mod N: yes
+lpt_check: batch 1 (mod): 100 of 100 samples on the expected rank; weight imbalance max/mean 1.22
+lpt_check: batch 2 (lpt): 100 of 100 samples on the expected rank; weight imbalance max/mean 1.03; differs from j mod N: yes
+lpt_check: batch 6 (lpt): 1 of 1 samples on the expected rank; weight imbalance max/mean 16.00; differs from j mod N: no
+lpt_check: batch 7 (lpt): 1 of 1 samples on the expected rank; weight imbalance max/mean 16.00; differs from j mod N: no
+lpt_check: batch 8 (lpt): 1 of 1 samples on the expected rank; weight imbalance max/mean 16.00; differs from j mod N: no

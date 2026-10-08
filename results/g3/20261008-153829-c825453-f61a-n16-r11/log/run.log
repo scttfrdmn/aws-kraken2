@@ -1,0 +1,21 @@
+ak2: log tee up
+ak2-phase	2026-10-08T15:39:24Z	1791473964	preamble	no
+ak2: [2026-10-08T15:39:24Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T15:39:24Z] after set +e $-=hBc
+ak2: [2026-10-08T15:39:24Z] gate=g3 run=20261008-153829-c825453-f61a-n16-r11
+ak2: [2026-10-08T15:39:24Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T15:39:24Z] imds region=us-west-2 az=us-west-2a instance=i-0ca26f3a7736bdba4 type=c9g.12xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T15:39:24Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T15:39:24Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T15:39:24Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T15:39:24Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T15:39:25Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T15:39:25Z] region assert passed
+ak2: [2026-10-08T15:39:25Z] drop_caches_ok=true
+ak2: [2026-10-08T15:39:25Z] preamble done; spec body starts
+ak2-phase	2026-10-08T15:39:25Z	1791473965	body	no
+ak2: [2026-10-08T15:39:25Z] e3 cohort 20261008-153829-c825453-f61a-n16 rank 11 of 16, commit c825453; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+ak2-phase	2026-10-08T15:39:25Z	1791473965	setup	no
+Hangup
+ak2: [2026-10-08T15:39:56Z] spec body exit rc=129 (SIGHUP)
+ak2-phase	2026-10-08T15:39:56Z	1791473996	end	no
