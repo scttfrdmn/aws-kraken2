@@ -1,0 +1,50 @@
+ak2: log tee up
+ak2-phase	2026-10-08T01:17:19Z	1791422239	preamble	no
+ak2: [2026-10-08T01:17:19Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T01:17:19Z] after set +e $-=hBc
+ak2: [2026-10-08T01:17:19Z] gate=g3 run=20261008-011648-83f5bad-3f37-n8-r4
+ak2: [2026-10-08T01:17:19Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T01:17:19Z] imds region=us-west-2 az=us-west-2a instance=i-07b10436ac2a5c523 type=x8g.4xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T01:17:19Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T01:17:19Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T01:17:19Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T01:17:19Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T01:17:20Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T01:17:20Z] region assert passed
+ak2: [2026-10-08T01:17:20Z] drop_caches_ok=true
+ak2: [2026-10-08T01:17:21Z] preamble done; spec body starts
+ak2-phase	2026-10-08T01:17:21Z	1791422241	body	no
+ak2: [2026-10-08T01:17:21Z] cohort 20261008-011648-83f5bad-3f37-n8 rank 4 of 8, commit 83f5bad; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+ak2-phase	2026-10-08T01:17:21Z	1791422241	setup	no
+ak2: [2026-10-08T01:17:51Z] built 83f5badaaa1494c2374f9477dace5cb37895dbb3; go version go1.27.1 linux/arm64; ip 172.31.21.78; nproc 16; mem_gib 247
+ak2-phase	2026-10-08T01:17:51Z	1791422271	fetch	no
+ak2: [2026-10-08T01:17:52Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-08T01:17:53Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-08T01:17:54Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+ak2: [2026-10-08T01:17:55Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935740_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935740_1.fastq.gz (495118282 bytes)
+ak2: [2026-10-08T01:17:57Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935740_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935740_2.fastq.gz (502062672 bytes)
+ak2: [2026-10-08T01:17:59Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935741_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935741_1.fastq.gz (837416271 bytes)
+ak2: [2026-10-08T01:18:02Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935741_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935741_2.fastq.gz (827325968 bytes)
+ak2: [2026-10-08T01:18:05Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935742_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935742_1.fastq.gz (575178581 bytes)
+ak2: [2026-10-08T01:18:07Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935742_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935742_2.fastq.gz (583688553 bytes)
+ak2: [2026-10-08T01:18:09Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935743_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935743_1.fastq.gz (8679627 bytes)
+ak2: [2026-10-08T01:18:09Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935743_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935743_2.fastq.gz (8611159 bytes)
+ak2: [2026-10-08T01:18:12Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935744_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935744_1.fastq.gz (745495793 bytes)
+ak2: [2026-10-08T01:18:16Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935744_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935744_2.fastq.gz (755587542 bytes)
+ak2: [2026-10-08T01:18:18Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935745_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935745_1.fastq.gz (520125014 bytes)
+ak2: [2026-10-08T01:18:20Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935745_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935745_2.fastq.gz (524678126 bytes)
+ak2: [2026-10-08T01:18:23Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935746_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935746_1.fastq.gz (524886352 bytes)
+ak2: [2026-10-08T01:18:25Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935746_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935746_2.fastq.gz (523074338 bytes)
+ak2: [2026-10-08T01:18:27Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935747_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935747_1.fastq.gz (145394201 bytes)
+ak2: [2026-10-08T01:18:28Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935747_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935747_2.fastq.gz (147979881 bytes)
+ak2: [2026-10-08T01:18:31Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935748_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935748_1.fastq.gz (558312578 bytes)
+ak2: [2026-10-08T01:18:33Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935748_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935748_2.fastq.gz (574516567 bytes)
+ak2: [2026-10-08T01:18:37Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935749_1.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935749_1.fastq.gz (897225885 bytes)
+ak2: [2026-10-08T01:18:40Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935749_2.fastq.gz -> /home/ec2-user/ak2/cohort/SRR5935749_2.fastq.gz (893278004 bytes)
+ak2: [2026-10-08T01:18:41Z] cohort samples staged and verified: SRR5935740 SRR5935741 SRR5935742 SRR5935743 SRR5935744 SRR5935745 SRR5935746 SRR5935747 SRR5935748 SRR5935749
+ak2: [2026-10-08T01:18:42Z] pushed out/rank4/c10.tsv
+aws-kraken2: database ("/home/ec2-user/ak2/db/roda") does not contain necessary file hash.k2d
+aws-kraken2: AK2_COHORT: sample SRR5935740 (line 1): its arguments end the run with 2
+ak2: [2026-10-08T01:18:42Z] ERROR: cohort manifest /home/ec2-user/ak2/c1-parallel.tsv does not check
+ak2: [2026-10-08T01:18:42Z] spec body exit rc=1
+ak2-phase	2026-10-08T01:18:42Z	1791422322	end	no

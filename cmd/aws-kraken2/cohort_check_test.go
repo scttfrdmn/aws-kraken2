@@ -44,4 +44,25 @@ func TestCohortCheck(t *testing.T) {
 	if st := runCohort(bad, common, env(bad)); st == 0 {
 		t.Fatal("a sample name repeated across batches was accepted")
 	}
+	// As on E1's nodes: the database directory has no hash.k2d (the shard comes from
+	// AK2_ENGINE_HASH_URL). The check passes with the engine's remote-hash environment, which
+	// the E1 rerun 20261008-011648 did not pass to its check, and fails without it.
+	remote := filepath.Join(dir, "remote-db")
+	if err := os.MkdirAll(remote, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range []string{"opts.k2d", "taxo.k2d"} {
+		if err := os.Symlink(filepath.Join(db, f), filepath.Join(remote, f)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	rcommon := []string{"--db", remote, "--threads", "16", "--paired"}
+	if st := runCohort(good, rcommon, env(good)); st == 0 {
+		t.Fatal("no hash.k2d and no AK2_ENGINE_HASH_URL: the check passed")
+	}
+	t.Setenv("AK2_ENGINE_RANK", "0")
+	t.Setenv("AK2_ENGINE_HASH_URL", "https://example.invalid/hash.k2d")
+	if st := runCohort(good, rcommon, env(good)); st != 0 {
+		t.Fatalf("remote hash.k2d: check exit %d", st)
+	}
 }
