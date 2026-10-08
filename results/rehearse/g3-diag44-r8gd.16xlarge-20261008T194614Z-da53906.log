@@ -1,0 +1,35 @@
+rehearse: record results/rehearse/g3-diag44-r8gd.16xlarge-20261008T194614Z-da53906.log
+rehearse: runs/g3-diag44-r8gd.16xlarge.json at da53906, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T/ak2-urehearse.dWaR4P
+rehearse: stand-in hash.k2d ETag 2b8f5656c223472ddfe05c587a4fcbfe-60
+rehearse: body exit 1
+  body |  source line number 1
+  body | ak2: [2026-10-08T19:46:24Z] host: 8 CPUs; ; kernel 27.0.0
+  body | cat: /sys/kernel/mm/transparent_hugepage/enabled: No such file or directory
+  body | cat: /sys/kernel/mm/transparent_hugepage/defrag: No such file or directory
+  body | ak2: [2026-10-08T19:46:24Z] thp enabled=[] defrag=[] shmem_enabled=[]
+  body | scripts/g2-instance.sh: line 34: lscpu: command not found
+  body | ak2: [2026-10-08T19:46:24Z] lscpu: 
+  body | ak2: [2026-10-08T19:46:24Z] numa: 
+  body | ak2: [2026-10-08T19:46:24Z] disks: 
+  body | ak2: [2026-10-08T19:46:24Z] storage: rehearsal directory /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T/ak2-urehearse.dWaR4P/nvme
+  body | ak2-phase 2026-10-08T19:46:24Z fetch
+  body | ak2: [2026-10-08T19:46:25Z] inputs staged and verified: 4 files
+  body | ak2: [2026-10-08T19:46:25Z] aws: aws-cli/rehearse-stub; s3 transfer client crt, target_bandwidth 25Gb/s, 64 MB parts
+  body | ak2: [2026-10-08T19:46:25Z] staged opts.k2d bytes=64 in 0.1 s (0.000 GB/s)
+  body | ak2: [2026-10-08T19:46:25Z] etag opts.k2d: {"ok": true, "file": "/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T/ak2-urehearse.dWaR4P/nvme/db/RefSeqCompleteV205/opts.k2d", "size": 64, "etag": "eebfd340c759d54c82c7769b40f7a50b", "computed": "eebfd340c759d54c82c7769b40f7a50b", "part_bytes": 64, "parts": 1, "workers": 32, "seconds": 0.0, "read_gb_s": 0.0}
+  body | ak2: [2026-10-08T19:46:25Z] staged taxo.k2d bytes=4818575 in 0.0 s (0.103 GB/s)
+  body | ak2: [2026-10-08T19:46:25Z] etag taxo.k2d: {"ok": true, "file": "/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T/ak2-urehearse.dWaR4P/nvme/db/RefSeqCompleteV205/taxo.k2d", "size": 4818575, "etag": "f5697f04a6e072bde8504ebc6c142a22", "computed": "f5697f04a6e072bde8504ebc6c142a22", "part_bytes": 4818575, "parts": 1, "workers": 32, "seconds": 0.006, "read_gb_s": 0.763}
+  body | ak2: [2026-10-08T19:46:30Z] staged hash.k2d bytes=8000000032 in 4.9 s (1.628 GB/s)
+  body | ak2: [2026-10-08T19:46:31Z] etag hash.k2d: {"ok": true, "file": "/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T/ak2-urehearse.dWaR4P/nvme/db/RefSeqCompleteV205/hash.k2d", "size": 8000000032, "etag": "2b8f5656c223472ddfe05c587a4fcbfe-60", "computed": "2b8f5656c223472ddfe05c587a4fcbfe-60", "part_bytes": 134217728, "parts": 60, "workers": 32, "seconds": 0.759, "read_gb_s": 10.54}
+  body | ak2: [2026-10-08T19:46:31Z] upstream pin 2731b35f7abb26ec926517274f3d87e78d42fd76;describe 2.17.2-20-g2731b35;cxx g++-16 (Homebrew GCC 16.2.0) 16.2.0;version Kraken version 2.17.1;built 2026-10-06T00:14:07Z Darwin arm64;; harnesses and Go built
+  body | ak2-phase 2026-10-08T19:46:31Z diag-SRR5935755
+  body | d44-summary {"sample":"SRR5935755","error":"no summary"}
+  body | ak2-phase 2026-10-08T19:46:31Z diag-SRR5935807
+  body | d44-summary {"sample":"SRR5935807","error":"no summary"}
+  body | ak2: [2026-10-08T19:46:31Z] diag44 done (failed=1)
+rehearse: streamed 2 d44-summary lines (want 2)
+rehearse: SRR5935807 should not differ ()
+rehearse: SRR5935755:  differing; stage ""; scanners equal ;  of  lookups differ; upstream-events replay equals upstream ;  ResolveTree events;  read pair extracted
+rehearse: the tampered sample's diagnosis is wrong
+rehearse: stub served 4 objects and 4 head-objects on aws-kraken2-942542972736-us-west-2; ak2_req GetObject 8 (want 8), HeadObject 4
+rehearse: FAILED (logs: REHEARSE_KEEP=1 keeps /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T/ak2-urehearse.dWaR4P)
