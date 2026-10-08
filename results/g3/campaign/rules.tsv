@@ -1,2 +1,5 @@
 rule	where	measured	outcome
 extend N while T(N) improves by more than 2x the within-run spread	E2 N 1 -> 2	T 624 -> 495 s; improvement 129 s; 2 x spread 4.0 s	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 2 -> 4	T 495 -> 386 s; improvement 109 s; 2 x spread 4.0 s	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 4 -> 8	T 386 -> 315 s; improvement 71 s; 2 x spread 3.5 s	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 8 -> 16	T 315 -> 354 s; improvement -39 s; 2 x spread 3.5 s	does not improve

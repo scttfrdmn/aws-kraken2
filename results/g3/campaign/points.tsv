@@ -1,4 +1,7 @@
-spec	type	N	cohort	price_per_h	cost_usd	boot_s	setup_s	fetch_s	load_s	load_pred_s	load_meas_over_pred	lpt_wall_s	lpt_repeat_wall_s	lpt_spread	mod_wall_s	mod_over_lpt	busiest_rank_Mpairs	largest_sample_input_floor_s	c1_striped_s	c1_home_s	tail_s	derived_cohort_T_s	derived_cohort_cost_usd	derived_usd_per_sample
-runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	100	4.6896	2.0035	19	36	59	218.7	330.3	0.66	112.19	114.22	0.018	115.31	1.028	559.8	11.3	6.43	6.29	46	495	1.2894	0.01289
-runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	100	0.9426	1.4489	16	38	13	42.3	41.3	1.02	40.05	40.33	0.007	44.03	1.099	72.1	11.3	6.17	6.41	65	218	0.9147	0.00915
-runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	100	9.3792	2.0165	24	35	72	324.4	660.6	0.49	123.60	125.58	0.016	-	-	1119.6	11.3	-	6.25	42	624	1.6259	0.01626
+spec	type	N	cohort	price_per_h	cost_usd	boot_s	setup_s	fetch_s	load_s	load_pred_s	load_meas_over_pred	lpt_wall_s	lpt_repeat_wall_s	lpt_spread	mod_wall_s	mod_over_lpt	busiest_rank_Mpairs	largest_sample_input_floor_s	vcpus_per_node	lpt_pairs_per_vcpu_s	lpt_rate_over_e1_worker_cpu_rate	c1_striped_s	c1_home_s	tail_s	derived_cohort_T_s	derived_cohort_cost_usd	derived_usd_per_sample
+runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	100	4.6896	2.0035	19	36	59	218.7	330.3	0.66	112.19	114.22	0.018	115.31	1.028	559.8	11.3	48	103951	0.64	6.43	6.29	46	495	1.2894	0.01289
+runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	100	0.9426	1.4489	16	38	13	42.3	41.3	1.02	40.05	40.33	0.007	44.03	1.099	72.1	11.3	16	109197	0.68	6.17	6.41	65	218	0.9147	0.00915
+runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	100	9.3792	2.0165	24	35	72	324.4	660.6	0.49	123.60	125.58	0.016	-	-	1119.6	11.3	96	94355	0.58	-	6.25	42	624	1.6259	0.01626
+runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	100	3.1264	2.0443	18	39	39	166.4	165.2	1.01	78.38	78.94	0.007	82.96	1.058	280.0	11.3	32	111593	0.69	6.25	6.22	41	386	1.3401	0.01340
+runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	100	1.5632	1.6453	16	39	21	84.6	82.6	1.02	75.13	76.87	0.023	82.30	1.095	141.1	11.3	16	116421	0.72	6.18	6.31	75	315	1.0934	0.01093
+runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	100	0.7816	1.7221	18	42	16	58.9	41.3	1.43	79.00	79.68	0.009	89.67	1.135	72.1	11.3	8	110718	0.68	6.19	9.62	136	354	1.2295	0.01229
