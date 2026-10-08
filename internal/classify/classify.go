@@ -279,6 +279,11 @@ type Classifier struct {
 	hits  []hit
 	toks  *Tokens
 	hashF func(uint64) uint64
+
+	// Trace, when set, receives ResolveTree's arithmetic for every read (diagnostics only:
+	// k2probe diag-reads, #44): the hit counts, each taxon's root-to-leaf score, the call after
+	// scoring, the required score and each climb step. nil in the classifier's normal use.
+	Trace func(event string, taxon uint64, value uint64)
 }
 
 // New returns a Classifier. hashFn is as for NewTokens.
@@ -392,6 +397,13 @@ func (c *Classifier) resolveTree(totalMinimizers uint64) uint64 {
 	var maxTaxon uint64
 	var maxScore uint32
 	required := uint32(math.Ceil(c.opts.Confidence * float64(totalMinimizers)))
+	if c.Trace != nil {
+		c.Trace("total_minimizers", 0, totalMinimizers)
+		c.Trace("required", 0, uint64(required))
+		for _, h := range c.hits {
+			c.Trace("hit", h.taxon, h.count)
+		}
+	}
 
 	// Sum each taxon's root-to-leaf path; ties resolve to the LCA. hit_counts is an
 	// unordered_map upstream; the result does not depend on its order (the call is the LCA
@@ -409,6 +421,10 @@ func (c *Classifier) resolveTree(totalMinimizers uint64) uint64 {
 		} else if score == maxScore {
 			maxTaxon = c.tree.LowestCommonAncestor(maxTaxon, h.taxon)
 		}
+		if c.Trace != nil {
+			c.Trace("score", h.taxon, uint64(score))
+			c.Trace("max_taxon", maxTaxon, uint64(maxScore))
+		}
 	}
 
 	// Reset max score to only the hits at the called taxon.
@@ -420,12 +436,18 @@ func (c *Classifier) resolveTree(totalMinimizers uint64) uint64 {
 		}
 	}
 	// Climb until the clade has the required support, or run off the tree.
+	if c.Trace != nil {
+		c.Trace("called_after_scoring", maxTaxon, uint64(maxScore))
+	}
 	for maxTaxon != 0 && maxScore < required {
 		maxScore = 0
 		for _, h := range c.hits {
 			if c.tree.IsAAncestorOfB(maxTaxon, h.taxon) {
 				maxScore += uint32(h.count)
 			}
+		}
+		if c.Trace != nil {
+			c.Trace("climb", maxTaxon, uint64(maxScore))
 		}
 		if maxScore >= required {
 			return maxTaxon
