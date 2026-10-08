@@ -193,8 +193,10 @@ echo "rehearse: $tot home/emitter sample lines streamed, manifest has $NL"
 # Placement.
 python3 scripts/lib/lpt_check.py "$N" "$MAN" "$T"/rank*.log > "$T/placement.txt" 2>&1 || RC=1
 sed 's/^/rehearse: /' "$T/placement.txt"
-grep -q '^lpt_check: batch 0 (lpt): .*differs from j mod N: yes' "$T/placement.txt" ||
-  { echo "rehearse: batch 0's LPT placement is not distinguishable from j mod N" >&2; RC=1; }
+if [ "$N" -gt 1 ]; then  # one node: every placement is rank 0, nothing to tell apart
+  grep -q '^lpt_check: batch 0 (lpt): .*differs from j mod N: yes' "$T/placement.txt" ||
+    { echo "rehearse: batch 0's LPT placement is not distinguishable from j mod N" >&2; RC=1; }
+fi
 # Requests.
 sum() { awk -F'\t' -v op="$1" '$1 == op {s += $2} END {print s+0}' "$T"/out-r*/requests.tsv; }
 for ((k = 0; k < N; k++)); do
