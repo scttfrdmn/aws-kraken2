@@ -22,10 +22,13 @@ K2=$(scripts/oracle-build.sh 2>/dev/null)/kraken2
 H=".oracle/harness/$UPSTREAM_PIN"
 if command -v sha256sum >/dev/null; then sha() { sha256sum "$1" | cut -d' ' -f1; }; else sha() { shasum -a 256 "$1" | cut -d' ' -f1; }; fi
 now() { perl -MTime::HiRes=time -e 'printf "%.3f\n", time'; }
+step() { echo "d44: $S $(date -u +%FT%TZ) $*"; }
+step "upstream kraken2 -M T=$T"
 t0=$(now)
 "$K2" --db "$DB" --memory-mapping --paired --threads "$T" --output "$W/$S.up.out" --report "$W/$S.up.rep" \
   "$RD/${S}_1.fastq.gz" "$RD/${S}_2.fastq.gz" 2> "$W/$S.up.err" > /dev/null
 ue=$?; t1=$(now)
+step "upstream exit $ue in $(awk -v a="$t0" -v b="$t1" 'BEGIN{printf "%.0f", b-a}') s; our plain path -M T=$T"
 bin/aws-kraken2 --db "$DB" --memory-mapping --paired --threads "$T" --output "$W/$S.ours.out" --report "$W/$S.ours.rep" \
   "$RD/${S}_1.fastq.gz" "$RD/${S}_2.fastq.gz" 2> "$W/$S.ours.err" > /dev/null
 oe=$?; t2=$(now)
@@ -34,12 +37,15 @@ oe=$?; t2=$(now)
 if [ "${AK2_REHEARSE_TAMPER:-}" = "$S" ]; then
   awk 'NR == 5 { $1 = ($1 == "C" ? "U" : "C") } { print }' OFS='\t' "$W/$S.ours.out" > "$W/$S.ours.t" && mv "$W/$S.ours.t" "$W/$S.ours.out"
 fi
+step "ours exit $oe in $(awk -v a="$t1" -v b="$t2" 'BEGIN{printf "%.0f", b-a}') s; extracting the differences"
 python3 scripts/lib/diag_extract.py "$W/$S.up.out" "$W/$S.ours.out" "$RD/${S}_1.fastq.gz" "$RD/${S}_2.fastq.gz" "$O" > "$W/$S.extract.log" 2>&1
 xe=$?
 diff "$W/$S.up.rep" "$W/$S.ours.rep" > "$O/report.diff"
 nd=$(awk 'END{print NR - 1}' "$O/diff.tsv" 2>/dev/null)
 de=0
+step "$(cat "$W/$S.extract.log")"
 if [ "${nd:-0}" -gt 0 ]; then
+  step "diag-reads on $nd read pairs"
   bin/k2probe diag-reads -db "$DB" -mmdump "$H/mm_dump" -chashdump "$H/chash_dump" -up "$O/up_sel.txt" -ours "$O/ours_sel.txt" \
     "$O/sel_1.fq" "$O/sel_2.fq" > "$O/diag.jsonl" 2> "$O/diag.err"
   de=$?
@@ -53,5 +59,5 @@ jq -n --arg s "$S" --argjson ue "$ue" --argjson oe "$oe" --argjson xe "$xe" --ar
   '{sample:$s, upstream:{exit:$ue, seconds:($tu|tonumber), output_sha256:$upo, report_sha256:$upr, output_etag:$upe, report_etag:$upre},
     ours_plain_mmap:{exit:$oe, seconds:($to|tonumber), output_sha256:$ouo, report_sha256:$our, output_etag:$oue, report_etag:$oure},
     extract:{exit:$xe, log:$x}, differing_records:$nd, diag_reads_exit:$de}' > "$O/summary.json"
-cat "$O/summary.json"
+step "done: $(jq -c '{differing_records, diag_reads_exit}' "$O/summary.json")"
 [ "$ue" = 0 ] && [ "$oe" = 0 ] && [ "$xe" = 0 ] && [ "$de" = 0 ]

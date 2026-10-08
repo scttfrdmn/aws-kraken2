@@ -14,7 +14,8 @@ fail() { ak2_say "ERROR: $*"; exit 1; }
 SAMPLES=(SRR5935755 SRR5935786 SRR5935807)
 # make rehearse's seams (scripts/lib/diag44_rehearse.sh; unset on AWS).
 [ -n "${AK2_REHEARSE_SAMPLES:-}" ] && read -r -a SAMPLES <<< "$AK2_REHEARSE_SAMPLES"
-T=${AK2_REHEARSE_THREADS:-64}
+# T = 256: upstream's NVMe -M optimum (#40, U2: flat from 256 to 768).
+T=${AK2_REHEARSE_THREADS:-256}
 
 ak2_phase setup
 sudo -n dnf install -y -q git > "$W/dnf0.log" 2>&1 || fail "dnf git failed"
@@ -44,6 +45,13 @@ g2i_awscfg 25Gb/s
 DB=$G2_NVME/db/RefSeqCompleteV205
 g2i_stage_roda "$DB"
 unset AWS_CONFIG_FILE
+# read_ahead_kb = 4 on every NVMe device (G2's tune, #21): with the boot default, each random
+# fault of a cold --memory-mapping run reads 128 KiB, and the first attempt at ce5d8ee spent over
+# 50 min on its first sample without finishing.
+for dv in ${G2_DEVS//,/ }; do
+  echo 4 | sudo -n tee "/sys/block/$dv/queue/read_ahead_kb" > /dev/null || fail "cannot set read_ahead_kb on $dv"
+done
+ak2_say "read_ahead_kb: $(for dv in ${G2_DEVS//,/ }; do printf '%s=%s ' "$dv" "$(cat /sys/block/$dv/queue/read_ahead_kb 2>/dev/null)"; done)"
 wait "$BUILD_PID" || { tail -30 "$W/build.out"; fail "build failed"; }
 ak2_say "upstream $(tr '\n' ';' < "$(scripts/oracle-build.sh 2>/dev/null)/BUILD"); harnesses and Go built"
 
@@ -51,7 +59,9 @@ FAILED=0
 for s in "${SAMPLES[@]}"; do
   ak2_phase "diag-$s"
   O="$W/d44/$s"
-  scripts/g3/diag44.sh "$s" "$DB" "$RD" "$G2_NVME/work" "$O" "$T" > "$W/$s.log" 2>&1 || FAILED=1
+  # Streamed: diag44.sh prints each step as it starts and ends.
+  scripts/g3/diag44.sh "$s" "$DB" "$RD" "$G2_NVME/work" "$O" "$T" 2>&1 | tee "$W/$s.log" | grep --line-buffered '^d44: '
+  [ "${PIPESTATUS[0]}" = 0 ] || FAILED=1
   echo "d44-summary $(jq -c . "$O/summary.json" 2>/dev/null || echo '{"sample":"'"$s"'","error":"no summary"}')"
   for f in summary.json report.diff diff.tsv up_sel.txt ours_sel.txt sel_1.fq sel_2.fq diag.jsonl diag.err; do
     [ -f "$O/$f" ] && ak2_push "$O/$f" "d44/$s/$f"

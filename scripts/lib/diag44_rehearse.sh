@@ -123,6 +123,9 @@ O="$T/out/d44"
 ns=$(grep -c '^d44-summary ' "$T/body.log")
 echo "rehearse: streamed $ns d44-summary lines (want 2)"
 [ "$ns" = 2 ] || { echo "rehearse: summary lines wrong" >&2; RC=1; }
+nst=$(grep -c '^d44: ' "$T/body.log")
+echo "rehearse: streamed $nst d44 step lines (want at least 9: upstream, ours, extract, done per sample, diag-reads once)"
+[ "$nst" -ge 9 ] || { echo "rehearse: step lines not streamed" >&2; RC=1; }
 a=$(jq -r .differing_records "$O/SRR5935807/summary.json" 2>/dev/null)
 [ "$a" = 0 ] && [ ! -e "$O/SRR5935807/diag.jsonl" ] || { echo "rehearse: SRR5935807 should not differ ($a)" >&2; RC=1; }
 b=$(jq -r .differing_records "$O/SRR5935755/summary.json" 2>/dev/null)
