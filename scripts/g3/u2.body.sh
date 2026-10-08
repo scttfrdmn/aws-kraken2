@@ -37,6 +37,8 @@ for m in 1 2; do
   ak2_req GetObject "$(( ($(stat -c%s "$RD/${S1}_$m.fq.gz") + 8388607) / 8388608 ))" "$B"
   ak2_req HeadObject 1 "$B"
   hex64 "$want" && [ "$got" = "$want" ] || fail "$f sha256 $got != metadata $want"
+  # make g2's inputs are NAME_{1,2}.fq with NAME_{1,2}.fq.gz beside them.
+  gzip -dc "$RD/${S1}_$m.fq.gz" > "$RD/${S1}_$m.fq" || fail "gunzip of $f failed"
 done
 ak2_say "cohort sample 1 ($S1) staged and verified"
 
