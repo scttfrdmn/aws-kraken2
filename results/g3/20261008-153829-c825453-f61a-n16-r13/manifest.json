@@ -188,5 +188,65 @@
   "launch": {
     "at": "2026-10-08T15:39:07Z",
     "error": "spawn task run failed"
+  },
+  "instance": {
+    "final_state": null
+  },
+  "task": null,
+  "preflight": null,
+  "phases": null,
+  "requests": null,
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r13/: 1 objects, 0 tagged now, 1 already tagged, 0 failed"
+  },
+  "start": null,
+  "stop": null,
+  "stop_basis": "unknown",
+  "billed_seconds": null,
+  "cost_usd": null,
+  "manifest_finalised_at": "2026-10-08T16:32:16Z",
+  "manifest_repair": {
+    "by": "scripts/refinalise.sh",
+    "at": "2026-10-08T16:32:16Z",
+    "forced": false,
+    "fields_unset_before": [
+      "datasets.0.version_id",
+      "datasets.1.version_id",
+      "datasets.2.version_id"
+    ],
+    "gaps": [
+      "no log/run.log: no phases",
+      "no out/requests.tsv: no request counts",
+      "no completion record in the prefix",
+      "describe-instances failed (rc 255:  aws: [ERROR]: Could not connect to the endpoint URL: \"https://ec2.null.amazonaws.com/\" ): instance fields not filled"
+    ],
+    "stop_basis": "unknown",
+    "final_state_basis": null,
+    "object_tags": {
+      "ok": true,
+      "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r13/: 1 objects, 0 tagged now, 1 already tagged, 0 failed"
+    }
+  },
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-153829-c825453-f61a-n16-r13",
+    "rc": 0,
+    "own_gone": true,
+    "others": [
+      {
+        "region": "us-west-2",
+        "id": "i-05e2ea7d68460d65f",
+        "task_id": "ak2-g3-20261008-162516-ec47001-e4a7-n32-r12",
+        "state": "shutting-down",
+        "launch": "2026-10-08T16:26:04+00:00",
+        "ttl_deadline": "2026-10-08T17:06:02Z",
+        "flag": "within_ttl"
+      }
+    ],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T16:32:20Z",
+    "recorded_by": "scripts/refinalise.sh"
   }
 }

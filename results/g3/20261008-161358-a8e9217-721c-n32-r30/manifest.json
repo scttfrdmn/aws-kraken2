@@ -188,5 +188,55 @@
   "launch": {
     "at": "2026-10-08T16:15:11Z",
     "error": "spawn task run failed"
+  },
+  "instance": {
+    "final_state": null
+  },
+  "task": null,
+  "preflight": null,
+  "phases": null,
+  "requests": null,
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-161358-a8e9217-721c-n32-r30/: 1 objects, 0 tagged now, 1 already tagged, 0 failed"
+  },
+  "start": null,
+  "stop": null,
+  "stop_basis": "unknown",
+  "billed_seconds": null,
+  "cost_usd": null,
+  "manifest_finalised_at": "2026-10-08T16:32:52Z",
+  "manifest_repair": {
+    "by": "scripts/refinalise.sh",
+    "at": "2026-10-08T16:32:52Z",
+    "forced": false,
+    "fields_unset_before": [
+      "datasets.0.version_id",
+      "datasets.1.version_id",
+      "datasets.2.version_id"
+    ],
+    "gaps": [
+      "no log/run.log: no phases",
+      "no out/requests.tsv: no request counts",
+      "no completion record in the prefix",
+      "describe-instances failed (rc 255:  aws: [ERROR]: Could not connect to the endpoint URL: \"https://ec2.null.amazonaws.com/\" ): instance fields not filled"
+    ],
+    "stop_basis": "unknown",
+    "final_state_basis": null,
+    "object_tags": {
+      "ok": true,
+      "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-161358-a8e9217-721c-n32-r30/: 1 objects, 0 tagged now, 1 already tagged, 0 failed"
+    }
+  },
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-161358-a8e9217-721c-n32-r30",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T16:32:56Z",
+    "recorded_by": "scripts/refinalise.sh"
   }
 }

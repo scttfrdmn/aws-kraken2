@@ -422,5 +422,25 @@
   "billed_seconds": 287,
   "cost_usd": 0.152607,
   "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
-  "manifest_finalised_at": "2026-10-08T16:31:51Z"
+  "manifest_finalised_at": "2026-10-08T16:31:51Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-162516-ec47001-e4a7-n32-r2",
+    "rc": 0,
+    "own_gone": true,
+    "others": [
+      {
+        "region": "us-west-2",
+        "id": "i-05e2ea7d68460d65f",
+        "task_id": "ak2-g3-20261008-162516-ec47001-e4a7-n32-r12",
+        "state": "shutting-down",
+        "launch": "2026-10-08T16:26:04+00:00",
+        "ttl_deadline": "2026-10-08T17:06:02Z",
+        "flag": "within_ttl"
+      }
+    ],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T16:31:57Z"
+  }
 }
