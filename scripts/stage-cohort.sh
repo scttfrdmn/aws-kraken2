@@ -117,7 +117,7 @@ stage)
     for ((i = 0; i < RANGES; i++)); do
       lo=$((i * chunk)); hi=$(( lo + chunk - 1 )); [ "$hi" -ge "$b" ] && hi=$((b - 1))
       [ "$lo" -le "$hi" ] || break
-      curl -fsS --retry 8 --retry-delay 10 -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
+      curl -fsS --retry 8 --retry-delay 10 --retry-connrefused -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
     done
     local bad=0 pid
     for pid in "${pids[@]}"; do wait "$pid" || bad=1; done

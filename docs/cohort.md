@@ -75,12 +75,11 @@ invoking user's, mode 0700; `umount NAME` removes it), so
 with `--db <tmpfs> --memory-mapping` in the common arguments no sample reloads the table:
 upstream at its best for a cohort (Law 2).
 
-## E1: runs/g3-e1.json and runs/g3-e1a.json (calibration; launch only on CLEAR-TO-LAUNCH)
+## E1: runs/g3-e1.json (calibration; launch only on CLEAR-TO-LAUNCH)
 
-`make run GATE=g3 SPEC=runs/g3-e1.json NODES=8` (option b, the full plan) or
-`SPEC=runs/g3-e1a.json` (option a: invocations a and b, and d's batches 0 and 1). Both run on 8 ×
-x8g.4xlarge in us-west-2a with RODA v205 and the first 10 cohort samples; the invocations and
-batches are in the spec's header (one body, `PLAN=full|small`).
+`make run GATE=g3 SPEC=runs/g3-e1.json NODES=8`: the full plan (Scott chose option b,
+2026-10-08), on 8 × x8g.4xlarge in us-west-2a with RODA v205 and the first 10 cohort samples. The
+invocations and batches are in the spec's header.
 - **Law 1.** E1 has no upstream arm and does not check Law 1. Law 1 for these code paths rests on
   the local oracles (`make oracle-cohort`, `make oracle-engine`: per sample, against upstream) and
   on checkpoint 2's RODA identity on AWS. E1 checks consistency only: rank 0's
@@ -99,14 +98,13 @@ batches are in the spec's header (one body, `PLAN=full|small`).
   at 1.82 GB/s; about 425k pairs/s cluster-wide on a block-striped sample, bound by the CLI
   emitter):
   - Full: 582.6M pairs (3 × 10.53M + 5 × 110.2M).
-  - Small: 241.5M pairs (2 × 10.53M + 2 × 110.2M).
   - Rank imbalance: the 10 samples fall on 8 nodes, so in a sample-parallel batch rank 1 has
     35.4M pairs against a mean of 13.8M.
   - **Pessimistic** (sample-parallel no faster per node than the emitter-bound striped run, about
-    53k pairs/s per node): full about 31–60 min, $6.5–12.5; small about 16–30 min, $3.3–6.3.
+    53k pairs/s per node): about 31–60 min, $6.5–12.5.
   - **Expected** (per node bound by single-stream gunzip, about 1.25M pairs/s, or CPU, about
-    1.7M pairs/s; CLI emit about 450k pairs/s): full about 14–20 min, $2.9–4.2; small about
-    9–11 min, $1.9–2.3.
+    1.7M pairs/s; CLI emit about 450k pairs/s): about 14–20 min, $2.9–4.2.
   - The SDK emit rate, unmeasured so far, decides where E1 lands.
-  - TTLs cover the pessimistic case: full 90 min with cost_limit $2.40 per member; small 60 min
-    with $1.70 (above the TTL's cost, so the cost limit cannot end the run first).
+  - The TTL is 120 min, twice the pessimistic bound. cost_limit is $3.30 per member, above the
+    TTL's own cost (2 h × $1.5632), so the cost limit cannot end the run first. The cohort's
+    ceiling is $26.40, under the $50 backstop.
