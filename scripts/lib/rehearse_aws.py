@@ -38,6 +38,13 @@ if len(pos) < 2 or pos[0] != "s3api":
     sys.exit(f"rehearse aws stub: unsupported: {' '.join(args)}")
 op = pos[1]
 bucket, key = opt("--bucket"), opt("--key")
+# The instance role (AK2T_ROLE=instance): spawn's grant with s3_read_write is GetObject,
+# GetObjectVersion, PutObject (multipart included), DeleteObject, ListBucket and
+# GetBucketLocation; not ListBucketVersions, not AbortMultipartUpload (docs/run.md).
+if os.environ.get("AK2T_ROLE") == "instance" and op in ("list-object-versions", "abort-multipart-upload"):
+    perm = {"list-object-versions": "s3:ListBucketVersions", "abort-multipart-upload": "s3:AbortMultipartUpload"}[op]
+    print(f"An error occurred (AccessDenied) when calling the {op} operation: not authorized to perform: {perm}", file=sys.stderr)
+    sys.exit(254)
 path = lambda b, k: os.path.join(root, b, k)
 up = lambda uid: os.path.join(root, ".uploads", uid)
 
@@ -114,7 +121,7 @@ elif op == "abort-multipart-upload":
         for f in os.listdir(up(uid)):
             os.remove(os.path.join(up(uid), f))
         os.rmdir(up(uid))
-elif op == "list-object-versions":
+elif op in ("list-object-versions", "list-objects-v2"):
     prefix = opt("--prefix", "")
     base = os.path.join(root, bucket)
     rows = []
