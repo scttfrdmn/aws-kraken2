@@ -73,7 +73,8 @@ oracle-cohort:
 # Rehearse a cohort spec locally before any launch (docs/cohort.md, "Rehearsal"): the spec's own
 # body as N nodes (default 3) under the harness's env, every output against upstream.
 rehearse:
-	scripts/lib/e1_rehearse.sh $(or $(SPEC),runs/g3-e1.json) $(or $(N),3)
+	case "$(or $(SPEC),runs/g3-e1.json)" in runs/g3-e1.json) scripts/lib/e1_rehearse.sh runs/g3-e1.json $(or $(N),3) ;; \
+	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
 
 # The G3 sweep's real cohort (docs/cohort.md, #25): PART=record (once, before use) or stage
 # (default), PROJECT (default PRJNA398089), COUNT (record: 1000; stage: 10).

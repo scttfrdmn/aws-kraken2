@@ -7,15 +7,19 @@ package main
 //
 // The manifest is tab-separated, one sample per line ('#' comments and blank lines skipped):
 //
-//	batch  inflight  mode  s3client  name  argument…
+//	batch  inflight  mode  s3client  name  [weight=<n>]  argument…
 //
 //   - batch: batches run in order; within a multi-node run every node finishes a batch before
 //     any starts the next (a rendezvous barrier), so batches can be timed apart;
 //   - inflight: samples a node runs at once (sample-parallel batches);
-//   - mode: parallel (the default design: sample j of a batch has home node j mod N, which reads,
-//     classifies and writes it alone, its lookups routed to every shard) or striped (every node
-//     takes every N-th block of the sample and rank 0 emits it, as a single multi-node
-//     invocation does: one control session per sample, the shards kept);
+//   - mode: parallel (sample-parallel: each sample has one home node, which reads, classifies and
+//     writes it alone, its lookups routed to every shard) or striped (every node takes every N-th
+//     block of the sample and rank 0 emits it, as a single multi-node invocation does: one
+//     control session per sample, the shards kept). A parallel batch's placement (place.go) is
+//     parallel or parallel:mod (sample j has home j mod N; the E1 design, the control) or
+//     parallel:lpt (largest first by weight, to the least-loaded node);
+//   - weight=<n> (optional; required in a parallel:lpt batch): the sample's size for placement,
+//     a non-negative integer (pairs or bytes; one unit per batch);
 //   - s3client: sdk | cli | - (AK2_S3_CLIENT) for the sample's s3:// outputs;
 //   - argument…: the sample's own kraken2 arguments (outputs, inputs, options), appended to the
 //     common arguments. Each sample is parsed and run exactly as a separate invocation with
@@ -26,7 +30,8 @@ package main
 //
 //	ak2-sample batch <k> name <s> mode <m> s3client <c> rank <r> role <home|emitter|peer>
 //	  inflight <i> threads <t> start_s <s> wall_s <s> setup_s <s> classify_s <s> close_s <s>
-//	  report_s <s> status <exit> sequences <n> bases <n> classified <n>
+//	  report_s <s> status <exit> sequences <n> bases <n> classified <n> place <mod|lpt|->
+//	  weight <n|->
 //
 // The process exits 0 if every sample on every node exited 0, else 1 (after the batch in which
 // a sample failed: fail fast at batch granularity).
@@ -70,6 +75,8 @@ type cohortLine struct {
 	line            int
 	batch, inflight int
 	mode, s3client  string
+	place           string // parallel batches: mod or lpt; striped: ""
+	weight          int64  // -1: none given
 	name            string
 	args            []string
 	c               *classifyArgs
@@ -105,11 +112,25 @@ func parseCohort(path string) ([]*cohortLine, error) {
 			return nil, fmt.Errorf("%s:%d: batch %d after batch %d (batches must be in order)", path, n, b, lastBatch)
 		}
 		lastBatch = b
-		l := &cohortLine{line: n, batch: b, inflight: inf, mode: fs[2], s3client: fs[3], name: fs[4], args: fs[5:]}
+		l := &cohortLine{line: n, batch: b, inflight: inf, mode: fs[2], s3client: fs[3], name: fs[4], args: fs[5:], weight: -1}
 		switch l.mode {
-		case "parallel", "striped":
+		case "parallel", "parallel:mod":
+			l.mode, l.place = "parallel", "mod"
+		case "parallel:lpt":
+			l.mode, l.place = "parallel", "lpt"
+		case "striped":
 		default:
-			return nil, fmt.Errorf("%s:%d: mode %q: want parallel or striped", path, n, l.mode)
+			return nil, fmt.Errorf("%s:%d: mode %q: want parallel, parallel:mod, parallel:lpt or striped", path, n, l.mode)
+		}
+		if len(l.args) > 0 && strings.HasPrefix(l.args[0], "weight=") {
+			w, err := strconv.ParseInt(strings.TrimPrefix(l.args[0], "weight="), 10, 64)
+			if err != nil || w < 0 {
+				return nil, fmt.Errorf("%s:%d: %q: want weight=<non-negative integer>", path, n, l.args[0])
+			}
+			l.weight, l.args = w, l.args[1:]
+		}
+		if l.place == "lpt" && l.weight < 0 {
+			return nil, fmt.Errorf("%s:%d: sample %s: a parallel:lpt batch needs weight=<n> on every sample", path, n, l.name)
 		}
 		switch l.s3client {
 		case "sdk", "cli":
@@ -133,8 +154,8 @@ func parseCohort(path string) ([]*cohortLine, error) {
 	// One mode, inflight and client per batch.
 	for i := 1; i < len(out); i++ {
 		a, b := out[i-1], out[i]
-		if a.batch == b.batch && (a.mode != b.mode || a.inflight != b.inflight || a.s3client != b.s3client) {
-			return nil, fmt.Errorf("%s:%d: batch %d mixes modes, inflight or clients", path, b.line, b.batch)
+		if a.batch == b.batch && (a.mode != b.mode || a.place != b.place || a.inflight != b.inflight || a.s3client != b.s3client) {
+			return nil, fmt.Errorf("%s:%d: batch %d mixes modes, placements, inflight or clients", path, b.line, b.batch)
 		}
 	}
 	return out, nil
@@ -241,10 +262,8 @@ func runBatch(idx *index, cc *clusterConf, rank, n int, batch []*cohortLine) int
 	if mode == "parallel" {
 		sem := make(chan struct{}, batch[0].inflight)
 		var wg sync.WaitGroup
-		for j, l := range batch {
-			if j%n != rank {
-				continue
-			}
+		for _, j := range placeBatch(batch, rank, n) {
+			l := batch[j]
 			wg.Add(1)
 			sem <- struct{}{}
 			go func() {
@@ -293,11 +312,18 @@ func runSample(idx *index, l *cohortLine, nd *node, rank int, role string) int {
 	r := c.rec
 	fmt.Fprintf(os.Stderr, "ak2-sample\tbatch\t%d\tname\t%s\tmode\t%s\ts3client\t%s\trank\t%d\trole\t%s\tinflight\t%d\tthreads\t%d"+
 		"\tstart_s\t%.6f\twall_s\t%.6f\tsetup_s\t%.6f\tclassify_s\t%.6f\tclose_s\t%.6f\treport_s\t%.6f"+
-		"\tstatus\t%d\tsequences\t%d\tbases\t%d\tclassified\t%d\n",
+		"\tstatus\t%d\tsequences\t%d\tbases\t%d\tclassified\t%d\tplace\t%s\tweight\t%s\n",
 		l.batch, l.name, l.mode, orDash(l.s3client), rank, role, l.inflight, c.threads,
 		t0.Sub(processT0).Seconds(), wall.Seconds(), r.sec("setup"), r.sec("classify"), r.sec("close"), r.sec("report"),
-		st, r.st.sequences, r.st.bases, r.st.classified)
+		st, r.st.sequences, r.st.bases, r.st.classified, orDash(l.place), weightStr(l.weight))
 	return st
+}
+
+func weightStr(w int64) string {
+	if w < 0 {
+		return "-"
+	}
+	return strconv.FormatInt(w, 10)
 }
 
 func orDash(s string) string {
