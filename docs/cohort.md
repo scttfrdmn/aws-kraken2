@@ -78,6 +78,33 @@ invoking user's, mode 0700; `umount NAME` removes it), so
 with `--db <tmpfs> --memory-mapping` in the common arguments no sample reloads the table:
 upstream at its best for a cohort (Law 2).
 
+## Rehearsal: make rehearse SPEC=runs/g3-e1.json [N=3]
+
+Run before every launch of a cohort spec. `scripts/lib/e1_rehearse.sh` runs the spec's own body
+(its `command[2]`, unmodified) locally as N nodes, under the environment the harness gives a
+cohort member. Two E1 spec bugs were found only on AWS; this finds that kind of bug for free.
+- **Harness and instance stand-ins:**
+  - the `ak2_*` helpers, and the cohort env (`AK2_COHORT_ID`, `AK2_ENGINE_N`/`RANK`/`RENDEZVOUS`,
+    `AK2_COHORT_PREFIX`, `AK2_ALLOWED_BUCKETS`);
+  - sudo/dnf; `git clone`, which becomes a `git archive` of the commit in the cohort id, so the
+    committed tree is what runs;
+  - the Go download; IMDS (127.0.0.1); and GNU tools.
+- **Data stand-ins:**
+  - Standard-8's `hash.k2d` served as RODA's by `k2probe serve-file` (ranged GETs with If-Match),
+    with no local `hash.k2d` on any node;
+  - S3 as one directory, through `k2probe fakes3` (the SDK path) and a stub `aws`
+    (`scripts/lib/rehearse_aws.py`, the CLI path and the body's s3api calls);
+  - 3 real local read sets as the cohort's samples.
+- **What runs:** setup, fetch, manifest building, `AK2_COHORT_CHECK`, every invocation, and rank
+  0's consistency check, end to end.
+- **What passes:** every rank exits 0, and every output of every variant of every sample is
+  byte-identical to upstream kraken2 at the pin on that sample.
+- **Seams:** the body reads `AK2_REHEARSE_N`, `AK2_REHEARSE_HASH_URL` and `AK2_REHEARSE_SAMPLES`.
+  run.sh refuses them in a spec's env and never sets them, so on AWS they are always unset.
+- **Record:** `results/rehearse/<spec>-<UTC>-<commit>.log`. `REHEARSE_KEEP=1` keeps the work
+  directory.
+- **Requires:** Standard-8 locally and the upstream oracle build. It takes about 7 minutes.
+
 ## E1: runs/g3-e1.json (calibration; launch only on CLEAR-TO-LAUNCH)
 
 `make run GATE=g3 SPEC=runs/g3-e1.json NODES=8`: the full plan (Scott chose option b,

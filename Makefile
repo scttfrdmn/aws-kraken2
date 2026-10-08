@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine oracle-cohort stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -69,6 +69,11 @@ stage-db:
 # the engine's cohort at N=1, N=3 sample-parallel, N=3 block-striped and N=3 through the SDK path.
 oracle-cohort:
 	scripts/oracle-cohort.sh $(DB)
+
+# Rehearse a cohort spec locally before any launch (docs/cohort.md, "Rehearsal"): the spec's own
+# body as N nodes (default 3) under the harness's env, every output against upstream.
+rehearse:
+	scripts/lib/e1_rehearse.sh $(or $(SPEC),runs/g3-e1.json) $(or $(N),3)
 
 # The G3 sweep's real cohort (docs/cohort.md, #25): PART=record (once, before use) or stage
 # (default), PROJECT (default PRJNA398089), COUNT (record: 1000; stage: 10).

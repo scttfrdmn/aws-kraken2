@@ -40,6 +40,11 @@ DB="$K2_DB_ROOT/k2_standard_08_GB_20260626"
 K2DIR=$(scripts/oracle-build.sh) || { echo "rehearse: upstream build failed" >&2; exit 1; }
 make -s build || exit 1
 K2P="$ROOT/bin/k2probe"
+# The rehearsal's record: everything it prints, in results/rehearse/<spec>-<UTC>-<commit>.log.
+mkdir -p results/rehearse || exit 1
+LOGF="results/rehearse/$(basename "$SPEC" .json)-$(date -u +%Y%m%dT%H%M%SZ)-$SHA.log"
+exec > >(tee "$LOGF") 2>&1
+echo "rehearse: record $LOGF"
 REAL_GIT=$(command -v git); REAL_TAR=$(command -v tar); REAL_CURL=$(command -v curl)
 T=$(mktemp -d "${TMPDIR:-/tmp}/ak2-rehearse.XXXXXX")
 PIDS=()
