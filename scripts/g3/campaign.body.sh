@@ -24,6 +24,17 @@ set -- $AK2_DATASETS
 U=${1#s3://}; RB=${U%%/*}; HK=${U#*/}; RP=${HK%/*}
 U=${4#s3://}; B=${U%%/*}; CK=${U#*/}; CK=${CK%/}
 fail() { ak2_say "ERROR: $*"; exit 1; }
+# A pool of this body's own background jobs. wait -n without PIDs also returns for any other child
+# of the shell (the preamble's, and finished process substitutions), which miscounted the slots
+# and ended with wait -n on no job (127): E2 N=1's fetch "failed" at 8a6dbe6 with no file failing.
+POOL=()
+pool_wait1() {  # wait for one of POOL's jobs; drop it from POOL; return its status
+  local d="" rc p keep=()
+  wait -n -p d "${POOL[@]}"; rc=$?
+  for p in "${POOL[@]}"; do [ "$p" = "$d" ] || keep+=("$p"); done
+  POOL=("${keep[@]}")
+  return "$rc"
+}
 hex64() { [[ $1 =~ ^[0-9a-f]{64}$ ]]; }
 # AK2_REHEARSE_* are make rehearse's seams (scripts/lib/cohort_rehearse.sh): run.sh refuses them in
 # a spec's env and never sets them, so on AWS they are always unset.
@@ -116,17 +127,17 @@ fetch_one() {
   echo "$f $(stat -c%s "$CD/$f")"
 }
 : > "$W/fetched.txt"
-FERR=0; RUNNING=0
+FERR=0
 for s in "${NEED[@]}"; do
   for m in 1 2; do
     fetch_one "${s}_$m.fastq.gz" >> "$W/fetched.txt" 2>&1 &
-    RUNNING=$((RUNNING + 1))
-    if [ "$RUNNING" -ge 8 ]; then wait -n || FERR=1; RUNNING=$((RUNNING - 1)); fi
+    POOL+=($!)
+    if [ "${#POOL[@]}" -ge 8 ]; then pool_wait1 || FERR=1; fi
   done
 done
-while [ "$RUNNING" -gt 0 ]; do wait -n || FERR=1; RUNNING=$((RUNNING - 1)); done
+while [ "${#POOL[@]}" -gt 0 ]; do pool_wait1 || FERR=1; done
 grep ERROR "$W/fetched.txt" | head -5
-[ "$FERR" = 0 ] || fail "input fetch failed"
+[ "$FERR" = 0 ] || { ak2_push "$W/fetched.txt" "rank$RANK/fetched.txt"; fail "input fetch failed"; }
 NF=$(grep -vc ERROR "$W/fetched.txt")
 [ "$NF" = $(( 2 * ${#NEED[@]} )) ] || fail "fetched $NF files, want $(( 2 * ${#NEED[@]} ))"
 ak2_req GetObject "$(awk '!/ERROR/{n += int(($2 + 8388607) / 8388608)} END{print n+0}' "$W/fetched.txt")" "$B"
