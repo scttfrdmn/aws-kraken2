@@ -57,7 +57,7 @@ w("")
 w("## Record notes")
 w("")
 runlogs = sorted(glob.glob(os.path.join(d, "rank-*.run.log")))
-streamed = {os.path.basename(p): sum(1 for l in open(p, errors="replace") if "ak2-sample " in l) for p in runlogs}
+streamed = {os.path.basename(p): sum(1 for l in open(p, errors="replace") if re.search(r"ak2-sample\s", l)) for p in runlogs}
 total = sum(streamed.values())
 if total == 0:
     w(f"- **E1's runs did not stream.** The rank run logs ({len(runlogs)} files, rank-*.run.log) contain 0 "
