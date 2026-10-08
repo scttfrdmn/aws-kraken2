@@ -1,0 +1,26 @@
+{
+  "task_id": "stage-cohort",
+  "command": [
+    "bash",
+    "-c",
+    "# Stage the first COUNT runs of the recorded G3 cohort (results/cohort/PRJNA398089/runs.tsv,\n# #25) from ENA into the in-region bucket, md5-checked: make stage-cohort, run on an instance\n# because ENA to the launch host runs at about 50-260 KB/s. The script and the cohort record come\n# from the launch commit. Afterwards, from the launch host: commit out/staged.tsv as\n# results/cohort/PRJNA398089/staged.tsv, and make tag-objects PREFIX=aws-kraken2/data/cohort/\n# (the instance role cannot tag).\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nCOUNT=10\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nak2_phase setup\nsudo -n dnf install -y -q git jq tar gzip > \"$W/dnf.log\" 2>&1 || { tail -20 \"$W/dnf.log\"; fail \"dnf install failed\"; }\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\nak2_say \"checkout $SHA; nproc $(nproc); disk $(df -h \"$W\" | tail -1 | tr -s ' ')\"\nak2_phase stage\n# Streamed into the run log as it goes (a TTL kill loses at most the files in flight).\n(cd \"$W/repo\" && STAGE_PARALLEL=3 STAGE_RANGES=4 scripts/stage-cohort.sh stage PRJNA398089 \"$COUNT\") 2>&1 | tee \"$W/stage.log\"\nRC=${PIPESTATUS[0]}\nak2_req GetObject-ENA \"$((COUNT * 2))\" \"\"\nak2_req PutObject \"$(grep -c ' staged (' \"$W/stage.log\")\" \"${AK2_BUCKETS%% *}\"\nak2_phase push\nak2_push \"$W/stage.log\" stage.log\n[ -s \"$W/repo/results/cohort/PRJNA398089/staged.tsv\" ] && ak2_push \"$W/repo/results/cohort/PRJNA398089/staged.tsv\" staged.tsv\nak2_say \"stage-cohort rc=$RC\"\nexit \"$RC\"\n"
+  ],
+  "resources": {
+    "instance_type": "c8g.large",
+    "architecture": "arm64",
+    "disk_gib": 20,
+    "s3_read_write": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"
+    ]
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/"
+  },
+  "lifecycle": {
+    "ttl": "3h",
+    "on_complete": "terminate",
+    "cost_limit": 0.5
+  }
+}
