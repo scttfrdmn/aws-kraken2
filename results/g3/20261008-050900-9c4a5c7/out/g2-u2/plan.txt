@@ -1,0 +1,13 @@
+# runs/g3-u2-r8gd.16xlarge.json (r8gd.16xlarge: 64 vCPU, 512 GiB, 2 x 1900 GB NVMe RAID0). G3 U2
+# (#25) and #40: upstream at its best on NVMe, pristine -M with the host tune read_ahead_kb=4
+# (results/g2/20261007-070221-699c0c0: still improving at T = 256, the ladder's top). The ladder
+# extended to T = 256, 384, 512, 768 on the same input (SRR062634 8M-pair prefix, gz, 250 blocks),
+# cold, n = 3 (highest T first: the cheapest), then the cohort's sample 1 (SRR5935740, 10.5M
+# pairs, gz as staged) cold at T = 768 and 512 and warm after its own cold rung: U2's cohort-1
+# point against the engine's on the same sample.
+note G3 U2 / #40: NVMe -M read_ahead_kb=4, T 256..768 cold n=3 on SRR062634 8M gz; cohort sample 1 cold at T 768, 512 and warm
+readahead 4
+run mmap SRR062634_8000000-gz cold 3 768 512 384 256
+run mmap SRR5935740-gz cold 1 768 512
+run mmap SRR5935740-gz warm 1 512
+readahead default

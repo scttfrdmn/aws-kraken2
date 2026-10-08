@@ -92,8 +92,510 @@
     "az": "us-west-2a",
     "launch_time": "2026-10-08T05:09:08+00:00",
     "architecture": "arm64",
-    "lifecycle": "on-demand"
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-08T06:41:57Z"
   },
   "truffle_price_usd_per_hour": 4.70272,
-  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0"
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-050900-9c4a5c7/: 17 objects, 16 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-08T05:09:25Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-08T05:09:27Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-08T05:09:27Z",
+      "seconds": 35,
+      "cold": false
+    },
+    {
+      "phase": "fetch-reads",
+      "start": "2026-10-08T05:10:02Z",
+      "seconds": 71,
+      "cold": false
+    },
+    {
+      "phase": "fetch-db",
+      "start": "2026-10-08T05:11:13Z",
+      "seconds": 810,
+      "cold": false
+    },
+    {
+      "phase": "g2-1-mmap-SRR062634_8000000-gz-cold-t768-r1",
+      "start": "2026-10-08T05:24:43Z",
+      "seconds": 348,
+      "cold": true
+    },
+    {
+      "phase": "g2-2-mmap-SRR062634_8000000-gz-cold-t512-r1",
+      "start": "2026-10-08T05:30:31Z",
+      "seconds": 351,
+      "cold": true
+    },
+    {
+      "phase": "g2-3-mmap-SRR062634_8000000-gz-cold-t384-r1",
+      "start": "2026-10-08T05:36:22Z",
+      "seconds": 351,
+      "cold": true
+    },
+    {
+      "phase": "g2-4-mmap-SRR062634_8000000-gz-cold-t256-r1",
+      "start": "2026-10-08T05:42:13Z",
+      "seconds": 349,
+      "cold": true
+    },
+    {
+      "phase": "g2-5-mmap-SRR062634_8000000-gz-cold-t768-r2",
+      "start": "2026-10-08T05:48:02Z",
+      "seconds": 353,
+      "cold": true
+    },
+    {
+      "phase": "g2-6-mmap-SRR062634_8000000-gz-cold-t512-r2",
+      "start": "2026-10-08T05:53:55Z",
+      "seconds": 352,
+      "cold": true
+    },
+    {
+      "phase": "g2-7-mmap-SRR062634_8000000-gz-cold-t384-r2",
+      "start": "2026-10-08T05:59:47Z",
+      "seconds": 353,
+      "cold": true
+    },
+    {
+      "phase": "g2-8-mmap-SRR062634_8000000-gz-cold-t256-r2",
+      "start": "2026-10-08T06:05:40Z",
+      "seconds": 351,
+      "cold": true
+    },
+    {
+      "phase": "g2-9-mmap-SRR062634_8000000-gz-cold-t768-r3",
+      "start": "2026-10-08T06:11:31Z",
+      "seconds": 355,
+      "cold": true
+    },
+    {
+      "phase": "g2-10-mmap-SRR062634_8000000-gz-cold-t512-r3",
+      "start": "2026-10-08T06:17:26Z",
+      "seconds": 354,
+      "cold": true
+    },
+    {
+      "phase": "g2-11-mmap-SRR062634_8000000-gz-cold-t384-r3",
+      "start": "2026-10-08T06:23:20Z",
+      "seconds": 353,
+      "cold": true
+    },
+    {
+      "phase": "g2-12-mmap-SRR062634_8000000-gz-cold-t256-r3",
+      "start": "2026-10-08T06:29:13Z",
+      "seconds": 352,
+      "cold": true
+    },
+    {
+      "phase": "g2-13-mmap-SRR5935740-gz-cold-t768-r1",
+      "start": "2026-10-08T06:35:05Z",
+      "seconds": 142,
+      "cold": true
+    },
+    {
+      "phase": "g2-14-mmap-SRR5935740-gz-cold-t512-r1",
+      "start": "2026-10-08T06:37:27Z",
+      "seconds": 94,
+      "cold": true
+    },
+    {
+      "phase": "g2-15-mmap-SRR5935740-gz-warm-t512-r1",
+      "start": "2026-10-08T06:39:01Z",
+      "seconds": 63,
+      "cold": false
+    },
+    {
+      "phase": "push",
+      "start": "2026-10-08T06:40:04Z",
+      "seconds": 0,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 18511,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 4,
+      "GetObject": 18495,
+      "HeadBucket-anon": 2,
+      "HeadObject": 10
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 250,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 250,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 76,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 75,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 60,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "GetObject",
+        "count": 60,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-reads",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch-db",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch-db",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch-db",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch-db",
+        "op": "GetObject",
+        "count": 3,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch-db",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch-db",
+        "op": "GetObject",
+        "count": 17719,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-g3-20261008-050900-9c4a5c7",
+    "run_id": "706a2f60-6a2a-43b4-b9c1-c176a27a6a9e",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-08T05:09:25Z",
+    "ended_at": "2026-10-08T06:40:05Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-050900-9c4a5c7/spawn/ak2-g3-20261008-050900-9c4a5c7/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2a",
+    "instance_id": "i-091e369b1bef67147",
+    "instance_type": "r8gd.16xlarge",
+    "ami": "ami-09325776a00699513",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      },
+      {
+        "bucket": "kraken2-ncbi-refseq-complete-v205",
+        "region": "us-west-2",
+        "payer": "BucketOwner"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2 kraken2-ncbi-refseq-complete-v205",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-08T05:09:26Z"
+  },
+  "start": "2026-10-08T05:09:08+00:00",
+  "stop": "2026-10-08T06:41:57Z",
+  "billed_seconds": 5569,
+  "cost_usd": 7.274847,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-08T06:43:42Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-050900-9c4a5c7",
+    "rc": 0,
+    "own_gone": true,
+    "others": [
+      {
+        "region": "us-west-2",
+        "id": "i-0074856a28bd0a654",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r9",
+        "state": "running",
+        "launch": "2026-10-08T06:41:26+00:00",
+        "ttl_deadline": "2026-10-08T07:41:25Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0d8878f278da610c6",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r11",
+        "state": "running",
+        "launch": "2026-10-08T06:41:30+00:00",
+        "ttl_deadline": "2026-10-08T07:41:29Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-03167fb0812c62ce0",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r1",
+        "state": "running",
+        "launch": "2026-10-08T06:41:10+00:00",
+        "ttl_deadline": "2026-10-08T07:41:09Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0a75d4795b05aaf7d",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r0",
+        "state": "running",
+        "launch": "2026-10-08T06:41:08+00:00",
+        "ttl_deadline": "2026-10-08T07:41:07Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-008479d9502966b4e",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r13",
+        "state": "running",
+        "launch": "2026-10-08T06:41:34+00:00",
+        "ttl_deadline": "2026-10-08T07:41:33Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0703eb697e7a55fd6",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r8",
+        "state": "running",
+        "launch": "2026-10-08T06:41:24+00:00",
+        "ttl_deadline": "2026-10-08T07:41:23Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0343461648903a3be",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r3",
+        "state": "running",
+        "launch": "2026-10-08T06:41:14+00:00",
+        "ttl_deadline": "2026-10-08T07:41:13Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0e373dc9f8becdecf",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r4",
+        "state": "running",
+        "launch": "2026-10-08T06:41:16+00:00",
+        "ttl_deadline": "2026-10-08T07:41:15Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0f77da2e67ea6bdb2",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r15",
+        "state": "running",
+        "launch": "2026-10-08T06:41:38+00:00",
+        "ttl_deadline": "2026-10-08T07:41:37Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0cb2d80d132148e24",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r14",
+        "state": "running",
+        "launch": "2026-10-08T06:41:36+00:00",
+        "ttl_deadline": "2026-10-08T07:41:35Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-01eb4b5f99010218b",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r12",
+        "state": "running",
+        "launch": "2026-10-08T06:41:32+00:00",
+        "ttl_deadline": "2026-10-08T07:41:31Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-043c5c9570b963b35",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r2",
+        "state": "running",
+        "launch": "2026-10-08T06:41:12+00:00",
+        "ttl_deadline": "2026-10-08T07:41:11Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-006350a5f723fc4d4",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r6",
+        "state": "running",
+        "launch": "2026-10-08T06:41:20+00:00",
+        "ttl_deadline": "2026-10-08T07:41:19Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-04779e881a8b0e5e0",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r5",
+        "state": "running",
+        "launch": "2026-10-08T06:41:18+00:00",
+        "ttl_deadline": "2026-10-08T07:41:17Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0751d8ad1e55ab961",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r7",
+        "state": "running",
+        "launch": "2026-10-08T06:41:22+00:00",
+        "ttl_deadline": "2026-10-08T07:41:21Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-038157d683b991523",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r10",
+        "state": "running",
+        "launch": "2026-10-08T06:41:28+00:00",
+        "ttl_deadline": "2026-10-08T07:41:27Z",
+        "flag": "within_ttl"
+      }
+    ],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T06:43:44Z"
+  }
 }
