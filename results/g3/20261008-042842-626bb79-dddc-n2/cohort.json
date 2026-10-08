@@ -1,0 +1,55 @@
+{
+  "cohort_id": "20261008-042842-626bb79-dddc-n2",
+  "gate": "g3",
+  "spec": "runs/g3-e2-x8g.12xlarge-n2.json",
+  "commit": "8a6dbe61ab3ad3cae0bda631ba8d1136b09e1972",
+  "nodes": 2,
+  "instance_type": "x8g.12xlarge",
+  "az": "us-west-2a",
+  "region": "us-west-2",
+  "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-042842-626bb79-dddc-n2",
+  "network": {
+    "vpc": "vpc-e7e2999f",
+    "security_group": "sg-5059b179",
+    "admits": "itself, 22/tcp, ICMP"
+  },
+  "start": "2026-10-08T04:28:42Z",
+  "stop": "2026-10-08T04:43:31Z",
+  "ended": "members done",
+  "terminated_early": [],
+  "sweep_failures": [],
+  "members": [
+    {
+      "rank": 0,
+      "run_id": "20261008-042842-626bb79-dddc-n2-r0",
+      "rc": "0",
+      "instance_id": "i-0a3a6f857907c929e",
+      "type": "x8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 1.001751,
+      "exit_code": 0,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 1,
+      "run_id": "20261008-042842-626bb79-dddc-n2-r1",
+      "rc": "0",
+      "instance_id": "i-07714a095dbfa7fb3",
+      "type": "x8g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 1.001751,
+      "exit_code": 0,
+      "own_gone": true,
+      "finalised": true
+    }
+  ],
+  "cost_usd": 2.003502,
+  "cost_basis": "sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
+  "prefix_fetched": true,
+  "multipart_aborted": 0,
+  "multipart_abort_failures": 0,
+  "orphans_rc": 1
+}
