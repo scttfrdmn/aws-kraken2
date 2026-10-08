@@ -52,7 +52,14 @@ for d in sorted(glob.glob(os.path.join(G, "2026*"))):
     if j is None or st.replace("+00:00", "Z") < SINCE:
         continue
     if os.path.exists(os.path.join(d, "cohort.json")):
-        spend.append([os.path.basename(d), j.get("spec"), j.get("instance_type"), j.get("nodes"), f"{j.get('cost_usd', 0):.4f}",
+        # The cohort's cost: the sum of its members' manifests (refinalised members of an
+        # interrupted cohort included; cohort.json's own total is null there).
+        mc = 0.0
+        for m in j.get("members", []):
+            mp = os.path.join(G, m["run_id"], "manifest.json")
+            if os.path.exists(mp):
+                mc += float(json.load(open(mp)).get("cost_usd") or 0)
+        spend.append([os.path.basename(d), j.get("spec"), j.get("instance_type"), j.get("nodes"), f"{mc:.4f}",
                       j.get("ended"), j.get("orphans_rc")])
         pp = os.path.join(d, "tables", "point.tsv")
         if os.path.exists(pp):
