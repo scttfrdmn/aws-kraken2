@@ -75,6 +75,7 @@ oracle-cohort:
 rehearse:
 	case "$(or $(SPEC),runs/g3-e1.json)" in runs/g3-e1.json) scripts/lib/e1_rehearse.sh runs/g3-e1.json $(or $(N),3) ;; \
 	  runs/g3-u1-*) scripts/lib/u_rehearse.sh $(SPEC) ;; \
+	  runs/g3-u2-*) scripts/lib/u2_rehearse.sh $(SPEC) ;; \
 	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
 
 # The G3 sweep's real cohort (docs/cohort.md, #25): PART=record (once, before use) or stage
