@@ -1,0 +1,56 @@
+Loading database information...ak2-timing	opts	0.000443	0.000011	3	0	0.000000	0.000011
+ak2-timing	taxo	0.000464	0.098025	87932	0	0.018117	0.096033
+ak2-timing	shard-load-5	0.170630	82.926066	77987	0	102.937138	126.850577
+ak2-timing	rendezvous	83.618804	5.904998	12875	0	0.468573	0.071621
+ak2-timing	connect	89.523820	0.028843	4	0	0.022704	0.001832
+ak2-timing	hash	0.098597	89.454085	93034	0	103.429820	126.937600
+ done.
+10492437 sequences (1984.14 Mbp) processed in 6.294s (100018.3 Kseq/m, 18913.65 Mbp/m).
+  9889429 sequences classified (94.25%)
+  603008 sequences unclassified (5.75%)
+ak2-sample	batch	0	name	0-SRR5935745	mode	parallel	s3client	sdk	rank	5	role	home	inflight	1	threads	16	start_s	89.552700	wall_s	6.675898	setup_s	0.000045	classify_s	6.294313	close_s	0.200003	report_s	0.170616	status	0	sequences	10492437	bases	1984140901	classified	9889429
+ak2-timing	batch-barrier-0	96.228619	14.271184	11	0	4.466697	0.547430
+10492437 sequences (1984.14 Mbp) processed in 6.497s (96903.2 Kseq/m, 18324.59 Mbp/m).
+  9889429 sequences classified (94.25%)
+  603008 sequences unclassified (5.75%)
+ak2-sample	batch	1	name	1-SRR5935745	mode	parallel	s3client	sdk	rank	5	role	home	inflight	2	threads	16	start_s	110.499824	wall_s	6.909908	setup_s	0.000059	classify_s	6.496651	close_s	0.252019	report_s	0.150235	status	0	sequences	10492437	bases	1984140901	classified	9889429
+ak2-timing	batch-barrier-1	117.409752	11.183485	0	0	4.506254	0.401447
+10492437 sequences (1984.14 Mbp) processed in 8.068s (78031.1 Kseq/m, 14755.84 Mbp/m).
+  9889429 sequences classified (94.25%)
+  603008 sequences unclassified (5.75%)
+ak2-sample	batch	2	name	2-SRR5935745	mode	parallel	s3client	sdk	rank	5	role	home	inflight	2	threads	8	start_s	128.593260	wall_s	8.463120	setup_s	0.000046	classify_s	8.067887	close_s	0.211658	report_s	0.175580	status	0	sequences	10492437	bases	1984140901	classified	9889429
+ak2-timing	batch-barrier-2	137.056404	9.298053	2	0	3.222042	0.227304
+10492437 sequences (1984.14 Mbp) processed in 13.795s (45634.6 Kseq/m, 8629.59 Mbp/m).
+  9889429 sequences classified (94.25%)
+  603008 sequences unclassified (5.75%)
+ak2-sample	batch	3	name	3-SRR5935745	mode	parallel	s3client	cli	rank	5	role	home	inflight	1	threads	16	start_s	146.354479	wall_s	15.310085	setup_s	0.000052	classify_s	13.795386	close_s	1.037073	report_s	0.466743	status	0	sequences	10492437	bases	1984140901	classified	9889429
+ak2-timing	batch-barrier-3	161.664591	31.749191	1	0	4.344365	0.473066
+ak2-timing	barrier	199.525528	0.195914	0	0	0.011059	0.010494
+ak2-sample	batch	4	name	4-SRR5935740	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	193.891804	wall_s	5.829686	setup_s	0.000065	classify_s	5.627973	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	209.971813	0.040322	0	0	0.000056	0.000016
+ak2-sample	batch	4	name	4-SRR5935741	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	200.488063	wall_s	9.524119	setup_s	0.000052	classify_s	9.480012	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	217.668701	0.074727	0	0	0.000038	0.000011
+ak2-sample	batch	4	name	4-SRR5935742	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	211.050348	wall_s	6.693135	setup_s	0.000047	classify_s	6.614215	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	218.566775	0.260010	0	0	0.027781	0.000000
+ak2-sample	batch	4	name	4-SRR5935743	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	218.422154	wall_s	0.404673	setup_s	0.000060	classify_s	0.144400	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	228.424764	0.102428	0	0	0.004969	0.000000
+ak2-sample	batch	4	name	4-SRR5935744	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	219.945610	wall_s	8.581626	setup_s	0.000049	classify_s	8.475529	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	235.100950	0.022618	0	0	0.000049	0.000013
+ak2-sample	batch	4	name	4-SRR5935745	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	229.110676	wall_s	6.012943	setup_s	0.000048	classify_s	5.985695	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	241.748419	0.102226	0	0	0.003863	0.000942
+ak2-sample	batch	4	name	4-SRR5935746	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	235.824805	wall_s	6.025883	setup_s	0.000054	classify_s	5.920855	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	244.800294	0.004950	0	0	0.000033	0.000008
+ak2-sample	batch	4	name	4-SRR5935747	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	242.925113	wall_s	1.880177	setup_s	0.000053	classify_s	1.873060	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	252.146942	0.028556	0	0	0.000047	0.000011
+ak2-sample	batch	4	name	4-SRR5935748	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	245.613492	wall_s	6.562055	setup_s	0.000057	classify_s	6.528133	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	barrier	262.865989	0.132051	0	0	0.000000	0.009517
+ak2-sample	batch	4	name	4-SRR5935749	mode	striped	s3client	sdk	rank	5	role	peer	inflight	1	threads	16	start_s	252.836798	wall_s	10.161291	setup_s	0.000054	classify_s	10.026508	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0
+ak2-timing	batch-barrier-4	262.998101	1.052123	0	0	0.000000	0.005928
+ak2-engine	shard	0	n	8	lo	185795573713	hi	222954688456	tail	302	full	false	empty_at	37159114743	keys	2745671215	batches	14540	probe_s	67.013139	tail_probes	0	wrap_probes	0
+ak2-engine	rendezvous	puts	16	gets	345
+ak2-engine	s3	client	sdk	put	19	get	345	create_multipart	3	upload_part	324	complete_multipart	3	abort_multipart	0	part_bytes	2693460789
+ak2-engine	s3	client	cli	put	1	get	0	create_multipart	1	upload_part	108	complete_multipart	1	abort_multipart	0	part_bytes	897820263
+ak2-engine	load	seconds	82.926062	requests	2233	retries	0	bytes	148636525780
+ak2-engine	route	transport	nodes	calls	1483	keys	2252764151	batches	11864	route_s	19.103237	wait_s	38.064421	gather_s	4.666492
+ak2-engine	worker	scan_s	146.765026	lookup_s	61.835285	classify_s	125.050958
+ak2-timing	total	0.000001	264.332451	7597935	0	664.415096	147.566177

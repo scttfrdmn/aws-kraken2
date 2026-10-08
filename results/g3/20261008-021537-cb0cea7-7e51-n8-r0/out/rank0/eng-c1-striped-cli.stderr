@@ -1,0 +1,27 @@
+Loading database information...ak2-timing	opts	0.000042	0.000028	4	0	0.000000	0.000029
+ak2-timing	taxo	0.000079	0.096513	87962	0	0.041877	0.069804
+ak2-timing	shard-load-0	0.160845	80.738508	78042	0	73.466109	73.695274
+ak2-timing	rendezvous	82.133596	3.727453	92	0	0.002009	0.004314
+ak2-timing	connect	85.861065	0.003577	2	0	0.000000	0.000479
+ak2-timing	connect-control	85.864655	0.631087	2842	0	0.055678	0.011091
+ak2-timing	hash	0.096691	86.399084	83186	0	73.536353	73.713729
+ done.
+ak2-timing	setup	86.495781	0.000047	69	0	0.000091	0.000091
+ak2-timing	classify	86.495835	13.432017	1246662	0	22.252991	1.662714
+ak2-timing	barrier	99.932958	0.004744	0	0	0.000783	0.003963
+ak2-timing	close	99.937856	1.203026	24	0	0.000124	0.006805
+10532910 sequences (1945.09 Mbp) processed in 13.432s (47049.9 Kseq/m, 8688.61 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-engine	result	sequences	10532910	bases	1945093294	classified	9366399
+ak2-timing	report	101.140916	0.478817	85	0	0.090265	0.001143
+ak2-engine	shard	0	n	8	lo	0	hi	37159114742	tail	302	full	false	empty_at	37159114756	keys	51999377	batches	276	probe_s	1.510831	tail_probes	0	wrap_probes	0
+ak2-engine	rendezvous	puts	1	gets	9
+ak2-engine	s3	client	sdk	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	2	get	9	create_multipart	1	upload_part	113	complete_multipart	1	abort_multipart	0	part_bytes	946738756
+ak2-engine	node	rank	0	n	8	emitter	true	blocks_cut	276	blocks_mine	35	read_s	5.174624	window_wait_s	5.405126	send_s	0.000000	sent_bytes	0	emit_wait_s	0.314435	emit_s	13.105050
+ak2-engine	load	seconds	80.738505	requests	2233	retries	0	bytes	148636525776
+ak2-engine	route	transport	nodes	calls	35	keys	52844485	batches	280	route_s	0.548170	wait_s	0.436952	gather_s	0.141260
+ak2-engine	worker	scan_s	4.001780	lookup_s	1.126417	classify_s	2.765947
+ak2-timing	unmap	101.619767	0.274830	0	0	0.000000	0.274793
+ak2-timing	total	0.000001	101.894629	1418049	0	95.922652	75.740822

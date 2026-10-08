@@ -1,0 +1,5 @@
+invocation	nodes	pairs	load_GBps_per_node_mean	load_GBps_per_node_min	worker_cpu_s	worker_cpu_us_per_pair	pairs_per_worker_cpu_s	lookups_per_pair	routed_lookup_bytes_per_pair_per_node	read_s_sum	blocks_cut_max	emit_s_sum	close_s_sum
+c1-parallel-sdk	8	10532910	1.813	1.785	56.614	5.375	186048	39.48	51.8	0.000	0	0.000	0.000
+c1-striped-cli	8	10532910	1.815	1.792	61.537	5.842	171165	39.48	51.8	41.174	276	13.105	1.203
+c1-striped-sdk	8	10532910	1.806	1.783	61.288	5.819	171858	39.48	51.8	44.439	276	0.225	0.247
+c10	8	550938880	1.801	1.719	3408.482	6.187	161638	39.88	52.3	0.000	0	0.000	0.000
