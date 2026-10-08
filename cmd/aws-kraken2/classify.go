@@ -214,6 +214,11 @@ func classifyRun(c *classifyArgs) int {
 			p.end()
 		}()
 	}
+	if idx.eng != nil && c.pre == nil {
+		// The engine's counters once everything is written (outputs closed, the report put), so
+		// the request counts include the last CompleteMultipartUpload and the report's PutObject.
+		defer idx.eng.report()
+	}
 	ps := c.phase("setup")
 
 	comp, err := seqio.ResolveCompression(c.gzipFlag, c.bzip2Flag, c.files[0])
@@ -278,9 +283,6 @@ func classifyRun(c *classifyArgs) int {
 		// Every node waits here until no node needs its shard; the emitter collects the others'
 		// counters (the report's sum-reduce).
 		merged, st, err := nd.endRun(status, counts)
-		if c.pre == nil {
-			idx.eng.report()
-		}
 		if err != nil {
 			r.out.abandon()
 			return classifyErr(st, "%v", err)
@@ -289,8 +291,6 @@ func classifyRun(c *classifyArgs) int {
 			return st
 		}
 		counts = merged
-	} else if idx.eng != nil && c.pre == nil {
-		idx.eng.report()
 	}
 	if status != 0 {
 		return status

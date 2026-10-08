@@ -1,0 +1,27 @@
+Loading database information...ak2-timing	opts	0.000039	0.000027	4	0	0.000029	0.000000
+ak2-timing	taxo	0.000076	0.113577	87882	0	0.040902	0.088713
+ak2-timing	shard-load-0	0.323052	80.707179	78083	0	75.521687	70.253660
+ak2-timing	rendezvous	82.339932	8.237576	781	0	0.008088	0.007528
+ak2-timing	connect	90.577523	0.011528	5	0	0.000293	0.000273
+ak2-timing	connect-control	90.589059	0.364765	1704	0	0.015380	0.005437
+ak2-timing	hash	0.113722	90.840130	82723	0	75.558256	70.268982
+ done.
+ak2-timing	setup	90.953858	0.000051	4	0	0.000050	0.000047
+ak2-timing	classify	90.953913	5.722353	1215361	0	22.684409	1.348577
+ak2-timing	barrier	96.681235	0.004672	2	0	0.004669	0.000000
+ak2-engine	shard	0	n	8	lo	0	hi	37159114742	tail	302	full	false	empty_at	37159114756	keys	51999377	batches	276	probe_s	1.499741	tail_probes	0	wrap_probes	0
+ak2-engine	rendezvous	puts	1	gets	49
+ak2-engine	s3	client	sdk	put	1	get	49	create_multipart	1	upload_part	112	complete_multipart	0	abort_multipart	0	part_bytes	939524096
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	node	rank	0	n	8	emitter	true	blocks_cut	276	blocks_mine	35	read_s	5.570277	window_wait_s	0.000005	send_s	0.000000	sent_bytes	0	emit_wait_s	5.487824	emit_s	0.223050
+ak2-engine	load	seconds	80.707175	requests	2233	retries	0	bytes	148636525776
+ak2-engine	route	transport	nodes	calls	35	keys	52844485	batches	280	route_s	0.515087	wait_s	0.436899	gather_s	0.144673
+ak2-engine	worker	scan_s	4.006552	lookup_s	1.096689	classify_s	2.759891
+ak2-timing	close	96.686057	0.297496	2	0	0.005956	0.000399
+10532910 sequences (1945.09 Mbp) processed in 5.722s (110439.7 Kseq/m, 20394.69 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-engine	result	sequences	10532910	bases	1945093294	classified	9366399
+ak2-timing	report	96.983575	0.158045	74	0	0.089739	0.000000
+ak2-timing	unmap	97.141634	0.270765	0	0	0.001852	0.269040
+ak2-timing	total	0.000001	97.412426	1386064	0	98.390101	71.978710

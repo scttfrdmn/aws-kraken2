@@ -128,6 +128,7 @@ func bodyFile(data []byte) (string, func(), error) {
 
 // Put implements Store.
 func (c *CLI) Put(ctx context.Context, bucket, key string, data []byte) error {
+	CLICounts.Put.Add(1)
 	name, cleanup, err := bodyFile(data)
 	if err != nil {
 		return err
@@ -139,6 +140,7 @@ func (c *CLI) Put(ctx context.Context, bucket, key string, data []byte) error {
 
 // Get implements Store.
 func (c *CLI) Get(ctx context.Context, bucket, key string) ([]byte, error) {
+	CLICounts.Get.Add(1)
 	f, err := os.CreateTemp("", "ak2-get-*")
 	if err != nil {
 		return nil, err
@@ -157,6 +159,7 @@ func (c *CLI) Get(ctx context.Context, bucket, key string) ([]byte, error) {
 
 // CreateMultipart implements Store.
 func (c *CLI) CreateMultipart(ctx context.Context, bucket, key string) (string, error) {
+	CLICounts.Create.Add(1)
 	out, err := c.run(ctx, nil, "s3api", "create-multipart-upload", "--bucket", bucket, "--key", key)
 	if err != nil {
 		return "", err
@@ -170,6 +173,8 @@ func (c *CLI) CreateMultipart(ctx context.Context, bucket, key string) (string, 
 
 // UploadPart implements Store.
 func (c *CLI) UploadPart(ctx context.Context, bucket, key, id string, n int, data []byte) (string, error) {
+	CLICounts.Part.Add(1)
+	CLICounts.PartBytes.Add(int64(len(data)))
 	name, cleanup, err := bodyFile(data)
 	if err != nil {
 		return "", err
@@ -189,6 +194,7 @@ func (c *CLI) UploadPart(ctx context.Context, bucket, key, id string, n int, dat
 
 // Complete implements Store.
 func (c *CLI) Complete(ctx context.Context, bucket, key, id string, parts []Part) error {
+	CLICounts.Complete.Add(1)
 	type p struct {
 		ETag       string
 		PartNumber int
@@ -210,6 +216,7 @@ func (c *CLI) Complete(ctx context.Context, bucket, key, id string, parts []Part
 
 // Abort implements Store.
 func (c *CLI) Abort(ctx context.Context, bucket, key, id string) error {
+	CLICounts.Abort.Add(1)
 	_, err := c.run(ctx, nil, "s3api", "abort-multipart-upload", "--bucket", bucket, "--key", key, "--upload-id", id)
 	return err
 }

@@ -1,0 +1,27 @@
+Loading database information...ak2-timing	opts	0.000036	0.000027	4	0	0.000027	0.000000
+ak2-timing	taxo	0.000069	0.091609	87944	0	0.017850	0.085045
+ak2-timing	shard-load-0	0.231144	83.033148	78102	0	121.931463	143.761328
+ak2-timing	rendezvous	83.710198	13.170984	729	0	0.014928	0.003288
+ak2-timing	connect	96.881200	0.006043	6	0	0.000320	0.000377
+ak2-timing	connect-control	96.887252	0.738199	3956	0	0.096473	0.000057
+ak2-timing	hash	0.091763	97.533724	85003	0	122.044591	143.778973
+ done.
+ak2-timing	setup	97.625493	0.000047	83	0	0.000165	0.000195
+ak2-timing	classify	97.625545	5.740251	1158588	0	22.700981	1.332576
+ak2-timing	barrier	103.370825	0.004486	1	0	0.002240	0.002247
+ak2-timing	close	103.375451	0.246830	8	0	0.000000	0.006628
+10532910 sequences (1945.09 Mbp) processed in 5.740s (110095.3 Kseq/m, 20331.10 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-engine	result	sequences	10532910	bases	1945093294	classified	9366399
+ak2-timing	report	103.622306	0.177718	151	0	0.091737	0.001185
+ak2-engine	shard	0	n	8	lo	0	hi	37159114742	tail	302	full	false	empty_at	37159114756	keys	51999377	batches	276	probe_s	1.520794	tail_probes	0	wrap_probes	0
+ak2-engine	rendezvous	puts	1	gets	49
+ak2-engine	s3	client	sdk	put	2	get	49	create_multipart	1	upload_part	113	complete_multipart	1	abort_multipart	0	part_bytes	946738756
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	node	rank	0	n	8	emitter	true	blocks_cut	276	blocks_mine	35	read_s	5.592751	window_wait_s	0.000007	send_s	0.000000	sent_bytes	0	emit_wait_s	5.503531	emit_s	0.224727
+ak2-engine	load	seconds	83.033145	requests	2233	retries	0	bytes	148636525776
+ak2-engine	route	transport	nodes	calls	35	keys	52844485	batches	280	route_s	0.539891	wait_s	0.408183	gather_s	0.133448
+ak2-engine	worker	scan_s	4.000911	lookup_s	1.081552	classify_s	2.757692
+ak2-timing	unmap	103.800058	0.278886	0	0	0.000000	0.279022
+ak2-timing	total	0.000001	104.078974	1331815	0	144.861413	145.489769

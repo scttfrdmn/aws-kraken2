@@ -72,6 +72,7 @@ func notFound(err error) bool {
 
 // Put implements Store.
 func (s *SDK) Put(ctx context.Context, bucket, key string, data []byte) error {
+	SDKCounts.Put.Add(1)
 	cl, err := s.client(ctx)
 	if err != nil {
 		return err
@@ -86,6 +87,7 @@ func (s *SDK) Put(ctx context.Context, bucket, key string, data []byte) error {
 
 // Get implements Store.
 func (s *SDK) Get(ctx context.Context, bucket, key string) ([]byte, error) {
+	SDKCounts.Get.Add(1)
 	cl, err := s.client(ctx)
 	if err != nil {
 		return nil, err
@@ -103,6 +105,7 @@ func (s *SDK) Get(ctx context.Context, bucket, key string) ([]byte, error) {
 
 // CreateMultipart implements Store.
 func (s *SDK) CreateMultipart(ctx context.Context, bucket, key string) (string, error) {
+	SDKCounts.Create.Add(1)
 	cl, err := s.client(ctx)
 	if err != nil {
 		return "", err
@@ -119,6 +122,8 @@ func (s *SDK) CreateMultipart(ctx context.Context, bucket, key string) (string, 
 
 // UploadPart implements Store.
 func (s *SDK) UploadPart(ctx context.Context, bucket, key, id string, n int, data []byte) (string, error) {
+	SDKCounts.Part.Add(1)
+	SDKCounts.PartBytes.Add(int64(len(data)))
 	cl, err := s.client(ctx)
 	if err != nil {
 		return "", err
@@ -136,6 +141,7 @@ func (s *SDK) UploadPart(ctx context.Context, bucket, key, id string, n int, dat
 
 // Complete implements Store.
 func (s *SDK) Complete(ctx context.Context, bucket, key, id string, parts []Part) error {
+	SDKCounts.Complete.Add(1)
 	cl, err := s.client(ctx)
 	if err != nil {
 		return err
@@ -154,6 +160,7 @@ func (s *SDK) Complete(ctx context.Context, bucket, key, id string, parts []Part
 
 // Abort implements Store.
 func (s *SDK) Abort(ctx context.Context, bucket, key, id string) error {
+	SDKCounts.Abort.Add(1)
 	cl, err := s.client(ctx)
 	if err != nil {
 		return err

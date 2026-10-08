@@ -1,0 +1,6 @@
+batch	mode	s3client	inflight	threads	wall_s	pairs	Mpairs_per_s	rank_pairs_max	rank_pairs_mean	imbalance	sample_Mpairs_per_s_min	sample_Mpairs_per_s_median	sample_Mpairs_per_s_max	close_s_median	close_s_max
+0	parallel	sdk	1	16	21.05	110187776	5.235	35398167	13773472	2.57	0.401	1.745	1.832	0.273	0.514
+1	parallel	sdk	2	16	17.60	110187776	6.262	35398167	13773472	2.57	0.464	1.283	1.788	0.251	3.090
+2	parallel	sdk	2	8	17.67	110187776	6.234	35398167	13773472	2.57	0.417	1.072	1.353	0.244	0.581
+3	parallel	cli	1	16	47.10	110187776	2.339	35398167	13773472	2.57	0.267	0.756	0.821	1.026	1.233
+4	striped	sdk	1	16	69.72	110187776	1.581	110187776	110187776	1.00	0.499	1.799	1.860	0.327	0.762

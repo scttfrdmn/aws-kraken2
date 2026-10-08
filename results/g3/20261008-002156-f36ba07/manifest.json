@@ -1,0 +1,196 @@
+{
+  "gate": "g3",
+  "run_id": "20261008-002156-f36ba07",
+  "task_id": "ak2-g3-20261008-002156-f36ba07",
+  "spec": "runs/stage-cohort.json",
+  "spec_sha256": "97e37199c8569bc234bd8beaf59765492c380f396d7716c97df2c1e160f86c80",
+  "commit": "f36ba07badb7613671c6629476aa95a23cc04b3a",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "truffle": "0.57.1"
+  },
+  "region": "us-west-2",
+  "ttl": "3h",
+  "cost_limit_usd": 0.5,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-002156-f36ba07",
+  "sample_accessions": [],
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-002156-f36ba07/payload.sh",
+    "sha256": "652b0738b36b987616b4973730bbccdae45c03d645df5f9ea3b6608934563fec",
+    "bytes": 15763
+  },
+  "user_data": {
+    "base64_bytes": 16252,
+    "bootstrap_bytes": 36963,
+    "gzip_bytes": 12187
+  },
+  "datasets": [
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/",
+      "kind": "prefix"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-08T00:22:01Z",
+  "launch": {
+    "requested_at": "2026-10-08T00:22:05Z",
+    "instance_id": "i-06af8d407091d2f8e",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "c8g.large",
+    "count": 1,
+    "ami": "ami-09325776a00699513",
+    "az": "us-west-2b",
+    "launch_time": "2026-10-08T00:22:12+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-08T00:26:59Z"
+  },
+  "truffle_price_usd_per_hour": 0.07976,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-002156-f36ba07/: 9 objects, 8 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-08T00:22:27Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-08T00:22:28Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-08T00:22:28Z",
+      "seconds": 18,
+      "cold": false
+    },
+    {
+      "phase": "stage",
+      "start": "2026-10-08T00:22:46Z",
+      "seconds": 197,
+      "cold": false
+    },
+    {
+      "phase": "push",
+      "start": "2026-10-08T00:26:03Z",
+      "seconds": 1,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 33,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "GetObject-ENA": 20,
+      "HeadBucket-anon": 1,
+      "PutObject": 10
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject-ENA",
+        "count": 20,
+        "bucket": ""
+      },
+      {
+        "phase": "stage",
+        "op": "PutObject",
+        "count": 10,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-g3-20261008-002156-f36ba07",
+    "run_id": "8186bc91-adda-4432-9faf-c513e5b12549",
+    "exit_code": 1,
+    "state": "failed",
+    "started_at": "2026-10-08T00:22:27Z",
+    "ended_at": "2026-10-08T00:26:04Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-002156-f36ba07/spawn/ak2-g3-20261008-002156-f36ba07/command.log"
+    ],
+    "retry_class": "app_error"
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2b",
+    "instance_id": "i-06af8d407091d2f8e",
+    "instance_type": "c8g.large",
+    "ami": "ami-09325776a00699513",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-08T00:22:27Z"
+  },
+  "start": "2026-10-08T00:22:12+00:00",
+  "stop": "2026-10-08T00:26:59Z",
+  "billed_seconds": 287,
+  "cost_usd": 0.006359,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-08T00:28:07Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-002156-f36ba07",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T00:28:10Z"
+  }
+}

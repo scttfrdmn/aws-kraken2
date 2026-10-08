@@ -6,9 +6,13 @@
 # g2i_ramdb), and the caller passes --db <tmpfs> --memory-mapping in the common arguments, so no
 # sample reloads it.
 #
-#   scripts/upstream-cohort.sh ramdb SRC DST SIZE
-#       mount a huge=always tmpfs of SIZE at DST (sudo) and copy SRC's opts.k2d, taxo.k2d and
-#       hash.k2d onto it; checks the copy's sizes; prints the copy seconds.
+#   scripts/upstream-cohort.sh ramdb SRC NAME SIZE
+#       mount a huge=always tmpfs of SIZE at /mnt/ak2-ramdb/NAME (sudo; NAME a plain word; the
+#       mount is owned by the invoking user, mode 0700) and copy SRC's opts.k2d, taxo.k2d and
+#       hash.k2d onto it; checks the copy's sizes; prints the mount point and the copy seconds.
+#       Refuses a mount point that exists already (a mounted or leftover directory).
+#   scripts/upstream-cohort.sh umount NAME
+#       unmount /mnt/ak2-ramdb/NAME and remove the directory (sudo).
 #   scripts/upstream-cohort.sh run KRAKEN2 MANIFEST OUT.jsonl [common arguments...]
 #       run every sample of MANIFEST in order, one upstream invocation each:
 #       KRAKEN2 <common arguments> <the sample's arguments>. The batch, inflight, mode and client
@@ -24,9 +28,17 @@ now() { perl -MTime::HiRes=time -e 'printf "%.3f\n", time'; }
 
 case "${1:-}" in
 ramdb)
-  src=$2 dst=$3 size=$4
-  sudo -n mkdir -p "$dst" && sudo -n mount -t tmpfs -o "size=$size,huge=always,mode=1777" tmpfs "$dst" ||
-    { echo "upstream-cohort: tmpfs mount at $dst failed" >&2; exit 1; }
+  src=$2 name=$3 size=$4
+  # The only paths sudo touches: /mnt/ak2-ramdb/<word>.
+  [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "upstream-cohort: ramdb NAME must be a plain word" >&2; exit 2; }
+  [[ "$size" =~ ^[0-9]+[kmgKMG]?$ ]] || { echo "upstream-cohort: ramdb SIZE $size (e.g. 1400g)" >&2; exit 2; }
+  dst="/mnt/ak2-ramdb/$name"
+  [ ! -e "$dst" ] || { echo "upstream-cohort: $dst exists (mounted or left over); umount it first" >&2; exit 1; }
+  if mountpoint -q "$dst" 2>/dev/null; then echo "upstream-cohort: $dst is a mount point" >&2; exit 1; fi
+  sudo -n mkdir -p "$dst" &&
+    sudo -n mount -t tmpfs -o "size=$size,huge=always,mode=0700,uid=$(id -u),gid=$(id -g)" tmpfs "$dst" ||
+    { echo "upstream-cohort: tmpfs mount at $dst failed" >&2; sudo -n rmdir "$dst" 2>/dev/null; exit 1; }
+  echo "$dst"
   t0=$(now)
   cp "$src/opts.k2d" "$src/taxo.k2d" "$src/hash.k2d" "$dst/" || { echo "upstream-cohort: copy failed" >&2; exit 1; }
   t1=$(now)
@@ -34,6 +46,13 @@ ramdb)
     [ "$(stat -c%s "$src/$f")" = "$(stat -c%s "$dst/$f")" ] || { echo "upstream-cohort: tmpfs $f differs in size" >&2; exit 1; }
   done
   awk -v a="$t0" -v b="$t1" 'BEGIN{printf "upstream-cohort: ramdb copy %.1f s\n", b-a}' >&2
+  ;;
+umount)
+  name=$2
+  [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "upstream-cohort: umount NAME must be a plain word" >&2; exit 2; }
+  dst="/mnt/ak2-ramdb/$name"
+  mountpoint -q "$dst" || { echo "upstream-cohort: $dst is not mounted" >&2; exit 1; }
+  sudo -n umount "$dst" && sudo -n rmdir "$dst" || { echo "upstream-cohort: umount $dst failed" >&2; exit 1; }
   ;;
 run)
   shift
@@ -78,5 +97,5 @@ run)
   done < "$MANIFEST"
   exit "$BAD"
   ;;
-*) echo "usage: $0 ramdb SRC DST SIZE | run KRAKEN2 MANIFEST OUT.jsonl [common arguments...]" >&2; exit 2 ;;
+*) echo "usage: $0 ramdb SRC NAME SIZE | umount NAME | run KRAKEN2 MANIFEST OUT.jsonl [common arguments...]" >&2; exit 2 ;;
 esac

@@ -1,0 +1,53 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-08T00:31:51Z] wrapper start
+spawn: [2026-10-08T00:31:51Z] stage-in start
+spawn: [2026-10-08T00:31:51Z] stage-in done rc=0
+spawn: [2026-10-08T00:31:51Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 04c94be82ab7aacce8e9476b5e6bfe34237a0c9d3757bf93a9bbfe3183516266); exec
+ak2: log tee up
+ak2-phase	2026-10-08T00:31:52Z	1791419512	preamble	no
+ak2: [2026-10-08T00:31:52Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T00:31:52Z] after set +e $-=hBc
+ak2: [2026-10-08T00:31:52Z] gate=g3 run=20261008-003118-1b3163a
+ak2: [2026-10-08T00:31:52Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T00:31:52Z] imds region=us-west-2 az=us-west-2b instance=i-08d68d683d610827b type=c8g.large ami=ami-09325776a00699513
+ak2: [2026-10-08T00:31:52Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T00:31:52Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T00:31:52Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T00:31:52Z] region assert passed
+ak2: [2026-10-08T00:31:52Z] drop_caches_ok=true
+ak2: [2026-10-08T00:31:53Z] preamble done; spec body starts
+ak2-phase	2026-10-08T00:31:53Z	1791419513	body	no
+ak2-phase	2026-10-08T00:31:53Z	1791419513	setup	no
+ak2: [2026-10-08T00:32:17Z] checkout 1b3163a; nproc 2; disk /dev/nvme0n1p1 20G 2.2G 18G 12% /
+ak2-phase	2026-10-08T00:32:17Z	1791419537	stage	no
+stage-cohort: shell flags huB (on instance: 1)
+stage-cohort: SRR5935741_1.fastq.gz present (md5 87aea06c2b28440121a7052ee9bb1b28)
+stage-cohort: SRR5935740_2.fastq.gz present (md5 703911c349edcb0bb78012c10c109c79)
+stage-cohort: SRR5935740_1.fastq.gz present (md5 8d0ddf039dc21ebedfd06c6e08e0ce3f)
+stage-cohort: SRR5935742_2.fastq.gz present (md5 4c801589bf6606d1f16e939ab3edb2d8)
+stage-cohort: SRR5935743_1.fastq.gz present (md5 7a1d3c876db0f14d80a72d172e1d0cdf)
+stage-cohort: SRR5935743_2.fastq.gz present (md5 baa00fe73e010716dc17c5b62f1d0956)
+stage-cohort: SRR5935744_1.fastq.gz present (md5 dbab59bca1bdd65f68abfa7eae21e65c)
+stage-cohort: SRR5935744_2.fastq.gz present (md5 f783632ed8e6cf3e85e443990823bd88)
+stage-cohort: SRR5935745_1.fastq.gz present (md5 8c03236b7d33006c9f1ea5ac96496f39)
+stage-cohort: SRR5935742_1.fastq.gz staged (575178581 bytes, md5 8786d82cf4ab619cb2aee1006a8073d2, sha256 e30ccf1431649df8f20cc34fa1174d8af47933701bae9a585a9b0898ee4cdfa8) at 2026-10-08T00:34:40Z
+stage-cohort: SRR5935745_2.fastq.gz staged (524678126 bytes, md5 770d2ded687d4ceb9865e2503a4498f5, sha256 2a7295cf736eb7a0377ec1ccf7085e675bc1fcc3fff977427665924145f4dc7c) at 2026-10-08T00:34:43Z
+stage-cohort: SRR5935746_2.fastq.gz present (md5 4ca0e045c11b317e69c8ff3821dec51d)
+stage-cohort: SRR5935747_1.fastq.gz present (md5 6a154971cc31d3679e1671e9246fb6c6)
+stage-cohort: SRR5935747_2.fastq.gz staged (147979881 bytes, md5 7935a751a60b635e0d0aa4bd2cb1cca3, sha256 f9f69ba23089a1a646982e101b23b46a93ea3271b4966966606791a32a421754) at 2026-10-08T00:35:27Z
+stage-cohort: SRR5935741_2.fastq.gz staged (827325968 bytes, md5 b6d63cea9e7196e1dc99d9e52aaf60a1, sha256 b55f062150312d9442687b5c43d5a99a9bee5fed0246f150c278e8b30549c61d) at 2026-10-08T00:35:45Z
+stage-cohort: SRR5935746_1.fastq.gz staged (524886352 bytes, md5 a4e53a69a751e22dce9ff166add45b02, sha256 6910efb61060360c82cb08a2f57601a16ba0371188f2d3addf24a38ecfda12e0) at 2026-10-08T00:37:27Z
+stage-cohort: SRR5935748_2.fastq.gz staged (574516567 bytes, md5 7078f8852014cd97a84d6110b1809e51, sha256 99dcb4054aca7accc23286f4f8dce10500fab85a400a4ee50ddfa1191825751c) at 2026-10-08T00:38:12Z
+stage-cohort: SRR5935748_1.fastq.gz staged (558312578 bytes, md5 dd83b86e8f2cb334c013bd2afc162436, sha256 bbb258924127e7070fbd670c2c7bc9ac09ee1c4b31f6553b2802a0c3eb2aaa61) at 2026-10-08T00:38:15Z
+stage-cohort: SRR5935749_1.fastq.gz staged (897225885 bytes, md5 63c299689793b6cc0ce2f38935afad7c, sha256 533fa952ff371026dc93fcc19d1c2b01e642816e2bd49fcef8181df2bdab228f) at 2026-10-08T00:40:48Z
+stage-cohort: SRR5935749_2.fastq.gz staged (893278004 bytes, md5 71dcc8b31d68fbf1d4670b211d2212df, sha256 9866b699fd1980bbe9edcc9afef25e0729ba2c82c87aa0e32feca919f7efd273) at 2026-10-08T00:42:13Z
+s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/
+ak2-phase	2026-10-08T00:42:13Z	1791420133	push	no
+ak2: [2026-10-08T00:42:14Z] pushed out/stage.log
+ak2: [2026-10-08T00:42:14Z] pushed out/staged.tsv
+ak2: [2026-10-08T00:42:14Z] stage-cohort rc=0
+spawn: [2026-10-08T00:42:15Z] command exit rc=0

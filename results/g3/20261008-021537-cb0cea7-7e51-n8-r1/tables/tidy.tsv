@@ -1,0 +1,587 @@
+run_id	rank	invocation	kind	batch	sample	metric	value
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			taxo	0.114598
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			taxo.start_s	0.000192
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			shard-load-1	80.408443
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			shard-load-1.start_s	0.189249
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			rendezvous	2.103205
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			rendezvous.start_s	82.184060
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			connect	0.051233
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			connect.start_s	84.287280
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			hash	84.223689
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			hash.start_s	0.114839
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			batch-barrier-0	6.935527
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			batch-barrier-0.start_s	84.338533
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			index	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			n	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			lo	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			hi	74318229485
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			tail	302
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			full	false
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			empty_at	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			keys	51922358
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			batches	276
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			probe_s	1.451622
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			tail_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.shard			wrap_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.rendezvous			puts	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.rendezvous			gets	55
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			put	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			get	55
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			create_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			upload_part	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			complete_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			part_bytes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			client	cli
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			put	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			get	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			create_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			upload_part	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			complete_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.s3			part_bytes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.load			seconds	80.408439
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.load			requests	2233
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.load			retries	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.load			bytes	148636525780
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			transport	nodes
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			calls	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			keys	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			batches	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			route_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			wait_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.route			gather_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.worker			scan_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.worker			lookup_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	engine.worker			classify_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			total	91.550639
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-parallel-sdk	phase			total.start_s	0.000001
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			taxo	0.096829
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			taxo.start_s	0.000077
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			shard-load-1	82.748179
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			shard-load-1.start_s	0.164020
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			rendezvous	3.392640
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			rendezvous.start_s	83.540055
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			connect	0.002602
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			connect.start_s	86.932711
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			connect-control	0.000283
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			connect-control.start_s	86.935321
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			hash	86.838662
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			hash.start_s	0.096948
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			setup	0.000036
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			setup.start_s	86.935615
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			classify	10.747000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			classify.start_s	86.935655
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			barrier	2.689077
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			barrier.start_s	97.688528
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			index	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			n	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			lo	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			hi	74318229485
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			tail	302
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			full	false
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			empty_at	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			keys	51922358
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			batches	276
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			probe_s	1.477072
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			tail_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.shard			wrap_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.rendezvous			puts	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.rendezvous			gets	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			put	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			get	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			create_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			upload_part	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			complete_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			part_bytes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			client	cli
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			put	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			get	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			create_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			upload_part	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			complete_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.s3			part_bytes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			n	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			emitter	false
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			blocks_cut	276
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			blocks_mine	35
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			read_s	5.144307
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			window_wait_s	5.415235
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			send_s	0.031216
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			sent_bytes	120256710
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			emit_wait_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.node			emit_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.load			seconds	82.748176
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.load			requests	2233
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.load			retries	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.load			bytes	148636525780
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			transport	nodes
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			calls	35
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			keys	52836521
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			batches	280
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			route_s	0.530898
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			wait_s	0.424702
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.route			gather_s	0.137298
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.worker			scan_s	3.947314
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.worker			lookup_s	1.092931
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	engine.worker			classify_s	2.761399
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			unmap	0.275666
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			unmap.start_s	100.377663
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			total	100.653347
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-cli	phase			total.start_s	0.000001
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			taxo	0.112437
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			taxo.start_s	0.000066
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			shard-load-1	82.858797
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			shard-load-1.start_s	0.218837
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			rendezvous	13.393192
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			rendezvous.start_s	83.513570
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			connect	0.009549
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			connect.start_s	96.906779
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			connect-control	0.013971
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			connect-control.start_s	96.916343
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			hash	96.817781
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			hash.start_s	0.112542
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			setup	0.000049
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			setup.start_s	96.930327
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			classify	5.717912
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			classify.start_s	96.930381
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			barrier	0.763957
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			barrier.start_s	102.654267
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			index	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			n	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			lo	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			hi	74318229485
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			tail	302
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			full	false
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			empty_at	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			keys	51922358
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			batches	276
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			probe_s	1.494798
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			tail_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.shard			wrap_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.rendezvous			puts	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.rendezvous			gets	50
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			put	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			get	50
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			create_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			upload_part	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			complete_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			part_bytes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			client	cli
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			put	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			get	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			create_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			upload_part	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			complete_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.s3			part_bytes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			n	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			emitter	false
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			blocks_cut	276
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			blocks_mine	35
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			read_s	5.550143
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			window_wait_s	0.000008
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			send_s	0.843345
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			sent_bytes	120256710
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			emit_wait_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.node			emit_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.load			seconds	82.858793
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.load			requests	2233
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.load			retries	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.load			bytes	148636525780
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			transport	nodes
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			calls	35
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			keys	52836521
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			batches	280
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			route_s	0.527445
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			wait_s	0.382254
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.route			gather_s	0.132463
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.worker			scan_s	3.982039
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.worker			lookup_s	1.042193
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	engine.worker			classify_s	2.774428
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			unmap	0.273742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			unmap.start_s	103.418277
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			total	103.692048
+20261008-021537-cb0cea7-7e51-n8-r1	1	c1-striped-sdk	phase			total.start_s	0.000001
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			taxo	0.117145
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			taxo.start_s	0.000469
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			shard-load-1	82.816914
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			shard-load-1.start_s	0.233284
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			rendezvous	4.953049
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			rendezvous.start_s	83.562217
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			connect	0.003362
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			connect.start_s	88.515279
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			hash	88.401010
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			hash.start_s	0.117642
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	start_s	88.518664
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	wall_s	10.362356
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	setup_s	0.000084
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	classify_s	9.899171
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	close_s	0.288129
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	report_s	0.165990
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	sequences	16518263
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	bases	3051284850
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935741	classified	16141470
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	start_s	98.881046
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	wall_s	10.687591
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	setup_s	0.000053
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	classify_s	10.306871
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	close_s	0.228859
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	report_s	0.144662
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	sequences	18879904
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	bases	3539135454
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	0	0-SRR5935749	classified	18627146
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-0	0.244297
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-0.start_s	109.568655
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	inflight	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	start_s	109.812977
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	wall_s	16.406854
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	setup_s	0.000042
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	classify_s	15.965017
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	close_s	0.249544
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	report_s	0.182839
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	sequences	16518263
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	bases	3051284850
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935741	classified	16141470
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	inflight	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	start_s	109.812974
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	wall_s	17.595217
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	setup_s	0.000045
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	classify_s	17.152043
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	close_s	0.267867
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	report_s	0.167668
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	sequences	18879904
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	bases	3539135454
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	1	1-SRR5935749	classified	18627146
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-1	0.244004
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-1.start_s	127.408207
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	inflight	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	threads	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	start_s	127.652237
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	wall_s	16.178915
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	setup_s	0.000041
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	classify_s	15.825594
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	close_s	0.195916
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	report_s	0.150310
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	sequences	16518263
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	bases	3051284850
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935741	classified	16141470
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	inflight	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	threads	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	start_s	127.652233
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	wall_s	17.674917
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	setup_s	0.000042
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	classify_s	17.271777
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	close_s	0.249364
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	report_s	0.148354
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	sequences	18879904
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	bases	3539135454
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	2	2-SRR5935749	classified	18627146
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-2	0.253035
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-2.start_s	145.327166
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	s3client	cli
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	start_s	145.580223
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	wall_s	22.514224
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	setup_s	0.000045
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	classify_s	20.964722
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	close_s	1.053055
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	report_s	0.487316
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	sequences	16518263
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	bases	3051284850
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935741	classified	16141470
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	mode	parallel
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	s3client	cli
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	role	home
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	start_s	168.094475
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	wall_s	24.586943
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	setup_s	0.000040
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	classify_s	23.009671
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	close_s	1.004125
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	report_s	0.565808
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	sequences	18879904
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	bases	3539135454
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	3	3-SRR5935749	classified	18627146
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-3	0.244370
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-3.start_s	192.681439
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.045669
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	199.526282
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	start_s	193.801103
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	wall_s	5.770897
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	setup_s	0.000048
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	classify_s	5.719372
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935740	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.138483
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	209.724158
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	start_s	200.338907
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	wall_s	9.523786
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	setup_s	0.000053
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	classify_s	9.381481
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935741	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.375850
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	217.218096
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	start_s	210.688702
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	wall_s	6.905299
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	setup_s	0.000058
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	classify_s	6.525355
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935742	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.052902
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	218.624423
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	start_s	218.273131
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	wall_s	0.404235
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	setup_s	0.000051
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	classify_s	0.350914
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935743	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.035070
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	228.342647
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	start_s	219.796566
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	wall_s	8.581199
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	setup_s	0.000053
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	classify_s	8.542258
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935744	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.108012
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	234.866065
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	start_s	228.961304
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	wall_s	6.012819
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	setup_s	0.000065
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	classify_s	5.900127
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935745	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.018129
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	241.683033
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	start_s	235.675279
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	wall_s	6.025927
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	setup_s	0.000057
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	classify_s	6.004931
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935746	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.133980
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	244.521792
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	start_s	242.739384
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	wall_s	1.916442
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	setup_s	0.000050
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	classify_s	1.780305
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935747	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.099657
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	251.926332
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	start_s	245.463981
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	wall_s	6.562059
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	setup_s	0.000063
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	classify_s	6.456855
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935748	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier	0.048458
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			barrier.start_s	262.800112
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	mode	striped
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	s3client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	rank	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	role	peer
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	inflight	1
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	threads	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	start_s	252.691946
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	wall_s	10.156673
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	setup_s	0.000072
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	classify_s	10.105433
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	close_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	report_s	0.000000
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	status	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	sequences	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	bases	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	sample	4	4-SRR5935749	classified	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-4	1.074856
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			batch-barrier-4.start_s	262.848628
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			index	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			n	8
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			lo	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			hi	74318229485
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			tail	302
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			full	false
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			empty_at	37159114742
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			keys	2747907170
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			batches	14540
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			probe_s	71.592961
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			tail_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.shard			wrap_probes	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.rendezvous			puts	16
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.rendezvous			gets	183
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			client	sdk
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			put	22
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			get	183
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			create_multipart	6
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			upload_part	1056
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			complete_multipart	6
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			part_bytes	8840847018
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			client	cli
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			put	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			get	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			create_multipart	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			upload_part	352
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			complete_multipart	2
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			abort_multipart	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.s3			part_bytes	2946949006
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.load			seconds	82.816910
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.load			requests	2233
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.load			retries	0
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.load			bytes	148636525780
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			transport	nodes
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			calls	4105
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			keys	6213454780
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			batches	32840
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			route_s	57.130801
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			wait_s	108.551392
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.route			gather_s	12.751225
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.worker			scan_s	429.811339
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.worker			lookup_s	178.436361
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	engine.worker			classify_s	386.468274
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			total	264.204671
+20261008-021537-cb0cea7-7e51-n8-r1	1	c10	phase			total.start_s	0.000001

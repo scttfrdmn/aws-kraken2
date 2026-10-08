@@ -1,0 +1,107 @@
+ak2: log tee up
+ak2-phase	2026-10-08T00:22:27Z	1791418947	preamble	no
+ak2: [2026-10-08T00:22:27Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T00:22:27Z] after set +e $-=hBc
+ak2: [2026-10-08T00:22:27Z] gate=g3 run=20261008-002156-f36ba07
+ak2: [2026-10-08T00:22:27Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T00:22:27Z] imds region=us-west-2 az=us-west-2b instance=i-06af8d407091d2f8e type=c8g.large ami=ami-09325776a00699513
+ak2: [2026-10-08T00:22:27Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T00:22:27Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T00:22:27Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T00:22:27Z] region assert passed
+ak2: [2026-10-08T00:22:27Z] drop_caches_ok=true
+ak2: [2026-10-08T00:22:28Z] preamble done; spec body starts
+ak2-phase	2026-10-08T00:22:28Z	1791418948	body	no
+ak2-phase	2026-10-08T00:22:28Z	1791418948	setup	no
+ak2: [2026-10-08T00:22:46Z] checkout f36ba07; nproc 2; disk /dev/nvme0n1p1 20G 2.3G 18G 12% /
+ak2-phase	2026-10-08T00:22:46Z	1791418966	stage	no
+stage-cohort: shell flags huB (on instance: 1)
+stage-cohort: SRR5935740_1.fastq.gz present (md5 8d0ddf039dc21ebedfd06c6e08e0ce3f)
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 155 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 153 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 149 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 158 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 164 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 186 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 197 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 175 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 169 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 170 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 199 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 208 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 206 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 234 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 229 ms: Could not connect to server
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/001/SRR5935741/SRR5935741_2.fastq.gz failed
+stage-cohort: SRR5935743_2.fastq.gz staged (8611159 bytes, md5 baa00fe73e010716dc17c5b62f1d0956, sha256 778ab6b8baf6347f338be2a0f33106de840ca2afa54f2b817dae2c15d51b9dc2) at 2026-10-08T00:22:53Z
+stage-cohort: SRR5935743_1.fastq.gz staged (8679627 bytes, md5 7a1d3c876db0f14d80a72d172e1d0cdf, sha256 7d627626ced7beccb30b88536b8ab97353a64b63d14101d5afc07a340d1834fb) at 2026-10-08T00:22:53Z
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/002/SRR5935742/SRR5935742_1.fastq.gz failed
+stage-cohort: SRR5935740_2.fastq.gz staged (502062672 bytes, md5 703911c349edcb0bb78012c10c109c79, sha256 4f5acd3dfe043300aab196a6cc8d5caa174ec3dab8f9c3082647def99c9afe09) at 2026-10-08T00:24:05Z
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 147 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 145 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 147 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 149 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 150 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 152 ms: Could not connect to server
+stage-cohort: SRR5935742_2.fastq.gz staged (583688553 bytes, md5 4c801589bf6606d1f16e939ab3edb2d8, sha256 9ca413d7cc657d074cefbd0d00de67d49309d14fce7fc323ac760d8fae6874c0) at 2026-10-08T00:24:12Z
+curl: (7) Failed curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 147 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 157 ms: Could not connect to server
+to connect to ftp.sra.ebi.ac.uk:443 after 145 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 160 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 167 ms: Could not connect to server
+stage-cohort: SRR5935744_2.fastq.gz staged (755587542 bytes, md5 f783632ed8e6cf3e85e443990823bd88, sha256 f0802a44d60e3ec53583243cb57465962043d9e80e5d1d8ebc741ef85d314732) at 2026-10-08T00:24:39Z
+stage-cohort: SRR5935744_1.fastq.gz staged (745495793 bytes, md5 dbab59bca1bdd65f68abfa7eae21e65c, sha256 dfb25327b29713a2c446b33b9a689e4e2b98e411aa7a04ce0762e53f09135ab6) at 2026-10-08T00:24:45Z
+stage-cohort: SRR5935741_1.fastq.gz staged (837416271 bytes, md5 87aea06c2b28440121a7052ee9bb1b28, sha256 2f93514092c5a187a2c36db929526e0a78cb0129b018c514ddfdd14b7603fbe1) at 2026-10-08T00:24:51Z
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 156 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 162 ms: Could not connect to server
+stage-cohort: SRR5935745_1.fastq.gz staged (520125014 bytes, md5 8c03236b7d33006c9f1ea5ac96496f39, sha256 c3605904955a001df9bde9a64c42b2025a4855fc3cf822faabd8353806a751e8) at 2026-10-08T00:24:54Z
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 147 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 156 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 151 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 152 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 159 ms: Could not concurl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 151 ms: Could not connect to server
+ncurl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 170 ms: Could not connect to server
+ect to server
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/008/SRR5935748/SRR5935748_1.fastq.gz failed
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 151 ms: Could not connect to server
+curlcurl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebcurl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 153 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 150 ms: Could not connect to server
+i.ac.uk:443 after 148 ms: Could not connect to server
+curcurl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 162 ms: Could not connect to server
+l: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 155 ms: Could not connect to server
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/008/SRR5935748/SRR5935748_2.fastq.gz failed
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 152 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 148 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 145 ms: Could not connect to server
+curl: (7) Failed to connecctu rtlo:  f(t7p). sFraai.leebdi .taoc .cuokn:n4e4c3t  atfot efrt p1.5s2r am.se:b iC.oaucl.du kn:o4t4 3c oanfnteecrt  1t4o6  smesr:v eCro
+uld not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 148 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 146 ms: Could not connect to server
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/009/SRR5935749/SRR5935749_1.fastq.gz failed
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 149 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 147 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 159 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 152 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 155 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 150 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 153 ms: Could not connect to server
+curl: (7) Failed to connect to ftp.sra.ebi.ac.uk:443 after 155 ms: Could not connect to server
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/009/SRR5935749/SRR5935749_2.fastq.gz failed
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/005/SRR5935745/SRR5935745_2.fastq.gz failed
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/007/SRR5935747/SRR5935747_2.fastq.gz failed
+stage-cohort: SRR5935747_1.fastq.gz staged (145394201 bytes, md5 6a154971cc31d3679e1671e9246fb6c6, sha256 557e8acde5de8ab8f5a41b363f523914bc1cb8ffdfb3eec01bdb6868c0e75a46) at 2026-10-08T00:25:13Z
+stage-cohort: download of https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR593/006/SRR5935746/SRR5935746_1.fastq.gz failed
+stage-cohort: SRR5935746_2.fastq.gz staged (523074338 bytes, md5 4ca0e045c11b317e69c8ff3821dec51d, sha256 cc2d68bf407e62943045837f0108f5781d524412ab58be09258a9a0b264c63b9) at 2026-10-08T00:26:03Z
+stage-cohort: FAILED
+ak2-phase	2026-10-08T00:26:03Z	1791419163	push	no
+ak2: [2026-10-08T00:26:03Z] pushed out/stage.log
+ak2: [2026-10-08T00:26:04Z] pushed out/staged.tsv
+ak2: [2026-10-08T00:26:04Z] stage-cohort rc=1
+ak2: [2026-10-08T00:26:04Z] spec body exit rc=1
+ak2-phase	2026-10-08T00:26:04Z	1791419164	end	no
