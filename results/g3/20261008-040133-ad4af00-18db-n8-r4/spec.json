@@ -1,0 +1,29 @@
+{
+  "task_id": "stage-cohort",
+  "command": [
+    "bash",
+    "-c",
+    "# Stage the recorded G3 cohort (results/cohort/PRJNA398089/runs.tsv, #25) from ENA into the\n# in-region bucket, md5-checked: make stage-cohort, run on instances because ENA to the launch\n# host runs at about 50-260 KB/s. Ranks FROM..COUNT; with make run ... NODES=n each member stages\n# the ranks r with (r - FROM) % n == its AK2_ENGINE_RANK (a single run: all of them). The script\n# and the cohort record come from the launch commit. Afterwards, from the launch host: the cohort\n# post (scripts/post/stage-cohort.cohort.sh) merges every member's out/staged.tsv into\n# results/cohort/PRJNA398089/staged.tsv and checks that every rank in range has both mates; then\n# make tag-objects PREFIX=aws-kraken2/data/cohort/ (the instance role cannot tag).\nW=$HOME/ak2; mkdir -p \"$W\"\nif [ -n \"${AK2_COHORT_ID:-}\" ]; then SHA=$(echo \"$AK2_COHORT_ID\" | cut -d- -f3); else SHA=${AK2_RUN_ID##*-}; fi\nCOUNT=1000\nFROM=11\nNN=${AK2_ENGINE_N:-1}; RK=${AK2_ENGINE_RANK:-0}\nPAR=6; RANGES=4\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nak2_phase setup\nsudo -n dnf install -y -q git jq tar gzip > \"$W/dnf.log\" 2>&1 || { tail -20 \"$W/dnf.log\"; fail \"dnf install failed\"; }\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\nak2_say \"checkout $SHA; nproc $(nproc); disk $(df -h \"$W\" | tail -1 | tr -s ' '); slice $RK of $NN, ranks $FROM..$COUNT\"\nak2_phase stage\n# Streamed into the run log as it goes (a TTL kill loses at most the files in flight).\n(cd \"$W/repo\" && STAGE_PARALLEL=$PAR STAGE_RANGES=$RANGES STAGE_FROM=$FROM STAGE_STRIDE=$NN STAGE_OFFSET=$RK \\\n  scripts/stage-cohort.sh stage PRJNA398089 \"$COUNT\") 2>&1 | tee \"$W/stage.log\"\nRC=${PIPESTATUS[0]}\n# Requests, from the log: each fetched file is RANGES ranged GETs to ENA, one aws s3 cp (one\n# PutObject at or below 8 MiB, else CreateMultipartUpload + ceil(bytes / 8 MiB) UploadPart +\n# CompleteMultipartUpload) and two HeadObject; a file already present is one HeadObject.\nB=${AK2_BUCKETS%% *}\nread -r NF NPUT NMPU NPART < <(awk '/ staged \\(/{n++; b=$4; sub(/\\(/,\"\",b); if (b<=8388608) p++; else {m++; q+=int((b+8388607)/8388608)}} END{print n+0, p+0, m+0, q+0}' \"$W/stage.log\")\nNPRES=$(grep -c ' present (md5' \"$W/stage.log\")\nak2_req GetObject-ENA \"$((NF * RANGES))\" \"\"\nak2_req PutObject \"$NPUT\" \"$B\"\nak2_req CreateMultipartUpload \"$NMPU\" \"$B\"\nak2_req UploadPart \"$NPART\" \"$B\"\nak2_req CompleteMultipartUpload \"$NMPU\" \"$B\"\nak2_req HeadObject \"$((2 * NF + NPRES))\" \"$B\"\nak2_say \"stage-cohort: $NF files fetched and staged, $NPRES present\"\nak2_phase push\nak2_push \"$W/stage.log\" stage.log\n[ -s \"$W/repo/results/cohort/PRJNA398089/staged.tsv\" ] && ak2_push \"$W/repo/results/cohort/PRJNA398089/staged.tsv\" staged.tsv\nak2_say \"stage-cohort rc=$RC\"\nexit \"$RC\"\n"
+  ],
+  "resources": {
+    "instance_type": "c8g.large",
+    "architecture": "arm64",
+    "disk_gib": 40,
+    "s3_read_write": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"
+    ]
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/"
+  },
+  "lifecycle": {
+    "ttl": "4h",
+    "on_complete": "terminate",
+    "cost_limit": 0.5
+  },
+  "placement": {
+    "availability_zone": "us-west-2a"
+  }
+}

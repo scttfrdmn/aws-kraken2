@@ -120,21 +120,28 @@ stage)
         "$(echo "$hd" | jq -r .Metadata.sha256)" "$k" "$(echo "$hd" | jq -r '.VersionId // "null"')" "$(date -u +%FT%TZ)" > "$ROWS/$f"
       echo "stage-cohort: $f present (md5 $want)"; return 0
     fi
-    chunk=$(( (b + RANGES - 1) / RANGES ))
-    local pids=()
-    for ((i = 0; i < RANGES; i++)); do
-      lo=$((i * chunk)); hi=$(( lo + chunk - 1 )); [ "$hi" -ge "$b" ] && hi=$((b - 1))
-      [ "$lo" -le "$hi" ] || break
-      curl -fsS --retry 8 --retry-delay 10 --retry-connrefused -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
+    # Up to 3 attempts: a whole download whose size or md5 disagrees with ENA's is fetched again
+    # (the ranks 11..1000 staging at ad4af00 lost every member to one md5 mismatch).
+    local attempt ok=0
+    for attempt in 1 2 3; do
+      chunk=$(( (b + RANGES - 1) / RANGES ))
+      local pids=()
+      for ((i = 0; i < RANGES; i++)); do
+        lo=$((i * chunk)); hi=$(( lo + chunk - 1 )); [ "$hi" -ge "$b" ] && hi=$((b - 1))
+        [ "$lo" -le "$hi" ] || break
+        curl -fsS --retry 8 --retry-delay 10 --retry-connrefused -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
+      done
+      local bad=0 pid
+      for pid in "${pids[@]}"; do wait "$pid" || bad=1; done
+      if [ "$bad" != 0 ]; then echo "stage-cohort: download of $u failed (attempt $attempt)" >&2; rm -f "$p".part*; continue; fi
+      : > "$p"
+      for ((i = 0; i < ${#pids[@]}; i++)); do cat "$p.part$i" >> "$p" && rm -f "$p.part$i"; done
+      if [ "$(wc -c < "$p" | tr -d ' ')" != "$b" ]; then echo "stage-cohort: $f is $(wc -c < "$p") bytes, ENA says $b (attempt $attempt)" >&2; continue; fi
+      got=$(md5of "$p")
+      if [ "$got" != "$want" ]; then echo "stage-cohort: $f md5 $got, ENA says $want (attempt $attempt)" >&2; continue; fi
+      ok=1; break
     done
-    local bad=0 pid
-    for pid in "${pids[@]}"; do wait "$pid" || bad=1; done
-    [ "$bad" = 0 ] || { echo "stage-cohort: download of $u failed" >&2; rm -f "$p".part*; return 1; }
-    : > "$p"
-    for ((i = 0; i < ${#pids[@]}; i++)); do cat "$p.part$i" >> "$p" && rm -f "$p.part$i"; done
-    [ "$(wc -c < "$p" | tr -d ' ')" = "$b" ] || { echo "stage-cohort: $f is $(wc -c < "$p") bytes, ENA says $b" >&2; return 1; }
-    got=$(md5of "$p")
-    [ "$got" = "$want" ] || { echo "stage-cohort: $f md5 $got, ENA says $want" >&2; return 1; }
+    [ "$ok" = 1 ] || { rm -f "$p"; return 1; }
     h=$(sha "$p")
     aws s3 cp --only-show-errors --region us-west-2 --metadata "sha256=$h,md5=$want" "$p" "s3://$BUCKET/$k" ||
       { echo "stage-cohort: upload of $f failed" >&2; return 1; }
