@@ -112,7 +112,7 @@ make g3-tables                                            # results/g3/campaign/
 - **Spec generation.** `scripts/g3/mkspec.sh` writes the spec from `scripts/g3/campaign.body.sh`,
   with the parameters as a block at its head. It also symlinks the cohort post
   (`scripts/post/<spec>.cohort.sh` points to `g3-campaign.cohort.sh`).
-  - It refuses a type whose memory cannot hold the shard plus 15%, plus 8 GB, plus 2 GB per
+  - It refuses a type whose memory cannot hold the shard plus 15%, plus 8 GB, plus 7.5 GB per
     sample in flight. Before this rule, E3's 96 GiB c8g.12xlarge at 6 in flight was OOM-killed.
   - Disk is sized for the inputs a node reads. The per-member cost_limit is the truffle price
     times the TTL.
@@ -172,7 +172,10 @@ make g3-tables                                            # results/g3/campaign/
   - The current `scripts/g3/fetch.sh` and U1's in-shell lanes, waited for by PID, must pass.
   - The record goes to `results/rehearse/bash-jobs-*.txt`.
 - **`make rehearse` asserts memory feasibility** for a campaign spec: its type must hold 1/N of
-  hash.k2d plus 15%, 8 GB, and 2 GB per sample in flight. Every rank must also stream
+  hash.k2d plus 15%, 8 GB, and 7.5 GB per sample in flight. The per-sample figure is measured:
+  `scripts/lib/g3_memory.py` writes `results/g3/campaign/memory.tsv` from the `ak2-engine mem`
+  lines. The earlier 2 GB let E3 c8g.12xlarge at 3 in flight through, and it was OOM-killed.
+  Every rank must also stream
   `ak2-engine mem` lines.
 - **`make g3-law1-u2`** downloads the engine's sample-1 output and report from the E2 N=8 cohort
   and makes two checks:

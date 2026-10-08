@@ -6,3 +6,4 @@ run	class	evidence
 20261008-054306-1a4dbfe-8ea3-n4	defect: bash wait -n -p pool loop	ranks 0, 2, 3 looping "wait: no such job" in fetch; interrupted (results/g3/20261008-054306-1a4dbfe-8ea3-n4/rank-0.run.log)
 20261008-054327-1a4dbfe-0536-n16	defect: bash wait -n -p pool loop	rank 1 looping "wait: no such job" in fetch; interrupted (results/g3/20261008-054327-1a4dbfe-0536-n16/rank-1.run.log)
 20261008-040133-ad4af00-18db-n8	partial: staging stopped by fail fast on one md5 mismatch	rank 2 "SRR5946629_2.fastq.gz md5 ... ENA says ..." (results/g3/20261008-040133-ad4af00-18db-n8/rank-2.run.log); 1908 of 1980 files staged, completed by 20261008-054457-805d7a2-7357-n12
+20261008-150917-a6b2c95-9214-n16	defect: memory rule constant (2 GB per sample in flight; measured 4-7 GiB)	rank 10 Killed, exit 137, in batch 0 at 3 in flight (results/g3/20261008-150917-a6b2c95-9214-n16/rank-10.run.log; results/g3/campaign/memory.tsv)

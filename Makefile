@@ -76,6 +76,7 @@ g3-spec:
 	scripts/g3/mkspec.sh $(EXP) $(TYPE) $(N) $(COHORT) $(ARGS)
 
 g3-tables:
+	python3 scripts/lib/g3_memory.py
 	python3 scripts/lib/g3_campaign.py
 
 # Real-S3 check of ak2etag.py (multipart and single-part) and Law 1 of the engine's sample 1

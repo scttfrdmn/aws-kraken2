@@ -210,8 +210,10 @@ echo "rehearse: $NOBJ objects under out/ (want $WOBJ); requests say $REQ (Comple
 [ "$NOBJ" = "$WOBJ" ] && [ "$REQ" = "$WOBJ" ] || { echo "rehearse: object and request counts disagree" >&2; RC=1; }
 
 # Memory: the spec's instance type must hold its shard of RODA v205's hash.k2d (1189 GB / N) plus
-# 15%, 8 GB, and 2 GB per sample in flight (E3 c8g.12xlarge at 6 in flight was OOM-killed at
-# 306f827); and every rank must have streamed the engine's memory samples (ak2-engine mem).
+# 15%, 8 GB, and 7.5 GB per sample in flight: the engine's measured working memory above its shard is 6.3-6.6 GiB at 1 in
+# flight, 12.1-12.5 at 2, 12.7-15.1 at 3 and 25.1-27.1 at 4, at T16 (results/g3/campaign/memory.tsv,
+# scripts/lib/g3_memory.py). The earlier 2 GB, from a 200k-pair local run, let E3 c8g.12xlarge at 3
+# in flight through at e6ff22b, and it was OOM-killed (a6b2c95); and every rank must have streamed the engine's memory samples (ak2-engine mem).
 TYPE=$(jq -r .resources.instance_type "$SPEC")
 PAR=$(jq -r '.command[2]' "$SPEC" | grep -m1 '^EXP=')
 WN=$(echo "$PAR" | sed -E 's/.*WANT_N=([0-9]+).*/\1/'); IFL=$(echo "$PAR" | sed -E 's/.*INFLIGHT=([a-z0-9]+).*/\1/')
@@ -220,7 +222,7 @@ INFO=$(truffle find "$TYPE" --regions us-west-2 --show-price -o json 2>/dev/null
 MEM=$(echo "$INFO" | jq -r .memory_mib); VC=$(echo "$INFO" | jq -r .vcpus)
 [ "$IFL" = auto ] && IFL=$(( VC / 8 > 0 ? VC / 8 : 1 ))
 if [[ "$MEM" =~ ^[0-9]+$ && "$WN" =~ ^[0-9]+$ ]]; then
-  need=$(awk -v n="$WN" -v i="$IFL" 'BEGIN{printf "%.1f", (1.15 * 1189091671800 / n + 8e9 + 2e9 * i) / 1e9}')
+  need=$(awk -v n="$WN" -v i="$IFL" 'BEGIN{printf "%.1f", (1.15 * 1189091671800 / n + 8e9 + 7.5e9 * i) / 1e9}')
   have=$(awk -v m="$MEM" 'BEGIN{printf "%.1f", m * 1048576 / 1e9}')
   echo "rehearse: memory: $TYPE has $have GB; N=$WN at $IFL in flight needs $need GB"
   awk -v a="$have" -v b="$need" 'BEGIN{exit !(a >= b)}' || { echo "rehearse: $TYPE cannot hold its shard and working memory" >&2; RC=1; }

@@ -1,0 +1,12 @@
+tidy: 28 rows, 1 invocations -> results/g3/20261008-150917-a6b2c95-9214-n16/tables/
+Traceback (most recent call last):
+  File "/Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a96d23ec57f36e740/scripts/lib/g3_tables.py", line 111, in <module>
+    key, version, size, etag = l.rstrip("\n").split("\t")
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 4, got 1)
+lpt_check: batch 0 (lpt): 0 of 100 samples on the expected rank; differs from j mod N: yes; WRONG: 0-SRR5935740 rank None want 13 place None, 0-SRR5935741 rank None want 10 place None, 0-SRR5935742 rank None want 5 place None, 0-SRR5935743 rank None want 1 place None, 0-SRR5935744 rank None want 13 place None
+lpt_check: batch 1 (mod): 0 of 100 samples on the expected rank; WRONG: 1-SRR5935740 rank None want 0 place None, 1-SRR5935741 rank None want 1 place None, 1-SRR5935742 rank None want 2 place None, 1-SRR5935743 rank None want 3 place None, 1-SRR5935744 rank None want 4 place None
+lpt_check: batch 2 (lpt): 0 of 100 samples on the expected rank; differs from j mod N: yes; WRONG: 2-SRR5935740 rank None want 13 place None, 2-SRR5935741 rank None want 10 place None, 2-SRR5935742 rank None want 5 place None, 2-SRR5935743 rank None want 1 place None, 2-SRR5935744 rank None want 13 place None
+lpt_check: batch 6 (lpt): 0 of 1 samples on the expected rank; differs from j mod N: no; WRONG: 6-SRR5935740 rank None want 0 place None
+lpt_check: batch 7 (lpt): 0 of 1 samples on the expected rank; differs from j mod N: no; WRONG: 7-SRR5935740 rank None want 0 place None
+lpt_check: batch 8 (lpt): 0 of 1 samples on the expected rank; differs from j mod N: no; WRONG: 8-SRR5935740 rank None want 0 place None
