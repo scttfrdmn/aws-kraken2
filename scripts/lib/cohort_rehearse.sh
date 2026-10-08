@@ -209,6 +209,30 @@ REQ=$(( $(sum CompleteMultipartUpload) + $(sum PutObject) - $(sum Rendezvous-Put
 echo "rehearse: $NOBJ objects under out/ (want $WOBJ); requests say $REQ (CompleteMultipartUpload $(sum CompleteMultipartUpload) + PutObject $(sum PutObject) - Rendezvous-PutObject $(sum Rendezvous-PutObject))"
 [ "$NOBJ" = "$WOBJ" ] && [ "$REQ" = "$WOBJ" ] || { echo "rehearse: object and request counts disagree" >&2; RC=1; }
 
+# Memory: the spec's instance type must hold its shard of RODA v205's hash.k2d (1189 GB / N) plus
+# 15%, 8 GB, and 2 GB per sample in flight (E3 c8g.12xlarge at 6 in flight was OOM-killed at
+# 306f827); and every rank must have streamed the engine's memory samples (ak2-engine mem).
+TYPE=$(jq -r .resources.instance_type "$SPEC")
+PAR=$(jq -r '.command[2]' "$SPEC" | grep -m1 '^EXP=')
+WN=$(echo "$PAR" | sed -E 's/.*WANT_N=([0-9]+).*/\1/'); IFL=$(echo "$PAR" | sed -E 's/.*INFLIGHT=([a-z0-9]+).*/\1/')
+INFO=$(truffle find "$TYPE" --regions us-west-2 --show-price -o json 2>/dev/null |
+  jq -c '[.. | objects | select(has("memory_mib") and .instance_type == "'"$TYPE"'")][0]')
+MEM=$(echo "$INFO" | jq -r .memory_mib); VC=$(echo "$INFO" | jq -r .vcpus)
+[ "$IFL" = auto ] && IFL=$(( VC / 8 > 0 ? VC / 8 : 1 ))
+if [[ "$MEM" =~ ^[0-9]+$ && "$WN" =~ ^[0-9]+$ ]]; then
+  need=$(awk -v n="$WN" -v i="$IFL" 'BEGIN{printf "%.1f", (1.15 * 1189091671800 / n + 8e9 + 2e9 * i) / 1e9}')
+  have=$(awk -v m="$MEM" 'BEGIN{printf "%.1f", m * 1048576 / 1e9}')
+  echo "rehearse: memory: $TYPE has $have GB; N=$WN at $IFL in flight needs $need GB"
+  awk -v a="$have" -v b="$need" 'BEGIN{exit !(a >= b)}' || { echo "rehearse: $TYPE cannot hold its shard and working memory" >&2; RC=1; }
+else
+  echo "rehearse: memory: cannot size $TYPE (truffle: $INFO; N=$WN)" >&2; RC=1
+fi
+for ((k = 0; k < N; k++)); do
+  nm=$(grep -cE "^\[$INV\] ak2-engine[[:space:]]mem[[:space:]]" "$T/rank$k.log")
+  [ "$nm" -gt 0 ] || { echo "rehearse: rank $k streamed no ak2-engine mem lines" >&2; RC=1; }
+done
+echo "rehearse: every rank streamed ak2-engine mem lines"
+
 # Law 1: upstream at the pin on each sample; every batch's output and report must equal it.
 UPD="$T/upstream"; mkdir -p "$UPD"
 cmpn=0; same=0

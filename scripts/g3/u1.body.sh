@@ -9,7 +9,7 @@
 #      T back to back); gz T = 48 one sample at a time; gz P = 10 samples at once, T = 8
 #   C  cohort 100: fq T in {48, 96, 192} (sample-major), the T = 96 rung also computing the
 #      engine's S3 ETag of every output and report (scripts/lib/ak2etag.py) for the Law-1
-#      cross-check with E2's outputs; gz P = 12 x T = 8 and P = 24 x T = 4 (upstream decompresses
+#      cross-check with E2's outputs; gz P = 12 x T = 8, P = 24 x T = 4 and (an addition, Scott 2026-10-08) P = 48 x T = 2 (upstream decompresses
 #      gz on one thread per process, so at a cohort its best is several processes at once)
 #   ref  sample 1 fq T = 96 before A and after A, B and C, with /proc/buddyinfo and the vmstat
 #      compaction counters (#41: drift over the run)
@@ -110,9 +110,15 @@ u1_one() {
 }
 # u1_fq J: sample J's fq onto the scratch tmpfs (not timed in any rung).
 u1_fq() {
-  local s=${SAMPLES[$1]} m
+  local s=${SAMPLES[$1]} m t0 t1 line
   mkdir -p "$SCR/fq"
+  t0=$(now)
   for m in 1 2; do pigz -dc -p 16 "$IN/${s}_$m.fastq.gz" > "$SCR/fq/${s}_$m.fq" || return 1; done
+  t1=$(now)
+  # The preparation's own time, so fq rungs are reported as pre-decompressed with what that cost.
+  line=$(jq -nc --arg s "$s" --arg t0 "$t0" --arg t1 "$t1" --argjson b "$(( $(stat -c%s "$SCR/fq/${s}_1.fq") + $(stat -c%s "$SCR/fq/${s}_2.fq") ))" \
+    '{kind:"prep", sample:$s, tool:"pigz -dc -p 16", start:($t0|tonumber), seconds:(($t1|tonumber)-($t0|tonumber)), fq_bytes:$b}')
+  echo "$line" >> "$J"; echo "u1-prep $line"
 }
 u1_fq_rm() { rm -f "$SCR/fq/${SAMPLES[$1]}_"[12].fq; }
 # u1_pass RUNG INPUT T P COHORT ETAG: the first COHORT samples on P processes at once (gz), and
@@ -195,6 +201,8 @@ u1_ref 2
 u1_fqpass C-c100 "$COHORT" 1 96 48 192
 u1_pass C-c100-gz-p12-t8 gz 8 12 "$COHORT" 0
 u1_pass C-c100-gz-p24-t4 gz 4 24 "$COHORT" 0
+# An addition to the registered U1 (Scott, 2026-10-08): P = 48 x T = 2, to bracket the P x T optimum.
+u1_pass C-c100-gz-p48-t2 gz 2 48 "$COHORT" 0
 u1_ref 3
 
 ak2_phase push

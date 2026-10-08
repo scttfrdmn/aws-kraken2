@@ -138,15 +138,65 @@ make g3-tables                                            # results/g3/campaign/
   - `provenance.tsv`.
   `scripts/lib/g3_campaign.py` gathers every point and every run's spend since the campaign
   began. It evaluates the stopping rules of #25 into `rules.tsv`.
+- **T, defined** (`point.tsv`, `points.tsv`):
+  - **derived_T:** the sum, over the terms below, of each term's maximum over the ranks. It is
+    not any one rank's path. The terms are boot (launch to body start), setup, manifest, fetch,
+    load, and the LPT batch's wall.
+  - **observed_T:** the first launch to the last rank's end of batch 0, the measured critical
+    path. **skew_rendezvous** = observed_T − derived_T: ranks reaching the rendezvous at
+    different times, the rendezvous itself, and the batch's start skew. The gap grows with N, to
+    19–25 s at N = 16.
+  - **Tails:**
+    - the body tail runs from the engine process's end (its `total` timing) to the body's end:
+      request accounting and the stderr push;
+    - the harness tail runs from the body's end to EC2's terminated, so it is the harness, not
+      the engine. Its maximum, median and top 3 over ranks are listed, because one slow node sets
+      the maximum.
+  - **T_engine** = observed_T + body tail. **T_with_harness** = T_engine + the maximum harness
+    tail.
+  - **The rules are evaluated both ways.** The x8g knee is read next to `fleet_vcpus`: E2's fleets
+    are memory-equal, not vCPU-equal (96, 96, 128, 128, 128).
+  - **$/sample:**
+    - `derived_usd_per_sample_*` = N × price × T / cohort;
+    - `measured_usd_per_sample_whole_run` = the summed member cost / cohort, which covers every
+      batch of the run.
+  - **The placement + order lever** (j mod N against LPT, which also orders each node's samples
+    heaviest first) is resolved only if its gain exceeds 2 × the within-run spread.
+- **Defect attempts** are named in `scripts/lib/g3_defects.tsv` and carried into `spend.tsv` and
+  `summary.md`.
+- **`make bash-jobs-test`** runs `scripts/tests/bash_jobs.sh` under AL2023's bash, in podman.
+  - It rebuilds the body's environment: `bash -c`, the preamble's traps, a FIFO tee and push
+    loop, and process substitutions.
+  - The body's old fetch loops must fail there. On its first run, bare `wait -n` hung, and
+    `wait -n -p` looped on "no such job".
+  - The current `scripts/g3/fetch.sh` and U1's in-shell lanes, waited for by PID, must pass.
+  - The record goes to `results/rehearse/bash-jobs-*.txt`.
+- **`make rehearse` asserts memory feasibility** for a campaign spec: its type must hold 1/N of
+  hash.k2d plus 15%, 8 GB, and 2 GB per sample in flight. Every rank must also stream
+  `ak2-engine mem` lines.
+- **`make g3-law1-u2`** downloads the engine's sample-1 output and report from the E2 N=8 cohort
+  and makes two checks:
+  - `ak2etag.py` must equal their real S3 ETags, multipart and single-part;
+  - their sha256 must equal U2's upstream sha256 for every SRR5935740 rung.
+  It writes `results/g3/campaign/law1-u2.tsv`.
+- **`scripts/lib/abort_uploads.sh KEYPREFIX RECORD`** records and aborts open multipart uploads
+  from the launch host.
 - **U1** (`runs/g3-u1-x8g.24xlarge.json`, `scripts/g3/u1.body.sh`) is upstream resident on
   tmpfs with `-M`:
   - cohorts 1, 10 and 100, with gz and fq;
   - T in {48, 96, 192};
-  - P x T for gz at cohort scale, as LPT lanes;
+  - P x T for gz at cohort scale, as LPT lanes: 12 x 8, 24 x 4, and 48 x 2, which is an
+    addition to the registered U1 (Scott, 2026-10-08) to bracket the optimum;
+  - fq is pre-decompressed onto tmpfs before each sample's rungs. Each preparation is timed (a
+    `u1-prep` line; `prep.tsv`), and the fq rungs are labelled pre-decompressed;
+  - upstream at cohort 100 gz, one process at a time, is modelled from the best measured
+    one-process gz rate. It is flagged MODELLED in `rungs.tsv`;
   - drift references with buddyinfo and the compaction counters.
   Its cohort-100 fq T=96 rung computes the engine writer's S3 ETag of every upstream output
-  (`scripts/lib/ak2etag.py`). `scripts/lib/u1_tables.py` compares those ETags with every E2
-  cohort's `outputs.tsv`. That is Law 1 on the real cohort, without downloading the outputs.
+  (`scripts/lib/ak2etag.py`). `scripts/lib/u1_tables.py` compares those ETags with the `outputs.tsv` of every E2, E3 and E4
+  cohort that produced a point. That is Law 1 on the real cohort, without downloading the
+  outputs. It fails on any difference, on a sample or file missing from any cohort, and on zero
+  comparisons (`law1-coverage.tsv`).
 - **U2** (`runs/g3-u2-r8gd.16xlarge.json`, `scripts/g3/u2.body.sh`, `scripts/g2/u2.plan`) is the
   #40 NVMe ladder, plus the cohort's sample 1, through make g2's runner.
 - **Rehearsals:**

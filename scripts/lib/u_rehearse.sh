@@ -11,9 +11,10 @@
 # with cohort 10 -> 2 samples and cohort 100 -> 3 (AK2_REHEARSE_C10 / _COHORT).
 # What passes, on observed output:
 #   - the body exits 0, and every sample line's exit is 0;
-#   - streaming: the body's output (its run log on AWS) carries one "u1-sample" line per sample run
-#     and one "u1-rung" line per rung, as many as the plan makes (18 + 4 + 5 x C10 + 5 x COHORT
-#     sample runs; 9 + 5 + 5 rungs), and the same lines are in the pushed out/u1.jsonl;
+#   - streaming: the body's output (its run log on AWS) carries one "u1-sample" line per sample run,
+#     one "u1-rung" line per rung and one "u1-prep" line per fq preparation, as many as the plan
+#     makes (18 + 4 + 5 x C10 + 6 x COHORT sample runs; 9 + 5 + 6 rungs; 7 + C10 + COHORT
+#     preparations), and the same lines are in the pushed out/u1.jsonl;
 #   - requests: the cohort GETs the stub saw (s3 cp from the cohort prefix) are 2 x COHORT, and
 #     the body's ak2_req GetObject on the results bucket equals the 8 MiB parts of those files;
 #     its HeadObject count on the results bucket equals the head-object calls the stub saw;
@@ -122,10 +123,13 @@ echo "rehearse: body exit $RC"
 [ "$RC" = 0 ] || { tail -25 "$T/body.log" | sed 's/^/  body | /'; }
 
 J="$T/out/u1.jsonl"
-WS=$(( 18 + 4 + 5 * C10 + 5 * NS )); WR=19
+WS=$(( 18 + 4 + 5 * C10 + 6 * NS )); WR=20; WP=$(( 7 + C10 + NS ))
 ss=$(grep -c '^u1-sample ' "$T/body.log"); sr=$(grep -c '^u1-rung ' "$T/body.log")
 js=$(grep -c '"kind":"sample"' "$J" 2>/dev/null); jr=$(grep -c '"kind":"rung"' "$J" 2>/dev/null)
 bad=$(grep '"kind":"sample"' "$J" 2>/dev/null | grep -vc '"exit":0,')
+sp=$(grep -c '^u1-prep ' "$T/body.log"); jp=$(grep -c '"kind":"prep"' "$J" 2>/dev/null)
+echo "rehearse: streamed $sp fq preparation lines; u1.jsonl has $jp; want $WP"
+[ "$sp" = "$WP" ] && [ "$jp" = "$WP" ] || { echo "rehearse: fq preparation lines wrong" >&2; RC=1; }
 echo "rehearse: streamed $ss sample and $sr rung lines; u1.jsonl has $js and $jr; want $WS and $WR; $bad sample runs exited non-zero"
 [ "$ss" = "$WS" ] && [ "$js" = "$WS" ] && [ "$sr" = "$WR" ] && [ "$jr" = "$WR" ] && [ "$bad" = 0 ] || { echo "rehearse: streaming or sample counts wrong" >&2; RC=1; }
 # Requests, against what the stub saw.
@@ -146,8 +150,22 @@ for s in "${NAMES[@]}"; do
   go=$(jq -r --arg s "$s" 'select(.kind == "sample" and .rung == "C-c100-fq-t96" and .sample == $s) | .output_etag' "$J")
   gr=$(jq -r --arg s "$s" 'select(.kind == "sample" and .rung == "C-c100-fq-t96" and .sample == $s) | .report_etag' "$J")
   if [ "$go" = "$wo" ] && [ "$gr" = "$wr" ]; then ok=$((ok + 1)); else echo "rehearse: $s ETags $go $gr, want $wo $wr" >&2; RC=1; fi
+  printf 'aws-kraken2/g3/fake/out/c3/0-%s/output\tv\t1\t%s\naws-kraken2/g3/fake/out/c3/0-%s/report\tv\t1\t%s\n' "$s" "$wo" "$s" "$wr" >> "$T/fake.tsv"
 done
 echo "rehearse: $ok of $NS samples' C-c100-fq-t96 ETags equal upstream's outputs here"
-mkdir -p "$T/run/out" && cp "$J" "$T/run/out/" && python3 scripts/lib/u1_tables.py "$T/run" || { echo "rehearse: u1_tables failed" >&2; RC=1; }
+# u1_tables' cross-check against a stand-in engine cohort carrying the ETags of upstream's outputs
+# here: it must pass with every sample's output and report compared, and must fail when one ETag
+# differs and when a sample's file is missing.
+mkdir -p "$T/run/out" "$T/fake-e2/tables" && cp "$J" "$T/run/out/"
+echo '{"spec": "runs/g3-e2-rehearse.json", "cohort_id": "fake-e2"}' > "$T/fake-e2/cohort.json"; : > "$T/fake-e2/tables/point.tsv"
+cp "$T/fake.tsv" "$T/fake-e2/outputs.tsv"
+python3 scripts/lib/u1_tables.py "$T/run" || { echo "rehearse: u1_tables failed on matching ETags" >&2; RC=1; }
+n=$(awk 'END{print NR - 1}' "$T/run/tables/law1-crosscheck.tsv")
+[ "$n" = $((2 * NS)) ] || { echo "rehearse: u1_tables compared $n files, want $((2 * NS))" >&2; RC=1; }
+awk 'NR == 1 {sub(/"/, "\"x")} {print}' "$T/fake.tsv" > "$T/fake-e2/outputs.tsv"
+python3 scripts/lib/u1_tables.py "$T/run" > /dev/null 2>&1 && { echo "rehearse: u1_tables passed a differing ETag" >&2; RC=1; }
+sed '$d' "$T/fake.tsv" > "$T/fake-e2/outputs.tsv"
+python3 scripts/lib/u1_tables.py "$T/run" > /dev/null 2>&1 && { echo "rehearse: u1_tables passed a missing file" >&2; RC=1; }
+echo "rehearse: u1_tables cross-check: $n files compared; a differing ETag and a missing file both fail"
 [ "$RC" = 0 ] && echo "rehearse: ok" || echo "rehearse: FAILED (logs: REHEARSE_KEEP=1 keeps $T)" >&2
 exit "$RC"

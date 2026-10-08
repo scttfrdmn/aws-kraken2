@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-law1-u2 bash-jobs-test stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -77,6 +77,16 @@ g3-spec:
 
 g3-tables:
 	python3 scripts/lib/g3_campaign.py
+
+# Real-S3 check of ak2etag.py (multipart and single-part) and Law 1 of the engine's sample 1
+# against U2's upstream sha256s (scripts/lib/law1_u2.sh; downloads about 1 GB).
+g3-law1-u2:
+	scripts/lib/law1_u2.sh $(E) $(U)
+
+# The bash job-control check in AL2023's bash (podman): the body's old wait patterns must fail
+# there and the current fetch and lanes must pass (scripts/tests/bash_jobs.sh).
+bash-jobs-test:
+	scripts/bash-jobs-test.sh
 
 # Rehearse a cohort spec locally before any launch (docs/cohort.md, "Rehearsal"): the spec's own
 # body as N nodes (default 3) under the harness's env, every output against upstream.

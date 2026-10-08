@@ -1,5 +1,10 @@
 rule	where	measured	outcome
-extend N while T(N) improves by more than 2x the within-run spread	E2 N 1 -> 2	T 624 -> 495 s; improvement 129 s; 2 x spread 4.0 s	improves
-extend N while T(N) improves by more than 2x the within-run spread	E2 N 2 -> 4	T 495 -> 386 s; improvement 109 s; 2 x spread 4.0 s	improves
-extend N while T(N) improves by more than 2x the within-run spread	E2 N 4 -> 8	T 386 -> 315 s; improvement 71 s; 2 x spread 3.5 s	improves
-extend N while T(N) improves by more than 2x the within-run spread	E2 N 8 -> 16	T 315 -> 354 s; improvement -39 s; 2 x spread 3.5 s	does not improve
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 1 -> 2 (T_engine_s)	T 585 -> 453 s; improvement 132 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 96 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 2 -> 4 (T_engine_s)	T 453 -> 349 s; improvement 104 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 4 -> 8 (T_engine_s)	T 349 -> 251 s; improvement 98 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 8 -> 16 (T_engine_s)	T 251 -> 239 s; improvement 12 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 1 -> 2 (T_with_harness_s)	T 627 -> 499 s; improvement 128 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 96 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 2 -> 4 (T_with_harness_s)	T 499 -> 390 s; improvement 109 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 4 -> 8 (T_with_harness_s)	T 390 -> 326 s; improvement 64 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 8 -> 16 (T_with_harness_s)	T 326 -> 375 s; improvement -49 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	does not improve
+placement + order lever (j mod N vs LPT) resolved only if its gain exceeds 2 x the within-run spread	runs/g3-e2-x8g.12xlarge-n2.json	mod/LPT 1.028, spread 0.018	unresolved
