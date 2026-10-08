@@ -172,6 +172,14 @@ while [ "$left" -gt 0 ]; do
   [ "$left" -gt 0 ] && sleep 1
 done
 grep -h 'consistency ' "$T/rank0.log" | sed 's/^/  /'
+# Streaming: each rank's body output (its run log on AWS) carries the engine's lines as they are
+# written. E1 at cb0cea7 streamed nothing (a redirection-order bug) and only the per-invocation
+# stderr pushes kept the data.
+for ((k = 0; k < N; k++)); do
+  ns=$(grep -c '^\[c10\] ak2-sample ' "$T/rank$k.log")
+  echo "rehearse: rank $k streamed $ns [c10] ak2-sample lines"
+  [ "$ns" -gt 0 ] || { echo "rehearse: rank $k streamed no [c10] ak2-sample lines" >&2; RC=1; }
+done
 
 # Upstream at the pin on each sample; every variant's output and report must equal it.
 UPD="$T/upstream"; mkdir -p "$UPD"
