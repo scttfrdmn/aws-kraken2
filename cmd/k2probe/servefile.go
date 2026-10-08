@@ -55,7 +55,9 @@ func serveFile(args []string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc(*path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("ETag", `"`+*etag+`"`)
-		http.ServeContent(w, r, "", st.ModTime(), f)
+		// A reader of its own per request: ServeContent seeks, and concurrent ranged GETs on
+		// one *os.File would read at each other's offsets. SectionReader reads with ReadAt.
+		http.ServeContent(w, r, "", st.ModTime(), io.NewSectionReader(f, 0, st.Size()))
 	})
 	srv := &http.Server{Handler: mux}
 	go func() {
