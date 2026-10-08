@@ -24,8 +24,11 @@ INFO=$(truffle find "$TYPE" --regions us-west-2 --show-price -o json 2>/dev/null
 [ -n "$INFO" ] && [ "$INFO" != null ] || { echo "mkspec: truffle knows no $TYPE in us-west-2" >&2; exit 1; }
 PRICE=$(echo "$INFO" | jq -r .on_demand_price); MEM=$(echo "$INFO" | jq -r .memory_mib); VCPU=$(echo "$INFO" | jq -r .vcpus)
 HASH=1189000000000
-awk -v m="$MEM" -v h="$HASH" -v n="$N" 'BEGIN{exit !(m * 1048576 >= 1.15 * h / n + 8e9)}' ||
-  { echo "mkspec: $TYPE ($MEM MiB) cannot hold 1/$N of hash.k2d plus 15%" >&2; exit 1; }
+# Memory: the shard plus 15%, 8 GB, and 2 GB per sample in flight (E3 c8g.12xlarge, 96 GiB with 6 in
+# flight, was OOM-killed at 306f827; a 200k-pair sample at T16 measured about 0.9 GB locally).
+IFN=$INFLIGHT; [ "$IFN" = auto ] && IFN=$(( VCPU / 8 > 0 ? VCPU / 8 : 1 ))
+awk -v m="$MEM" -v h="$HASH" -v n="$N" -v i="$IFN" 'BEGIN{exit !(m * 1048576 >= 1.15 * h / n + 8e9 + 2e9 * i)}' ||
+  { echo "mkspec: $TYPE ($MEM MiB) cannot hold 1/$N of hash.k2d plus 15%, 8 GB and $IFN x 2 GB in flight" >&2; exit 1; }
 RUNS=results/cohort/PRJNA398089/runs.tsv
 BYTES=$(awk -F'\t' -v c="$COHORT" 'NR>1 && $1<=c {s += $7 + $10} END{print s}' "$RUNS")
 S1=$(awk -F'\t' 'NR==2 {print $7 + $10}' "$RUNS")

@@ -1,0 +1,38 @@
+ak2: log tee up
+ak2-phase	2026-10-08T05:25:00Z	1791437100	preamble	no
+ak2: [2026-10-08T05:25:00Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T05:25:00Z] after set +e $-=hBc
+ak2: [2026-10-08T05:25:00Z] gate=g3 run=20261008-052413-306f827-5162-n16-r13
+ak2: [2026-10-08T05:25:00Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T05:25:00Z] imds region=us-west-2 az=us-west-2a instance=i-0ff024c6670b3bcef type=c9g.12xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T05:25:00Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T05:25:01Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T05:25:01Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T05:25:01Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T05:25:02Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T05:25:02Z] region assert passed
+ak2: [2026-10-08T05:25:02Z] drop_caches_ok=true
+ak2: [2026-10-08T05:25:02Z] preamble done; spec body starts
+ak2-phase	2026-10-08T05:25:02Z	1791437102	body	no
+ak2: [2026-10-08T05:25:02Z] e3 cohort 20261008-052413-306f827-5162-n16 rank 13 of 16, commit 306f827; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+ak2-phase	2026-10-08T05:25:02Z	1791437102	setup	no
+ak2: [2026-10-08T05:25:32Z] built 306f827679d55c2395743f532e6da71aeae1bc11; go version go1.27.1 linux/arm64; ip 172.31.30.255; nproc 48; mem_gib 92; threads 16, inflight 6
+ak2-phase	2026-10-08T05:25:32Z	1791437132	manifest	no
+ak2: [2026-10-08T05:25:33Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-08T05:25:34Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-08T05:25:34Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+ak2: [2026-10-08T05:25:35Z] pushed out/rank13/c100.tsv
+ak2: [2026-10-08T05:25:35Z] pushed out/rank13/placement.tsv
+ak2: [2026-10-08T05:25:35Z] manifest c100: 306 lines in 9 batches; rank 13 reads 12 samples
+ak2-phase	2026-10-08T05:25:35Z	1791437135	fetch	no
+ak2: [2026-10-08T05:25:43Z] inputs staged and verified: 24 files, 14.56 GB
+ak2: [2026-10-08T05:25:43Z] manifest c100: cohort: 306 samples in 9 batches check
+ak2-phase	2026-10-08T05:25:43Z	1791437143	inv-c100	no
+[c100] ak2-timing	taxo	0.002558	0.074139	87878	0	0.009464	0.078417
+[c100] ak2-timing	shard-load-13	0.136451	25.176942	41965	0	36.694990	31.300364
+[c100] ak2-timing	rendezvous	25.741746	5.071828	429	0	0.002573	0.003731
+[c100] ak2-timing	connect	30.813584	0.184925	9	0	0.000695	0.000595
+[c100] ak2-timing	hash	0.076712	30.921804	44245	0	36.700096	31.315181
+Terminated
+ak2: [2026-10-08T05:31:06Z] spec body exit rc=129 (SIGHUP)
+ak2-phase	2026-10-08T05:31:06Z	1791437466	end	no

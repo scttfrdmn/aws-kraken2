@@ -1,0 +1,50 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-08T05:24:36Z] wrapper start
+spawn: [2026-10-08T05:24:36Z] stage-in start
+spawn: [2026-10-08T05:24:36Z] stage-in done rc=0
+spawn: [2026-10-08T05:24:36Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 9fda5870d948e070f52b69eb8c79e3e983b5df889370d5dc10781ac85157a185); exec
+ak2: log tee up
+ak2-phase	2026-10-08T05:24:37Z	1791437077	preamble	no
+ak2: [2026-10-08T05:24:37Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T05:24:37Z] after set +e $-=hBc
+ak2: [2026-10-08T05:24:37Z] gate=g3 run=20261008-052413-306f827-5162-n16-r1
+ak2: [2026-10-08T05:24:37Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T05:24:37Z] imds region=us-west-2 az=us-west-2a instance=i-04faced724526316d type=c9g.12xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T05:24:37Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T05:24:37Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T05:24:37Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T05:24:37Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T05:24:38Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T05:24:38Z] region assert passed
+ak2: [2026-10-08T05:24:38Z] drop_caches_ok=true
+ak2: [2026-10-08T05:24:38Z] preamble done; spec body starts
+ak2-phase	2026-10-08T05:24:38Z	1791437078	body	no
+ak2: [2026-10-08T05:24:38Z] e3 cohort 20261008-052413-306f827-5162-n16 rank 1 of 16, commit 306f827; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+ak2-phase	2026-10-08T05:24:38Z	1791437078	setup	no
+ak2: [2026-10-08T05:25:04Z] built 306f827679d55c2395743f532e6da71aeae1bc11; go version go1.27.1 linux/arm64; ip 172.31.28.142; nproc 48; mem_gib 92; threads 16, inflight 6
+ak2-phase	2026-10-08T05:25:04Z	1791437104	manifest	no
+ak2: [2026-10-08T05:25:04Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-08T05:25:05Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-08T05:25:06Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+ak2: [2026-10-08T05:25:06Z] pushed out/rank1/c100.tsv
+ak2: [2026-10-08T05:25:06Z] pushed out/rank1/placement.tsv
+ak2: [2026-10-08T05:25:06Z] manifest c100: 306 lines in 9 batches; rank 1 reads 14 samples
+ak2-phase	2026-10-08T05:25:06Z	1791437106	fetch	no
+ak2: [2026-10-08T05:25:15Z] inputs staged and verified: 28 files, 12.17 GB
+ak2: [2026-10-08T05:25:15Z] manifest c100: cohort: 306 samples in 9 batches check
+ak2-phase	2026-10-08T05:25:15Z	1791437115	inv-c100	no
+[c100] ak2-timing	taxo	0.002585	0.075267	87828	0	0.019184	0.069244
+[c100] ak2-timing	shard-load-1	0.167819	25.749594	41976	0	36.123126	32.328764
+[c100] ak2-timing	rendezvous	26.458460	33.178170	5300	0	0.026665	0.027180
+[c100] ak2-timing	total	0.000001	96.803113	193122	0	36.951676	32.796709
+ak2: [2026-10-08T05:26:53Z] inv c100 rank 1 exit 1
+[c100 stderr] Loading database information...ak2-timing	opts	0.002568	0.000012	0	0	0.000000	0.000012
+[c100 stderr] 
+[c100 stderr] classify: engine: hello to shard 13 at 172.31.30.255:44649: read tcp 172.31.28.142:39602->172.31.30.255:44649: i/o timeout
+ak2: [2026-10-08T05:26:53Z] pushed out/rank1/eng-c100.stderr
+ak2: [2026-10-08T05:26:53Z] rank 1 done (rc=1)
+spawn: [2026-10-08T05:26:54Z] command exit rc=1

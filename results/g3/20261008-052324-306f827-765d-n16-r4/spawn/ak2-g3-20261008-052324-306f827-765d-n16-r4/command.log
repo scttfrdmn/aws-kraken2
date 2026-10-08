@@ -1,0 +1,51 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-08T05:23:55Z] wrapper start
+spawn: [2026-10-08T05:23:55Z] stage-in start
+spawn: [2026-10-08T05:23:55Z] stage-in done rc=0
+spawn: [2026-10-08T05:23:55Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 9fda5870d948e070f52b69eb8c79e3e983b5df889370d5dc10781ac85157a185); exec
+ak2: log tee up
+ak2-phase	2026-10-08T05:23:55Z	1791437035	preamble	no
+ak2: [2026-10-08T05:23:55Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T05:23:55Z] after set +e $-=hBc
+ak2: [2026-10-08T05:23:55Z] gate=g3 run=20261008-052324-306f827-765d-n16-r4
+ak2: [2026-10-08T05:23:55Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T05:23:55Z] imds region=us-west-2 az=us-west-2a instance=i-0501e0ed7db132c0c type=c8g.12xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T05:23:55Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T05:23:56Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T05:23:56Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T05:23:56Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T05:23:57Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T05:23:57Z] region assert passed
+ak2: [2026-10-08T05:23:57Z] drop_caches_ok=true
+ak2: [2026-10-08T05:23:57Z] preamble done; spec body starts
+ak2-phase	2026-10-08T05:23:57Z	1791437037	body	no
+ak2: [2026-10-08T05:23:57Z] e3 cohort 20261008-052324-306f827-765d-n16 rank 4 of 16, commit 306f827; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+ak2-phase	2026-10-08T05:23:57Z	1791437037	setup	no
+ak2: [2026-10-08T05:24:29Z] built 306f827679d55c2395743f532e6da71aeae1bc11; go version go1.27.1 linux/arm64; ip 172.31.24.221; nproc 48; mem_gib 92; threads 16, inflight 6
+ak2-phase	2026-10-08T05:24:29Z	1791437069	manifest	no
+ak2: [2026-10-08T05:24:30Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-08T05:24:31Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-08T05:24:31Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+ak2: [2026-10-08T05:24:32Z] pushed out/rank4/c100.tsv
+ak2: [2026-10-08T05:24:32Z] pushed out/rank4/placement.tsv
+ak2: [2026-10-08T05:24:32Z] manifest c100: 306 lines in 9 batches; rank 4 reads 13 samples
+ak2-phase	2026-10-08T05:24:32Z	1791437072	fetch	no
+ak2: [2026-10-08T05:24:42Z] inputs staged and verified: 26 files, 12.74 GB
+ak2: [2026-10-08T05:24:42Z] manifest c100: cohort: 306 samples in 9 batches check
+ak2-phase	2026-10-08T05:24:42Z	1791437082	inv-c100	no
+[c100] ak2-timing	taxo	0.003277	0.096808	87833	0	0.000000	0.094999
+[c100] ak2-timing	shard-load-4	0.195708	28.064658	43065	0	56.251004	55.121990
+[c100] ak2-timing	rendezvous	28.772559	23.933697	2753	0	0.049045	0.001309
+[c100] ak2-timing	connect	52.706281	0.019839	14	0	0.001225	0.000000
+[c100] ak2-timing	hash	0.100108	52.626025	47658	0	56.309276	55.130566
+bash: line 437: 36893 Killed                  env "${ENGINE_ENV[@]}" AK2_ENGINE_RENDEZVOUS="$AK2_ENGINE_RENDEZVOUS/$INV" AK2_COHORT="$M" "$OURS" "${COMMON[@]}" 2> >(tee "$W/eng-$INV.stderr" | grep --line-buffered -E '^ak2-(sample|timing|engine)' | sed -u "s/^/[$INV] /") > /dev/null
+ak2: [2026-10-08T05:27:10Z] inv c100 rank 4 exit 137
+[c100 stderr] Loading database information...ak2-timing	opts	0.003249	0.000020	0	0	0.000000	0.000020
+[c100 stderr]  done.
+ak2: [2026-10-08T05:27:10Z] pushed out/rank4/eng-c100.stderr
+ak2: [2026-10-08T05:27:10Z] rank 4 done (rc=137)
+spawn: [2026-10-08T05:27:11Z] command exit rc=137

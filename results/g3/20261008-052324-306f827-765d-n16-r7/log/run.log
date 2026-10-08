@@ -1,0 +1,44 @@
+ak2: log tee up
+ak2-phase	2026-10-08T05:24:00Z	1791437040	preamble	no
+ak2: [2026-10-08T05:24:00Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T05:24:00Z] after set +e $-=hBc
+ak2: [2026-10-08T05:24:00Z] gate=g3 run=20261008-052324-306f827-765d-n16-r7
+ak2: [2026-10-08T05:24:00Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T05:24:00Z] imds region=us-west-2 az=us-west-2a instance=i-03835104819a9de2d type=c8g.12xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T05:24:01Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T05:24:01Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T05:24:01Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T05:24:01Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T05:24:02Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T05:24:02Z] region assert passed
+ak2: [2026-10-08T05:24:02Z] drop_caches_ok=true
+ak2: [2026-10-08T05:24:03Z] preamble done; spec body starts
+ak2-phase	2026-10-08T05:24:03Z	1791437043	body	no
+ak2: [2026-10-08T05:24:03Z] e3 cohort 20261008-052324-306f827-765d-n16 rank 7 of 16, commit 306f827; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+ak2-phase	2026-10-08T05:24:03Z	1791437043	setup	no
+ak2: [2026-10-08T05:24:40Z] built 306f827679d55c2395743f532e6da71aeae1bc11; go version go1.27.1 linux/arm64; ip 172.31.17.109; nproc 48; mem_gib 92; threads 16, inflight 6
+ak2-phase	2026-10-08T05:24:40Z	1791437080	manifest	no
+ak2: [2026-10-08T05:24:41Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+ak2: [2026-10-08T05:24:42Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+ak2: [2026-10-08T05:24:42Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+ak2: [2026-10-08T05:24:42Z] pushed out/rank7/c100.tsv
+ak2: [2026-10-08T05:24:43Z] pushed out/rank7/placement.tsv
+ak2: [2026-10-08T05:24:43Z] manifest c100: 306 lines in 9 batches; rank 7 reads 13 samples
+ak2-phase	2026-10-08T05:24:43Z	1791437083	fetch	no
+ak2: [2026-10-08T05:24:52Z] inputs staged and verified: 26 files, 12.83 GB
+ak2: [2026-10-08T05:24:52Z] manifest c100: cohort: 306 samples in 9 batches check
+ak2-phase	2026-10-08T05:24:52Z	1791437092	inv-c100	no
+[c100] ak2-timing	taxo	0.003118	0.115071	87904	0	0.034067	0.084703
+[c100] ak2-timing	shard-load-7	0.184998	27.254371	42599	0	38.033190	31.528277
+[c100] ak2-timing	rendezvous	27.869974	15.008487	1491	0	0.013818	0.013208
+[c100] ak2-timing	connect	42.878477	0.068260	8	0	0.000644	0.000534
+[c100] ak2-timing	hash	0.118252	42.828497	45969	0	38.060584	31.544992
+[c100] ak2-sample	batch	0	name	0-SRR5935813	mode	parallel	s3client	sdk	rank	7	role	home	inflight	6	threads	16	start_s	42.946788	wall_s	209.772717	setup_s	0.000042	classify_s	209.771434	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	lpt	weight	16980616
+[c100] ak2-sample	batch	0	name	0-SRR5935818	mode	parallel	s3client	sdk	rank	7	role	home	inflight	6	threads	16	start_s	42.946834	wall_s	211.145881	setup_s	0.000050	classify_s	211.145120	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	lpt	weight	8877621
+[c100] ak2-sample	batch	0	name	0-SRR5935755	mode	parallel	s3client	sdk	rank	7	role	home	inflight	6	threads	16	start_s	42.946789	wall_s	221.995532	setup_s	0.000042	classify_s	221.994109	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	lpt	weight	6071697
+[c100] ak2-sample	batch	0	name	0-SRR5935829	mode	parallel	s3client	sdk	rank	7	role	home	inflight	6	threads	16	start_s	42.946832	wall_s	223.742108	setup_s	0.000040	classify_s	223.741238	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	lpt	weight	11220767
+[c100] ak2-sample	batch	0	name	0-SRR5935784	mode	parallel	s3client	sdk	rank	7	role	home	inflight	6	threads	16	start_s	42.946805	wall_s	237.729094	setup_s	0.000041	classify_s	237.728556	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	lpt	weight	14800056
+[c100] ak2-sample	batch	0	name	0-SRR5935801	mode	parallel	s3client	sdk	rank	7	role	home	inflight	6	threads	16	start_s	42.946796	wall_s	237.729356	setup_s	0.000048	classify_s	237.728469	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	lpt	weight	13162386
+Terminated
+ak2: [2026-10-08T05:29:37Z] spec body exit rc=129 (SIGHUP)
+ak2-phase	2026-10-08T05:29:37Z	1791437377	end	no

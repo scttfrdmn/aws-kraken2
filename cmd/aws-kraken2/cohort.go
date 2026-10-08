@@ -204,6 +204,7 @@ func runCohort(path string, common []string, env func(string) (string, bool)) in
 		fmt.Fprintf(os.Stderr, "cohort: %d samples in %d batches check\n", len(lines), len(batches))
 		return 0
 	}
+	startMemSampler()
 	ec, err := engineFromEnv(env)
 	if err != nil || ec == nil {
 		fmt.Fprintf(os.Stderr, "%s: AK2_COHORT needs the engine (AK2_ENGINE_N): %v\n", prog, err)
