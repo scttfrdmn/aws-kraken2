@@ -66,8 +66,10 @@ U=${1#s3://}; RB=${U%%/*}; HK=${U#*/}
 U=${4#s3://}; B=${U%%/*}; CK=${U#*/}; CK=${CK%/}
 HASH_ETAG=$(shasum -a 256 "$DB/hash.k2d" | cut -c1-32)-rehearse
 
-# Stand-ins: the hash object, the fake S3.
-FAKE="$T/s3"; mkdir -p "$FAKE"
+# Stand-ins: the hash object, the fake S3 (with the staged cohort objects in place before any
+# rank starts, as on AWS: head-object reads their metadata).
+FAKE="$T/s3"; mkdir -p "$FAKE/$B/$CK"
+cp "$COH"/*.fastq.gz "$FAKE/$B/$CK/" || exit 1
 "$K2P" serve-file -file "$DB/hash.k2d" -path "/$HK" -etag "$HASH_ETAG" -url-file "$T/hash.url" 2> "$T/serve-file.log" & PIDS+=($!)
 "$K2P" fakes3 -dir "$FAKE" -url-file "$T/fakes3.url" 2> "$T/fakes3.log" & PIDS+=($!)
 for _ in $(seq 100); do [ -s "$T/hash.url" ] && [ -s "$T/fakes3.url" ] && break; sleep 0.1; done
@@ -122,7 +124,7 @@ ak2_stage() {  # SRC DST: the stand-ins for RODA's opts/taxo and the staged coho
   mkdir -p "$(dirname "$dst")"
   case "$src" in
     s3://"$AK2T_RB"/*) cp "$AK2T_DB/$f" "$dst" ;;
-    s3://"$AK2T_B"/*) cp "$AK2T_COH/$f" "$dst" && mkdir -p "$AK2T_FAKE/$AK2T_B/$AK2T_CK" && cp "$AK2T_COH/$f" "$AK2T_FAKE/$AK2T_B/$AK2T_CK/$f" ;;
+    s3://"$AK2T_B"/*) cp "$AK2T_COH/$f" "$dst" ;;
     *) echo "rehearse ak2_stage: unknown source $src" >&2; return 1 ;;
   esac
   echo "ak2: staged $src -> $dst"
@@ -133,6 +135,7 @@ cat "$T/helpers.sh" "$T/body.sh" > "$T/node.sh"
 COHORT="$(date -u +%Y%m%d-%H%M%S)-$SHA-beef-n$N"
 PREFIX="s3://$B/aws-kraken2/g3/$COHORT"
 pids=()
+set -m # each rank in its own process group, so fail fast can stop it and its engine
 for ((k = 0; k < N; k++)); do
   H="$T/home-r$k"; mkdir -p "$H" "$T/out-r$k"
   env -i PATH="$BIN:$PATH" HOME="$H" TMPDIR="${TMPDIR:-/tmp}" GOCACHE="$(go env GOCACHE)" GOPATH="$(go env GOPATH)" \
@@ -147,11 +150,21 @@ for ((k = 0; k < N; k++)); do
     bash -c "$(cat "$T/node.sh")" > "$T/rank$k.log" 2>&1 &
   pids+=($!)
 done
-RC=0
-for k in "${!pids[@]}"; do
-  wait "${pids[$k]}"; rc=$?
-  echo "rehearse: rank $k body exit $rc"
-  [ "$rc" = 0 ] || { RC=1; tail -15 "$T/rank$k.log" | sed "s/^/  rank$k | /"; }
+set +m
+# Fail fast, as make run does: the first rank that exits non-zero stops the others.
+RC=0; left=$N; done_=()
+while [ "$left" -gt 0 ]; do
+  for k in "${!pids[@]}"; do
+    [ -n "${done_[$k]:-}" ] && continue
+    kill -0 "${pids[$k]}" 2>/dev/null && continue
+    wait "${pids[$k]}"; rc=$?; done_[$k]=$rc; left=$((left - 1))
+    echo "rehearse: rank $k body exit $rc"
+    if [ "$rc" != 0 ]; then
+      RC=1; tail -15 "$T/rank$k.log" | sed "s/^/  rank$k | /"
+      for j in "${!pids[@]}"; do [ -z "${done_[$j]:-}" ] && kill -TERM -- "-${pids[$j]}" 2>/dev/null; done
+    fi
+  done
+  [ "$left" -gt 0 ] && sleep 1
 done
 grep -h 'consistency ' "$T/rank0.log" | sed 's/^/  /'
 
