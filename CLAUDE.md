@@ -99,6 +99,8 @@ targets; ad hoc commands only during exploration.
 | `make oracle-classify` | [docs/oracle-classify.md](docs/oracle-classify.md) |
 | `make oracle-engine [DB=…] [NS=…] [TRANSPORT=local\|tcp\|procs]` | [docs/oracle.md](docs/oracle.md) ("Engine mode") |
 | `make bracken-check` | [docs/bracken-check.md](docs/bracken-check.md) |
+| `make oracle-cohort [DB=…]` | [docs/oracle.md](docs/oracle.md) ("Cohort mode") |
+| `make stage-cohort [PART=record\|stage]` (and `runs/stage-cohort.json`) | [docs/cohort.md](docs/cohort.md) |
 | `make tag-objects [PREFIX=…]` | [docs/tag-objects.md](docs/tag-objects.md) |
 | `make sortfuzz [SORTFUZZ=quick\|full]` | [docs/sortfuzz.md](docs/sortfuzz.md) |
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
