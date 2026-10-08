@@ -139,8 +139,12 @@ for r in rows:
 c8 = {int(r["N"]): r for r in rows if "-c8g." in r["spec"]}
 if 16 in c8 and 32 in c8:
     for col in ("T_engine_s", "T_with_harness_s"):
-        rules.append(["N=64 only if N=32 beats N=16 (c8g)", f"E3/E4 c8g ({col})", f"T(16) {c8[16][col]} s, T(32) {c8[32][col]} s",
-                      "run N=64" if float(c8[32][col]) < float(c8[16][col]) else "skip N=64"])
+        conf = c8[16]["inflight"] != c8[32]["inflight"] or c8[16]["type"] != c8[32]["type"]
+        out = "run N=64" if float(c8[32][col]) < float(c8[16][col]) else "skip N=64"
+        if conf:
+            out += (f" (CONFOUNDED: N=16 ran {c8[16]['type']} at {c8[16]['inflight']} in flight, N=32 {c8[32]['type']} at "
+                    f"{c8[32]['inflight']}; on HOLD until #44 is fixed)")
+        rules.append(["N=64 only if N=32 beats N=16 (c8g)", f"E3/E4 c8g ({col})", f"T(16) {c8[16][col]} s, T(32) {c8[32][col]} s", out])
 for r in rows:
     if r["placement_order_lever"] == "unresolved":
         rules.append(["placement + order lever (j mod N vs LPT) resolved only if its gain exceeds 2 x the within-run spread",
@@ -198,6 +202,11 @@ with open(os.path.join(OUT, "summary.md"), "w") as fh:
              "derived $/sample = N x price x T / cohort; measured $/sample = summed member cost / cohort (the whole run, every "
              "batch).\n\n")
     fh.write("E2's fleets are memory-equal, not vCPU-equal (fleet_vcpus); the knee is read with that next to it (rules.tsv).\n\n")
+    fh.write("The c8g N=16 vs N=32 comparison (the N=64 rule) is confounded: N=16 ran at 1 in flight (the most a 96 GiB node "
+             "holds), N=32 at 6. E5, E6 and N=64 are on HOLD until the Law-1 defect #44 is fixed and verified.\n\n")
+    fh.write("**Law 1 (#44):** U1's cross-check found 3 of the first 100 cohort samples (SRR5935755, SRR5935786, SRR5935807) "
+             "whose engine outputs differ from upstream's in every engine cohort; until the fix is verified, no engine output on "
+             "RODA v205 is claimed identical to upstream's.\n\n")
     fh.write("Predictions use E1's measured rates: load 1.80 GB/s per node; input 1.84 Mpairs/s per stream; worker rate 161,638 "
              "pairs per worker CPU-second (E1 c10; the cohort LPT rate here is per vCPU of wall time, so the ratio also carries "
              "idle and non-worker time).\n\n")
