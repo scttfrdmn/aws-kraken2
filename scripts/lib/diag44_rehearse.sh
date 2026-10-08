@@ -34,7 +34,7 @@ LOGF="results/rehearse/$(basename "$SPEC" .json)-$(date -u +%Y%m%dT%H%M%SZ)-$SHA
 exec > >(tee "$LOGF") 2>&1
 echo "rehearse: record $LOGF"
 REAL_GIT=$(command -v git); REAL_TAR=$(command -v tar)
-T=$(mktemp -d "${TMPDIR:-/tmp}/ak2-urehearse.XXXXXX")
+T=$(mktemp -d "${TMPDIR:-/tmp}/ak2-urehearse.XXXXXX"); T=$(cd "$T" && pwd)  # one spelling: the git stub matches paths under it
 cleanup() { [ "${REHEARSE_KEEP:-0}" = 1 ] || rm -rf "$T"; }
 trap cleanup EXIT
 echo "rehearse: $SPEC at $SHA, work $T"
@@ -73,10 +73,17 @@ exit 0
 EOF
 cat > "$BIN/git" <<EOF
 #!/usr/bin/env bash
+# clone: the committed tree of the commit; checkout and rev-parse are faked only for that clone
+# (an archive, not a repository); every other repository (the upstream source at the pin, which
+# harness-build.sh checks) gets the real git.
 case "\$1 \$2" in
-  "clone -q") mkdir -p "\${@: -1}" && "$REAL_GIT" -C "$ROOT" archive "$SHA" | "$REAL_TAR" -x -C "\${@: -1}" ;;
-  *) case " \$* " in *" checkout "*) exit 0 ;; *" rev-parse HEAD"*) echo "$SHA" ;; *) exec "$REAL_GIT" "\$@" ;; esac ;;
+  "clone -q") mkdir -p "\${@: -1}" && "$REAL_GIT" -C "$ROOT" archive "$SHA" | "$REAL_TAR" -x -C "\${@: -1}"; exit ;;
 esac
+dir=\$PWD; [ "\$1" = -C ] && dir=\$2
+case "\$dir" in
+  "$T"/home/ak2/repo*) case " \$* " in *" checkout "*) exit 0 ;; *" rev-parse "*) echo "$SHA"; exit 0 ;; esac ;;
+esac
+exec "$REAL_GIT" "\$@"
 EOF
 printf '#!/usr/bin/env bash\necho 8\n' > "$BIN/nproc"
 printf '#!/usr/bin/env bash\nexec shasum -a 256 "$@"\n' > "$BIN/sha256sum"
@@ -129,7 +136,7 @@ r1=$(grep -c '^@' "$O/SRR5935755/sel_1.fq" 2>/dev/null)
 echo "rehearse: SRR5935755: $b differing; stage \"$st\"; scanners equal $sc; $ld of $nl lookups differ; upstream-events replay equals upstream $eq; $tr ResolveTree events; $r1 read pair extracted"
 [ "$b" = 1 ] && [ "$st" = "reading or pipeline (our replay equals upstream; our run's line differs)" ] && [ "$sc" = true ] && \
   [ "$ld" = 0 ] && [ "${nl:-0}" -gt 0 ] && [ "$eq" = true ] && [ "${tr:-0}" -gt 0 ] && [ "$r1" = 1 ] || { echo "rehearse: the tampered sample's diagnosis is wrong" >&2; RC=1; }
-gets=$(grep -cE "^s3 cp s3://$B/" "$T/aws.log"); heads=$(grep -E "^s3api head-object .*--bucket $B( |$)" "$T/aws.log" | grep -c .)
+gets=$(grep -cE "^s3 cp .*s3://$B/" "$T/aws.log"); heads=$(grep -E "^s3api head-object .*--bucket $B( |$)" "$T/aws.log" | grep -c .)
 parts=0
 for f in "$FAKE/$B/$CK/"*; do sz=$(wc -c < "$f" | tr -d ' '); parts=$(( parts + (sz + 8388607) / 8388608 )); done
 rg=$(awk -F'\t' -v b="$B" '$1 == "GetObject" && $3 == b {s += $2} END {print s+0}' "$T/out/requests.tsv")
