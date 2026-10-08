@@ -1,0 +1,20 @@
+ak2: log tee up
+ak2-phase	2026-10-08T00:02:51Z	1791417771	preamble	no
+ak2: [2026-10-08T00:02:51Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T00:02:51Z] after set +e $-=hBc
+ak2: [2026-10-08T00:02:51Z] gate=g3 run=20261008-000217-486649a
+ak2: [2026-10-08T00:02:51Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T00:02:51Z] imds region=us-west-2 az=us-west-2b instance=i-03eb579ec52690ec8 type=c8g.large ami=ami-09325776a00699513
+ak2: [2026-10-08T00:02:51Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T00:02:52Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T00:02:52Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T00:02:52Z] region assert passed
+ak2: [2026-10-08T00:02:52Z] drop_caches_ok=true
+ak2: [2026-10-08T00:02:52Z] preamble done; spec body starts
+ak2-phase	2026-10-08T00:02:52Z	1791417772	body	no
+ak2-phase	2026-10-08T00:02:52Z	1791417772	setup	no
+ak2: [2026-10-08T00:03:10Z] checkout 486649a; nproc 2; disk /dev/nvme0n1p1 20G 2.3G 18G 12% /
+ak2-phase	2026-10-08T00:03:10Z	1791417790	stage	no
+Terminated
+ak2: [2026-10-08T00:17:57Z] spec body exit rc=129 (SIGHUP)
+ak2-phase	2026-10-08T00:17:57Z	1791418677	end	no

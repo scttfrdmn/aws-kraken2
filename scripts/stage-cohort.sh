@@ -13,8 +13,10 @@
 #       Stage the first COUNT runs (default 10) of the recorded cohort into
 #       s3://<results bucket>/aws-kraken2/data/cohort/<run>_{1,2}.fastq.gz: download from ENA,
 #       check bytes and md5 against runs.tsv, upload with sha256 and md5 as metadata, check them
-#       with head-object, tag. Idempotent: an object whose metadata matches is skipped. Appends to
-#       results/cohort/<PROJECT>/staged.tsv (run, mate, bytes, md5, sha256, key, version, at).
+#       with head-object, tag. Idempotent: an object whose metadata matches is not fetched again
+#       but is recorded from its metadata. Appends to results/cohort/<PROJECT>/staged.tsv (run,
+#       mate, bytes, md5, sha256, key, version, at), one row per object version, in cohort order.
+#       STAGE_PARALLEL files at once (default 4), each in STAGE_RANGES ranged streams (default 8).
 #       Downloads go to the shared .cache/cohort/ and are deleted once staged (STAGE_KEEP=1 keeps).
 set +e
 set -uo pipefail
@@ -80,6 +82,9 @@ EOF
     --arg commit "$(git rev-parse HEAD)" '{project:$project, query_url:$url, queried_at:$at, ena_rows:($raw_rows|tonumber),
       raw_response_sha256:$raw_sha256, rule:"library_layout PAIRED, library_strategy WGS, exactly two files <run>_1.fastq.gz and <run>_2.fastq.gz with md5s; ordered by run accession numerically; the first count",
       count:$count, runs_tsv_sha256:$tsv_sha256, recorded_at_commit:$commit}' > "$DIR/query.json"
+  # The raw response is kept, gzipped, next to the record (ENA's response bytes change over
+  # time even when the selection does not; recheck.json for PRJNA398089 shows that).
+  gzip -9 -n -c "$RAW" > "$DIR/ena-response.tsv.gz" || { echo "stage-cohort: could not keep the raw response" >&2; exit 1; }
   rm -f "$RAW"
   awk -F'\t' 'NR>1{p+=$4; b+=$7+$10} END{printf "stage-cohort: %d runs, %.2f G pairs, %.2f TB fastq.gz\n", NR-1, p/1e9, b/1e12}' "$DIR/runs.tsv"
   ;;
@@ -89,40 +94,79 @@ stage)
   BUCKET=$AK2_RESULTS_BUCKET_us_west_2
   KEY="$AK2_RESULTS_ROOT/data/cohort"
   CACHE="$K2_SHARED_ROOT/.cache/cohort"; mkdir -p "$CACHE" || exit 1
+  # Parallelism: ENA serves one stream at about 1 MB/s even to AWS (measured 2026-10-08), so
+  # STAGE_PARALLEL files (default 4) are fetched at once, each as STAGE_RANGES ranged streams
+  # (default 8), joined and then checked whole.
+  PAR=${STAGE_PARALLEL:-4}; RANGES=${STAGE_RANGES:-8}
+  ROWS="$CACHE/rows.$$"; mkdir -p "$ROWS" || exit 1
   [ -s "$DIR/staged.tsv" ] || printf 'run\tmate\tbytes\tmd5\tsha256\tkey\tversion_id\tat\n' > "$DIR/staged.tsv"
-  FAILED=0
+  # stage_one RUN MATE URL BYTES MD5: one file; writes its staged.tsv row to $ROWS/<file>.
+  stage_one() {
+    local run=$1 m=$2 u=$3 b=$4 want=$5 f k p have hd h got i chunk lo hi
+    f="${run}_$m.fastq.gz"; k="$KEY/$f"; p="$CACHE/$f"
+    hd=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$k" --output json 2>/dev/null)
+    have=$(echo "$hd" | jq -r '.Metadata.md5 // empty' 2>/dev/null)
+    if [ "$have" = "$want" ]; then
+      # Already staged (an earlier run): recorded from its metadata, so the record is complete.
+      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$run" "$m" "$(echo "$hd" | jq -r .ContentLength)" "$want" \
+        "$(echo "$hd" | jq -r .Metadata.sha256)" "$k" "$(echo "$hd" | jq -r '.VersionId // "null"')" "$(date -u +%FT%TZ)" > "$ROWS/$f"
+      echo "stage-cohort: $f present (md5 $want)"; return 0
+    fi
+    chunk=$(( (b + RANGES - 1) / RANGES ))
+    local pids=()
+    for ((i = 0; i < RANGES; i++)); do
+      lo=$((i * chunk)); hi=$(( lo + chunk - 1 )); [ "$hi" -ge "$b" ] && hi=$((b - 1))
+      [ "$lo" -le "$hi" ] || break
+      curl -fsS --retry 8 --retry-delay 10 -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
+    done
+    local bad=0 pid
+    for pid in "${pids[@]}"; do wait "$pid" || bad=1; done
+    [ "$bad" = 0 ] || { echo "stage-cohort: download of $u failed" >&2; rm -f "$p".part*; return 1; }
+    : > "$p"
+    for ((i = 0; i < ${#pids[@]}; i++)); do cat "$p.part$i" >> "$p" && rm -f "$p.part$i"; done
+    [ "$(wc -c < "$p" | tr -d ' ')" = "$b" ] || { echo "stage-cohort: $f is $(wc -c < "$p") bytes, ENA says $b" >&2; return 1; }
+    got=$(md5of "$p")
+    [ "$got" = "$want" ] || { echo "stage-cohort: $f md5 $got, ENA says $want" >&2; return 1; }
+    h=$(sha "$p")
+    aws s3 cp --only-show-errors --region us-west-2 --metadata "sha256=$h,md5=$want" "$p" "s3://$BUCKET/$k" ||
+      { echo "stage-cohort: upload of $f failed" >&2; return 1; }
+    hd=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$k" --output json) ||
+      { echo "stage-cohort: head-object $f failed" >&2; return 1; }
+    [ "$(echo "$hd" | jq -r '[.Metadata.sha256, .Metadata.md5, (.ContentLength|tostring)] | join(" ")')" = "$h $want $b" ] ||
+      { echo "stage-cohort: $f: head-object disagrees: $(echo "$hd" | jq -c '{Metadata, ContentLength}')" >&2; return 1; }
+    if [ "$ON_INSTANCE" = 0 ]; then
+      ak2_tag_object "$BUCKET" "$k" data >/dev/null || { echo "stage-cohort: tagging $f failed" >&2; return 1; }
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$run" "$m" "$b" "$want" "$h" "$k" "$(echo "$hd" | jq -r '.VersionId // "null"')" \
+      "$(date -u +%FT%TZ)" > "$ROWS/$f"
+    echo "stage-cohort: $f staged ($b bytes, md5 $want, sha256 $h) at $(date -u +%FT%TZ)"
+    [ "${STAGE_KEEP:-0}" = 1 ] || rm -f "$p"
+  }
+  FAILED=0; RUNNING=0
   while IFS=$'\t' read -r rank run sample reads bases u1 b1 m1 u2 b2 m2; do
     [ "$rank" = rank ] && continue
     [ "$rank" -le "$COUNT" ] || break
     for m in 1 2; do
       if [ $m = 1 ]; then u=$u1; b=$b1; want=$m1; else u=$u2; b=$b2; want=$m2; fi
-      f="${run}_$m.fastq.gz"; k="$KEY/$f"
-      have=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$k" --query 'Metadata.md5' --output text 2>/dev/null)
-      if [ "$have" = "$want" ]; then echo "stage-cohort: $f present (md5 $want)"; continue; fi
-      p="$CACHE/$f"
-      if [ ! -s "$p" ] || [ "$(wc -c < "$p" | tr -d ' ')" != "$b" ]; then
-        curl -fsS --retry 5 --retry-delay 10 -C - "$u" -o "$p" || curl -fsS --retry 5 --retry-delay 10 "$u" -o "$p" ||
-          { echo "stage-cohort: download of $u failed" >&2; FAILED=1; continue; }
-      fi
-      [ "$(wc -c < "$p" | tr -d ' ')" = "$b" ] || { echo "stage-cohort: $f is $(wc -c < "$p") bytes, ENA says $b" >&2; FAILED=1; continue; }
-      got=$(md5of "$p")
-      [ "$got" = "$want" ] || { echo "stage-cohort: $f md5 $got, ENA says $want" >&2; FAILED=1; continue; }
-      h=$(sha "$p")
-      aws s3 cp --only-show-errors --region us-west-2 --metadata "sha256=$h,md5=$want" "$p" "s3://$BUCKET/$k" ||
-        { echo "stage-cohort: upload of $f failed" >&2; FAILED=1; continue; }
-      hd=$(aws s3api head-object --region us-west-2 --bucket "$BUCKET" --key "$k" --output json) ||
-        { echo "stage-cohort: head-object $f failed" >&2; FAILED=1; continue; }
-      [ "$(echo "$hd" | jq -r '[.Metadata.sha256, .Metadata.md5, (.ContentLength|tostring)] | join(" ")')" = "$h $want $b" ] ||
-        { echo "stage-cohort: $f: head-object disagrees: $(echo "$hd" | jq -c '{Metadata, ContentLength}')" >&2; FAILED=1; continue; }
-      if [ "$ON_INSTANCE" = 0 ]; then
-        ak2_tag_object "$BUCKET" "$k" data >/dev/null || { echo "stage-cohort: tagging $f failed" >&2; FAILED=1; continue; }
-      fi
-      printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$run" "$m" "$b" "$want" "$h" "$k" "$(echo "$hd" | jq -r '.VersionId // "null"')" \
-        "$(date -u +%FT%TZ)" >> "$DIR/staged.tsv"
-      echo "stage-cohort: $f staged ($b bytes, md5 $want, sha256 $h)"
-      [ "${STAGE_KEEP:-0}" = 1 ] || rm -f "$p"
+      stage_one "$run" "$m" "$u" "$b" "$want" &
+      RUNNING=$((RUNNING + 1))
+      if [ "$RUNNING" -ge "$PAR" ]; then wait -n || FAILED=1; RUNNING=$((RUNNING - 1)); fi
     done
   done < "$DIR/runs.tsv"
+  while [ "$RUNNING" -gt 0 ]; do wait -n || FAILED=1; RUNNING=$((RUNNING - 1)); done
+  # The record, in cohort order.
+  while IFS=$'\t' read -r rank run rest; do
+    [ "$rank" = rank ] && continue
+    [ "$rank" -le "$COUNT" ] || break
+    for m in 1 2; do
+      r="$ROWS/${run}_$m.fastq.gz"
+      if [ -s "$r" ]; then
+        # One row per object version: a row already recorded is not repeated.
+        grep -qxF -- "$(cut -f1-7 "$r")" <(cut -f1-7 "$DIR/staged.tsv") || cat "$r" >> "$DIR/staged.tsv"
+      else FAILED=1; fi
+    done
+  done < "$DIR/runs.tsv"
+  rm -rf "$ROWS"
   [ "$FAILED" = 0 ] || { echo "stage-cohort: FAILED" >&2; exit 1; }
   echo "s3://$BUCKET/$KEY/"
   ;;

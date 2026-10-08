@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/engine"
+	"github.com/scttfrdmn/aws-kraken2/internal/objstore"
 	"github.com/scttfrdmn/aws-kraken2/internal/rangeread"
 )
 
@@ -186,15 +187,23 @@ func (e *engineIndex) report() {
 			i, s.N, s.Lo, s.Hi, s.Tail, s.Full, s.Empty, st.Keys.Load(), st.Batches.Load(), sec(st.ProbeNs.Load()),
 			s.TailProbes.Load(), s.WrapProbes.Load())
 	}
+	// Requests, for the run's accounting (ak2_req): every rendezvous request of the process, and
+	// the S3 requests by client (rendezvous included, the shard load's ranged GETs not: those are
+	// the load line's).
+	fmt.Fprintf(os.Stderr, "ak2-engine\trendezvous\tputs\t%d\tgets\t%d\n", engine.RendezvousPuts.Load(), engine.RendezvousGets.Load())
+	fmt.Fprintf(os.Stderr, "ak2-engine\ts3\tclient\tsdk\t%s\n", objstore.SDKCounts.Line())
+	fmt.Fprintf(os.Stderr, "ak2-engine\ts3\tclient\tcli\t%s\n", objstore.CLICounts.Line())
 	if e.node != nil {
 		e.node.report()
-		fmt.Fprintf(os.Stderr, "ak2-engine\trendezvous\trequests\t%d\n", e.rvRequests)
+	}
+	multi := e.conf.cluster != nil
+	if multi { // a node's own shard load (the in-process engine prints shard-load phases only)
 		fmt.Fprintf(os.Stderr, "ak2-engine\tload\tseconds\t%.6f\trequests\t%d\tretries\t%d\tbytes\t%d\n",
 			e.loadS, e.loadRequests, e.loadRetries, e.loadBytes)
 	}
 	r := &e.router.Stats
 	transport := e.conf.transport
-	if e.node != nil {
+	if multi {
 		transport = "nodes" // own shard in-process, every other shard over TCP
 	}
 	fmt.Fprintf(os.Stderr, "ak2-engine\troute\ttransport\t%s\tcalls\t%d\tkeys\t%d\tbatches\t%d\troute_s\t%.6f\twait_s\t%.6f\tgather_s\t%.6f\n",

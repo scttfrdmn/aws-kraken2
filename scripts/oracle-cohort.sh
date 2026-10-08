@@ -40,6 +40,12 @@ for acc in SRR062634 ERR478965 SRR28305653; do
 done
 R=$K2_READS
 S1="$R/SRR062634_$N"; S2="$R/ERR478965_$N"; S3="$R/SRR28305653_$N"
+TS=$(date -u +%Y%m%dT%H%M%SZ)
+WORK="$K2_SHARED_ROOT/.cache/oracle-cohort/$TS"
+# A sample that fails: ERR478965 with the last 10 records of mate 2 removed (unequal mates:
+# upstream writes every pair it can, then exits 65 without the report; as make oracle's "mates").
+VAR="$WORK/variants"; mkdir -p "$VAR" || exit 1
+cp "${S2}_1.fq" "$VAR/mates_1.fq" && head -n $((4 * (N - 10))) "${S2}_2.fq" > "$VAR/mates_2.fq" || { echo "oracle-cohort: variant failed" >&2; exit 1; }
 # name|options|inputs|outputs (o --output, r --report, c classified/unclassified)
 SAMPLES=(
   "s1-pe|--paired|${S1}_1.fq ${S1}_2.fq|orc"
@@ -51,11 +57,10 @@ SAMPLES=(
   "s1-se-quick-mpa|--quick --use-mpa-style|${S1}_1.fq|or"
   "s2-pe-q20|--paired --minimum-base-quality 20|${S2}_1.fq ${S2}_2.fq|orc"
   "s3-pe-conf05|--paired --confidence 0.5|${S3}_1.fq ${S3}_2.fq|or"
+  "mates-differ|--paired|$VAR/mates_1.fq $VAR/mates_2.fq|orc"
   "control|--paired|${S1}_1.fq ${S1}_2.fq|or"
 )
 MODES=(n1 n3 n3-striped n3-sdk)
-TS=$(date -u +%Y%m%dT%H%M%SZ)
-WORK="$K2_SHARED_ROOT/.cache/oracle-cohort/$TS"
 
 # outfields BASE OUTS PAIRED: the output arguments, one per line.
 outfields() {
@@ -106,7 +111,11 @@ run_db() {
     manifest_line 0 1 parallel - "$name" "$W/up/$name" no >> "$W/up.tsv"
   done
   scripts/upstream-cohort.sh run "$K2DIR/kraken2" "$W/up.tsv" "$W/up.jsonl" "${COMMON[@]}" 2>> "$LOG"
-  log "upstream: $(wc -l < "$W/up.jsonl") samples"
+  log "upstream: $(wc -l < "$W/up.jsonl") samples, exits $(jq -r .exit "$W/up.jsonl" | sort | uniq -c | tr -s ' ' | tr '\n' ';')"
+  # A cohort with a failing sample (upstream exit != 0) ends with exit 1 (cohort.go).
+  local want_rc=0
+  [ "$(jq -s 'map(select(.exit != 0)) | length' "$W/up.jsonl")" -gt 0 ] && want_rc=1
+  [ "$(jq -s 'map(select(.exit != 0)) | length' "$W/up.jsonl")" -gt 0 ] || { log "FAIL: no sample exits non-zero upstream; the failure path is not covered"; STATUS=1; }
   local mode
   for mode in "${MODES[@]}"; do
     local MW="$W/$mode" man="$W/$mode.tsv" base
@@ -141,12 +150,12 @@ run_db() {
       done
       env "${envs[@]}" AK2_ENGINE_N=3 AK2_ENGINE_RANK=0 AK2_ENGINE_RENDEZVOUS="$rv" AK2_ENGINE_TIMEOUT=3m \
         AK2_COHORT="$man" AK2_TIMINGS=1 "$OURS" "${COMMON[@]}" 2> "$MW/rank0.stderr"; rc=$?
-      for k in "${pids[@]}"; do wait "$k"; local prc=$?; [ "$prc" = 0 ] || { log "$mode: a peer exited $prc"; rc=$((rc == 0 ? prc : rc)); }; done
+      for k in "${pids[@]}"; do wait "$k"; local prc=$?; [ "$prc" = "$want_rc" ] || { log "$mode: a peer exited $prc (want $want_rc)"; STATUS=1; }; done
     fi
     t1=$(date +%s)
     [ -n "$fpid" ] && { kill "$fpid"; wait "$fpid" 2>/dev/null; }
-    log "$mode: cohort exit $rc in $((t1 - t0)) s"
-    [ "$rc" = 0 ] || STATUS=1
+    log "$mode: cohort exit $rc in $((t1 - t0)) s (want $want_rc)"
+    [ "$rc" = "$want_rc" ] || STATUS=1
   done
   # Compare.
   local T="$RES/samples.tsv"

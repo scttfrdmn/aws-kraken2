@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/scttfrdmn/aws-kraken2/internal/objstore"
@@ -63,12 +64,17 @@ func (r *Rendezvous) Token() uint64 {
 
 func (r *Rendezvous) key(rank int) string { return fmt.Sprintf("%s/rank-%04d.json", r.Prefix, rank) }
 
+// RendezvousPuts and RendezvousGets count every rendezvous request in the process: the shard
+// rendezvous, cohort batch barriers and block-striped sessions alike.
+var RendezvousPuts, RendezvousGets atomic.Int64
+
 // Publish writes this node's record.
 func (r *Rendezvous) Publish(ctx context.Context, p Peer) error {
 	p.Run = fmt.Sprintf("%016x", r.Token())
 	p.Published = time.Now().UTC().Format(time.RFC3339Nano)
 	b, _ := json.Marshal(p)
 	r.Requests++
+	RendezvousPuts.Add(1)
 	return r.Store.Put(ctx, r.Bucket, r.key(p.Rank), b)
 }
 
@@ -89,6 +95,7 @@ func (r *Rendezvous) Wait(ctx context.Context, n int) ([]Peer, error) {
 				continue
 			}
 			r.Requests++
+			RendezvousGets.Add(1)
 			b, err := r.Store.Get(ctx, r.Bucket, r.key(i))
 			if errors.Is(err, objstore.ErrNotFound) {
 				continue
