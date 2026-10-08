@@ -40,7 +40,7 @@ def start_of(d):
         p = os.path.join(d, f)
         if os.path.exists(p):
             j = json.load(open(p))
-            return j.get("start", ""), j
+            return j.get("start") or j.get("manifest_created_at") or "", j
     return "", None
 
 
