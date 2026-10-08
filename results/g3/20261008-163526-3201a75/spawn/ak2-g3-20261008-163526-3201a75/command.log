@@ -1,3 +1,12 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-08T16:36:01Z] wrapper start
+spawn: [2026-10-08T16:36:01Z] stage-in start
+spawn: [2026-10-08T16:36:01Z] stage-in done rc=0
+spawn: [2026-10-08T16:36:01Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 b98ba6f35ca2af15e3ca5614b7154b9ee2811799a6707d11f15bebfe9980ef40); exec
 ak2: log tee up
 ak2-phase	2026-10-08T16:36:01Z	1791477361	preamble	no
 ak2: [2026-10-08T16:36:01Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
@@ -870,5 +879,4 @@ upstream-cohort: shell flags huB
 upstream-cohort: shell flags huB
 upstream-cohort: shell flags huB
 ak2: [2026-10-08T17:37:14Z] u1 done (failed=0)
-ak2: [2026-10-08T17:37:14Z] spec body exit rc=0
-ak2-phase	2026-10-08T17:37:14Z	1791481034	end	no
+spawn: [2026-10-08T17:37:15Z] command exit rc=0
