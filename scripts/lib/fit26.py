@@ -648,7 +648,8 @@ def main():
             pred_rows.append([name, cd["family"], cd["type"], cd["cohort"], cd["N"], cd["inflight"], cfg["c_used"], f"{T:.1f}", g(se, "{:.1f}"),
                               f"{run:.4f}", f"{run / cd['cohort']:.6f}", reg,
                               "extrapolated" if cd["rf_" + name] or cd["cohort"] != 100 else "within data",
-                              "; ".join(cd["rf_" + name] + cd["flags"]) or "-"])
+                              "; ".join(([("outside the fitted range: " + ", ".join(x.split(" = ")[0] for x in cd["rf_" + name]))]
+                                         if cd["rf_" + name] else []) + [x.split(":")[0] for x in cd["flags"]]) or "-"])
         for fam in fams:
             for c in COHORTS:
                 cc = [cd for cd in cands if cd["family"] == fam and cd["cohort"] == c]
@@ -729,7 +730,8 @@ def main():
                         "loo_pred_s", "loo_resid_s", "designated_held_out"], res_rows)
     w("heldout.tsv", ["fit", "check", "point", "observed", "predicted", "predicted_se", "obs_minus_pred", "z", "note", "caveat"], ho_rows)
     w("predictions.tsv", ["fit", "family", "type", "cohort", "N", "inflight", "c_used", "T_pred_s", "T_pred_se_s", "usd_run_NpT",
-                          "usd_per_sample_NpT", "usd_per_sample_registered_formula", "status", "extrapolation_flags"], pred_rows)
+                          "usd_per_sample_NpT", "usd_per_sample_registered_formula", "status",
+                          "flags (values and ranges: optimal.tsv)"], pred_rows)
     w("optimal.tsv", ["fit", "family", "cohort", "objective", "type", "N", "inflight", "T_pred_s", "usd_per_sample", "N_68pct_draws",
                       "draws_same_type", "status", "flags"], opt_rows)
 
