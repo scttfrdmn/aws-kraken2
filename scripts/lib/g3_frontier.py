@@ -562,6 +562,41 @@ for regime in ("resident", "from-scratch"):
                      "; ".join(refs) or "-", f"under 5x on both: {'yes' if kill else 'no'}",
                      f"engine pre-fix: {'/'.join(pre)}"])
 
+# Kill sensitivity by upstream lever (Law 5): the verdict as upstream's levers are added one at a time.
+def uset(r):
+    """The smallest lever set an upstream row belongs to."""
+    if r["kind"] in ("measured", "modelled"):
+        return 0
+    e = r["extra"]
+    dec = e.get("tool") in ("pigz", "in-process gzip") and not e.get("overlap")
+    if e.get("svar") == "measured" and dec:
+        return 1
+    if dec:
+        return 2 if e.get("svar") == "probe-a" else 3
+    return 4 if e.get("svar") == "measured" else 5
+
+
+LEVERS = ["single node as measured (U1, U2)", "+ sample-parallel N (derived; staging as measured, pigz)",
+          "+ staging at probe (a)'s rate (no contention)", "+ probe (b)'s contention at N",
+          "+ decompression options (probe (c); staging as measured)", "+ decompression options with probe staging"]
+sens = []
+for regime in ("resident", "from-scratch"):
+    for k, name in enumerate(LEVERS):
+        allowed = {0, 1, 2, 3, 4, 5} if k == 5 else ({0, 1, 4} if k == 4 else set(range(k + 1)))
+        cells, kill_k = [], True
+        for c in (1, 10, 100):
+            ours = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == "ours" and r["kind"] == "measured"]
+            up = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == "upstream"
+                  and r["kind"] not in ("placeholder", "modelled-infeasible") and uset(r) in allowed]
+            if not ours or not up:
+                cells.append("-")
+                continue
+            rt = min(u["time_s"] for u in up) / min(o["time_s"] for o in ours)
+            rc = min(u["usd_per_sample"] for u in up) / min(o["usd_per_sample"] for o in ours)
+            kill_k = kill_k and rt < 5 and rc < 5
+            cells.append(f"time {rt:.2f}x, $ {rc:.2f}x")
+        sens.append([regime, name] + cells + ["MET" if kill_k else "not met"])
+
 # Pareto sets per cohort, regime and side.
 pareto = []
 for c in (1, 10, 100):
@@ -621,6 +656,13 @@ with open(os.path.join(OUT, "frontier.md"), "w") as fh:
     for regime, k in kills.items():
         fh.write(f"\nKill condition, {regime} (under 5x on both axes at every measured cohort size 1, 10, 100): "
                  f"{'MET' if k else 'not met'}.\n")
+    fh.write("\n## Kill condition by upstream lever (each row adds one lever; ratios are upstream best / ours best)\n\n")
+    fh.write("| regime | upstream levers | cohort 1 | cohort 10 | cohort 100 | kill |\n|---|---|---|---|---|---|\n")
+    for r in sens:
+        fh.write("| " + " | ".join(r) + " |\n")
+    fh.write("\nThe decompression rows rest on a derived combination not run end to end: U1's fq classify walls with "
+             "probe (c)'s decompression time on the same core type (gz streamed: the slower of the two per sample); the "
+             "wrapper calls `gzip -dc`, so it needs a gzip-compatible decompressor on PATH.\n")
     fh.write("\nE1's cohort-10 from-scratch path includes its three earlier cohort-1 invocations (it ran c10 last), "
              "so it overstates a cohort-10-only run.\n")
     fh.write("\n## Billed / derived (where a run's bill is known)\n\n")

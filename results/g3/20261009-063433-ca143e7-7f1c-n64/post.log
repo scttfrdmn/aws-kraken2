@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a96d23ec57f36e740/scripts/lib/probe_tables.py", line 79, in <module>
+    for f in glob.glob(os.path.join(G, m["run_id"], "out", "cont-*.jsonl")):
+                                       ~^^^^^^^^^^
+KeyError: 'run_id'

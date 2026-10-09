@@ -1,0 +1,662 @@
+{
+  "cohort_id": "20261009-063433-ca143e7-7f1c-n64",
+  "gate": "g3",
+  "spec": "runs/g3-probe-cont-c8gn.4xlarge.json",
+  "commit": "ca143e7e9b5144ca8630267453f360be5a628e6f",
+  "nodes": 64,
+  "instance_type": "c8gn.4xlarge",
+  "az": "us-west-2b",
+  "region": "us-west-2",
+  "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-063433-ca143e7-7f1c-n64",
+  "network": {
+    "vpc": "vpc-e7e2999f",
+    "security_group": "sg-5059b179",
+    "admits": "itself, 22/tcp, ICMP"
+  },
+  "start": "2026-10-09T06:34:33Z",
+  "stop": "2026-10-09T06:39:44Z",
+  "ended": "members done (fail fast: rank 24 exited 2)",
+  "terminated_early": [
+    {
+      "rank": 0,
+      "instances": "i-0a2277f6e4ea83a91",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 1,
+      "instances": "i-0f8df1670d302cdc7",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 2,
+      "instances": "i-06623d20c588dc2e3",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 3,
+      "instances": "i-03af30b54ef713971",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0985ecbc705dd6325",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 5,
+      "instances": "i-0f28f7d867f8b39ad",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 6,
+      "instances": "i-08ed7cda5b413b5cd",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 7,
+      "instances": "i-0d45e5c85b59e8c55",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0c8b2a1656605bed5",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 9,
+      "instances": "i-017e657f119f299dd",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 10,
+      "instances": "i-041387a09e049d871",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 11,
+      "instances": "i-0558148bce354c46f",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 12,
+      "instances": "i-0e8201806f5149c32",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0e72312466da9c046",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 14,
+      "instances": "i-0d31888b9605451be",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 15,
+      "instances": "i-0a16d29d59b7de1f3",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 16,
+      "instances": "i-001917a2352f8820c",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 17,
+      "instances": "i-0c70f7bea3d07b07d",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 18,
+      "instances": "i-01078f94d5b57cb97",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 19,
+      "instances": "i-0a911c2474d5b2e06",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 20,
+      "instances": "i-02a36db081cef3c5b",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 21,
+      "instances": "i-085af762c454ff819",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 22,
+      "instances": "i-0e6f7c8e8efe16cc8",
+      "why": "fail fast: rank 24 exited 2"
+    },
+    {
+      "rank": 23,
+      "instances": "i-09bc4e7421a5dd65a",
+      "why": "fail fast: rank 24 exited 2"
+    }
+  ],
+  "sweep_failures": [],
+  "members": [
+    {
+      "rank": 0,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r0",
+      "rc": "99",
+      "instance_id": "i-0a2277f6e4ea83a91",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.031073,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 1,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r1",
+      "rc": "99",
+      "instance_id": "i-0f8df1670d302cdc7",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.031337,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 2,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r2",
+      "rc": "99",
+      "instance_id": "i-06623d20c588dc2e3",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.031073,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 3,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r3",
+      "rc": "99",
+      "instance_id": "i-03af30b54ef713971",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.03081,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 4,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r4",
+      "rc": "99",
+      "instance_id": "i-0985ecbc705dd6325",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.030547,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 5,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r5",
+      "rc": "99",
+      "instance_id": "i-0f28f7d867f8b39ad",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.030547,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 6,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r6",
+      "rc": "99",
+      "instance_id": "i-08ed7cda5b413b5cd",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.030283,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 7,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r7",
+      "rc": "99",
+      "instance_id": "i-0d45e5c85b59e8c55",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.03002,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 8,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r8",
+      "rc": "99",
+      "instance_id": "i-0c8b2a1656605bed5",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.03002,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 9,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r9",
+      "rc": "99",
+      "instance_id": "i-017e657f119f299dd",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.029757,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 10,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r10",
+      "rc": "99",
+      "instance_id": "i-041387a09e049d871",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.029493,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 11,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r11",
+      "rc": "99",
+      "instance_id": "i-0558148bce354c46f",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.028967,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 12,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r12",
+      "rc": "99",
+      "instance_id": "i-0e8201806f5149c32",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.028177,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 13,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r13",
+      "rc": "99",
+      "instance_id": "i-0e72312466da9c046",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.02844,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 14,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r14",
+      "rc": "99",
+      "instance_id": "i-0d31888b9605451be",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.028177,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 15,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r15",
+      "rc": "99",
+      "instance_id": "i-0a16d29d59b7de1f3",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027913,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 16,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r16",
+      "rc": "99",
+      "instance_id": "i-001917a2352f8820c",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.028177,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 17,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r17",
+      "rc": "99",
+      "instance_id": "i-0c70f7bea3d07b07d",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027913,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 18,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r18",
+      "rc": "99",
+      "instance_id": "i-01078f94d5b57cb97",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027913,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 19,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r19",
+      "rc": "99",
+      "instance_id": "i-0a911c2474d5b2e06",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027913,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 20,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r20",
+      "rc": "99",
+      "instance_id": "i-02a36db081cef3c5b",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.02765,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 21,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r21",
+      "rc": "99",
+      "instance_id": "i-085af762c454ff819",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027123,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 22,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r22",
+      "rc": "99",
+      "instance_id": "i-0e6f7c8e8efe16cc8",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027123,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 23,
+      "run_id": "20261009-063433-ca143e7-7f1c-n64-r23",
+      "rc": "99",
+      "instance_id": "i-09bc4e7421a5dd65a",
+      "type": "c8gn.4xlarge",
+      "az": "us-west-2b",
+      "final_state": "terminated",
+      "cost_usd": 0.027123,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 24,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 25,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 26,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 27,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 28,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 29,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 30,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 31,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 32,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 33,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 34,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 35,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 36,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 37,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 38,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 39,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 40,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 41,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 42,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 43,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 44,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 45,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 46,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 47,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 48,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 49,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 50,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 51,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 52,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 53,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 54,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 55,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 56,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 57,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 58,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 59,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 60,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 61,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 62,
+      "rc": "2",
+      "manifest": "missing"
+    },
+    {
+      "rank": 63,
+      "rc": "2",
+      "manifest": "missing"
+    }
+  ],
+  "cost_usd": null,
+  "cost_basis": "sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
+  "prefix_fetched": true,
+  "multipart_aborted": 0,
+  "multipart_abort_failures": 0,
+  "orphans_rc": 0
+}

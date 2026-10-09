@@ -75,7 +75,7 @@ elif mode == "cont":
     c = json.load(open(os.path.join(d, "cohort.json")))
     G = os.path.dirname(d)
     per = {}
-    for m in c["members"]:
+    for m in [m for m in c["members"] if m.get("run_id")]:
         for f in glob.glob(os.path.join(G, m["run_id"], "out", "cont-*.jsonl")):
             for x in lines(f):
                 if x["kind"] == "done":
