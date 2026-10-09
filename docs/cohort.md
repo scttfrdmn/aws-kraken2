@@ -166,6 +166,11 @@ make g3-tables                                            # results/g3/campaign/
   Pareto sets: `results/g3/campaign/frontier.{tsv,md}` and `pareto.tsv`.
   - They are given per cohort size (1, 10, 100) and regime (resident, from-scratch), ours against
     upstream at its best (U1, U2, with fq preparation added back).
+  - Upstream at its best is the better of single-node upstream and upstream sample-parallel (N
+    independent nodes, each holding the table; #25 ruling 1). The sample-parallel arm is derived
+    from the single-node measurements (per-node fixed costs plus measured per-sample walls, LPT
+    over N × P slots; per-node staging paid N times from scratch); the whole N sweep is
+    `upstream_sp_sweep.tsv`. The kill condition is evaluated per regime (#25 ruling 2).
   - $/sample is derived (price × nodes × wall) on both sides.
   - Each ratio is decomposed by Law 5: time into width × per-vCPU efficiency; $/sample into price
     per vCPU-hour × per-vCPU efficiency; staging alongside, from scratch.

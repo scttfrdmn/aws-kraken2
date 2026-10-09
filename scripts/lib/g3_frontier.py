@@ -2,7 +2,7 @@
 """H-main per-axis bests and Pareto sets (#25): ours against upstream at its best, per cohort
 size and regime, from the record only.
 
-  g3_frontier.py   -> results/g3/campaign/frontier.{tsv,md}, pareto.tsv
+  g3_frontier.py   -> results/g3/campaign/frontier.{tsv,md}, pareto.tsv, upstream_sp_sweep.tsv
 
 Inputs: results/g3/campaign/points.tsv (E2-E4, from g3_campaign.py), the E1 cohort (cohort 10),
 U1 (results/g3/*/out/u1.jsonl with tables/rungs.tsv, prep.tsv), U2 (out/g2-u2/summary.tsv),
@@ -32,15 +32,30 @@ Definitions (generated into frontier.md):
     points' fleet vCPUs V, price per vCPU-hour p and per-vCPU rate e = pairs / (V x wall):
     time ratio = (V_ours / V_up) x (e_ours / e_up); $ ratio = (p_up / p_ours) x (e_ours / e_up).
     From scratch, e includes staging; the staging seconds and bandwidth are shown beside it.
+  - Upstream at its best (Scott's ruling 1, #25; an addition to the registration): the best of single-node
+    upstream (U1, U2 as measured) and upstream sample-parallel, N independent upstream nodes each holding
+    the table and running its share of the cohort. The sample-parallel arm is derived from the
+    single-node measurements, not measured: per node, the fixed costs (boot, setup, the table's staging
+    and, on U1, the input fetch) plus the per-sample walls of a measured rung (U1: each rung's per-sample
+    walls at its P x T, fq with its preparation; U2: the SRR5935740 warm wall per pair, the first sample
+    on each node at the cold wall), scheduled by LPT over N x P slots, for N = 1..cohort; the N that
+    minimises time and the N that minimises $/sample are picked separately per regime and node type
+    (the whole sweep is upstream_sp_sweep.tsv). From scratch, every node stages the table itself: in
+    parallel (once in time) and paid N times in $. Biases: U1's per-sample walls were measured at the
+    rung's full concurrency P, so a lightly loaded node is modelled slower than it would run (against
+    upstream); N parallel table stagings are modelled at the single-node rate with no S3 contention, and
+    U2 excludes its input fetch (both for upstream). It is not extended to cohort 1000 (no measured
+    walls beyond cohort 100) nor shown at cohort 1 (one sample is the single node). The re-plan carries a measured sample-parallel run to validate it.
   - Registered reference points (#25 H-main): ~20x lower $/sample at cohort >= 100; ~6x (Tier A)
     to 20x faster for a single sample. Kill condition: under 5x on both axes at every cohort size,
-    evaluated per regime on the measured cohort sizes (1, 10, 100).
+    evaluated per regime (Scott's ruling 2, #25; an addition to the registration) on the measured
+    cohort sizes (1, 10, 100), against the best of single-node and sample-parallel upstream.
   - Cohort 1000: ours is a placeholder only (Scott's decision: the engine side uses real
     samples), extrapolated from cohort 100 by the pairs ratio and never a best. Upstream's
     cohort-1000 model is infeasible as specified: about 1.4 TB of fq input plus RODA's 1.19 TB
     table on a 1536 GiB tmpfs node; it is shown, flagged, for completeness.
 """
-import csv, datetime as dt, glob, json, os, subprocess
+import csv, datetime as dt, glob, heapq, json, os, re, statistics, subprocess
 
 G = "results/g3"
 OUT = os.path.join(G, "campaign")
@@ -188,6 +203,87 @@ for sm in glob.glob(os.path.join(G, "*", "out", "g2-u2", "summary.tsv")):
             add(1, "from-scratch", "upstream", lab, boot_of(m) + ph["setup"]["seconds"] + fdb + t, 1, 64, price, "-", "measured",
                 "U2 boot+setup+RODA onto NVMe+the cold -M wall (its reads fetch excluded)", f"{fdb:.0f}", f"{HASH_GB / fdb:.1f}")
 
+# Upstream sample-parallel (derived from single-node measurements; Scott's ruling 1 on #25).
+SP = "upstream sample-parallel (derived from single-node measurements)"
+
+
+def lpt_span(walls, slots, cold_x=0.0):
+    """LPT of the walls over identical slots; each slot's first (largest) sample takes (1 + cold_x) x
+    its wall. Returns the makespan."""
+    h = [(0.0, k) for k in range(slots)]
+    for w in sorted(walls, reverse=True):
+        t, k = heapq.heappop(h)
+        heapq.heappush(h, (t + w * (1 + cold_x) if t == 0 else t + w, k))
+    return max(t for t, _ in h)
+
+
+sweep = []
+for cohort_c in (10, 100):  # at cohort 1 sample-parallel is the single node
+    cand = []  # (node, config, slots, {sample: warm wall}, fixed_s, price, vcpus, stage_s, cold_extra_ratio)
+    for jl in glob.glob(os.path.join(G, "*", "out", "u1.jsonl")):
+        d = os.path.dirname(os.path.dirname(jl))
+        if not os.path.exists(os.path.join(d, "tables", "samples.tsv")):
+            continue
+        m = json.load(open(os.path.join(d, "manifest.json")))
+        ph = phases(m)
+        fixed = boot_of(m) + ph["setup"]["seconds"] + ph["fetch-db"]["seconds"] + ph["fetch-inputs"]["seconds"]
+        prep = {}
+        for x in tsv(os.path.join(d, "tables", "prep.tsv")):
+            prep[x["sample"]] = min(prep.get(x["sample"], 1e18), float(x["seconds"]))
+        cfg = {}
+        for r in tsv(os.path.join(d, "tables", "samples.tsv")):
+            if r["rung"].startswith("ref") or r["exit"] != "0":
+                continue
+            name = re.sub(r"-r\d+$", "", r["rung"])
+            w = float(r["wall_s"]) + (prep.get(r["sample"], 0) if r["input"] == "fq" else 0)
+            cfg.setdefault(name, {}).setdefault(r["sample"], []).append(w)
+        for name, ws in cfg.items():
+            mp = re.search(r"-p(\d+)-", name)
+            cand.append(("x8g.24xlarge (U1, tmpfs)", name, int(mp.group(1)) if mp else 1,
+                         {s: statistics.median(v) for s, v in ws.items()}, fixed, float(m["truffle_price_usd_per_hour"]),
+                         96, ph["fetch-db"]["seconds"], 0.0))
+    for sm in glob.glob(os.path.join(G, "*", "out", "g2-u2", "summary.tsv")):
+        d = os.path.dirname(os.path.dirname(os.path.dirname(sm)))
+        m = json.load(open(os.path.join(d, "manifest.json")))
+        ph = phases(m)
+        ref = [r for r in tsv(sm) if r["input"].startswith("SRR5935740")]
+        warm = min((r for r in ref if r["state"] == "warm"), key=lambda r: float(r["wall_med"]))
+        cold = min((r for r in ref if r["state"] == "cold"), key=lambda r: float(r["wall_med"]))
+        per_pair = float(warm["wall_med"]) / float(warm["pairs"])
+        walls = {r["run"]: int(r["read_count"]) * per_pair for r in runs}
+        cand.append(("r8gd.16xlarge (U2, NVMe)", f"warm T={warm['threads']}, first sample per node cold T={cold['threads']}",
+                     1, walls, boot_of(m) + ph["setup"]["seconds"] + ph["fetch-db"]["seconds"],
+                     float(m["truffle_price_usd_per_hour"]), 64, ph["fetch-db"]["seconds"],
+                     float(cold["wall_med"]) / float(warm["wall_med"]) - 1))
+    for node, name, P, walls, fixed, price, V1, stage, cold_x in cand:
+        ws = [walls.get(s) for s in order[:cohort_c]]
+        if any(w is None for w in ws):
+            continue  # the rung did not cover this cohort
+        for N in range(1, cohort_c + 1):
+            for regime in ("resident", "from-scratch"):
+                t = lpt_span(ws, N * P)
+                if regime == "from-scratch":
+                    # every node pays its own staging (in parallel, so once in time and N times in $);
+                    # U2's first sample per node runs cold (the slot's largest, LPT order).
+                    t = fixed + lpt_span(ws, N * P, cold_x)
+                sweep.append({"cohort": cohort_c, "regime": regime, "node": node, "config": name, "slots_per_node": P,
+                              "N": N, "time_s": t, "usd_per_sample": N * price * t / 3600 / cohort_c, "price": price,
+                              "vcpus": V1, "stage": stage})
+for key in sorted({(s["cohort"], s["regime"], s["node"]) for s in sweep}):
+    sel = [s for s in sweep if (s["cohort"], s["regime"], s["node"]) == key]
+    picks = {}
+    for why, s in (("min time", min(sel, key=lambda s: (s["time_s"], s["N"]))),
+                   ("min $", min(sel, key=lambda s: (s["usd_per_sample"], s["N"])))):
+        picks.setdefault(id(s), [s, []])[1].append(why)
+    for s, whys in picks.values():
+        why = ", ".join(whys)
+        st = (f"{s['stage']:.0f}", f"{HASH_GB / s['stage']:.1f}") if key[1] == "from-scratch" else ("-", "-")
+        add(key[0], key[1], "upstream", f"{SP}: {s['node']} N={s['N']}, {s['config']} ({why})", s["time_s"], s["N"],
+            s["vcpus"], s["price"], "-", "derived",
+            f"LPT of measured per-sample walls over N x {s['slots_per_node']} slots"
+            + ("; per-node staging paid N times ($), once in time" if key[1] == "from-scratch" else "; table already resident on each node"),
+            *st)
+
 # Per-axis bests with the attribution, and the kill condition.
 best, kills = [], {}
 for regime in ("resident", "from-scratch"):
@@ -202,8 +298,10 @@ for regime in ("resident", "from-scratch"):
         if not ours or not up:
             best.append([regime, c, "no data on one side", "-", "-", "-", "-", "-", "-"])
             continue
-        ot, ut = min(ours, key=lambda r: r["time_s"]), min(up, key=lambda r: r["time_s"])
-        oc, uc = min(ours, key=lambda r: r["usd_per_sample"]), min(up, key=lambda r: r["usd_per_sample"])
+        pref = lambda r: r["kind"] != "measured"  # on a tie, the measured point
+        ot, ut = min(ours, key=lambda r: (r["time_s"], pref(r))), min(up, key=lambda r: (r["time_s"], pref(r)))
+        oc, uc = (min(ours, key=lambda r: (r["usd_per_sample"], pref(r))),
+                  min(up, key=lambda r: (r["usd_per_sample"], pref(r))))
         rt, rc = ut["time_s"] / ot["time_s"], uc["usd_per_sample"] / oc["usd_per_sample"]
         wt, et = ot["fleet_vcpus"] / ut["fleet_vcpus"], ot["mpairs_per_s_per_vcpu"] / ut["mpairs_per_s_per_vcpu"]
         pc, ec = uc["usd_per_vcpu_h"] / oc["usd_per_vcpu_h"], oc["mpairs_per_s_per_vcpu"] / uc["mpairs_per_s_per_vcpu"]
@@ -220,11 +318,11 @@ for regime in ("resident", "from-scratch"):
             st = (f"; staging ours {ot['staging_s']} s at {ot['staging_GBps']} GB/s, upstream {ut['staging_s']} s at "
                   f"{ut['staging_GBps']} GB/s")
         best.append([regime, c,
-                     f"time: ours {ot['point']} {ot['time_s']:.1f} s, upstream {ut['point']} {ut['time_s']:.1f} s",
-                     f"{rt:.2f} = width {wt:.2f} (V {ot['fleet_vcpus']} vs {ut['fleet_vcpus']}) x per-vCPU {et:.2f} "
+                     f"time: ours {ot['point']} {ot['time_s']:.1f} s, upstream [{ut['kind']}] {ut['point']} {ut['time_s']:.1f} s",
+                     f"{rt:.3f} = width {wt:.2f} (V {ot['fleet_vcpus']} vs {ut['fleet_vcpus']}) x per-vCPU {et:.2f} "
                      f"({1000 * ot['mpairs_per_s_per_vcpu']:.2f} vs {1000 * ut['mpairs_per_s_per_vcpu']:.2f} kpairs/s/vCPU){st}",
-                     f"$: ours {oc['point']} ${oc['usd_per_sample']:.5f}, upstream {uc['point']} ${uc['usd_per_sample']:.5f}",
-                     f"{rc:.2f} = price/vCPU-h {pc:.2f} (${uc['usd_per_vcpu_h']:.4f} vs ${oc['usd_per_vcpu_h']:.4f}) x per-vCPU "
+                     f"$: ours {oc['point']} ${oc['usd_per_sample']:.5f}, upstream [{uc['kind']}] {uc['point']} ${uc['usd_per_sample']:.5f}",
+                     f"{rc:.3f} = price/vCPU-h {pc:.2f} (${uc['usd_per_vcpu_h']:.4f} vs ${oc['usd_per_vcpu_h']:.4f}) x per-vCPU "
                      f"{ec:.2f} ({1000 * oc['mpairs_per_s_per_vcpu']:.2f} vs {1000 * uc['mpairs_per_s_per_vcpu']:.2f} kpairs/s/vCPU)",
                      "; ".join(refs) or "-", f"under 5x on both: {'yes' if kill else 'no'}",
                      f"engine pre-fix: {'/'.join(pre)}"])
@@ -234,14 +332,14 @@ pareto = []
 for c in (1, 10, 100):
     for regime in ("resident", "from-scratch"):
         for side in ("ours", "upstream"):
-            sel = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == side and r["kind"] == "measured"]
+            sel = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == side and r["kind"] in ("measured", "derived")]
             for r in sel:
                 dom = any(o is not r and o["time_s"] <= r["time_s"] and o["usd_per_sample"] <= r["usd_per_sample"]
                           and (o["time_s"] < r["time_s"] or o["usd_per_sample"] < r["usd_per_sample"]) for o in sel)
                 if not dom:
                     pareto.append([c, regime, side, r["point"], f"{r['time_s']:.2f}", f"{r['usd_per_sample']:.6f}",
                                    r["fleet_vcpus"], f"{r['usd_per_vcpu_h']:.4f}", f"{r['mpairs_per_s_per_vcpu']:.4f}",
-                                   r["engine_pre_fix"]])
+                                   r["engine_pre_fix"], r["kind"]])
 
 os.makedirs(OUT, exist_ok=True)
 head = ["cohort", "regime", "side", "point", "time_s", "usd_per_sample_derived", "fleet_vcpus", "usd_per_vcpu_h",
@@ -254,11 +352,17 @@ with open(os.path.join(OUT, "frontier.tsv"), "w", newline="") as fh:
                     r["fleet_vcpus"], f"{r['usd_per_vcpu_h']:.4f}", f"{r['mpairs_per_s_per_vcpu']:.4f}", r["staging_s"],
                     r["staging_GBps"], r["billed_over_derived"], r["engine_pre_fix"], r["kind"], r["basis"]])
 ph_ = ["cohort", "regime", "side", "point", "time_s", "usd_per_sample_derived", "fleet_vcpus", "usd_per_vcpu_h",
-       "mpairs_per_s_per_vcpu", "engine_pre_fix"]
+       "mpairs_per_s_per_vcpu", "engine_pre_fix", "kind"]
 with open(os.path.join(OUT, "pareto.tsv"), "w", newline="") as fh:
     w = csv.writer(fh, delimiter="\t", lineterminator="\n")
     w.writerow(ph_)
     w.writerows(pareto)
+with open(os.path.join(OUT, "upstream_sp_sweep.tsv"), "w", newline="") as fh:
+    w = csv.writer(fh, delimiter="\t", lineterminator="\n")
+    w.writerow(["cohort", "regime", "node", "config", "slots_per_node", "N", "time_s", "usd_per_sample_derived"])
+    for s in sweep:
+        w.writerow([s["cohort"], s["regime"], s["node"], s["config"], s["slots_per_node"], s["N"], f"{s['time_s']:.2f}",
+                    f"{s['usd_per_sample']:.6f}"])
 gc = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
 with open(os.path.join(OUT, "frontier.md"), "w") as fh:
     fh.write("# H-main per-axis bests and Pareto sets (generated by scripts/lib/g3_frontier.py)\n\n")
@@ -283,8 +387,8 @@ with open(os.path.join(OUT, "frontier.md"), "w") as fh:
         if r["billed_over_derived"] != "-":
             fh.write(f"| {r['point']} | {r['cohort']} | {r['regime']} | {r['billed_over_derived']} |\n")
     fh.write("\nUpstream's runs (U1, U2) each ran many rungs, so their bills are not separable per rung: not known.\n")
-    fh.write("\n## Pareto sets (non-dominated in time and derived $/sample, per side)\n\n")
+    fh.write("\n## Pareto sets (non-dominated in time and derived $/sample, per side; measured and derived points, the kind column says which)\n\n")
     fh.write("| " + " | ".join(ph_) + " |\n|" + "---|" * len(ph_) + "\n")
     for p in pareto:
         fh.write("| " + " | ".join(str(x) for x in p) + " |\n")
-print(f"g3_frontier: {len(rows)} points, {len(pareto)} Pareto points -> {OUT}/frontier.{{tsv,md}}, pareto.tsv")
+print(f"g3_frontier: {len(rows)} points, {len(pareto)} Pareto points -> {OUT}/frontier.{{tsv,md}}, pareto.tsv, upstream_sp_sweep.tsv")
