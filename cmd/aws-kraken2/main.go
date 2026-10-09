@@ -22,6 +22,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/seqio"
 )
 
 // upstreamVersion is the kraken2 version string at the pin (upstream's VERSION file is
@@ -206,6 +208,19 @@ func buildArgs(args []string, env func(string) (string, bool)) (*classifyArgs, i
 			"run upstream kraken2 for minimizer data\n", prog)
 		return nil, exUsage
 	}
+	// AK2_DECOMPRESS=pipe: compressed input through `gzip -dc` / `bzip2 -dc` from PATH, as the
+	// wrapper does (seqio.OpenPipe); unset: in process. Checked after upstream's own validation.
+	lookup := env
+	if lookup == nil {
+		lookup = os.LookupEnv
+	}
+	dv, _ := lookup("AK2_DECOMPRESS")
+	d, derr := seqio.ParseDecompressor(dv)
+	if derr != nil {
+		fmt.Fprintf(os.Stderr, "%s: %v\n", prog, derr)
+		return nil, exUsage
+	}
+	c.decomp = d
 	return &c, 0
 }
 

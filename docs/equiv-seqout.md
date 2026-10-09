@@ -42,10 +42,37 @@ GNU gzip, for example one built from `gzip-1.12.tar.gz` with `./configure --pref
 reference outputs and for upstream's wrapper, which finds gzip on `PATH`. The manifest records the
 gzip and bzip2 versions used.
 
-**Outputs:** upstream outputs under `.cache/equiv-seqout/<UTC timestamp>/` (and the symlink
-`.cache/equiv-seqout/latest` to it, which `go test` uses when `K2_SEQOUT_ORACLE` /
-`K2_DECOMP_ORACLE` are unset, so `make test` and CI run both oracle tests; absent data is a skip,
-or a failure with `AWS_KRAKEN2_REQUIRE_ORACLE=1`) (large, not checked in), and
+**Pipe mode (#48):** with `AK2_DECOMPRESS=pipe`, both Go tests read compressed inputs through
+`seqio.OpenPipe`, which runs the `gzip -dc` / `bzip2 -dc` on `PATH` as the wrapper does, in place
+of the in-process path. The manifest records `ak2_decompress` and the gzip path. With a shim from
+`scripts/decomp-shim.sh` in `DECOMP_BIN` (see [oracle.md](oracle.md), "Decompressor shims"),
+upstream's exit on a damaged input can change. GNU gzip and pigz ignore zero padding and trailing
+garbage after the member. rapidgzip 0.14.5 drops the end of the member's output before them, so
+the last record is cut and upstream exits 65. `se_fq_gz_zeropad` and `se_fq_gz_garbage` therefore
+accept `0,65`, and ours must exit as upstream did.
+
+How much rapidgzip drops depends on `-P`. The figures are from a 16-core macOS host
+(`results/g1/rapidgzip-tail-loss-20261009T210618Z/`), each repeated twice with identical output:
+
+| input | default `-P` (= 16 here), and 2-16 | `-P 1` |
+|---|---|---|
+| SRR062634 mate 1 + 4096 zero bytes, or + a garbage line | 703,060 of 51,895,574 bytes | 10,987,518 |
+
+For ERR478965 mate 1 + a garbage line (47,238,491 bytes), it drops 793,682 at the default and at
+8 or 16, 2,493,064 at 2, and 4,302,739 at 1 and 4.
+
+So the size of the loss, and which records survive, depend on the thread count and on the
+host's core count. The shim uses rapidgzip's default `-P`. `TestOracleDecompress` passes under
+pipe mode, because OpenPipe hands on rapidgzip's own bytes.
+
+**Outputs:** upstream outputs under `.cache/equiv-seqout/<UTC timestamp>/` (large, not checked
+in). The work directory records `decompressor` (`AK2_DECOMPRESS`, `DECOMP_BIN`, the gzip path and
+version, and whether those are the defaults) and `result` (PASS or FAIL). The symlink
+`.cache/equiv-seqout/latest` is what `go test` uses when `K2_SEQOUT_ORACLE` / `K2_DECOMP_ORACLE`
+are unset, so `make test` and CI run both oracle tests. It is shared by every worktree, so it
+moves only for a PASS with the defaults (`AK2_DECOMPRESS` unset, no `DECOMP_BIN`). The tests fail
+loudly on a `latest` that is not such a run ([build.md](build.md)). Absent data is a skip, or a
+failure with `AWS_KRAKEN2_REQUIRE_ORACLE=1`. The run also writes
 `results/g1/seqio-seqout-<UTC timestamp>/` with these files:
 - `commands.txt`: the exact upstream commands.
 - `run.log`.

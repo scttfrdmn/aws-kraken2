@@ -166,3 +166,38 @@ func DB(t testing.TB, name string) string {
 	}
 	return dir
 }
+
+// EquivSeqoutLatest returns .cache/equiv-seqout/latest, the make equiv-seqout work directory that
+// plain go test (make test, CI) reads from every worktree, skipping if there is none. It fails
+// the test loudly unless that run recorded a PASS with the default decompressor (AK2_DECOMPRESS
+// unset, no DECOMP_BIN; #48), and if AK2_DECOMPRESS is set in this process: a pipe-mode check
+// runs through make equiv-seqout, which passes its own work directory.
+func EquivSeqoutLatest(t testing.TB) string {
+	t.Helper()
+	dir := filepath.Join(Root(), ".cache", "equiv-seqout", "latest")
+	if _, err := os.Stat(dir); err != nil {
+		skip(t, "no equiv-seqout oracle at %s (make equiv-seqout)", dir)
+	}
+	if v := os.Getenv("AK2_DECOMPRESS"); v != "" {
+		t.Fatalf("AK2_DECOMPRESS=%q with the shared default oracle %s: run pipe mode through make equiv-seqout (make test unsets it)", v, dir)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "decompressor"))
+	if err != nil {
+		t.Fatalf("%s has no decompressor record (made before #48?): rerun make equiv-seqout with the defaults", dir)
+	}
+	rec := map[string]string{}
+	for _, l := range strings.Split(strings.TrimSpace(string(b)), "\n") {
+		if k, v, ok := strings.Cut(l, "\t"); ok {
+			rec[k] = v
+		}
+	}
+	if rec["default"] != "yes" {
+		t.Fatalf("%s is not a default-decompressor run (AK2_DECOMPRESS=%q DECOMP_BIN=%q gzip %s): rerun make equiv-seqout with the defaults",
+			dir, rec["ak2_decompress"], rec["decomp_bin"], rec["gzip_path"])
+	}
+	r, err := os.ReadFile(filepath.Join(dir, "result"))
+	if res := strings.TrimSpace(string(r)); err != nil || res != "PASS" {
+		t.Fatalf("%s did not record a PASS (result %q): rerun make equiv-seqout", dir, res)
+	}
+	return dir
+}

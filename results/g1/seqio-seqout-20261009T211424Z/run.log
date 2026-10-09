@@ -1,0 +1,159 @@
+shell flags: hB
+pin 2731b35f7abb26ec926517274f3d87e78d42fd76 (2.17.2-20-g2731b35)  db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626  reads /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_200000  threads 4  work /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z
+decompression: pipe; gzip /tmp/ak2-48-tools/shim-rapidgzip/gzip: shim gzip -dc: rapidgzip version 0.14.5; otherwise: gzip 1.12
+gzip -dc SRR062634_200000_1.fq.gz: exit 0 
+gzip -dc r_1.multi.fq.gz: exit 0 
+gzip -dc r_1.zeropad.fq.gz: exit 1 Traceback (most recent call last):   File "<string>", line 1, in <module>     import sys; from rapidgzip import cli; sys.argv[0] = 'rapidgzip'; sys.exit(cli())                                         
+gzip -dc r_1.garbage.fq.gz: exit 1 Traceback (most recent call last):   File "<string>", line 1, in <module>     import sys; from rapidgzip import cli; sys.argv[0] = 'rapidgzip'; sys.exit(cli())                                         
+gzip -dc r_1.trunc.fq.gz: exit 1 Unexpected end of file when getting block at 7872019 B 0 b (block index: 45) on demand Traceback (most recent call last):   File "<string>", line 1, in <module>     import sys; from rapidgzip import c
+gzip -dc SRR062634_200000_1.fq: exit 1 Traceback (most recent call last):   File "<string>", line 1, in <module>     import sys; from rapidgzip import cli; sys.argv[0] = 'rapidgzip'; sys.exit(cli())                                         
+bzip2 -dc r_1.fq.bz2: exit 0 
+bzip2 -dc r_1.garbage.fq.bz2: exit 0  bzip2: /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z/r_1.garbage.fq.bz2: trailing garbage after EOF ignored 
+se_fq_plain: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.273s (43953.3 Kseq/m, 4395.33 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fq_gz_auto: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.284s (42180.4 Kseq/m, 4218.04 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fq_gz_flag: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.293s (40972.1 Kseq/m, 4097.21 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fq_plain: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.807s (14875.7 Kseq/m, 2975.13 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+pe_fq_gz_auto: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.555s (21639.5 Kseq/m, 4327.90 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_q20: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.225s (53348.3 Kseq/m, 5334.83 Mbp/m).  826 sequences classified (0.41%)  199174 sequences unclassified (99.59%)
+pe_fq_gz_q20: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.476s (25236.2 Kseq/m, 5047.23 Mbp/m).  1614 sequences classified (0.81%)  198386 sequences unclassified (99.19%)
+se_fa: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.208s (57731.7 Kseq/m, 5773.17 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fa_wrap: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.211s (56845.4 Kseq/m, 5684.54 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fa_wrap_gz: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.431s (27822.8 Kseq/m, 5564.56 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+pe_fa_plain: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.412s (29106.2 Kseq/m, 5821.23 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_crlf: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.249s (48186.4 Kseq/m, 4818.64 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fq_crlf: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.487s (24630.3 Kseq/m, 4926.06 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+pe_fq_slash_tab: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.491s (24417.4 Kseq/m, 4883.49 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_gz_multimember: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.275s (43601.5 Kseq/m, 4360.15 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fq_gz_multimember: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 0.534s (22456.8 Kseq/m, 4491.35 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_gz_zeropad: upstream exit 65 (expected 0,65); classify: sequence reader - record 'SRR062634.197302' ends with 100 bases and 46 quality values; their bases were classified with the rest. 197302 records were classified and written to /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z/se_fq_gz_zeropad.kraken
+se_fq_gz_garbage: upstream exit 65 (expected 0,65); classify: sequence reader - record 'SRR062634.197302' ends with 100 bases and 46 quality values; their bases were classified with the rest. 197302 records were classified and written to /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z/se_fq_gz_garbage.kraken
+se_fq_gz_truncated: upstream exit 0 (expected 0,65); 97399 sequences (9.74 Mbp) processed in 0.156s (37437.9 Kseq/m, 3743.75 Mbp/m).  555 sequences classified (0.57%)  96844 sequences unclassified (99.43%)
+se_fq_gzflag_on_plain: upstream exit 0 (expected 0); 0 sequences (0.00 Mbp) processed in 0.010s (0.0 Kseq/m, 0.00 Mbp/m).  0 sequences classified (nan%)  0 sequences unclassified (nan%)
+se_fq_bz2_auto: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.971s (12353.2 Kseq/m, 1235.32 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fq_bz2_flag: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.961s (12489.0 Kseq/m, 1248.90 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+pe_fq_bz2_auto: upstream exit 0 (expected 0); 200000 sequences (40.00 Mbp) processed in 1.900s (6317.3 Kseq/m, 1263.46 Mbp/m).  2167 sequences classified (1.08%)  197833 sequences unclassified (98.92%)
+se_fq_bz2_garbage: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.974s (12315.7 Kseq/m, 1231.57 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fq_malformed: upstream exit 65 (expected 65); classify: sequence reader - record 'SRR062634.1000' has 100 bases and 152 quality values, and 1 further malformed records; their bases were classified with the rest. 199999 records were classified and written to /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z/se_fq_malformed.kraken
+pe_fq_mate2_short: upstream exit 65 (expected 65); classify: the two mate files hold different numbers of records, so only the pairs up to the end of the shorter one were classified. 199990 records were classified and written to /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z/pe_fq_mate2_short.kraken
+pe_fq_mate1_short: upstream exit 65 (expected 65); classify: the two mate files hold different numbers of records, so only the pairs up to the end of the shorter one were classified. 199990 records were classified and written to /Users/scttfrdmn/src/aws-kraken2/.cache/equiv-seqout/20261009T211424Z/pe_fq_mate1_short.kraken
+se_empty: upstream exit 0 (expected 0); 0 sequences (0.00 Mbp) processed in 0.000s (0.0 Kseq/m, 0.00 Mbp/m).  0 sequences classified (nan%)  0 sequences unclassified (nan%)
+se_fq_no_final_newline: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.251s (47836.6 Kseq/m, 4783.66 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+se_fa_no_final_newline: upstream exit 0 (expected 0); 200000 sequences (20.00 Mbp) processed in 0.207s (58014.2 Kseq/m, 5801.42 Mbp/m).  1099 sequences classified (0.55%)  198901 sequences unclassified (99.45%)
+extra sample: /Users/scttfrdmn/src/aws-kraken2/.cache/reads/ERR478965_200000 (accession ERR478965 records_per_mate 200000 urls ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_2.fastq.gz sha256 385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be ERR478965_200000_1.fq sha256 71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 ERR478965_200000_2.fq fetched 2026-10-06T00:29:07Z )
+ERR478965_se_fq_plain: upstream exit 0 (expected 0); 200000 sequences (18.13 Mbp) processed in 0.235s (51045.1 Kseq/m, 4626.81 Mbp/m).  396 sequences classified (0.20%)  199604 sequences unclassified (99.80%)
+ERR478965_se_fq_gz_auto: upstream exit 0 (expected 0); 200000 sequences (18.13 Mbp) processed in 0.256s (46854.9 Kseq/m, 4246.99 Mbp/m).  396 sequences classified (0.20%)  199604 sequences unclassified (99.80%)
+ERR478965_pe_fq_plain: upstream exit 0 (expected 0); 200000 sequences (36.17 Mbp) processed in 0.464s (25870.3 Kseq/m, 4679.27 Mbp/m).  482 sequences classified (0.24%)  199518 sequences unclassified (99.76%)
+ERR478965_pe_fq_gz_auto: upstream exit 0 (expected 0); 200000 sequences (36.17 Mbp) processed in 0.489s (24554.0 Kseq/m, 4441.18 Mbp/m).  482 sequences classified (0.24%)  199518 sequences unclassified (99.76%)
+cases: 34 recorded, 34 run, 34 expected
+=== RUN   TestOracleSeqout
+=== RUN   TestOracleSeqout/se_fq_plain
+    oracle_test.go:318: se_fq_plain: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_gz_auto
+    oracle_test.go:318: se_fq_gz_auto: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_gz_flag
+    oracle_test.go:318: se_fq_gz_flag: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_plain
+    oracle_test.go:318: pe_fq_plain: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_gz_auto
+    oracle_test.go:318: pe_fq_gz_auto: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_q20
+    oracle_test.go:318: se_fq_q20: 200000 records, 826 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_gz_q20
+    oracle_test.go:318: pe_fq_gz_q20: 200000 records, 1614 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fa
+    oracle_test.go:318: se_fa: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fa_wrap
+    oracle_test.go:318: se_fa_wrap: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fa_wrap_gz
+    oracle_test.go:318: pe_fa_wrap_gz: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fa_plain
+    oracle_test.go:318: pe_fa_plain: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_crlf
+    oracle_test.go:318: se_fq_crlf: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_crlf
+    oracle_test.go:318: pe_fq_crlf: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_slash_tab
+    oracle_test.go:318: pe_fq_slash_tab: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_gz_multimember
+    oracle_test.go:318: se_fq_gz_multimember: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_gz_multimember
+    oracle_test.go:318: pe_fq_gz_multimember: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_gz_zeropad
+    oracle_test.go:318: se_fq_gz_zeropad: 197302 records, 1080 classified, 0 id/len mismatches, 1 malformed, exit 65
+=== RUN   TestOracleSeqout/se_fq_gz_garbage
+    oracle_test.go:318: se_fq_gz_garbage: 197302 records, 1080 classified, 0 id/len mismatches, 1 malformed, exit 65
+=== RUN   TestOracleSeqout/se_fq_gz_truncated
+    oracle_test.go:318: se_fq_gz_truncated: 97399 records, 555 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_gzflag_on_plain
+=== RUN   TestOracleSeqout/se_fq_bz2_auto
+    oracle_test.go:318: se_fq_bz2_auto: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_bz2_flag
+    oracle_test.go:318: se_fq_bz2_flag: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/pe_fq_bz2_auto
+    oracle_test.go:318: pe_fq_bz2_auto: 200000 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_bz2_garbage
+    oracle_test.go:318: se_fq_bz2_garbage: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fq_malformed
+    oracle_test.go:318: se_fq_malformed: 199999 records, 1099 classified, 0 id/len mismatches, 2 malformed, exit 65
+=== RUN   TestOracleSeqout/pe_fq_mate2_short
+    oracle_test.go:318: pe_fq_mate2_short: 199990 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 65
+=== RUN   TestOracleSeqout/pe_fq_mate1_short
+    oracle_test.go:318: pe_fq_mate1_short: 199990 records, 2167 classified, 0 id/len mismatches, 0 malformed, exit 65
+=== RUN   TestOracleSeqout/se_empty
+=== RUN   TestOracleSeqout/se_fq_no_final_newline
+    oracle_test.go:318: se_fq_no_final_newline: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/se_fa_no_final_newline
+    oracle_test.go:318: se_fa_no_final_newline: 200000 records, 1099 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/ERR478965_se_fq_plain
+    oracle_test.go:318: ERR478965_se_fq_plain: 200000 records, 396 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/ERR478965_se_fq_gz_auto
+    oracle_test.go:318: ERR478965_se_fq_gz_auto: 200000 records, 396 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/ERR478965_pe_fq_plain
+    oracle_test.go:318: ERR478965_pe_fq_plain: 200000 records, 482 classified, 0 id/len mismatches, 0 malformed, exit 0
+=== RUN   TestOracleSeqout/ERR478965_pe_fq_gz_auto
+    oracle_test.go:318: ERR478965_pe_fq_gz_auto: 200000 records, 482 classified, 0 id/len mismatches, 0 malformed, exit 0
+--- PASS: TestOracleSeqout (8.29s)
+    --- PASS: TestOracleSeqout/se_fq_plain (0.08s)
+    --- PASS: TestOracleSeqout/se_fq_gz_auto (0.13s)
+    --- PASS: TestOracleSeqout/se_fq_gz_flag (0.12s)
+    --- PASS: TestOracleSeqout/pe_fq_plain (0.15s)
+    --- PASS: TestOracleSeqout/pe_fq_gz_auto (0.22s)
+    --- PASS: TestOracleSeqout/se_fq_q20 (0.08s)
+    --- PASS: TestOracleSeqout/pe_fq_gz_q20 (0.22s)
+    --- PASS: TestOracleSeqout/se_fa (0.05s)
+    --- PASS: TestOracleSeqout/se_fa_wrap (0.06s)
+    --- PASS: TestOracleSeqout/pe_fa_wrap_gz (0.16s)
+    --- PASS: TestOracleSeqout/pe_fa_plain (0.10s)
+    --- PASS: TestOracleSeqout/se_fq_crlf (0.08s)
+    --- PASS: TestOracleSeqout/pe_fq_crlf (0.15s)
+    --- PASS: TestOracleSeqout/pe_fq_slash_tab (0.15s)
+    --- PASS: TestOracleSeqout/se_fq_gz_multimember (0.13s)
+    --- PASS: TestOracleSeqout/pe_fq_gz_multimember (0.24s)
+    --- PASS: TestOracleSeqout/se_fq_gz_zeropad (0.13s)
+    --- PASS: TestOracleSeqout/se_fq_gz_garbage (0.13s)
+    --- PASS: TestOracleSeqout/se_fq_gz_truncated (0.08s)
+    --- PASS: TestOracleSeqout/se_fq_gzflag_on_plain (0.03s)
+    --- PASS: TestOracleSeqout/se_fq_bz2_auto (0.96s)
+    --- PASS: TestOracleSeqout/se_fq_bz2_flag (0.95s)
+    --- PASS: TestOracleSeqout/pe_fq_bz2_auto (1.85s)
+    --- PASS: TestOracleSeqout/se_fq_bz2_garbage (0.95s)
+    --- PASS: TestOracleSeqout/se_fq_malformed (0.08s)
+    --- PASS: TestOracleSeqout/pe_fq_mate2_short (0.15s)
+    --- PASS: TestOracleSeqout/pe_fq_mate1_short (0.14s)
+    --- PASS: TestOracleSeqout/se_empty (0.00s)
+    --- PASS: TestOracleSeqout/se_fq_no_final_newline (0.08s)
+    --- PASS: TestOracleSeqout/se_fa_no_final_newline (0.07s)
+    --- PASS: TestOracleSeqout/ERR478965_se_fq_plain (0.07s)
+    --- PASS: TestOracleSeqout/ERR478965_se_fq_gz_auto (0.13s)
+    --- PASS: TestOracleSeqout/ERR478965_pe_fq_plain (0.14s)
+    --- PASS: TestOracleSeqout/ERR478965_pe_fq_gz_auto (0.21s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/seqout	8.383s
+go test seqout exit 0
+=== RUN   TestOracleDecompress
+--- PASS: TestOracleDecompress (2.38s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/seqio	2.602s
+go test seqio exit 0
+result: PASS
+latest not moved (result PASS, default decompressor no)

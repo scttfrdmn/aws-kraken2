@@ -31,11 +31,21 @@ echo "oracle-cohort: shell flags $-"
 SEL=${1:-viral}
 case "$SEL" in viral) DBS=(viral) ;; standard8) DBS=(standard8) ;; all) DBS=(viral standard8) ;;
   *) echo "usage: $0 [viral|standard8|all]" >&2; exit 2 ;; esac
+# DECOMP_BIN (as make oracle): the gzip both sides find on PATH; AK2_DECOMPRESS passes to the
+# engine as is (pipe: it runs that gzip, as the wrapper does). The manifest records both.
+if [ -n "${DECOMP_BIN:-}" ]; then PATH="$DECOMP_BIN:$PATH"
+elif [ -x /tmp/gnugzip/inst/bin/gzip ]; then PATH="/tmp/gnugzip/inst/bin:$PATH"; fi
+export PATH
+echo "oracle-cohort: decompression ${AK2_DECOMPRESS:-inprocess}; gzip $(command -v gzip)"
 for t in jq perl awk cmp gzip; do command -v "$t" >/dev/null || { echo "oracle-cohort: need $t" >&2; exit 1; }; done
 if command -v sha256sum >/dev/null; then sha() { sha256sum "$1" | cut -d' ' -f1; }; else sha() { shasum -a 256 "$1" | cut -d' ' -f1; }; fi
 unset KRAKEN2_DB_PATH KRAKEN2_DEFAULT_DB KRAKEN2_NUM_THREADS AK2_S3_EMULATE AK2_S3_CLIENT
 
 K2DIR=$(scripts/oracle-build.sh) || { echo "oracle-cohort: upstream build failed" >&2; exit 1; }
+# The wrapper puts its own directory first on PATH (scripts/kraken2:26): no gzip/bzip2 there.
+for t in gzip bzip2; do
+  [ ! -e "$K2DIR/$t" ] || { echo "oracle-cohort: $K2DIR/$t exists: the wrapper would run it ahead of PATH, ours would not (shims go on PATH)" >&2; exit 1; }
+done
 make -s build || { echo "oracle-cohort: go build failed" >&2; exit 1; }
 OURS="$ROOT/bin/aws-kraken2"; K2P="$ROOT/bin/k2probe"
 N=200000
@@ -213,15 +223,20 @@ run_db() {
     --arg pin "$UPSTREAM_SHA" --arg describe "$UPSTREAM_DESCRIBE" --arg start "$start" --arg stop "$stop" \
     --arg os "$(uname -s)" --arg arch "$(uname -m)" --argjson total "$total" --argjson pass "$pass" \
     --arg modes "${MODES[*]}" --argjson nsamples "${#SAMPLES[@]}" \
+    --arg gzip "$(gzip --version 2>&1 | head -1)" --arg gzip_path "$(command -v gzip)" --arg ak2_decompress "${AK2_DECOMPRESS:-}" \
     '{gate:"g1", what:"make oracle-cohort: upstream kraken2 per sample vs the engine cohort mode, byte-identity per sample (Law 1, #25)",
       db:$db, db_dir:$dbdir, commit:$commit, dirty:$dirty, upstream_pin:$pin, upstream_describe:$describe,
       host:{os:$os, arch:$arch, canonical_platform:($os == "Linux" and $arch == "aarch64")},
+      gzip:{version:$gzip, path:$gzip_path},
+      decompress:{ak2_decompress:$ak2_decompress,
+                  ours:(if $ak2_decompress == "pipe" then "gzip -dc / bzip2 -dc from PATH (as the wrapper)" else "in process" end)},
       modes:($modes|split(" ")), samples:$nsamples, rows:$total, rows_passed:$pass,
       start:$start, stop:$stop, failed:($pass != $total)}' > "$RES/manifest.json"
   {
     echo "# make oracle-cohort: $db, $TS"
     echo
     echo "Upstream at \`$UPSTREAM_SHA\` per sample vs the engine's cohort mode at \`$(git rev-parse HEAD)\` (dirty: $dirty), on $(uname -s) $(uname -m)."
+    echo "Decompression: ours $(jq -r .decompress.ours "$RES/manifest.json") (AK2_DECOMPRESS='${AK2_DECOMPRESS:-}'); gzip on PATH: $(gzip --version 2>&1 | head -1) ($(command -v gzip))."
     echo
     echo "| mode | samples | passed | control flagged |"
     echo "|---|---|---|---|"
