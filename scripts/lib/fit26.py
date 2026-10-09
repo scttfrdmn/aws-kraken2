@@ -14,13 +14,13 @@ Stdlib only (no numpy): Levenberg-Marquardt with a numeric Jacobian, covariance 
 leave-one-out refits, parametric draws for the uncertainty of the optimal N. Unit-tested on
 synthetic data in scripts/lib/fit26_test.py (make test).
 """
-import csv, datetime as dt, glob, hashlib, json, math, os, random, subprocess
+import csv, datetime as dt, glob, hashlib, json, math, os, random, re, subprocess
 
 G = "results/g3"
 OUT = os.path.join(G, "fit26")
 COHORTS = (1, 10, 100, 1000)
 N_GRID = tuple(range(1, 65))          # the design's N range is 1..64 (#25)
-R_IN_E1 = 1.84e6                      # E1's per-stream input rate (results/g3/20261008-021537-cb0cea7-7e51-n8/tables/summary.md)
+R_IN_E1 = 1.84e6                      # default for unit tests; main() reads it from E1 tables/summary.md
 T_SAMPLE = 16                         # threads per sample in flight (campaign default, points.tsv threads)
 HELD_OUT = "runs/g3-e4-c8g.12xlarge-n32.json"   # the designated held-out point: the only N=32 point
 FIX = "904c2a5"                       # the #44 fix (clean-room HitCounts)
@@ -48,6 +48,30 @@ def inv(A):
                 f = M[r][c]
                 M[r] = [a - f * b for a, b in zip(M[r], M[c])]
     return [row[n:] for row in M]
+
+
+def rank(J, tol=1e-7):
+    """Numerical rank of J (rows x cols): columns scaled to unit norm, then Gaussian elimination
+    with partial pivoting; a pivot below tol counts as dependent."""
+    if not J:
+        return 0
+    n = len(J[0])
+    norms = [math.sqrt(sum(row[j] ** 2 for row in J)) or 1.0 for j in range(n)]
+    M = [[row[j] / norms[j] for j in range(n)] for row in J]
+    r = 0
+    for c in range(n):
+        p = max(range(r, len(M)), key=lambda i: abs(M[i][c]), default=None)
+        if p is None or abs(M[p][c]) <= tol:
+            continue
+        M[r], M[p] = M[p], M[r]
+        for i in range(len(M)):
+            if i != r and M[i][c] != 0.0:
+                f = M[i][c] / M[r][c]
+                M[i] = [a - f * b for a, b in zip(M[i], M[r])]
+        r += 1
+        if r == len(M):
+            break
+    return r
 
 
 def matvec(A, v):
@@ -121,9 +145,9 @@ def lm(resid, th0, iters=300):
         if not improved or done:
             break
     J = jac(resid, th, r)
-    dof = len(r) - len(th)
+    dof = len(r) - rank(J)       # the true rank: a singular fit still gets an honest s
     cov = None
-    if dof > 0:
+    if dof > 0 and rank(J) == len(th):
         JTJ = [[sum(J[k][a] * J[k][b] for k in range(len(r))) for b in range(len(th))] for a in range(len(th))]
         try:
             s2 = rss / dof
@@ -131,6 +155,27 @@ def lm(resid, th0, iters=300):
         except ValueError:
             cov = None
     return th, cov, rss, dof
+
+
+def leverage_fit(X):
+    """Hidden-extrapolation test for a linear design: rows X (intercept added here). Returns
+    (inverse of X'X, the largest leverage h_ii over the rows), or None if X'X is singular."""
+    Z = [[1.0] + list(r) for r in X]
+    k = len(Z[0])
+    if len(Z) <= k:
+        return None
+    try:
+        A = inv([[sum(z[a] * z[b] for z in Z) for b in range(k)] for a in range(k)])
+    except ValueError:
+        return None
+    h = [sum(z[a] * A[a][b] * z[b] for a in range(k) for b in range(k)) for z in Z]
+    return A, max(h)
+
+
+def leverage(model, x):
+    z = [1.0] + list(x)
+    A = model[0]
+    return sum(z[a] * A[a][b] * z[b] for a in range(len(z)) for b in range(len(z)))
 
 
 def grad(f, th):
@@ -244,8 +289,17 @@ NONNEG = {"K", "beta", "beta_nic", "rho", "tau_emit", "gamma_net", "phi_fetch", 
 
 def fit_e2e(name, pts):
     params, _, f, _ = E2E[name]
-    th, cov, rss, dof = lm(lambda th: [f(th, p["cfg"]) - p["T"] for p in pts], [E2E_START[k] for k in params])
-    return {"theta": th, "cov": cov, "rss": rss, "dof": dof, "n": len(pts), "T": lambda th_, cfg: f(th_, cfg)}
+    res = lambda th: [f(th, p["cfg"]) - p["T"] for p in pts]
+    th, cov, rss, dof = lm(res, [E2E_START[k] for k in params])
+    return {"theta": th, "cov": cov, "rss": rss, "dof": dof, "n": len(pts), "T": lambda th_, cfg: f(th_, cfg),
+            "identifiable": identifiable(jac(res, th, res(th)))}
+
+
+def identifiable(J):
+    """Per parameter: True if its column is not in the span of the others (dropping it lowers the
+    rank of J). In a singular fit only these have a defined value."""
+    rk = rank(J)
+    return [rank([row[:j] + row[j + 1:] for row in J]) < rk for j in range(len(J[0]))]
 
 
 # Per-term fits: every term against its own measured phase; T is then their sum. The phases of
@@ -304,6 +358,21 @@ def fit_terms(full, pts):
     return {"theta": th_all, "cov": cov, "terms": terms, "T": T,
             "params": [f"{t['term']}.{p}" for t in terms for p in t["params"]],
             "units": [u for t in terms for u in t["units"]]}
+
+
+def resid_s(fit, pts):
+    """The model's residual scale for a prediction interval: s = sqrt(rss/dof) of an end-to-end fit;
+    for a per-term fit (T not fitted directly) the rmse of its T over the points it was fitted on."""
+    if "terms" not in fit:
+        return math.sqrt(fit["rss"] / fit["dof"]) if fit["dof"] > 0 else float("nan")
+    return math.sqrt(sum((p["T"] - fit["T"](fit["theta"], p["cfg"])) ** 2 for p in pts) / len(pts))
+
+
+def heldout_z(obs, pred, se_param, s):
+    """z of a held-out point against the prediction interval: se = sqrt(se_param^2 + s^2)."""
+    se_param = 0.0 if se_param != se_param else se_param
+    se = math.sqrt(se_param ** 2 + s ** 2) if s == s else float("nan")
+    return se, ((obs - pred) / se if se == se and se > 0 else float("nan"))
 
 
 def p_reg_parts(fit, cfg):
@@ -460,6 +529,18 @@ def main():
     rec = Record()
     D = build(rec)
     pts, S, coh, itypes, b_route = D["pts"], D["S"], D["coh"], D["itypes"], D["b_route"]
+    npre0 = sum(p["pre_fix"] == "yes" for p in pts)
+    # Every fitted quantity inherits the pre-fix status of the points it rests on.
+    PRE = "yes" if npre0 == len(pts) else ("no" if npre0 == 0 else f"partly ({npre0} of {len(pts)} points)")
+    # Constants quoted in the report, read from their source files (Law: traceable to the record).
+    r_in_src = os.path.join(E1, "tables", "summary.md")
+    mm = re.search(r"at about ([0-9.]+) Mpairs/s", open(rec.open(r_in_src)).read())
+    assert mm, ("no per-stream input rate in", r_in_src)
+    global R_IN_E1
+    R_IN_E1 = float(mm.group(1)) * 1e6      # the models read the module value at call time
+    fr_src = os.path.join(G, "campaign", "frontier.md")
+    mm = re.search(r"post-fix classify / pre-fix = ([0-9.]+)", open(rec.open(fr_src)).read())
+    HITBENCH = float(mm.group(1).rstrip(".")) if mm else float("nan")
     os.makedirs(OUT, exist_ok=True)
     head_sha = git("rev-parse", "HEAD")
     dirty = git("status", "--porcelain", "--untracked-files=no", "--", "scripts")
@@ -522,7 +603,8 @@ def main():
         k = len(fit["theta"])
         rss = sum(x * x for x in rs)
         tss = sum((p["T"] - sum(q["T"] for q in pts) / n) ** 2 for p in pts)
-        stats[name] = {"rmse": math.sqrt(rss / n), "s": math.sqrt(rss / (n - k)) if n > k else float("nan"),
+        dof_t = fit["dof"] if name in E2E else n - k      # E2E: n - the true rank of J
+        stats[name] = {"rmse": math.sqrt(rss / n), "s": math.sqrt(rss / dof_t) if dof_t > 0 else float("nan"), "dof": dof_t,
                        "loo_rmse": math.sqrt(sum(x * x for x in ls if x == x) / max(1, sum(1 for x in ls if x == x))),
                        "R2": 1 - rss / tss, "maxabs": max(abs(x) for x in rs), "k": k, "n": n,
                        "maxabs_pct": max(abs(x) / p["T"] for x, p in zip(rs, pts)) * 100}
@@ -530,13 +612,16 @@ def main():
         sub = [p for p in pts if p["spec"] != HELD_OUT]
         ff = fit["refit"](sub)
         pr = ff["T"](ff["theta"], ho["cfg"])
-        se = pred_se(lambda th: ff["T"](th, ho["cfg"]), ff["theta"], ff["cov"])
-        z = (ho["T"] - pr) / se if se == se and se > 0 else float("nan")
+        se_par = pred_se(lambda th: ff["T"](th, ho["cfg"]), ff["theta"], ff["cov"])
+        s_ref = resid_s(ff, sub)
+        se, z = heldout_z(ho["T"], pr, se_par, s_ref)
         cost_o, cost_p = ho["derived_usd_run"], ho["N"] * ho["price_h"] * pr / 3600
-        stats[name]["ho"] = (pr, se, z)
+        stats[name]["ho"] = (pr, se, z, se_par, s_ref)
         ho_rows.append([name, "designated held-out point (fit on the other 8 points)", ho["spec"], f"T_with_harness {ho['T']:.0f} s",
                         f"{pr:.1f}", g(se, "{:.1f}"), f"{ho['T'] - pr:+.1f}", g(z, "{:+.2f}"),
-                        f"$/sample derived {cost_o / ho['cohort']:.5f}, predicted {cost_p / ho['cohort']:.5f}",
+                        f"se = sqrt(se_param^2 + s^2) = sqrt({g(se_par, '{:.1f}')}^2 + {g(s_ref, '{:.1f}')}^2), s from the refit "
+                        f"({'sqrt(rss/dof)' if name in E2E else 'its T rmse'}); $/sample derived {cost_o / ho['cohort']:.5f}, "
+                        f"predicted {cost_p / ho['cohort']:.5f}",
                         "extrapolated in N (N=32 beyond the other points' N <= 16)"])
 
     # Cohort-size checks of the classify term (no end-to-end point exists at cohort 1 or 10):
@@ -617,12 +702,34 @@ def main():
             rr[k] = (min(vs), max(vs))
         RANGE[name] = rr
 
+    # Joint (hidden) extrapolation: each regressor can be in range while the combination is not.
+    # Test: leverage h(x) = x'(X'X)^-1 x of the prediction above the largest leverage of the fit's
+    # own observations, per linear group of regressors (scaled to their ranges). Single-regressor
+    # groups are covered by the range test.
+    JOINT = {}
+    for name in ORDER:
+        if name == "P-full":
+            grp, cf = ["W/(N*c_used)", "x_net", "n_lane"], [p["cfg"] for p in pts] + [p["cfg_c1"] for p in pts]
+        elif name in E2E:
+            grp, cf = FIT_REG[name], [p["cfg"] for p in pts]
+        else:
+            continue
+        sc = [max(abs(RANGE[name][k][0]), abs(RANGE[name][k][1])) or 1.0 for k in grp]
+        mdl = leverage_fit([[REG[k](c) / q for k, q in zip(grp, sc)] for c in cf])
+        if mdl:
+            JOINT[name] = (grp, sc, mdl)
+
     def reg_flags(name, cfg):
         out = []
         for k, (lo, hi) in RANGE[name].items():
             v = REG[k](cfg)
             if v < lo * (1 - 1e-9) - 1e-12 or v > hi * (1 + 1e-9) + 1e-12:
                 out.append(f"{k} = {v:.4g} outside the fitted {lo:.4g}-{hi:.4g}")
+        if not out and name in JOINT:
+            grp, sc, mdl = JOINT[name]
+            h = leverage(mdl, [REG[k](cfg) / q for k, q in zip(grp, sc)])
+            if h > mdl[1] * (1 + 1e-9):
+                out.append(f"joint = leverage {h:.3g} of ({', '.join(grp)}) above the fitted maximum {mdl[1]:.3g}: outside the fitted joint range")
         return out
     pred_rows, opt_rows, OPT = [], [], {}
     for name in ORDER:
@@ -641,7 +748,7 @@ def main():
             run = cd["N"] * cd["price_h"] * T / 3600
             reg = "-"
             if name == "R":
-                reg = f"{cd['price_h'] / 3600 * (cd['N'] * th[0] + th[1] * cfg['S_GB'] + th[2] * cfg['W'] / cfg['vcpu'] / 1e6) / cd['cohort']:.6f}"
+                reg = "= N*p*T (only K is identifiable)"
             elif name == "P-reg":
                 tb, tt, tpg, beta, rho = p_reg_parts(fit, cfg)
                 reg = f"{cd['price_h'] / 3600 * (cd['N'] * (tb + tt) + beta * cfg['S_GB'] + rho * cfg['W'] / cfg['vcpu'] / 1e6) / cd['cohort']:.6f}"
@@ -720,20 +827,26 @@ def main():
                 dof, n = t["dof"], t["n"]
             dv = derived(pn, v, se)
             sign = "unphysical (negative)" if pn.split(".")[-1] in NONNEG and v < 0 else ""
-            ident = "" if fit["cov"] is not None else "not identifiable (J'J singular)"
+            ident = "" if fit["cov"] is not None else "fit singular (J'J)"
+            if ident and not fit.get("identifiable", [True] * len(pnames))[i]:
+                # in the null space: its value is arbitrary, so it is not printed
+                par_rows.append([name, pn, u, "-", "-", "-", n, dof, "", "", "", "", "not identifiable (null space of J)", PRE])
+                continue
+            if ident:
+                ident += "; this parameter is identifiable, its se is not computed"
             par_rows.append([name, pn, u, f"{v:.6g}", g(se, "{:.3g}"), g(abs(v) / se if se == se and se > 0 else float("nan"), "{:.2f}"),
                              n, dof, dv[0] if dv else "", g(dv[1], "{:.6g}") if dv else "", g(dv[2], "{:.3g}") if dv else "", dv[3] if dv else "",
-                             "; ".join(x for x in (sign, ident) if x)])
+                             "; ".join(x for x in (sign, ident) if x), PRE])
     w("params.tsv", ["fit", "param", "unit", "value", "se", "abs_t", "n_obs", "dof", "derived", "derived_value", "derived_se", "derived_unit",
-                     "note"], par_rows)
+                     "note", "engine_pre_fix"], par_rows)
     w("residuals.tsv", ["fit", "spec", "type", "N", "engine_pre_fix", "T_obs_s", "T_pred_s", "T_pred_se_s", "resid_s", "resid_pct",
                         "loo_pred_s", "loo_resid_s", "designated_held_out"], res_rows)
     w("heldout.tsv", ["fit", "check", "point", "observed", "predicted", "predicted_se", "obs_minus_pred", "z", "note", "caveat"], ho_rows)
     w("predictions.tsv", ["fit", "family", "type", "cohort", "N", "inflight", "c_used", "T_pred_s", "T_pred_se_s", "usd_run_NpT",
                           "usd_per_sample_NpT", "usd_per_sample_registered_formula", "status",
-                          "flags (values and ranges: optimal.tsv)"], pred_rows)
+                          "flags (values and ranges: optimal.tsv)", "engine_pre_fix"], [r + [PRE] for r in pred_rows])
     w("optimal.tsv", ["fit", "family", "cohort", "objective", "type", "N", "inflight", "T_pred_s", "usd_per_sample", "N_68pct_draws",
-                      "draws_same_type", "status", "flags"], opt_rows)
+                      "draws_same_type", "status", "flags", "engine_pre_fix"], [r + [PRE] for r in opt_rows])
 
     # ---- report ------------------------------------------------------------------------------
     md = []
@@ -745,8 +858,9 @@ def main():
     m(f"**Pre-fix.** {npre} of {len(pts)} points were measured with the pre-fix engine (engine_pre_fix = yes in points.tsv: "
       f"the commit does not descend from the #44 fix {FIX}; checked again here with git: "
       f"{', '.join(sorted({p['pre_fix_git'] for p in pts}))}). So is E1 ({e1_pre}). The #44 speed check (probe (d), a laptop "
-      "against Standard-8) puts post-fix classify at 1.0252x pre-fix; it is not applied here. Every parameter, residual and "
-      "predicted N below is a pre-fix result until the points are regenerated.\n")
+      f"against Standard-8; results/g3/campaign/frontier.md) puts post-fix classify at {HITBENCH:.4f}x pre-fix; it is not "
+      "applied here. Every parameter, residual and predicted N below is a pre-fix result until the points are regenerated; "
+      "params.tsv, predictions.tsv and optimal.tsv carry an engine_pre_fix column.\n")
     m("## Data and the registered symbols\n")
     m(f"- Points: the {len(pts)} cohort-100 campaign points (E2-E4) in results/g3/campaign/points.tsv, each checked against its "
       "cohort's tables/point.tsv and batches.tsv. Families with data: " +
@@ -766,12 +880,18 @@ def main():
       f"{min(D['broute_all']):.1f}-{max(D['broute_all']):.1f}), at each type's peak NIC rate "
       "(results/instance-types/us-west-2.json).")
     m("- Cost: **N*p*T** (every node billed for the fleet's wall, the derived $ of points.tsv) is the cost used for the optima. "
-      "The registered formula p*[N*(t_boot + t_tail) + S/B + W/(c*r)] is evaluated beside it for R and P-reg "
-      "(predictions.tsv). Neither is effective cost: the utilisation backfill (results/util-backfill/) gives lower bounds "
-      "only, and U_cpu_lb is shown per point for context.")
-    m("- Uncertainty: s^2 (J'J)^-1 from the fit; predictions by the delta method; the optimal N's 68% range from "
-      f"{DRAWS} parametric draws (seed {SEED}). Held-out: leave-one-out for every point, plus the designated held-out point "
-      f"{HELD_OUT} (the only N=32 point), fitted on the other 8.\n")
+      "The registered formula p*[N*(t_boot + t_tail) + S/B + W/(c*r)] is evaluated beside it with P-reg's t_boot and t_tail "
+      "(predictions.tsv; its per-point residuals against derived and billed $ are in cost_residuals.tsv and section 1c). For "
+      "fit R that column reads '= N*p*T': only K is identifiable, so the formula with t_boot + t_tail = K is N*p*T exactly and "
+      "is not an independent check. Neither cost is effective cost: the utilisation backfill (results/util-backfill/) gives "
+      "lower bounds only, and U_cpu_lb is shown per point for context.")
+    m("- Uncertainty: s^2 (J'J)^-1 from the fit (s from n minus the true rank of J); predictions by the delta method "
+      "(parameter uncertainty only); the optimal N's 68% range from "
+      f"{DRAWS} parametric draws (seed {SEED}). **The per-term fits' covariance is block-diagonal**: each term is fitted "
+      "separately on phases of the same runs, so cross-term covariance (a slow run is slow in several phases) is set to 0, and "
+      "the P-reg and P-full standard errors and optimal-N ranges are understated. Held-out: leave-one-out for every point, plus "
+      f"the designated held-out point {HELD_OUT} (the only N=32 point), fitted on the other 8; its z uses the prediction "
+      "interval se = sqrt(se_param^2 + s^2), s from the refit (sqrt(rss/dof) end to end, the T rmse for per-term fits).\n")
     m("## Points\n")
     m("| point | N | vCPU | c used | in flight | T (s) | t_boot | fetch | load | LPT wall | skew | tails (body+harness max) | c1 wall | U_cpu_lb | pre-fix |")
     m("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
@@ -815,7 +935,7 @@ def main():
               f"{[p for p in pts if p['spec'] == HELD_OUT][0]['T']:.0f} s (z = {g(s['ho'][2], '{:+.2f}')}). Cohort-1 classify "
               f"check: rmse {cs_stats[name]['c1_rmse']:.2f} s, mean obs - pred {cs_stats[name]['c1_bias']:+.2f} s.\n")
             return
-        m(f"\nrmse {s['rmse']:.1f} s (s = {g(s['s'], '{:.1f}')} s with {s['n'] - s['k']} dof), R^2 {s['R2']:.3f}, max |resid| "
+        m(f"\nrmse {s['rmse']:.1f} s (s = {g(s['s'], '{:.1f}')} s with {s['dof']} dof), R^2 {s['R2']:.3f}, max |resid| "
           f"{s['maxabs']:.0f} s ({s['maxabs_pct']:.0f}%), LOO rmse {s['loo_rmse']:.1f} s. Held-out {HELD_OUT}: predicted "
           f"{s['ho'][0]:.0f} +- {g(s['ho'][1], '{:.0f}')} s against {[p for p in pts if p['spec'] == HELD_OUT][0]['T']:.0f} s "
           f"(z = {g(s['ho'][2], '{:+.2f}')}). Cohort-1 classify check: rmse {cs_stats[name]['c1_rmse']:.2f} s, mean "
@@ -831,6 +951,61 @@ def main():
     ptable("P-reg")
     rtable("P-reg")
 
+    # 1c. Cost residuals of the registered cost formula, with P-reg's terms.
+    PR = FITS["P-reg"]
+    m("## 1c. The registered cost formula against the record (P-reg's t_boot, t_tail, B, r)\n")
+    m("Per point, run $ = p*[N*(t_boot + t_tail) + S/B + W/(c*r)] / 3600 against the derived $ (N*p*T_with_harness, the "
+      "fitted cost) and the billed $ (the members' manifest cost_usd summed; it covers every batch and the cohort-1 repeats, "
+      "so it is not like for like). Fit R gives no independent check (only K is identifiable).\n")
+    m("| point | registered formula $ | derived $ (N*p*T) | formula - derived | % | billed $ (all batches) | formula / billed |")
+    m("|---|---|---|---|---|---|---|")
+    cost_rows = []
+    for p in pts:
+        tb, tt, tpg, beta, rho = p_reg_parts(PR, p["cfg"])
+        f_ = p["price_h"] / 3600 * (p["N"] * (tb + tt) + beta * p["cfg"]["S_GB"] + rho * p["cfg"]["W"] / p["vcpu"] / 1e6)
+        d_, b_ = p["derived_usd_run"], p["billed_usd_run"]
+        cost_rows.append([p["spec"], p["type"], p["N"], p["pre_fix"], f"{f_:.4f}", f"{d_:.4f}", f"{f_ - d_:+.4f}",
+                          f"{100 * (f_ - d_) / d_:+.1f}", f"{b_:.4f}", f"{f_ / b_:.3f}"])
+        m(f"| {p['type']} N={p['N']} | {f_:.4f} | {d_:.4f} | {f_ - d_:+.4f} | {100 * (f_ - d_) / d_:+.1f} | {b_:.4f} | {f_ / b_:.3f} |")
+    w("cost_residuals.tsv", ["spec", "type", "N", "engine_pre_fix", "registered_formula_usd_run", "derived_usd_run_NpT",
+                             "formula_minus_derived", "pct", "billed_usd_run_all_batches", "formula_over_billed"], cost_rows)
+    er = [float(r[7]) for r in cost_rows]
+    m(f"\nformula vs derived: mean {sum(er) / len(er):+.1f}%, range {min(er):+.1f}% to {max(er):+.1f}%.\n")
+
+    # 1d. The H-width knee: N* = (S/B + W/(c*r)) / (t_boot + t_tail), from P-reg.
+    m("## 1d. H-width's cost knee from the registered cost (P-reg)\n")
+    m("The registered cost per sample is p*[N*(t_boot + t_tail) + S/B + W/(c*r)]/cohort: flat in N while the work term "
+      "S/B + W/(c*r) dominates, and rising once the per-node fixed cost N*(t_boot + t_tail) passes it, at "
+      "N* = (S/B + W/(c*r)) / (t_boot + t_tail). Registered prediction (H-width, #25): N* about 6-8 for a single sample "
+      "and about 20 for a 100-sample cohort. Values from P-reg's parameters (block-diagonal se, understated); N* is a "
+      "property of the cost curve, not a feasibility statement: the memory floor (smallest N whose memory holds the shard) "
+      "is beside it.\n")
+    off = {t["term"]: t["off"] for t in PR["terms"]}
+
+    def nstar(th_, c, W):
+        return (th_[off["load"]] * S / 1e9 + th_[off["classify"] + 1] * W / c / 1e6) / (th_[off["t_boot"]] + th_[off["t_tail"]])
+    m("| family | type | vCPU | memory floor N | " + " | ".join(f"N* cohort {c}" for c in COHORTS) + " |")
+    m("|---|---|---|---|" + "---|" * len(COHORTS))
+    ns_rows = []
+    for t in types:
+        ti = tinfo[t]
+        fl_ = min((n for n in N_GRID if feasible_inflight(ti["mem_mib"], ti["vcpu"], n, S)), default=None)
+        cells = []
+        for c in COHORTS:
+            v = nstar(PR["theta"], ti["vcpu"], coh[c]["W"])
+            se_ = pred_se(lambda t_: nstar(t_, ti["vcpu"], coh[c]["W"]), PR["theta"], PR["cov"])
+            cells.append(f"{v:.1f} +- {g(se_, '{:.1f}')}")
+            ns_rows.append([ti["family"], t, ti["vcpu"], fl_, c, f"{v:.3f}", g(se_, "{:.3f}"),
+                            "extrapolated (cohort)" if c != 100 else "within data", PRE])
+        m(f"| {ti['family']} | {t} | {ti['vcpu']} | {fl_} | " + " | ".join(cells) + " |")
+    w("hwidth_knee.tsv", ["family", "type", "vcpus", "memory_floor_N", "cohort", "N_star", "N_star_se", "status", "engine_pre_fix"],
+      ns_rows)
+    v1 = [float(r[5]) for r in ns_rows if r[4] == 1]
+    v100 = [float(r[5]) for r in ns_rows if r[4] == 100]
+    m(f"\nN* spans {min(v1):.1f}-{max(v1):.1f} at cohort 1 (registered: 6-8) and {min(v100):.1f}-{max(v100):.1f} at cohort 100 "
+      "(registered: about 20) over the measured types; cohort 1 and 1000 are extrapolated in cohort size. Every value is "
+      "pre-fix.\n")
+
     # Defects, from the fits.
     m("## Defects in the registered form\n")
     th = R["theta"]
@@ -841,38 +1016,57 @@ def main():
     turn = [(a, b) for a, b in zip(xg, xg[1:]) if b["T"] > a["T"]]
     pr_t = p_reg_parts(FITS["P-reg"], pts[0]["cfg"])
     ld = {p["type"] + f" N={p['N']}": S / 1e9 / p["N"] / p["load"] for p in pts}
+    c8 = sorted([p for p in pts if p["type"] == "c8g.12xlarge"], key=lambda p: p["N"])
+    under = [p for p in pts if p["cfg"]["c_used"] < p["vcpu"]]
+    preg_cls = [t for t in FITS["P-reg"]["terms"] if t["term"] == "classify"][0]
+    cls_res = {p["spec"]: p["lpt"] - preg_cls["f"](preg_cls["theta"], p["cfg"]) for p in pts}
+    rres = {r[1]: r[9] for r in res_rows if r[0] == "R"}
+    floor100 = coh[100]["w_max"] / R_IN_E1
+    floor1 = coh[1]["w_max"] / R_IN_E1
+    ldc8 = [ld[f"c8g.12xlarge N={p['N']}"] for p in c8]
     defects = [
         ("No N-optimum in time", f"every N-dependent term falls as 1/N, so T(N) is monotone decreasing for B, r > 0: the time-optimal "
-         f"N is the grid edge (N={max(N_GRID)}) in {'every' if mono else 'most'} family x cohort cell of fit R. The registered "
-         "H-width knee (6-8 at cohort 1, ~20 at cohort 100) cannot come out of this form. Measured: " +
+         f"N is the grid edge (N={max(N_GRID)}) in {'every' if mono else 'most'} family x cohort cell of fit R. Measured: " +
          ("; ".join(f"x8g T rises from N={a['N']} ({a['T']:.0f} s) to N={b['N']} ({b['T']:.0f} s)" for a, b in turn) or "no rise on x8g") +
-         f", and c8g N=16 -> 32 is {[p for p in pts if p['type'] == 'c8g.12xlarge' and p['N'] == 16][0]['T']:.0f} -> "
-         f"{[p for p in pts if p['type'] == 'c8g.12xlarge' and p['N'] == 32][0]['T']:.0f} s."),
-        ("No N-optimum in cost", "the registered cost is linear increasing in N (N*(t_boot + t_tail)) plus N-free terms, so the "
-         f"cost-optimal N is always the smallest N whose memory holds the shard{' (every cell of fit R)' if floor else ''}."),
+         (f", and c8g.12xlarge N={c8[0]['N']} -> {c8[-1]['N']} is {c8[0]['T']:.0f} -> {c8[-1]['T']:.0f} s" if len(c8) > 1 else "") +
+         ". This is the time axis only; H-width's knee is a cost knee, which the registered cost does express (section 1d)."),
+        ("Cost optimum at the memory floor", "the registered cost is linear increasing in N (N*(t_boot + t_tail)) plus N-free terms, "
+         f"so the cost-optimal N is always the smallest N whose memory holds the shard{' (every cell of fit R)' if floor else ''}. "
+         "Its knee N* = (S/B + W/(c*r)) / (t_boot + t_tail), where the per-node fixed cost equals the work, is the testable "
+         "H-width quantity (section 1d)."),
         ("Constants not identifiable", "t_boot, t_probe, t_gather and t_tail enter T only as a sum; T data alone cannot separate "
          f"them (fit R's K = {th[0]:.0f} s). Per term, t_probe + t_gather is still one intercept (P-reg t_pg = {pr_t[2]:.2f} s)."),
         ("Cost formula is not N*p*T", "p*N*T(N) = p*[N*(t_boot + t_probe + t_gather + t_tail) + S/B + W/(c*r)]: the registered "
-         "cost drops N*(t_probe + t_gather) (it would be N*p*T if they were 0), and it bills the fleet for the sum of per-node "
-         "times while T takes per-term maxima over nodes (points.tsv derived_T); with P-reg's t_pg the formula is lower than "
-         "N*p*T by N*p*t_pg (predictions.tsv, both columns)."),
+         "cost drops N*(t_probe + t_gather), and it bills S/B and W/(c*r) once for the fleet while every node is billed for the "
+         "whole wall, including the start skew by which the observed critical path exceeds the per-term-maximum sum "
+         "(derived_T_s and skew_rendezvous_s in results/g3/campaign/points.tsv). With P-reg's terms the formula is lower than "
+         "N*p*T by N*p*t_pg (predictions.tsv, both columns); per-point cost residuals are in section 1c."),
         ("No input fetch", "every node fetches its own inputs before classifying (fetch_s "
          f"{min(p['fetch'] for p in pts):.0f}-{max(p['fetch'] for p in pts):.0f} s here); the registered form has no such term, "
          "so it sits in K and in the residual."),
         ("No term that grows with N", "rendezvous + start skew and the max-over-N of per-node tails grow with N (skew "
          + ", ".join(f"N={p['N']}: {p['skew']:.0f}" for p in xg) + " s on x8g; harness tail max "
          + ", ".join(f"N={p['N']}: {p['htail_max']:.0f}" for p in xg) + " s); the registered T has none."),
-        ("B is one constant", "the measured per-node load rate depends on the node's NIC, not only on N: "
-         + ", ".join(f"{k} {v:.2f}" for k, v in ld.items()) + " GB/s (S/N / load_s)."),
-        ("c is vCPUs, but the engine used min(vCPUs, in flight x T16) threads", "E3's c8g/c9g.12xlarge at N=16 ran 1 in flight x T16 "
-         "on 48 vCPUs (memory allowed 1), so W/(N*c*r) with c = vCPUs predicts 3x too little classify time there (fit R's "
-         "residuals; U_cpu_lb " + ", ".join(f"{p['type']} N={p['N']} {float(p['U_cpu_lb']):.3f}" for p in pts
-                                            if p["cfg"]["c_used"] < p["vcpu"] and p["U_cpu_lb"]) + " in points.tsv)."),
-        ("W/N assumes perfect balance and no per-sample floor", "a sample is classified by its home node at the per-stream input "
-         "rate (E1: 1.84 Mpairs/s), so the classify phase is at least w_max/r_input (11.3 s at cohort 100, 5.7 s at cohort 1); the "
-         "cohort-1 check shows the registered term predicts " +
-         f"{sum(cls_term('R', R['theta'], p['cfg_c1']) for p in pts) / len(pts):.2f} s on average where "
-         f"{sum(p['c1'] for p in pts) / len(pts):.2f} s was measured."),
+        ("B is one constant", "the measured per-node load rate varies with the type and with N: "
+         + ", ".join(f"{k} {v:.2f}" for k, v in ld.items()) + " GB/s (S/N / load_s). Part of it follows the NIC, but not all"
+         + (f": c8g.12xlarge loaded at {ldc8[0]:.2f} GB/s at N={c8[0]['N']} and {ldc8[-1]:.2f} GB/s at N={c8[-1]['N']} on the "
+            "same NIC (an N- or contention effect, not measured separately here), and B_nic does not fit better (section 2)."
+            if len(c8) > 1 else ".")),
+        ("c is vCPUs, but the engine used min(vCPUs, in flight x T16) threads", ", ".join(
+            f"{p['type']} N={p['N']} ran {p['inflight']} in flight x T{p['threads']} on {p['vcpu']} vCPUs" for p in under) +
+         " (memory allowed no more). With c = vCPUs the registered classify term under-predicts their LPT walls: P-reg's "
+         "per-term classify residuals there are " + ", ".join(f"{cls_res[p['spec']]:+.1f} s" for p in under) +
+         ", and U_cpu_lb is " + ", ".join(f"{float(p['U_cpu_lb']):.3f}" for p in under if p["U_cpu_lb"]) +
+         " (points.tsv). End to end the effect is absorbed (fit R's T residuals there are " +
+         ", ".join(f"{rres[p['spec']]}%" for p in under) + "), and R+c_used does not improve the fit (rmse "
+         f"{stats['R+c_used']['rmse']:.1f} vs {stats['R']['rmse']:.1f} s, LOO {stats['R+c_used']['loo_rmse']:.1f} vs "
+         f"{stats['R']['loo_rmse']:.1f} s)."),
+        ("One classify intercept cannot fit both cohort sizes", "the classify phase has a per-sample floor (a sample streams "
+         f"through its home node's input at r_input = {R_IN_E1 / 1e6:.2f} Mpairs/s, E1: at least {floor100:.1f} s at cohort 100 "
+         f"and {floor1:.1f} s at cohort 1 from runs.tsv's largest sample). The registered term has no floor: fit R's (no "
+         f"intercept) predicts {sum(cls_term('R', R['theta'], p['cfg_c1']) for p in pts) / len(pts):.2f} s at cohort 1 where "
+         f"{sum(p['c1'] for p in pts) / len(pts):.2f} s was measured, and P-reg's intercept t_pg = {pr_t[2]:.1f} s, fitted at "
+         f"cohort 100, over-predicts cohort 1 by {-cs_stats['P-reg']['c1_bias']:.1f} s on average."),
     ]
     for i, (a, b) in enumerate(defects, 1):
         m(f"{i}. **{a}.** {b}")
@@ -902,6 +1096,7 @@ def main():
             add = f"{fit['params'][3]} = {v:.4g} +- {g(se, '{:.3g}')} {fit['units'][3]}"
             res = "yes" if se == se and abs(v) >= 2 * se else f"no (|t| = {g(abs(v) / se if se == se and se else float('nan'), '{:.2f}')})"
             if fit["cov"] is None:
+                add = f"{fit['params'][3]}: no value (null space of J)"
                 res = ("not identifiable: J'J is singular" + (" (at one cohort size input GB/N is proportional to S/N, so "
                        "phi_fetch and beta cannot be separated)" if name == "R+t_fetch" else ""))
             elif v < 0 and fit["params"][3] in NONNEG:
@@ -923,9 +1118,16 @@ def main():
       "vCPUs/8 reduced to what memory holds, c used = min(vCPUs, in flight x T16)); per family, the best type and N. Cost = "
       "N*p*T per sample. Range = the 16th-84th percentile of the optimal N over the parametric draws; 'same type' = the "
       "fraction of draws that pick the same type. Every cell at cohort 1, 10 or 1000 is extrapolated in cohort size (all "
-      "end-to-end points are cohort 100); cohort 1000 is beyond any measured W. Flags per cell are in optimal.tsv.\n")
+      "end-to-end points are cohort 100); cohort 1000 is beyond any measured W. The extrapolated column names each regressor "
+      "outside its fitted range, 'joint' where every regressor is in range but the combination's leverage exceeds the fitted "
+      "maximum, the grid edge, and a type measured only at another N. Flags per cell are in optimal.tsv. The 68% ranges are "
+      "parameter uncertainty only and, for the per-term fits, understated (block-diagonal covariance).\n")
     for name in ("R", "P-reg") + tuple(n for n in E2E_ORDER[1:]) + ("P-full",):
         m(f"### {name}\n")
+        bad = [r[1] for r in par_rows if r[0] == name and "unphysical" in r[12]]
+        if bad and FITS[name]["cov"] is not None:
+            m(f"**These optima rest on {len(bad)} parameter(s) with unphysical signs ({', '.join(bad)}; section "
+              f"{'3' if name == 'P-full' else '2'}).** Read them as a curve fit, not a mechanism.\n")
         if FITS[name]["cov"] is None:
             m("Not identifiable on these points (section 2): no predictions.\n")
             continue
@@ -940,6 +1142,7 @@ def main():
                 for lab, o in (("time", a), ("cost", b)):
                     fl = [x.split(" = ")[0] if " outside the fitted " in x else x for x in o["rf"] + o["edge"]
                           if " outside the fitted " in x or "grid edge" in x]
+                    fl += [x for x in o["flags"] if "measured only at" in x]
                     if fl:
                         ex.append(f"{lab}: " + ", ".join(fl))
                 m(f"| {f} | {c} | {a['type']} N={a['N']} ({a['rng']}) | {a['T']:.0f} | {a['usd']:.5f} | {b['type']} N={b['N']} "
@@ -950,14 +1153,20 @@ def main():
     m("- Every point is cohort 100 and ran three LPT/mod batches plus six cohort-1 repeats; T_with_harness ends at the last "
       "member's termination after all of them only through the tails, and the batch-0 critical path is what T measures "
       "(docs/cohort.md). The billed $ covers every batch (points.tsv billed_usd_run_all_batches) and is not the fitted cost.")
-    m("- E2's fleets are memory-equal, not vCPU-equal, so N and c move together on x8g (fleet vCPUs 96, 96, 128, 128, 128); "
+    m("- E2's fleets are memory-equal, not vCPU-equal, so N and c move together on x8g (fleet vCPUs "
+      + ", ".join(str(p["N"] * p["vcpu"]) for p in xg) + f" at N = {', '.join(str(p['N']) for p in xg)}); "
       "the x8g N-trend is a node-size trend as well.")
-    m("- The c8g N=16 vs 32 pair differs in in-flight (1 vs 6) as well as N (summary.md); only c_used and P-full model that.")
+    if len(c8) > 1:
+        m(f"- The c8g.12xlarge N={c8[0]['N']} vs {c8[-1]['N']} pair differs in in-flight ({c8[0]['inflight']} vs "
+          f"{c8[-1]['inflight']}) as well as N (points.tsv); only c_used and P-full model that.")
     m("- t_input in R+t_input uses E1's r_input as a constant (E1 is pre-fix too); P-full fits r_input from the cohort-1 walls, "
       "so its cohort-1 check is in-sample.")
     m("- With 9 points, a 4-parameter end-to-end fit has 5 dof; additions that are not resolved are reported, not dropped.")
-    m("- NIC rates are the peak (burst) rates of describe-instance-types; burstable types (x8g.2xlarge/4xlarge, r8g.4xlarge: "
-      "baseline 3.75-7.5 Gbit/s) can fall to baseline on long transfers, which no point here measured.")
+    burst = sorted(t for t in types if float(itypes[t]["baseline_gbps"]) < float(itypes[t]["peak_gbps"]))
+    bl = [float(itypes[t]["baseline_gbps"]) for t in burst]
+    if burst:
+        m("- NIC rates are the peak (burst) rates of describe-instance-types; burstable types (" + ", ".join(burst) +
+          f": baseline {min(bl):g}-{max(bl):g} Gbit/s) can fall to baseline on long transfers, which no point here measured.")
     m("- 'Extrapolated' (section 4, optimal.tsv, predictions.tsv status) = a regressor of that fit outside the range it spans over "
       "the fit's observations, a cohort size other than 100, or an optimum at the grid edge. A type measured at one N and "
       "predicted at another is listed in the flags, not counted as extrapolation when its regressors are inside the range.")
@@ -979,11 +1188,13 @@ def main():
         "engine_pre_fix": {"fix": FIX, "points_pre_fix": npre, "points": len(pts), "e1": e1_pre},
         "fits": {n: {"kind": FITS[n]["kind"], "what": FITS[n]["what"], "params": FITS[n]["params"],
                      "theta": FITS[n]["theta"], "rmse_s": stats[n]["rmse"], "loo_rmse_s": stats[n]["loo_rmse"]} for n in ORDER},
-        "constants": {"S_bytes": S, "b_route_bytes_per_pair": b_route, "r_input_e1_pairs_per_s": R_IN_E1, "threads_per_sample": T_SAMPLE,
+        "constants": {"S_bytes": S, "b_route_bytes_per_pair": b_route, "r_input_e1_pairs_per_s": R_IN_E1,
+                      "r_input_source": r_in_src, "hitbench_post_over_pre": HITBENCH, "hitbench_source": fr_src, "threads_per_sample": T_SAMPLE,
                       "N_grid": [min(N_GRID), max(N_GRID)], "draws": DRAWS, "seed": SEED, "held_out": HELD_OUT,
                       "memory_rule": "mem >= 1.15 x hash.k2d/N + 8 GB + 7.5 GB x in flight (scripts/g3/mkspec.sh)"},
         "inputs": [{"path": p, "sha256": sha256(p)} for p in ins],
-        "outputs": ["fit26.md", "points.tsv", "params.tsv", "residuals.tsv", "heldout.tsv", "predictions.tsv", "optimal.tsv"],
+        "outputs": ["fit26.md", "points.tsv", "params.tsv", "residuals.tsv", "heldout.tsv", "cost_residuals.tsv", "hwidth_knee.tsv",
+                    "predictions.tsv", "optimal.tsv"],
     }
     json.dump(man, open(os.path.join(OUT, "manifest.json"), "w"), indent=1)
     open(os.path.join(OUT, "manifest.json"), "a").write("\n")

@@ -178,5 +178,41 @@ mib = math.ceil((1.15 * 1189e9 / 16 + 8e9 + 2 * 7.5e9) / 1048576)
 truth("feasible: exactly 2 in flight", fit26.feasible_inflight(mib, 48, 16, 1189e9) == 2, fit26.feasible_inflight(mib, 48, 16, 1189e9))
 truth("feasible: capped at vCPUs/8", fit26.feasible_inflight(10 ** 7, 16, 16, 1189e9) == 2)
 
+# 12. Held-out z uses the prediction interval sqrt(se_param^2 + s^2), not se_param alone; and with
+#     the true noise, z of new points is about N(0,1) (coverage of |z| <= 2).
+se, z = fit26.heldout_z(130.0, 100.0, 3.0, 4.0)
+check("heldout_z: se = sqrt(3^2 + 4^2)", se, 5.0, 1e-12)
+check("heldout_z: z = 30/5", z, 6.0, 1e-12)
+se, z = fit26.heldout_z(110.0, 100.0, float("nan"), 5.0)
+check("heldout_z: no parameter se -> s alone", z, 2.0, 1e-12)
+inside, tot = 0, 0
+for seed in range(1, 301):
+    pts = points(f, TRUE, NOISE, seed)
+    ff = fit26.fit_e2e("R", pts[1:])
+    ho = pts[0]
+    sp = fit26.pred_se(lambda t: f(t, ho["cfg"]), ff["theta"], ff["cov"])
+    _, z = fit26.heldout_z(ho["T"], f(ff["theta"], ho["cfg"]), sp, fit26.resid_s(ff, pts[1:]))
+    tot += 1
+    inside += abs(z) <= 2.0
+check("heldout_z: |z| <= 2 for about 95% of held-out points (t, 8 dof: 0.92)", inside / tot, 0.92, 0.04)
+
+# 13. Rank and identifiability: the null-space parameters of a collinear fit are found; s uses
+#     the true rank.
+J = [[1.0, x, 2 * x, x * x] for x in (1.0, 2.0, 3.0, 5.0, 7.0)]
+truth("rank: column 3 = 2 x column 2 -> rank 3", fit26.rank(J) == 3, fit26.rank(J))
+truth("identifiable: only the collinear pair is not", fit26.identifiable(J) == [True, False, False, True], fit26.identifiable(J))
+pts = points(fit26.E2E["R+t_fetch"][2], TRUE + [0.5], NOISE, 2)
+ff = fit26.fit_e2e("R+t_fetch", pts)
+truth("singular fit: dof = n - rank (3)", ff["dof"] == len(pts) - 3, ff["dof"])
+truth("singular fit: K and rho identifiable, beta and phi_fetch not", ff["identifiable"] == [True, False, True, False], ff["identifiable"])
+
+# 14. Leverage: a point inside the design is not joint-extrapolated; one at a corner the design
+#     never visits is, though each coordinate is in range.
+X = [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [0.1, 0.1], [0.5, 0.5], [0.2, 0.0], [0.0, 0.2]]
+mdl = fit26.leverage_fit(X)
+truth("leverage: an interior point is below the fitted maximum", fit26.leverage(mdl, [0.3, 0.3]) <= mdl[1])
+truth("leverage: (1, 1), each coordinate in range, is above it", fit26.leverage(mdl, [1.0, 1.0]) > mdl[1],
+      (fit26.leverage(mdl, [1.0, 1.0]), mdl[1]))
+
 print(f"fit26_test: {'FAIL ' + str(len(FAIL)) + ': ' + ', '.join(FAIL) if FAIL else 'all passed'}")
 sys.exit(1 if FAIL else 0)

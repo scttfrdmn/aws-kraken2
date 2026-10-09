@@ -242,14 +242,15 @@ make g3-tables                                            # results/g3/campaign/
 ## make g3-fit: the #26 fit (registered T(N) and cost, then each addition)
 
 ```bash
-make g3-fit      # results/g3/fit26/{fit26.md, manifest.json, points, params, residuals, heldout, predictions, optimal}.tsv
+make g3-fit      # results/g3/fit26/: fit26.md, manifest.json and the tables listed below
 make test        # includes scripts/lib/fit26_test.py (the fitting code on synthetic data with known parameters)
 ```
 
 - **Inputs.** The script reads the record only, and launches nothing:
   - `results/g3/campaign/points.tsv`;
   - each point's cohort `tables/{point,batches,rates}.tsv` and `cohort.json`;
-  - E1's `tables/batches.tsv`;
+  - E1's `tables/batches.tsv` and `tables/summary.md` (r_input);
+  - `results/g3/campaign/frontier.md` (the #44 hitbench ratio, quoted only);
   - `results/cohort/PRJNA398089/runs.tsv`;
   - `results/instance-types/us-west-2.json`;
   - hash.k2d's HEAD (`results/g0a/20261006-005556-fe849b2/out/head-hash.k2d.json`);
@@ -279,21 +280,38 @@ make test        # includes scripts/lib/fit26_test.py (the fitting code on synth
 - **Checks** (`residuals.tsv`, `heldout.tsv`):
   - residuals per point;
   - leave-one-out refits for every point;
-  - the designated held-out point, E4 c8g.12xlarge N=32, fitted on the other 8;
+  - the designated held-out point, E4 c8g.12xlarge N=32, fitted on the other 8. Its z uses the
+    prediction interval, se = sqrt(se_param² + s²), with s from the refit (sqrt(rss/dof) end to
+    end, the T rmse for the per-term fits);
   - a cohort-size check of the classify term against every point's cohort-1 wall and E1's
     cohort-10 batches (E1 placed j mod N, so its rank imbalance is shown).
   - An added parameter counts as resolved only if |value| / se >= 2. Negative values of
     parameters that must be non-negative are flagged as unphysical.
+  - s uses the true rank of J. In a singular fit (R+t_fetch), parameters in J's null space get no
+    value; the others are printed without an se.
+  - The per-term fits' covariance is block-diagonal (each term fitted on its own phase), so their
+    standard errors and optimal-N ranges are understated.
+- **The registered cost** (`cost_residuals.tsv`, `hwidth_knee.tsv`):
+  - per point, the registered cost formula with P-reg's t_boot, t_tail, B and r, against the
+    derived $ (N × p × T) and the billed $ (all batches, so not like for like). Fit R cannot
+    check it: with only K identifiable, its formula equals N × p × T exactly.
+  - H-width's cost knee, N* = (S/B + W/(c·r)) / (t_boot + t_tail), from P-reg, per type and
+    cohort, beside the memory floor.
 - **Predictions** (`predictions.tsv`, `optimal.tsv`):
   - N ranges over 1..64, for every measured type at its truffle price, and the cohort over 1,
     10, 100 and 1000.
   - Memory feasibility follows `mkspec.sh`'s rule. In flight is vCPUs / 8, reduced to what
     memory holds.
-  - Cost = N × p × T. The registered cost formula is shown beside it for R and P-reg.
+  - Cost = N × p × T. The registered cost formula is shown beside it for P-reg. For R the
+    column reads "= N*p*T (only K is identifiable)".
   - Per family, the time-optimal and cost-optimal type and N are reported, with the 16–84% range
     of the optimal N over 200 parametric draws.
   - A cell is **extrapolated** if any of its fit's regressors lies outside the range the fit's
     observations span, if its cohort is not 100, or if its optimum sits at the grid edge.
+  - It is also flagged **joint** when every regressor is in range but the combination is not:
+    the prediction's leverage x'(X'X)⁻¹x exceeds the largest leverage of the fit's own
+    observations. A type measured only at another N is listed beside it.
+  - Every table carries an `engine_pre_fix` column.
 - **Pre-fix.** Every point is marked `engine_pre_fix` (the #44 fix, 904c2a5), and `fit26.md`
   says so. Regenerate the points with the fixed engine and rerun `make g3-fit` before quoting a
   parameter as post-fix.
