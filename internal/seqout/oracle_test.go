@@ -58,8 +58,8 @@ func loadCases(t *testing.T, dir string) []oracleCase {
 func TestOracleSeqout(t *testing.T) {
 	dir := os.Getenv("K2_SEQOUT_ORACLE")
 	if dir == "" {
-		// The latest make equiv-seqout work directory, if there is one.
-		dir = filepath.Join(oracletest.Root(), ".cache", "equiv-seqout", "latest")
+		// The latest make equiv-seqout work directory, if there is one (a default PASS, or fail).
+		dir = oracletest.EquivSeqoutLatest(t)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "cases.tsv")); err != nil {
 		oracletest.Skip(t, "no seqout oracle at %s (make equiv-seqout)", dir)

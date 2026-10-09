@@ -63,12 +63,21 @@ What the wrapper does with compressed input (`scripts/kraken2` at the pin, lines
 - **stderr:** inherited, so the tool's messages are in the run's stderr.
 - **Missing tool:** `/bin/sh` reports "not found", and classify sees an empty stream.
 
-What the matrix shows that this means (variants `trunc`, `garbage`, `mixgz`, `missing`):
+**A shim goes on `PATH`, never into the upstream install directory.** The wrapper runs
+`PATH=$KRAKEN2_DIR:$PATH` (`scripts/kraken2:26`), so a `gzip` or `bzip2` in `KRAKEN2_DIR` would
+be found by upstream alone, and ours (which does not prepend its own directory) would run another
+tool. `make oracle` fails if `.oracle/<pin>/gzip` or `.oracle/<pin>/bzip2` exists. Any S5 shim on
+an AMI or a node must be installed the same way, in a directory on `PATH`.
+
+What the matrix shows that this means (variants `trunc`, `garbage`, `zeropad`, `mixgz`, `missing`):
 - a truncated `.gz` is classified up to where the tool stopped (exit 0, or 65 if the last record
   is cut);
-- a garbage tail is ignored by GNU gzip and pigz. rapidgzip 0.14.5 drops the end of the
-  member's output before trailing garbage or zero padding. Under that shim, upstream classifies
-  196,638 of ERR478965's 200,000 reads and exits 65;
+- a garbage tail or zero padding is ignored by GNU gzip and pigz. rapidgzip 0.14.5 drops the
+  end of the member's output before either. At rapidgzip's default `-P` on a 16-core macOS host,
+  upstream under that shim classifies 196,638 of ERR478965's 200,000 reads and exits 65. How
+  much is dropped varies with `-P`: for that input, 793,682 bytes at the default, 8 or 16;
+  2,493,064 at 2; 4,302,739 at 1 and 4 (`results/g1/rapidgzip-tail-loss-20261009T210618Z/`).
+  So the reads that survive depend on the host's core count;
 - a plain mate 2 behind a gzip mate 1 reads as empty (65, mates differ);
 - `--gzip-compressed` on a missing or plain file is no input (exit 0, no `--output`).
 
@@ -124,6 +133,7 @@ never reach:
 | `bz` | S2 | bzip2-compressed | bzip2 input, auto-detected and with `--bzip2-compressed` |
 | `trunc` | S1 | mate 1's `.gz` cut at half its bytes; mate 2's `.gz` with a garbage line appended | a truncated member (single-end), and with a garbage-tailed mate (paired: 65) |
 | `garbage` | S2 | mate 1's `.gz` with a garbage line appended | trailing garbage after the member |
+| `zeropad` | S3 | mate 1's `.gz` with 4096 zero bytes appended | zero padding after the member |
 | `mixgz` | S3 | mate 1's `.gz`; mate 2 plain under a `.gz` name | auto-detection looks at the first file only, so mate 2 goes through `gzip -dc` as well and reads as empty (65) |
 | `missing` | none | no files | `--gzip-compressed` on a missing file: the tool reports it, and classify sees no input |
 
@@ -158,7 +168,7 @@ least one sample, and the main options on more than one sample, layout or compre
 | `--threads` 1 and 8 | single-thread cases on S1 paired, S3 single-end gzip, S3 with mmap; 8 elsewhere |
 | several inputs in one run | `S1,S2` single-end and `S2,S3` paired gzip (outputs, stats and report span the files) |
 | empty input | an empty file alone (no output file is created), with `--report-zero-counts` (percentages `nan`), and an empty pair before S1 (outputs open at the first input with data) |
-| damaged and mixed gzip (#48) | `trunc` single-end (exit 0 or 65, by where the tool stops) and paired (65); `garbage` single-end (0, or 65 under rapidgzip); `mixgz` paired (65); `--gzip-compressed` on `missing` and on plain S1 (0, no `--output`) |
+| damaged and mixed gzip (#48) | `trunc` single-end (exit 0 or 65, by where the tool stops) and paired (65); `garbage` and `zeropad` single-end (0, or 65 under rapidgzip); `mixgz` paired (65); `--gzip-compressed` on `missing` and on plain S1 (0, no `--output`) |
 | exit statuses | mates differ (65); paired `--classified-out` without `#` (65); `--confidence 1.5` (255); `--use-mpa-style` without `--report` (64); `--threads 0` (64) |
 | controls | cases that add one option on our side only (`--confidence 0.05`, `--minimum-hit-groups 3`). Each must exit alike on both sides with at least one output file different, which shows the comparison is not blind. |
 
@@ -172,10 +182,15 @@ upstream's own outputs and written to `checks.tsv`. A failed check fails the run
 - one thread on plain input gives the same `--output` as 8 threads on gzip input;
 - `--memory-mapping` gives the same `--output` as loading into RAM;
 - `--quick` changes `--output`;
-- `se-trunc-gz` classified some reads but fewer than the 200,000, and `se-garbage-gz` some;
-- which decompressor ours used, since under GNU gzip both give the same outputs. The check
-  counts ours' in-process `seqio: ... (input ends here)` lines for `se-trunc-gz`. There must be
-  one per run by default, and none under `AK2_DECOMPRESS=pipe`.
+- `se-trunc-gz` classified some reads but fewer than the 200,000; `se-garbage-gz` and
+  `se-zeropad-gz` classified some;
+- which decompressor ours used, since under GNU gzip both give the same outputs. Two counts for
+  `se-trunc-gz`, after checking that the tool wrote something to upstream's stderr:
+  - ours' in-process `seqio: ... (input ends here)` lines: one per run by default, none under
+    `AK2_DECOMPRESS=pipe`;
+  - the tool's lines in upstream's stderr (everything but classify's own lines) that are missing
+    from ours. Under pipe there must be none, which is a positive marker that the PATH tool ran
+    for ours. By default there must be some.
 
 `minimum_acceptable_hash_value` is recorded as well.
 

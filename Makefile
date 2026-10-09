@@ -11,8 +11,10 @@ PKGS    := ./...
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
 
+# AK2_DECOMPRESS is unset for the Go tests: the shared default oracle (.cache/equiv-seqout/latest)
+# is in-process, and pipe mode is checked through make equiv-seqout (docs/build.md, #48).
 test:
-	$(GO) test $(PKGS)
+	env -u AK2_DECOMPRESS $(GO) test $(PKGS)
 	python3 scripts/lib/errexit_check.py --self-test
 	python3 scripts/lib/util_test.py
 	bash scripts/lib/harness_poll_test.sh

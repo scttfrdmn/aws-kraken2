@@ -42,6 +42,10 @@ if command -v sha256sum >/dev/null; then sha() { sha256sum "$1" | cut -d' ' -f1;
 unset KRAKEN2_DB_PATH KRAKEN2_DEFAULT_DB KRAKEN2_NUM_THREADS AK2_S3_EMULATE AK2_S3_CLIENT
 
 K2DIR=$(scripts/oracle-build.sh) || { echo "oracle-cohort: upstream build failed" >&2; exit 1; }
+# The wrapper puts its own directory first on PATH (scripts/kraken2:26): no gzip/bzip2 there.
+for t in gzip bzip2; do
+  [ ! -e "$K2DIR/$t" ] || { echo "oracle-cohort: $K2DIR/$t exists: the wrapper would run it ahead of PATH, ours would not (shims go on PATH)" >&2; exit 1; }
+done
 make -s build || { echo "oracle-cohort: go build failed" >&2; exit 1; }
 OURS="$ROOT/bin/aws-kraken2"; K2P="$ROOT/bin/k2probe"
 N=200000

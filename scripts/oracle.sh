@@ -80,6 +80,11 @@ now() { perl -MTime::HiRes=time -e 'printf "%.3f\n", time'; }
 # ---- build and inputs -------------------------------------------------------------------------
 K2DIR=$(scripts/oracle-build.sh) || { echo "oracle: upstream build failed" >&2; exit 1; }
 UP="$K2DIR/kraken2"
+# The wrapper puts its own directory first on PATH (scripts/kraken2:26). A gzip or bzip2 there
+# would decompress for upstream only; shims belong on PATH (DECOMP_BIN), never in KRAKEN2_DIR.
+for t in gzip bzip2; do
+  [ ! -e "$K2DIR/$t" ] || { echo "oracle: $K2DIR/$t exists: the wrapper would run it ahead of PATH, ours would not; remove it (shims go on PATH)" >&2; exit 1; }
+done
 make -s build || { echo "oracle: go build failed" >&2; exit 1; }
 OURS="$ROOT/bin/aws-kraken2"
 SAMPLES=(SRR062634 ERR478965 SRR28305653)
@@ -135,6 +140,7 @@ done
 #   trunc:   SRR062634's mate 1 .gz cut at half its bytes; its mate 2 .gz with a garbage line
 #            appended after the member.
 #   garbage: ERR478965's mate 1 .gz with a garbage line appended.
+#   zeropad: SRR28305653's mate 1 .gz with 4096 zero bytes appended.
 #   mixgz:   SRR28305653's mate 1 .gz, and its plain mate 2 under a .gz name (auto-detection
 #            looks at the first file only, so mate 2 goes through gzip -dc as well).
 #   missing: no such files (with --gzip-compressed, gzip -dc reports it; classify sees no input).
@@ -142,6 +148,7 @@ G1="$K2_READS/SRR062634_${N}_1.fq.gz"
 head -c $(( $(wc -c < "$G1") / 2 )) "$G1" > "$VAR/trunc_1.fq.gz"
 { cat "$K2_READS/SRR062634_${N}_2.fq.gz"; printf 'trailing garbage\n'; } > "$VAR/trunc_2.fq.gz"
 { cat "$K2_READS/ERR478965_${N}_1.fq.gz"; printf 'trailing garbage\n'; } > "$VAR/garbage_1.fq.gz"
+{ cat "$K2_READS/SRR28305653_${N}_1.fq.gz"; head -c 4096 /dev/zero; } > "$VAR/zeropad_1.fq.gz"
 cp "$K2_READS/SRR28305653_${N}_1.fq.gz" "$VAR/mixgz_1.fq.gz"
 cp "$K2_READS/SRR28305653_${N}_2.fq" "$VAR/mixgz_2.fq.gz"
 
@@ -217,6 +224,7 @@ CASES=(
   "se-trunc-gz|trunc|se|gz|0,65|orc|"
   "pe-trunc-garbage-gz|trunc|pe|gz|65|orc|"
   "se-garbage-gz|garbage|se|gz|0,65|orc|"
+  "se-zeropad-gz|zeropad|se|gz|0,65|orc|"
   "pe-gz-then-plain|mixgz|pe|gz|65|orc|"
   "se-gzflag-missing|missing|se|gz|0|OrC|--gzip-compressed"
   "se-gzflag-plain|S1|se|fq|0|OrC|--gzip-compressed"
@@ -412,10 +420,16 @@ run_db() {
     t2=$(now)
     # Which decompressor ours used (Law 4: under GNU gzip both give the same bytes, so the outputs
     # alone cannot show it): in process, seqio logs "(input ends here)" for the truncated member;
-    # under AK2_DECOMPRESS=pipe the message is the PATH tool's own.
+    # under AK2_DECOMPRESS=pipe the message is the PATH tool's own. Positive marker: the tool's
+    # lines in upstream's stderr (all but classify's own) must all appear in ours.
     if [ "$cname" = se-trunc-gz-trunc ]; then
       EVID["$db|trunc_runs"]=$(( ${EVID[$db|trunc_runs]:-0} + 1 ))
       EVID["$db|trunc_inproc"]=$(( ${EVID[$db|trunc_inproc]:-0} + $(grep -c '^seqio: .*(input ends here)$' "$od/ours.stderr") ))
+      local toolu toolo
+      toolu=$(tr -d '\r' < "$d/upstream.stderr" | grep -vE '^Loading database information|processed in [0-9.]+s|^ +[0-9]+ sequences (un)?classified|^ *$')
+      toolo=$(tr -d '\r' < "$od/ours.stderr")
+      EVID["$db|trunc_toollines"]=$(( ${EVID[$db|trunc_toollines]:-0} + $(printf '%s\n' "$toolu" | grep -c .) ))
+      EVID["$db|trunc_toolmissing"]=$(( ${EVID[$db|trunc_toolmissing]:-0} + $(printf '%s\n' "$toolu" | grep . | grep -cvxF -f <(printf '%s\n' "$toolo")) ))
     fi
 
     local ident=yes nfiles=0 ndiff=0 reqok=yes row k us os
@@ -523,7 +537,7 @@ coverage() {
       EVID["$db|$c|seqout_ids_with_mate_suffix"]=$(cat "$c1" "$u1" | awk 'NR%4==1 && $1 ~ /\/1$/' | wc -l | tr -d ' ') ;;
     se-slash-slash)
       EVID["$db|$c|output_ids_with_mate_suffix"]=$(awk -F'\t' '$2 ~ /\/[12]$/' "$out" | wc -l | tr -d ' ') ;;
-    se-trunc-gz-trunc|se-garbage-gz-garbage)
+    se-trunc-gz-trunc|se-garbage-gz-garbage|se-zeropad-gz-zeropad)
       EVID["$db|$c|records"]=$(wc -l < "$out" | tr -d ' ') ;;
     se-q20-S1)
       EVID["$db|$c|masked_bases_in_seqout"]=$(cat "$c1" "$u1" | awk 'NR%4==2{n+=gsub(/x/,"")} END{print n+0}') ;;
@@ -553,10 +567,14 @@ checks() {
   ck "se-slash: --output IDs ending in /1 (not trimmed single-end)" "${EVID[$db|se-slash-slash|output_ids_with_mate_suffix]:-}" gt 0
   ck "se-trunc-gz: --output records from the half-length .gz (some reached classify)" "${EVID[$db|se-trunc-gz-trunc|records]:-}" gt 0
   ck "se-trunc-gz: --output records from the half-length .gz (fewer than the $N reads)" "${EVID[$db|se-trunc-gz-trunc|records]:-}" lt "$N"
+  ck "se-trunc-gz: lines the decompressor wrote to upstream's stderr (so the next check can resolve)" "${EVID[$db|trunc_toollines]:-}" gt 0
+  ck "se-zeropad-gz: --output records before the zero padding (some reached classify)" "${EVID[$db|se-zeropad-gz-zeropad|records]:-}" gt 0
   if [ "${AK2_DECOMPRESS:-}" = pipe ]; then
     ck "se-trunc-gz: runs of ours that logged in-process decompression (AK2_DECOMPRESS=pipe: none)" "${EVID[$db|trunc_inproc]:-}" eq 0
+    ck "se-trunc-gz: upstream's decompressor lines missing from ours' stderr (AK2_DECOMPRESS=pipe: none, the PATH tool ran for ours)" "${EVID[$db|trunc_toolmissing]:-}" eq 0
   else
     ck "se-trunc-gz: runs of ours that logged in-process decompression (default: every run)" "${EVID[$db|trunc_inproc]:-}" eq "${EVID[$db|trunc_runs]:-x}"
+    ck "se-trunc-gz: upstream's decompressor lines missing from ours' stderr (default: some, ours did not run the tool)" "${EVID[$db|trunc_toolmissing]:-}" gt 0
   fi
   ck "se-garbage-gz: --output records before the garbage tail (some reached classify)" "${EVID[$db|se-garbage-gz-garbage|records]:-}" gt 0
   ck "se-q20: bases masked to x in the sequence outputs" "${EVID[$db|se-q20-S1|masked_bases_in_seqout]:-}" gt 0
@@ -604,7 +622,7 @@ manifest() {
   local variants='[]' v m
   for v in slash_1.fq slash_2.fq short_1.fq short_2.fq mates_1.fq mates_2.fq fasta_1.fa fasta_2.fa \
            fastaw_1.fa fastaw_2.fa bz_1.fq.bz2 bz_2.fq.bz2 trunc_1.fq.gz trunc_2.fq.gz \
-           garbage_1.fq.gz mixgz_1.fq.gz mixgz_2.fq.gz; do
+           garbage_1.fq.gz zeropad_1.fq.gz mixgz_1.fq.gz mixgz_2.fq.gz; do
     variants=$(jq --arg f "$v" --arg h "$(sha "$VAR/$v")" '. + [{file: $f, sha256: $h}]' <<< "$variants")
   done
   local total ident upbad ckbad failed=false

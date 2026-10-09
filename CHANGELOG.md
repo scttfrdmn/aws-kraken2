@@ -23,6 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `make oracle`, `oracle-engine`, `oracle-cohort` and `equiv-seqout` record `AK2_DECOMPRESS`
     and the gzip on `PATH` in their manifests. `oracle-cohort` takes `DECOMP_BIN`, and the
     equiv-seqout Go tests read through `OpenPipe` under pipe mode.
+  - The shared `.cache/equiv-seqout/latest` moves only for a PASS with the default decompressor.
+    Each work directory records `decompressor` and `result`. `TestOracleSeqout` and
+    `TestOracleDecompress` fail loudly on any other `latest`, or when `AK2_DECOMPRESS` is set in a
+    plain `go test`. `make test` unsets `AK2_DECOMPRESS`.
+  - `make oracle`, `oracle-cohort` and `equiv-seqout` fail if a `gzip` or `bzip2` sits in the
+    upstream install directory, which the wrapper puts first on `PATH`. Shims go on `PATH`.
+  - `make oracle` adds a zero-padding case (`se-zeropad-gz`) and a positive marker for pipe mode:
+    every decompressor line in upstream's stderr also appears in ours. equiv-seqout's zero-padding
+    and garbage cases accept exit `0,65`.
+  - rapidgzip 0.14.5's loss on padded and garbage-tailed members varies with `-P`
+    (`results/g1/rapidgzip-tail-loss-20261009T210618Z/`).
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

@@ -19,6 +19,10 @@ ROOT=$(pwd)
 pin_identity || { echo "$(basename "$0"): cannot establish the upstream pin identity" >&2; exit 1; }
 MAIN=$K2_SHARED_ROOT
 K2DIR="$ORACLE_DST"
+# The wrapper puts its own directory first on PATH (scripts/kraken2:26): no gzip/bzip2 there.
+for t in gzip bzip2; do
+  [ ! -e "$K2DIR/$t" ] || { echo "equiv-seqout: $K2DIR/$t exists: the wrapper would run it ahead of PATH (shims go on PATH)" >&2; exit 1; }
+done
 K2="$K2DIR/kraken2"
 DB=${K2_DB:-$MAIN/.cache/db/k2_viral_20260626}
 STEM=${1:-$MAIN/.cache/reads/SRR062634_200000}
@@ -51,6 +55,15 @@ log "pin $UPSTREAM_SHA ($UPSTREAM_DESCRIBE)  db $DB  reads $STEM  threads $THREA
 # bzip2 on PATH, as the wrapper); unset: in process.
 case "${AK2_DECOMPRESS:-}" in ""|pipe) ;; *) log "FAIL: AK2_DECOMPRESS=$AK2_DECOMPRESS: want pipe or unset"; exit 1 ;; esac
 log "decompression: ${AK2_DECOMPRESS:-inprocess}; gzip $(command -v gzip): $(gzip --version 2>&1 | head -1)"
+# The work directory records its decompressor; .cache/equiv-seqout/latest (what plain go test,
+# make test and CI read, from every worktree) moves here only for a PASS with the defaults:
+# AK2_DECOMPRESS unset and no DECOMP_BIN. The Go tests refuse any other latest.
+DEFAULT_DECOMP=no
+[ -z "${AK2_DECOMPRESS:-}" ] && [ -z "${DECOMP_BIN:-}" ] && DEFAULT_DECOMP=yes
+printf 'ak2_decompress\t%s\ndecomp_bin\t%s\ngzip_path\t%s\ngzip_version\t%s\ndefault\t%s\n' \
+  "${AK2_DECOMPRESS:-}" "${DECOMP_BIN:-}" "$(command -v gzip)" "$(gzip --version 2>&1 | head -1)" "$DEFAULT_DECOMP" \
+  > "$WORK/decompressor"
+echo RUNNING > "$WORK/result"
 FAILED=0
 
 # Inputs derived from the real reads (reformatted, recompressed or damaged with standard tools).
@@ -139,8 +152,11 @@ run pe_fq_crlf              0  1 none 0  "$W/r_1.crlf.fq" "$W/r_2.crlf.fq"
 run pe_fq_slash_tab         0  1 none 0  "$W/r_1.slash.fq" "$W/r_2.slash.fq"
 run se_fq_gz_multimember    0  0 none 0  "$W/r_1.multi.fq.gz"
 run pe_fq_gz_multimember    0  1 none 0  "$W/r_1.multi.fq.gz" "$W/r_2.multi.fq.gz"
-run se_fq_gz_zeropad        0  0 none 0  "$W/r_1.zeropad.fq.gz"
-run se_fq_gz_garbage        0  0 none 0  "$W/r_1.garbage.fq.gz"
+# GNU gzip and pigz ignore zero padding and trailing garbage (exit 0); rapidgzip 0.14.5 drops the
+# end of the member's output before them, cutting the last record (exit 65; #48). Either is
+# upstream's answer under the gzip on PATH, and the Go test requires ours to equal it.
+run se_fq_gz_zeropad        0,65 0 none 0  "$W/r_1.zeropad.fq.gz"
+run se_fq_gz_garbage        0,65 0 none 0  "$W/r_1.garbage.fq.gz"
 # Where half of the .gz bytes falls in the decompressed stream depends on how the local gzip
 # compressed the reads (fetch-reads.sh runs gzip -9 on each host). If it falls inside a quality
 # string, the last record is malformed and upstream exits 65 (seen on Linux aarch64); otherwise
@@ -171,9 +187,8 @@ GOT=$(wc -l < "$W/cases.tsv" | tr -d ' ')
 log "cases: $GOT recorded, $CASES run, $EXPECTED expected"
 if [ "$GOT" != "$EXPECTED" ] || [ "$CASES" != "$EXPECTED" ]; then log "FAIL: case count"; FAILED=1; fi
 # The Go oracle tests also run under plain `go test` (make test, CI), reading the latest work
-# directory: point it here, with the expected case count.
+# directory, with the expected case count; latest moves here at the end, on a default PASS.
 echo "$EXPECTED" > "$W/expected_cases"
-ln -sfn "$DATE" "$MAIN/.cache/equiv-seqout/latest"
 
 K2_SEQOUT_ORACLE="$W" K2_SEQOUT_SUMMARY="$RES/summary.tsv" K2_SEQOUT_EXPECTED_CASES="$EXPECTED" \
   go test -count=1 -v -run TestOracleSeqout ./internal/seqout/ 2>&1 | tee -a "$LOG"
@@ -187,6 +202,13 @@ log "go test seqio exit $st"
 [ "$st" = 0 ] || FAILED=1
 RESULT=$( [ "$FAILED" = 0 ] && echo PASS || echo FAIL )
 log "result: $RESULT"
+echo "$RESULT" > "$W/result"
+if [ "$RESULT" = PASS ] && [ "$DEFAULT_DECOMP" = yes ]; then
+  ln -sfn "$DATE" "$MAIN/.cache/equiv-seqout/latest"
+  log "latest -> $DATE"
+else
+  log "latest not moved (result $RESULT, default decompressor $DEFAULT_DECOMP)"
+fi
 
 { echo "{"
   echo "  \"what\": \"seqio+seqout oracle equivalence (issues #12, #16)\","
