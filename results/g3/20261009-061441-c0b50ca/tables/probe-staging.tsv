@@ -1,0 +1,7 @@
+label	tool	bytes	seconds	gbps	complete	etag_s	ok
+sweep-w32	rget	70262980608	30.00	2.342	no	-	rate-only
+sweep-w64	rget	144888037376	30.00	4.830	no	-	rate-only
+sweep-w128	rget	142740553728	30.00	4.758	no	-	rate-only
+full-rget-w64	rget	1189091671800	287.19	4.141	yes	31.47	yes
+full-s5cmd	s5cmd	1189093572608	250.57	4.746	yes	31.46	yes
+awscrt-150s	awscrt	0	150.29	0.000	no	-	rate-only
