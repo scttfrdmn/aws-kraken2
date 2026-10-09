@@ -237,6 +237,9 @@ combined. Each gets its own effective cost, billed $ ÷ U_r.
   the first instance run.
 - **TTL kill.** A kill loses at most the last 30 s of the record; `make util-stream-test`
   asserts this.
+- **Priority.** The loop renices itself to -10, directly as root or else via `sudo -n renice`,
+  so a machine saturated by the workload does not starve it of ticks. Failing both, it carries
+  on at its own nice. The header's `H nice` line records the value it got.
 - **Phase boundaries.** `ak2_phase` takes one tick at each phase start (`once phase`). The
   interval before it belongs to the previous phase, so the boundaries are exact.
 - **End.** `ak2_finish` stops the loop, takes a `final` tick together with the end-of-run
@@ -263,7 +266,9 @@ Its columns:
 - the task cgroup's CPU (spored's service cgroup: the workload plus the harness, without the
   rest of the system);
 - pgfault and pgmajfault, so page-fault time can be seen per phase;
-- the allowance-counter deltas, tick count and largest gap, the capacity source, and coverage.
+- the allowance-counter deltas, tick count and largest tick gap (also per phase), the capacity
+  source, and coverage. If the interface's counters first appear on a later tick, that tick's
+  since-boot value goes into the boot window, and coverage says so.
 
 A fleet takes only the nodes that have capacity and a billed window, in both numerators and
 denominators; any other node is excluded and named. A fleet row's coverage also carries its

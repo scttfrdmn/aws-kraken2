@@ -204,6 +204,36 @@ with tempfile.TemporaryDirectory() as T:
     truth("reset: phase b coverage says so", "tx counter went backwards" in ph["b"]["coverage"], ph["b"]["coverage"])
     check("reset: phase a tx intact (5 x 25e6)", ph["a"]["tx_bytes"], 1.25e8)
 
+    # Late interface (the reviewer's probe): no counters at ticks 0-2, 5e9 rx since boot at tick 3,
+    # then +100e6 rx and +25e6 tx per s to tick 10. Everything since btime must be counted:
+    # rx = 5e9 + 7 x 100e6, tx = 2e9 (since boot at tick 3) + 7 x 25e6.
+    tk = []
+    for t0, ph_, tag, b, used, rx, tx, k in std_ticks():
+        if k < 3:
+            rx = tx = ""
+        else:
+            rx, tx = 5_000_000_000 + 100_000_000 * (k - 3), 2_000_000_000 + 25_000_000 * (k - 3)
+        tk.append((t0, ph_, tag, b, used, rx, tx, k))
+    d = write_run(g, "run-lateif", 1000, 1040, 1010, tk)
+    util.main([d])
+    rows = read(os.path.join(d, "tables", "util.tsv"))
+    node = by(rows, "node", "scope")["node"]
+    check("late iface: rx = 5e9 since boot + 7 x 100e6", node["rx_bytes"], 5.7e9)
+    check("late iface: tx = 2e9 since boot + 7 x 25e6", node["tx_bytes"], 2.175e9)
+    ph = by(rows, "node-phase")
+    check("late iface: boot window carries the since-boot value", ph["(boot->first tick)"]["rx_bytes"], 5e9)
+    truth("late iface: coverage says where it went", "rx counter first read at t=1023" in node["coverage"], node["coverage"])
+
+    # Largest tick gap per phase: phase a has a 3 s interval (ticks 1020, 1021, 1024, 1025).
+    tk = [(t, "a" if t < 1025 else "b", "final" if t == 1027 else "tick", 100 * t, GIB_KIB, t, t, t)
+          for t in (1020, 1021, 1024, 1025, 1026, 1027)]
+    d = write_run(g, "run-gaps", 1000, 1040, 1010, tk)
+    util.main([d])
+    ph = by(read(os.path.join(d, "tables", "util.tsv")), "node-phase")
+    check("max gap in phase a", ph["a"]["max_gap_s"], 3)
+    check("max gap in phase b", ph["b"]["max_gap_s"], 1)
+    check("phase a mem_gap_s (the 3 s interval exceeds 2.5 s)", ph["a"]["mem_gap_s"], 3)
+
     # No capacity: utilisations empty, named.
     d = write_run(g, "run-nocap", 1000, 1040, 1010, std_ticks(), cap=False)
     util.main([d])

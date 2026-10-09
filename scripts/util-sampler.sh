@@ -8,7 +8,8 @@
 #   bash /tmp/ak2-util.sh once TAG one S record tagged TAG (ak2_phase: `phase`, at each phase start,
 #                                  so phase boundaries are exact; ak2_finish: `final`, then ethtool)
 # Records (tab-separated, appended to $AK2_UTIL_OUT, default /tmp/ak2-util.tsv):
-#   H key value   format, every, btime, clk_tck, ncpu, iface, cgroup, uptime_s, kernel, pid, started_at
+#   H key value   format, every, btime, clk_tck, ncpu, iface, cgroup, uptime_s, kernel, pid, nice
+#                 (the loop renices itself to -10 when it can), started_at
 #                 (a later `H iface` line: the default route appeared after the start)
 #   S t phase tag user nice system idle iowait irq softirq steal guest guest_nice
 #     mem_total_kib mem_avail_kib shmem_kib rx_bytes tx_bytes pgfault pgmajfault
@@ -81,9 +82,13 @@ case ${1:-loop} in
     while read -r k v r; do case $k in btime) BT=$v ;; cpu[0-9]*) NC=$((NC + 1)) ;; esac; done < /proc/stat
     read -r UP r < /proc/uptime
     HZ=$(getconf CLK_TCK 2>/dev/null) || HZ=100
+    # A busy machine must not starve the sampler of ticks: nice -10 as root, else via sudo -n,
+    # else as it is (silently). The nice value it got is in the header.
+    renice -n -10 -p "$BASHPID" > /dev/null 2>&1 || sudo -n renice -n -10 -p "$BASHPID" > /dev/null 2>&1
+    read -r -a PS < "/proc/$BASHPID/stat"
     printf '%s %s\n' "${IF:--}" "${CG:--}" > "$CTX"
-    printf 'H\tformat\tak2-util-1\nH\tevery\t%s\nH\tbtime\t%s\nH\tclk_tck\t%s\nH\tncpu\t%s\nH\tiface\t%s\nH\tcgroup\t%s\nH\tuptime_s\t%s\nH\tkernel\t%s\nH\tpid\t%s\nH\tstarted_at\t%s\n' \
-      "${AK2_UTIL_EVERY:-1}" "$BT" "${HZ:-100}" "$NC" "${IF:--}" "${CG:--}" "$UP" "$(uname -r 2>/dev/null)" "$BASHPID" "$START" >> "$OUT"
+    printf 'H\tformat\tak2-util-1\nH\tevery\t%s\nH\tbtime\t%s\nH\tclk_tck\t%s\nH\tncpu\t%s\nH\tiface\t%s\nH\tcgroup\t%s\nH\tuptime_s\t%s\nH\tkernel\t%s\nH\tpid\t%s\nH\tnice\t%s\nH\tstarted_at\t%s\n' \
+      "${AK2_UTIL_EVERY:-1}" "$BT" "${HZ:-100}" "$NC" "${IF:--}" "${CG:--}" "$UP" "$(uname -r 2>/dev/null)" "$BASHPID" "${PS[18]:-?}" "$START" >> "$OUT"
     echo "$BASHPID" > "${OUT%.tsv}.pid"
     ak2u_ethtool start
     FIFO=${OUT%.tsv}.fifo; rm -f "$FIFO"; mkfifo "$FIFO" && exec 9<>"$FIFO"

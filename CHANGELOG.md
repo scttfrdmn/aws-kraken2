@@ -41,6 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - util.tsv is re-uploaded every 30 s (the TTL-kill loss is bounded, and the test asserts it);
     - cohort rows are labelled by run_id;
     - a `tables/util.json` sidecar is written.
+    - a late interface's since-boot counter is counted in the boot window;
+    - the sampler renices itself to -10 (`H nice`), and util.py reports the largest tick gap
+      per phase;
+    - the streaming test runs the stub under `bash -e -c` and rootful, adds a saturating
+      `starve` phase (it asserts `mem_gap_s` = 0), and adds a one-node round that checks the
+      CPU, memory and network magnitudes from above.
   - `make instance-types`: `results/instance-types/us-west-2.json`.
   - Runbook `docs/util.md`.
 

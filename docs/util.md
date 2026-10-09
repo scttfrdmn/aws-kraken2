@@ -14,12 +14,19 @@ does with it are in [run.md](run.md), "Utilisation". This runbook covers the fou
 ## make util-stream-test [N=3]
 
 `scripts/lib/util_stream_test.sh`. `make rehearse` runs it first, for every spec, with the same
-N, and fails if it fails. It needs podman, with a podman machine that shares `$HOME`, and the
-image `public.ecr.aws/amazonlinux/amazonlinux:2023`.
+N, and fails if it fails. It needs podman, with a podman machine that shares `$HOME`.
+- It builds `localhost/ak2-util-test:al2023` once: `public.ecr.aws/amazonlinux/amazonlinux:2023`
+  plus `util-linux-core`, which is the AMI's `renice`. This needs network access the first time.
+- It runs rootful when the machine has a root connection (`podman-machine-default-root`).
+  Rootless podman cannot renice below 0, even with `CAP_SYS_NICE` in its user namespace; an
+  instance's root can. `AK2T_ROOTLESS=1` forces rootless; the nice check then records what the
+  sampler got instead of requiring -10.
 
-It starts N containers at once. Each one runs exactly what `run.sh` launches:
-- the stub as `scripts/lib/mkstub.sh` builds it, as `bash -c`, which starts the sampler and
-  execs the payload;
+**Rounds.** First N containers at once. Then, when N > 1, one container alone, so that burn and
+shm are also measured with no other container sharing the kernel. Each container runs exactly
+what `run.sh` launches:
+- the stub as `scripts/lib/mkstub.sh` builds it, run as `bash -e -c` because spawn starts it
+  with `$-` = ehB; it starts the sampler and execs the payload;
 - the payload: `scripts/preamble.sh` plus a short body.
 
 The stand-ins are only at the edges:
@@ -28,35 +35,44 @@ The stand-ins are only at the edges:
   version, so the test can see what was pushed and when;
 - `sudo` runs the command.
 
-The body runs three phases, each a known effect the sampler must resolve:
+Containers get `CAP_SYS_NICE`.
+
+The body's phases are each a known effect the sampler must resolve:
 - **burn**: 8 s of one busy vCPU;
 - **shm**: 256 MiB written to `/dev/shm` (tmpfs counts as used memory), held for 6 s;
 - **net**: 64 MiB downloaded over the container's `eth0` from a server on the host;
+- **starve**: `nproc` busy loops at nice 0 for 15 s, saturating every CPU, against the
+  sampler's nice -10;
 - **hold**: 50 s of sleep, so the 30 s re-upload happens twice during the run.
 
-It passes only if every node shows all of the following, read from the uploads:
-- The container exits 0.
+It passes only if every node of every round shows all of the following, read from the uploads:
+- The container exits 0, and the preamble logged the stub's `$-` with `e` in it.
 - `log/util.tsv` was uploaded at least twice before the body's `end` phase, and each upload has
   more ticks than the one before. So it streamed, rather than arriving only at exit.
+- No stretch of the run longer than 36 s went without an upload of `util.tsv`. That bounds what
+  a TTL kill loses.
 - In the last upload:
   - the first tick is phase `stub` and precedes the preamble, so the stub started the sampler;
   - the last tick is the `final` one, at or after `end`;
   - no gap between ticks is longer than 2.5 s;
-  - the phases stub, preamble, body, burn, shm, net, hold and end all appear.
-- `scripts/lib/util.py` on the result finds all three effects:
+  - the header says nice -10;
+  - every phase appears.
+- `scripts/lib/util.py` on the result finds every effect:
   - burn: busy vCPU-s ≥ 0.8 × its seconds;
   - shm: peak used ≥ the phase's first tick + 200 MiB, and Shmem up by ≥ 250 MiB;
-  - net: at least 64 MiB.
+  - net: at least 64 MiB;
+  - starve: `mem_gap_s` = 0. The phase's largest tick gap and busy vCPU-s are printed.
+- In the alone round, the checks also apply from above:
+  - burn ≤ 1.6 × its seconds;
+  - the shm rise ≤ 330 MiB, and Shmem ≤ 300 MiB;
+  - net ≤ 80 MiB.
 
-It also passes only if:
-- no stretch of the run longer than 36 s went without an upload of `util.tsv`, which bounds
-  what a TTL kill loses (the pusher re-uploads it every 30 s; the body holds 50 s to cover two
-  pushes);
+Outside the rounds, two more checks:
 - a sampler whose stub exits before exec (exit 97) stops with it;
 - a `once` tick after a loop that found no default route looks the interface up again.
 
 **Overhead.** It prints two costs per node:
-- the sampler's own CPU per tick: 0.5–2.4 ms here, at most 0.24% of one vCPU;
+- the sampler's own CPU per tick: 0.5–2.6 ms here, at most 0.26% of one vCPU;
 - the pusher's uploads, by object (in 65 s: `run.log` ×13, `requests.tsv` ×13, `util.tsv` ×3).
   Here `aws` is a stub. On an instance each upload is an `aws s3 cp` (a Python CLI process),
   which costs far more than the sampler. That cost is still to be measured on the first
@@ -75,11 +91,15 @@ BREAK=nostub scripts/lib/util_stream_test.sh 1   # must FAIL: first tick is not 
 
 **Record:** `results/rehearse/util-stream-<UTC>-<commit>.log`. `KEEP=1` keeps the work dir.
 
-**Limits.** The containers share the podman VM's kernel. So the node-level utilisations the
-test prints are diluted by the VM's whole uptime (its `btime` is days old), and other
-containers' work shows in `/proc/stat`. The phase checks use deltas and boundary ticks, so they
-are not affected. `ethtool` is absent from the image, so the `E` records say `no-ethtool`. On
-AL2023 instances, the ENA counters come from `ethtool -S`.
+**Limits.**
+- The containers share the podman VM's kernel. So the node-level utilisations the test prints
+  are diluted by the VM's whole uptime (its `btime` is days old).
+- In the N-node round, every container's work shows in every container's `/proc/stat` and
+  meminfo, so each phase delta includes the other containers' burn, shm and starve. Those checks
+  are therefore lower bounds only. Only the alone round checks magnitudes, and even there the
+  VM's own background is in the deltas.
+- `ethtool` is absent from the image, so the `E` records say `no-ethtool`. On AL2023 instances,
+  the ENA counters come from `ethtool -S`.
 
 ## make util DIR=…
 

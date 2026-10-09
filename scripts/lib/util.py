@@ -129,7 +129,7 @@ def capacity(man, region):
 def acc(seconds=0.0, unobservable=False):
     """A sum over a window. None in a numeric field = not recorded."""
     a = {k: None for k in NUMS}
-    a.update(seconds=seconds, peak_kib=None, unobservable=unobservable, notes=[])
+    a.update(seconds=seconds, peak_kib=None, max_gap=None, unobservable=unobservable, notes=[])
     return a
 
 
@@ -201,8 +201,15 @@ def node_util(man, util_path):
         # Counters from boot: CPU and network are integrated over this window; memory is not.
         b = get("(boot->first tick)", seconds=out["unobs_boot"], unobservable=True)
         add(b, "busy_s", busy(f) / hz)
-        add(b, "rx", f["rx_bytes"])
-        add(b, "tx", f["tx_bytes"])
+        # The interface may appear late (no default route at the first tick): the first tick that
+        # has a counter holds everything since boot, and the deltas after it add the rest.
+        for k, col in (("rx", "rx_bytes"), ("tx", "tx_bytes")):
+            first = next((r for r in rows if r[col] is not None), None)
+            if first is not None:
+                add(b, k, first[col])
+                if first is not f:
+                    notes.append(f"{k} counter first read at t={first['t']:.0f} ({first['t'] - f['t']:.0f} s after the "
+                                 f"first tick): its value since boot is in the boot window")
         for k in ("busy_s", "rx", "tx"):
             add(tot, k, b[k])
     reset = {"rx": False, "tx": False}
@@ -212,6 +219,7 @@ def node_util(man, util_path):
             continue
         p = get(a["phase"])
         p["seconds"] += d
+        p["max_gap"] = d if p["max_gap"] is None else max(p["max_gap"], d)
         for k, v in (("busy_s", (busy(b) - busy(a)) / hz), ("pgfault", delta(a, b, "pgfault")),
                      ("pgmajfault", delta(a, b, "pgmajfault"))):
             add(p, k, v)
@@ -380,7 +388,7 @@ def node_rows(label, n):
     for name in n["order"]:
         p = n["phases"][name]
         out.append(row("node-phase", label, name, p, denom(cap, p["seconds"]), capshow(cap),
-                       extra={"capacity_source": n["cap_src"], "coverage": phase_cov(name, p)}))
+                       extra={"capacity_source": n["cap_src"], "max_gap_s": fmt(p["max_gap"], "s"), "coverage": phase_cov(name, p)}))
     return out
 
 
@@ -460,11 +468,13 @@ def fleet_rows(nodes):
             if p["peak_kib"] is not None:
                 a["peak_kib"] = p["peak_kib"] if a["peak_kib"] is None else max(a["peak_kib"], p["peak_kib"])
             a["notes"] += [f"{lab}: {x}" for x in p["notes"]]
+            if p["max_gap"] is not None:
+                a["max_gap"] = p["max_gap"] if a["max_gap"] is None else max(a["max_gap"], p["max_gap"])
             for k, v in (denom(n["cap"], p["seconds"]) or {}).items():
                 pden[name][k] += v
     for name in order:
         out.append(row("fleet-phase", f"{pnodes[name]} node(s)", name, agg[name], pden[name], (None,) * 4,
-                       extra={"coverage": phase_cov(name, agg[name])}))
+                       extra={"max_gap_s": fmt(agg[name]["max_gap"], "s"), "coverage": phase_cov(name, agg[name])}))
     return out
 
 
