@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034,SC2016,SC2329  # variables and stubs are for the sourced body block; the fake scripts are literal
 # make ladder-stream-test (in make test; docs/ladder.md, "The body"): the ladder body's own launch,
 # watch and sample-record functions (scripts/g3/ladder.body.sh, from its "load and classify" marker
 # to its end marker, unmodified), driven with a fake classifier, checked on observed output:

@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-stream-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -23,6 +23,9 @@ test:
 	python3 scripts/lib/tune_tables.py --self-test
 	bash scripts/lib/quota_check_test.sh
 	bash scripts/lib/run_sh_test.sh
+	python3 scripts/lib/ladder_levers.py --self-test
+	python3 scripts/lib/ladder_levers.py check
+	bash scripts/tests/ladder_stream_test.sh
 
 lint:
 	$(GO) vet $(PKGS)
@@ -206,6 +209,19 @@ run:
 # user-data size and vCPU quota per spec (results/rehearse/dryrun-userdata-<ts>-<sha>.tsv; docs/run.md).
 dryrun-userdata:
 	GEN="$(GEN)" scripts/dryrun-userdata.sh
+
+# #51: the ladder (docs/ladder.md). ladder-spec ARM=S|O RUNG=<rung> COHORT=<n> [TTL=<min>] writes
+# runs/g3-l-<rung>-c<n>.json from scripts/g3/ladder.levers.tsv (refused while a placeholder is
+# unresolved); ladder-check checks one key-group per rung; ladder-stream-test drives the body's
+# launch and watch functions with a fake classifier (both in make test).
+ladder-spec:
+	scripts/g3/mkspec-ladder.sh $(ARM) $(RUNG) $(COHORT) $(if $(TTL),TTL=$(TTL))
+
+ladder-check:
+	python3 scripts/lib/ladder_levers.py check
+
+ladder-stream-test:
+	bash scripts/tests/ladder_stream_test.sh
 
 orphans:
 	scripts/orphans.sh

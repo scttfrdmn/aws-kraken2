@@ -290,7 +290,10 @@ if [ "$UD_GZ" -gt "$UD_MAX" ]; then
   die "user data would be $UD_GZ bytes; EC2's cap is 16384 and the harness keeps a $AK2_USERDATA_MARGIN-byte margin"
 fi
 
-jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" \
+# A ladder spec's PARAMS block (#51/#52; docs/ladder.md): manifest.params, else null.
+LAD_PARAMS=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC") && [ -n "$LAD_PARAMS" ] ||
+  { rm -rf "$RUN_DIR"; die "could not read the spec's ladder params (scripts/lib/ladder_levers.py spec-params)"; }
+jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" --argjson params "$LAD_PARAMS" \
   --arg spec_sha "$(shasum -a 256 "$SPEC" | cut -d' ' -f1)" --arg sha "$SHA" --argjson dirty "$DIRTY" \
   --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_SHA" --arg udesc "$UPSTREAM_DESCRIBE" --arg region "$REGION" \
   --arg spawn_v "$(spawn version 2>/dev/null | awk '/Version:/{print $2}')" \
@@ -300,7 +303,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --arg allowed "$ALLOWED_BUCKETS" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
   --arg pbytes "$(wc -c < "$PAYLOAD" | tr -d ' ')" --argjson ud "$UD" \
   --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" '{
-    gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha,
+    gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha, params:$params,
     commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin, sha:$upin, describe:$udesc},
     tools:{spawn:$spawn_v, truffle:$truffle_v},
     region:$region, ttl:$ttl, cost_limit_usd:$cost, s3_prefix:$prefix,
