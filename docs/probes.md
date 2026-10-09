@@ -132,7 +132,7 @@ Out of scope:
 ### The probe: `runs/g3-probe-tune-x8g.24xlarge.json`
 
 The probe is one x8g.24xlarge in us-west-2b. Its body is `scripts/g3/probe-tune.body.sh`, and
-its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 315 ... us-west-2b SRR5935740`
+its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 360 ... us-west-2b SRR5935740`
 (the accession goes into `env.AK2_ACCESSIONS`, and so into the manifest). The
 spec header registers the plan, the selection rule and the resolution check.
 
@@ -249,5 +249,6 @@ It runs the full plan, and passes on observed output:
 - (b) is about 345 s a trial: E2's N = 1 load of 324 s, then classify and exit.
 - 19 of each (the warm-up included), plus about 15 min of setup and ceilings, comes to about
   3.5 h, about $33 at the on-demand price.
-- The TTL is 315 min, with a cost_limit of $49.25: a runaway backstop, and the most the $50
-  `AK2_MAX_COST_USD` cap allows at $9.38/h (360 min would need $56.28).
+- The TTL is 360 min, with a cost_limit of $56.28 (TTL × $9.38/h): a runaway backstop, about
+  1.7× the estimate. There is no budget cap (Scott, 2026-10-09, #25); the harness refuses only a
+  cost_limit above TTL × price × 1.10 (docs/run.md, "cost_limit").

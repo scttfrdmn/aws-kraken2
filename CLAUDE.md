@@ -115,6 +115,7 @@ targets; ad hoc commands only during exploration.
 | `make rehearse SPEC=…` (local rehearsal of a spec under the nodes' environment; runs `make util-stream-test` first) | [docs/cohort.md](docs/cohort.md) |
 | `make util-stream-test [N=…]` / `make util DIR=…` / `make util-backfill` / `make instance-types` | [docs/util.md](docs/util.md), [docs/run.md](docs/run.md) ("Utilisation") |
 | `make run GATE=… SPEC=… [NODES=n]` | [docs/run.md](docs/run.md) ("Multi-node runs"), [docs/engine.md](docs/engine.md) |
+| `make dryrun-userdata [GEN=…]` (user-data size and pre-launch checks of every spec) | [docs/run.md](docs/run.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
 | `make report GATE=… RUN=…` | [docs/report.md](docs/report.md) |
 | spore.host usage notes | [docs/spore-host.md](docs/spore-host.md) |
