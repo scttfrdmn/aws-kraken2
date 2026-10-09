@@ -10,25 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `make g3-ladder` (`scripts/lib/ladder_tables.py`; #52, WP-8 of the #25 ladder). It builds the
-  ladder's tables from the record only and writes `results/g3/ladder/`:
+  ladder's tables from the record only and writes them to `results/g3/ladder/`:
   - per-run tidy rows from the `lad-sample` lines plus the manifest, with billed $, U_cpu,
-    U_mem and U_net (from `tables/util.tsv`; missing is reported as missing, never imputed);
-  - per-rung, per-cohort medians and ranges on wall, billed $ and the lever's own phase;
-  - each rung's delta against its predecessor, labelled resolved only if |Δmedian| > 2 × max
-    range, otherwise unresolvable (never a null), beside the predicted delta and the measured
-    spread;
-  - effective cost per resource (billed ÷ U_cpu, ÷ U_mem, ÷ U_net, and U_net per direction),
-    never combined;
-  - the three pairs S vs S\*, S vs O\* and S\* vs O\* on the time and cost endpoints, each total
-    beside its per-lever decomposition;
-  - cross-arm Law 1 by on-node sha256 and file set, where any mismatch is a DEFECT and the
-    target exits 1, with S5 non-preserving samples reported separately;
-  - cold and warm endpoint rows, spend, and a `manifest.json` that cites every input with its
-    sha256 and the commit.
+    U_mem and U_net from the fleet row of `tables/util.tsv`. A missing row is reported as
+    missing, never imputed.
+  - per-rung, per-cohort medians and ranges on wall, billed $ and the lever's own phase. Runs
+    with any DEFECT are excluded: incomplete against the planned accession set, a failed
+    sample, or a contract error.
+  - each rung's delta against its predecessor. A delta is resolved only if |Δmedian| > 2 ×
+    max(range, range, instrument granularity q). Otherwise it is unresolvable, never a null,
+    with "below instrument granularity" as its own label. The predicted delta and the measured
+    spread are shown beside it.
+  - effective cost per resource (util's fleet cost_usd ÷ U_cpu, ÷ U_mem, ÷ U_net, and U_net per
+    direction), never combined.
+  - the three pairs S vs S\*, S vs O\* and S\* vs O\* on the declared (per-cohort) time and cost
+    endpoints. Each total sits beside its per-lever decomposition, in pairs.tsv and summary.md.
+  - cross-arm Law 1 against a stock reference, by on-node sha256 and file set. Any mismatch,
+    and any O-arm accession without a stock reference, is a DEFECT, and the target exits 1.
+    S5's rapidgzip identity rule covers gzip fallbacks (reported as findings against the lever)
+    and non-preserving inputs (exempt, and out of the attribution).
+  - modelled values, flagged; cold and warm endpoint rows; spend; and a `manifest.json` that
+    cites every input with its sha256 and the commit.
 
-  The `lad-sample` contract with the ladder body (#51) is in docs/ladder.md, "Ladder tables".
-  `make test` runs `scripts/lib/ladder_tables_test.py` on a synthetic record worked by hand.
-  `g3_campaign.py` now also counts ladder run dirs under gates other than g3 in `spend.tsv`.
+  The `lad-sample`, PARAMS and lever-table contract with the ladder body (#51) is in
+  docs/ladder.md, "Ladder tables". `make test` runs `scripts/lib/ladder_tables_test.py` on a
+  synthetic record worked by hand. `g3_campaign.py` now also counts ladder run dirs under gates
+  other than g3 in `spend.tsv`.
 - `make g3-fit` (`scripts/lib/fit26.py`; #26, WP-10 of the #25 ladder). It fits the registered
   T(N) and cost model to the nine cohort-100 campaign points, from the record only, and writes
   `results/g3/fit26/`:
