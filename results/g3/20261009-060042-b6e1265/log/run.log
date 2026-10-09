@@ -1,0 +1,71 @@
+ak2: log tee up
+ak2-phase	2026-10-09T06:01:06Z	1791525666	preamble	no
+ak2: [2026-10-09T06:01:06Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-09T06:01:06Z] after set +e $-=hBc
+ak2: [2026-10-09T06:01:06Z] gate=g3 run=20261009-060042-b6e1265
+ak2: [2026-10-09T06:01:06Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-09T06:01:06Z] imds region=us-west-2 az=us-west-2b instance=i-0583d491d4a6e20c4 type=c8g.4xlarge ami=ami-09325776a00699513
+ak2: [2026-10-09T06:01:06Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-09T06:01:10Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-09T06:01:10Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-09T06:01:10Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-09T06:01:11Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-09T06:01:11Z] region assert passed
+ak2: [2026-10-09T06:01:11Z] drop_caches_ok=true
+ak2: [2026-10-09T06:01:11Z] preamble done; spec body starts
+ak2-phase	2026-10-09T06:01:11Z	1791525671	body	no
+ak2-phase	2026-10-09T06:01:11Z	1791525671	setup	no
+ak2: [2026-10-09T06:01:56Z] tools: gzip 1.12; pigz pigz 2.5; rapidgzip rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5; isal 1.8.0; nproc 16
+ak2-phase	2026-10-09T06:01:56Z	1791525716	fetch-inputs	no
+SRR5935773_2.fastq.gz 1034506302
+SRR5935773_1.fastq.gz 1035961519
+ak2: [2026-10-09T06:02:00Z] inputs staged and verified: 2 files, 2.070 GB
+ak2-phase	2026-10-09T06:02:00Z	1791525720	identity	no
+probe-decomp {"kind":"identity","tool":"gzip","mate":1,"sha256":"e044fc1d9d21d0787ce19c87751056b63401e5c5d968eef31395a77b282ddd49","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"gzip","mate":2,"sha256":"50cc49d055d2f0ba0d442b9dcd749755301230adf493871c34c4df8fa8314036","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"pigz-p16","mate":1,"sha256":"e044fc1d9d21d0787ce19c87751056b63401e5c5d968eef31395a77b282ddd49","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"pigz-p16","mate":2,"sha256":"50cc49d055d2f0ba0d442b9dcd749755301230adf493871c34c4df8fa8314036","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"igzip","mate":1,"sha256":"e044fc1d9d21d0787ce19c87751056b63401e5c5d968eef31395a77b282ddd49","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"igzip","mate":2,"sha256":"50cc49d055d2f0ba0d442b9dcd749755301230adf493871c34c4df8fa8314036","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"rapidgzip-p16","mate":1,"sha256":"e044fc1d9d21d0787ce19c87751056b63401e5c5d968eef31395a77b282ddd49","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"rapidgzip-p16","mate":2,"sha256":"50cc49d055d2f0ba0d442b9dcd749755301230adf493871c34c4df8fa8314036","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"rapidgzip-p8","mate":1,"sha256":"e044fc1d9d21d0787ce19c87751056b63401e5c5d968eef31395a77b282ddd49","identical":true,"exit":0}
+probe-decomp {"kind":"identity","tool":"rapidgzip-p8","mate":2,"sha256":"50cc49d055d2f0ba0d442b9dcd749755301230adf493871c34c4df8fa8314036","identical":true,"exit":0}
+ak2-phase	2026-10-09T06:03:33Z	1791525813	rep-1	no
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"gzip","mode":"seq","rep":1,"seconds":37.4520001411438,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"gzip","mode":"conc","rep":1,"seconds":18.776999950408936,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"pigz-p16","mode":"seq","rep":1,"seconds":17.658999919891357,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"pigz-p16","mode":"conc","rep":1,"seconds":8.860999822616577,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"igzip","mode":"seq","rep":1,"seconds":15.957000017166138,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"igzip","mode":"conc","rep":1,"seconds":7.99399995803833,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p16","mode":"seq","rep":1,"seconds":2.758000135421753,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p16","mode":"conc","rep":1,"seconds":2.5829999446868896,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p8","mode":"seq","rep":1,"seconds":5.081000089645386,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p8","mode":"conc","rep":1,"seconds":2.5350000858306885,"exit":0}
+ak2-phase	2026-10-09T06:05:33Z	1791525933	rep-2	no
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"pigz-p16","mode":"seq","rep":2,"seconds":17.628000020980835,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"pigz-p16","mode":"conc","rep":2,"seconds":8.833000183105469,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"igzip","mode":"seq","rep":2,"seconds":15.958999872207642,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"igzip","mode":"conc","rep":2,"seconds":7.995000123977661,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p16","mode":"seq","rep":2,"seconds":2.680000066757202,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p16","mode":"conc","rep":2,"seconds":2.6089999675750732,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p8","mode":"seq","rep":2,"seconds":5.023999929428101,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p8","mode":"conc","rep":2,"seconds":2.6050000190734863,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"gzip","mode":"seq","rep":2,"seconds":37.45900011062622,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"gzip","mode":"conc","rep":2,"seconds":18.81500005722046,"exit":0}
+ak2-phase	2026-10-09T06:07:33Z	1791526053	rep-3	no
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"igzip","mode":"seq","rep":3,"seconds":15.95300006866455,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"igzip","mode":"conc","rep":3,"seconds":8,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p16","mode":"seq","rep":3,"seconds":2.740000009536743,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p16","mode":"conc","rep":3,"seconds":2.615999937057495,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p8","mode":"seq","rep":3,"seconds":5.050999879837036,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"rapidgzip-p8","mode":"conc","rep":3,"seconds":2.5820000171661377,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"gzip","mode":"seq","rep":3,"seconds":37.45099997520447,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"gzip","mode":"conc","rep":3,"seconds":18.782000064849854,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"pigz-p16","mode":"seq","rep":3,"seconds":17.628000020980835,"exit":0}
+probe-decomp {"kind":"time","sample":"SRR5935773","tool":"pigz-p16","mode":"conc","rep":3,"seconds":8.853000164031982,"exit":0}
+ak2: [2026-10-09T06:09:34Z] decomp probe done: 30 timings, 0 non-zero exits
+ak2-phase	2026-10-09T06:09:34Z	1791526174	push	no
+ak2: [2026-10-09T06:09:34Z] pushed out/decomp.jsonl
+ak2: [2026-10-09T06:09:34Z] spec body exit rc=0
+ak2-phase	2026-10-09T06:09:34Z	1791526174	end	no
