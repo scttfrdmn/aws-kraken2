@@ -241,7 +241,7 @@ E2E = {
           "registered, end to end: T = K + beta*S/N + rho*W/(N*c), K = t_boot + t_probe + t_gather + t_tail (only their sum is identifiable from T)"),
     "R+t_input": (["K", "beta", "rho"], ["s", "s/GB", "s/(Mpair/vCPU)"],
                   lambda th, cfg: th[0] + th[1] * cfg["S_GB"] / cfg["N"] + max(th[2] * x_cls(cfg, cfg["vcpu"]), cfg["w_max"] / R_IN_E1),
-                  "registered + t_input: the classify term becomes max(W/(N*c*r), w_max/r_input), r_input = 1.84 Mpairs/s per stream fixed at E1's measurement (#25 E1 addition)"),
+                  "registered + t_input: the classify term becomes max(W/(N*c*r), w_max/r_input), r_input = {r_input} Mpairs/s per stream fixed at E1's measurement (#25 E1 addition)"),
     "R+t_emit": (["K", "beta", "rho", "tau_emit"], ["s", "s/GB", "s/(Mpair/vCPU)", "s/sample"],
                  lambda th, cfg: t_reg(th, cfg) + th[3] * cfg["n_lane"],
                  "registered + t_emit = tau_emit * samples per lane, n_lane = ceil(cohort / (N * in flight))"),
@@ -540,7 +540,10 @@ def main():
     R_IN_E1 = float(mm.group(1)) * 1e6      # the models read the module value at call time
     fr_src = os.path.join(G, "campaign", "frontier.md")
     mm = re.search(r"post-fix classify / pre-fix = ([0-9.]+)", open(rec.open(fr_src)).read())
-    HITBENCH = float(mm.group(1).rstrip(".")) if mm else float("nan")
+    assert mm, ("no post-fix / pre-fix classify ratio in", fr_src)
+    HITBENCH = float(mm.group(1).rstrip("."))
+    e = E2E["R+t_input"]
+    E2E["R+t_input"] = e[:3] + (e[3].replace("{r_input}", f"{R_IN_E1 / 1e6:.2f}"),)
     os.makedirs(OUT, exist_ok=True)
     head_sha = git("rev-parse", "HEAD")
     dirty = git("status", "--porcelain", "--untracked-files=no", "--", "scripts")
@@ -841,7 +844,9 @@ def main():
                      "note", "engine_pre_fix"], par_rows)
     w("residuals.tsv", ["fit", "spec", "type", "N", "engine_pre_fix", "T_obs_s", "T_pred_s", "T_pred_se_s", "resid_s", "resid_pct",
                         "loo_pred_s", "loo_resid_s", "designated_held_out"], res_rows)
-    w("heldout.tsv", ["fit", "check", "point", "observed", "predicted", "predicted_se", "obs_minus_pred", "z", "note", "caveat"], ho_rows)
+    pre_of = {p["spec"]: p["pre_fix"] for p in pts}
+    w("heldout.tsv", ["fit", "check", "point", "observed", "predicted", "predicted_se", "obs_minus_pred", "z", "note", "caveat",
+                      "engine_pre_fix"], [r + [e1_pre if r[2] == E1 else pre_of.get(r[2], "unknown")] for r in ho_rows])
     w("predictions.tsv", ["fit", "family", "type", "cohort", "N", "inflight", "c_used", "T_pred_s", "T_pred_se_s", "usd_run_NpT",
                           "usd_per_sample_NpT", "usd_per_sample_registered_formula", "status",
                           "flags (values and ranges: optimal.tsv)", "engine_pre_fix"], [r + [PRE] for r in pred_rows])
@@ -938,7 +943,8 @@ def main():
         m(f"\nrmse {s['rmse']:.1f} s (s = {g(s['s'], '{:.1f}')} s with {s['dof']} dof), R^2 {s['R2']:.3f}, max |resid| "
           f"{s['maxabs']:.0f} s ({s['maxabs_pct']:.0f}%), LOO rmse {s['loo_rmse']:.1f} s. Held-out {HELD_OUT}: predicted "
           f"{s['ho'][0]:.0f} +- {g(s['ho'][1], '{:.0f}')} s against {[p for p in pts if p['spec'] == HELD_OUT][0]['T']:.0f} s "
-          f"(z = {g(s['ho'][2], '{:+.2f}')}). Cohort-1 classify check: rmse {cs_stats[name]['c1_rmse']:.2f} s, mean "
+          f"(z = {g(s['ho'][2], '{:+.2f}')}{'; z uses s alone: the refit is singular, so there is no parameter se' if s['ho'][3] != s['ho'][3] else ''}). "
+          f"Cohort-1 classify check: rmse {cs_stats[name]['c1_rmse']:.2f} s, mean "
           f"obs - pred {cs_stats[name]['c1_bias']:+.2f} s.\n")
 
     m("## 1. The registered form, exactly as registered (fit R, end to end)\n")
@@ -1131,6 +1137,11 @@ def main():
         if FITS[name]["cov"] is None:
             m("Not identifiable on these points (section 2): no predictions.\n")
             continue
+        if (name in E2E or name == "P-full") and name not in JOINT:
+            const = [k for k in FIT_REG[name] if RANGE[name][k][0] == RANGE[name][k][1]]
+            m("No joint-extrapolation test for this fit: X'X of its regressors is singular" +
+              (f" ({', '.join(const)} is the same at every point: all are cohort 100), so only the per-regressor range "
+               "test applies" if const else "") + ".\n")
         m("| family | cohort | time-optimal: type N (68% N) | T s | $/sample | cost-optimal: type N (68% N) | T s | $/sample | extrapolated |")
         m("|---|---|---|---|---|---|---|---|---|")
         for f in fams:
