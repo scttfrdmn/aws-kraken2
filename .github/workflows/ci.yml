@@ -160,7 +160,7 @@ jobs:
   # uses Ubuntu's g++. Runbook: docs/sortfuzz.md.
   sortfuzz:
     runs-on: ubuntu-24.04-arm
-    container: amazonlinux:2023
+    container: public.ecr.aws/amazonlinux/amazonlinux:2023
     timeout-minutes: 60
     defaults:
       run:
@@ -217,7 +217,7 @@ jobs:
   # Runbook: docs/hitorderfuzz.md.
   hitorderfuzz:
     runs-on: ubuntu-24.04-arm
-    container: amazonlinux:2023
+    container: public.ecr.aws/amazonlinux/amazonlinux:2023
     timeout-minutes: 120
     defaults:
       run:
