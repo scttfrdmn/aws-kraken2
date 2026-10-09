@@ -263,13 +263,19 @@ if "contention" in PROBE:
             CONT[int(r["N"])] = {"min": float(r["node_min_gbps"]), "med": float(r["node_median_gbps"]),
                                  "agg": float(r["aggregate_gbps"]), "run": os.path.basename(d), "nic": r.get("nic_gbps", "-")}
 # (c) decompression tools on one sample: time relative to pigz on the same node, and identity.
-DECOMP = {}
+# Ratios are to pigz -p 16 with the mates one after the other (seq), as U1's preparation ran;
+# DECOMP_CONC is each tool with both mates at once (the wrapper's two pipes), to the same base.
+DECOMP, DECOMP_CONC = {}, {}
 if "decomp" in PROBE:
     d, t = PROBE["decomp"][-1]
     base = [float(r["seconds"]) for r in t if r["tool"].startswith("pigz")]
     for r in t:
         if base and r["identical"] == "yes":
             DECOMP[r["tool"]] = {"ratio": float(r["seconds"]) / min(base), "s": float(r["seconds"]), "run": os.path.basename(d)}
+    if "decomp-conc" in PROBE:
+        for r in PROBE["decomp-conc"][-1][1]:
+            if base and r["identical"] == "yes":
+                DECOMP_CONC[r["tool"]] = {"ratio": float(r["seconds"]) / min(base), "s": float(r["seconds"])}
 
 
 def stage_rate(variant, N):
@@ -279,18 +285,23 @@ def stage_rate(variant, N):
     a = STAGE_A["gbps"]
     if variant == "probe-a":
         return a
-    # probe-a capped by the measured contention: piecewise-linear in N through (1, a) and the
-    # probe's (N, slowest node); beyond the largest probed N, its aggregate shared over N.
-    pts = [(1, a)] + sorted((n, min(a, v["min"])) for n, v in CONT.items())
-    if N >= pts[-1][0]:
-        return min(a, CONT[pts[-1][0]]["agg"] / N, pts[-1][1])
-    for (n0, r0), (n1, r1) in zip(pts, pts[1:]):
+    # probe-a scaled by the measured contention factor f(N) = the slowest node's rate at N over a
+    # lone node's (probe (b)'s N = 1, same type), piecewise-linear in N between the probed N;
+    # beyond the largest probed N, that stage's aggregate shared over N.
+    one = CONT[1]["med"]
+    pts = sorted((n, min(1.0, v["min"] / one)) for n, v in CONT.items())
+    nmax = pts[-1][0]
+    if N >= nmax:
+        return a * min(pts[-1][1], CONT[nmax]["agg"] / N / one)
+    for (n0, f0), (n1, f1) in zip(pts, pts[1:]):
         if n0 <= N <= n1:
-            return min(a, r0 + (r1 - r0) * (N - n0) / (n1 - n0))
+            return a * (f0 + (f1 - f0) * (N - n0) / (n1 - n0))
 
 
-def prep_of(sample, tool):
+def prep_of(sample, tool, conc=False):
     p = U1["prep"].get(sample, 0.0)
+    if conc:
+        return p * DECOMP_CONC[tool]["ratio"]
     return p if tool == "pigz" else p * DECOMP[tool]["ratio"]
 
 
@@ -301,7 +312,8 @@ def schedule(items, N, P, cold_x=0.0, overlap=False):
     """LPT over N x P identical slots (slot k on node k mod N; the largest samples go round-robin
     to the nodes). items: (sample, prep_s, classify_s). Per node: its slots' spans and its input
     bytes. A slot's first sample takes (1 + cold_x) x its classify wall (U2's cold first sample).
-    overlap: decompression of a slot's next sample runs during the current classify (pipelined)."""
+    overlap: "pipelined" (a slot's next sample decompresses during the current classify) or
+    "stream" (decompression streams into classify, the wrapper's pipes: max(prep, classify))."""
     h = [(0.0, k) for k in range(N * P)]
     slot = {k: [] for k in range(N * P)}
     for s_, pr, cl in sorted(items, key=lambda x: -(x[1] + x[2])):
@@ -316,7 +328,9 @@ def schedule(items, N, P, cold_x=0.0, overlap=False):
             js = slot[k]
             if not js:
                 continue
-            if overlap:
+            if overlap == "stream":
+                sp_ = sum(max(pr, cl) for _, pr, cl in js)
+            elif overlap:
                 sp_ = js[0][1] + sum(max(js[i][2], js[i + 1][1]) for i in range(len(js) - 1)) + js[-1][2]
             else:
                 sp_ = sum(pr + cl for _, pr, cl in js)
@@ -346,13 +360,13 @@ def evaluate(node, items, N, P, regime, svar, cold_x=0.0, overlap=False):
     return best_t, ph_
 
 
-def u1_items(cfgname, c, tool):
+def u1_items(cfgname, c, tool, conc=False):
     cf = U1["cfg"][cfgname]
     out = []
     for s_ in order[:c]:
         if s_ not in cf["w"]:
             return None
-        out.append((s_, prep_of(s_, tool) if cf["input"] == "fq" else 0.0, cf["w"][s_]))
+        out.append((s_, prep_of(s_, tool, conc) if cf["input"] == "fq" else 0.0, cf["w"][s_]))
     return out
 
 
@@ -403,11 +417,13 @@ for c in (1, 10, 100):
         for tool in TOOLS:
             if tool != "pigz" and tool.startswith("pigz"):
                 continue
-            for overlap in (False, True):
+            for overlap in (False, "pipelined", "stream"):
+                if overlap == "stream" and tool not in DECOMP_CONC:
+                    continue
                 for cfgname, cf in U1["cfg"].items():
                     if cf["input"] != "fq" and (tool != "pigz" or overlap):
                         continue  # decompression options and overlap apply to the fq path only
-                    items = u1_items(cfgname, c, tool)
+                    items = u1_items(cfgname, c, tool, overlap == "stream")
                     if items is None:
                         continue
                     for N in range(1, c + 1):
@@ -432,8 +448,8 @@ for c in (1, 10, 100):
 
 # The labelled upstream variants that enter the bests: per cohort, regime, node type, staging
 # variant and decompression option, the N that minimises time and the N that minimises $/sample.
-for key in sorted({(s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], s["overlap"]) for s in sweep}):
-    sel = [s for s in sweep if (s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], s["overlap"]) == key]
+for key in sorted({(s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], str(s["overlap"])) for s in sweep}):
+    sel = [s for s in sweep if (s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], str(s["overlap"])) == key]
     picks = {}
     for why, s in (("min time", min(sel, key=lambda s: (s["time_s"], s["N"]))),
                    ("min $", min(sel, key=lambda s: (s["usd_per_sample"], s["N"])))):
@@ -445,7 +461,9 @@ for key in sorted({(s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], s
         st = ("-", "-")
         if regime == "from-scratch":
             st = (f"{s['ph']['stage']:.0f}", f"{HASH_GB / s['ph']['stage']:.2f}")
-        dec = s["tool"] + (", decompression overlapped with classify" if s["overlap"] else "")
+        dec = s["tool"] + {False: "", "pipelined": ", decompression pipelined ahead of classify",
+                           "stream": ", gz streamed through the wrapper's pipes with this tool as gzip (fq classify wall, "
+                                     "both mates at once)"}[s["overlap"]]
         lab = (f"{SP if s['N'] > 1 else 'upstream single node (derived)'}: {s['node']} N={s['N']}, {s['config']}; "
                f"{SV_LABEL[s['svar']] if regime == 'from-scratch' else 'table resident'}; {dec} ({', '.join(whys)})")
         add(c, regime, "upstream", lab, s["time_s"], s["N"], s["vcpus"], s["price"], "-", "derived",
@@ -583,7 +601,7 @@ with open(os.path.join(OUT, "upstream_sp_sweep.tsv"), "w", newline="") as fh:
                 "time_s", "usd_per_sample_derived", "crit_fixed_s", "crit_staging_s", "crit_input_s", "crit_prep_s",
                 "crit_classify_s"])
     for s in sweep:
-        w.writerow([s["cohort"], s["regime"], s["node"], s["config"], s["svar"], s["tool"], "yes" if s["overlap"] else "no",
+        w.writerow([s["cohort"], s["regime"], s["node"], s["config"], s["svar"], s["tool"], s["overlap"] or "no",
                     s["slots_per_node"], s["N"], f"{s['time_s']:.2f}", f"{s['usd_per_sample']:.6f}"]
                    + [f"{s['ph'][k]:.2f}" for k in ("fixed", "stage", "input", "prep", "classify")])
 gc = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
