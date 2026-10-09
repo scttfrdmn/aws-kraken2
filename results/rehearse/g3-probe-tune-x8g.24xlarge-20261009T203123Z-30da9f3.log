@@ -1,0 +1,39 @@
+rehearse: record results/rehearse/g3-probe-tune-x8g.24xlarge-20261009T203123Z-30da9f3.log
+rehearse: runs/g3-probe-tune-x8g.24xlarge.json (tune) at 30da9f3, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL
+rehearse: stand-in hash.k2d 648733288 bytes, ETag efa030d6b7b3e26244a0c49f1639bbde-5, at http://127.0.0.1:54252/Kraken2_RefSeqCompleteV205/hash.k2d
+rehearse: body exit 1
+  body | ak2-phase 2026-10-09T20:31:25Z setup
+  body | ht-record {"kind":"ht","label":"setup","t":1791577889.177192000,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":16384,"huge_order":7,"free_bytes":1158301171712,"free_huge_bytes":1149555965952,"free_huge_frac":0.992450,"buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"vmstat":{"compact_stall":0,"compact_success":0,"compact_fail":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":618601,"thp_file_fallback":0},"meminfo_kb":{"MemFree":1500000000,"AnonHugePages":0,"ShmemHugePages":1200000000,"ShmemPmdMapped":0}}
+  body | go build -trimpath -ldflags "-X main.upstreamPin=2731b35f7abb26ec926517274f3d87e78d42fd76" -o bin/ ./cmd/...
+  body | # github.com/scttfrdmn/aws-kraken2/cmd/aws-kraken2
+  body | /opt/homebrew/Cellar/go/1.27.1/libexec/pkg/tool/darwin_arm64/link: mapping output file failed: no space left on device
+  body | make: *** [build] Error 1
+  body | ak2: [2026-10-09T20:31:29Z] ERROR: make build failed
+jq: error: Could not open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+jq: error: Could not open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+jq: error: Could not open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+jq: error: Could not open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+rehearse: streamed 0 trial lines, tune.jsonl has  (want 36); 0 invalid; 0 cells of 3 (want 12); 0 distinct outputs (want 1); 0 net lines (want 2)
+rehearse: tune trials wrong
+rehearse: streamed 1 ht-record lines, hosttune.jsonl has 1 (want 92)
+rehearse: ht_record streaming wrong
+jq: error: Could not open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+jq: error: Could not open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+awk: can't open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/hosttune-apply.tsv
+ source line number 1
+awk: can't open file /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/hosttune-apply.tsv
+ source line number 1
+rehearse: none trials that wrote: 0 (want 0); other trials that did not: 0 (want 0); none apply rows 0, not kept 0 (want 0); end state  (want madvise madvise 20)
+rehearse: host-tune application wrong
+cp: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/out/tune.jsonl: No such file or directory
+Traceback (most recent call last):
+  File "/Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a324572d6168aefe4/scripts/lib/tune_tables.py", line 209, in <module>
+    sys.exit(tables(sys.argv[1]))
+             ~~~~~~^^^^^^^^^^^^^
+  File "/Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a324572d6168aefe4/scripts/lib/tune_tables.py", line 111, in tables
+    L = [json.loads(x) for x in open(os.path.join(d, "out", "tune.jsonl")) if x.strip()]
+                                ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/run/out/tune.jsonl'
+rehearse: tune tables have  selection and  cell rows, want 2 and 12
+cat: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL/run/tables/probe-tune-selection.tsv: No such file or directory
+rehearse: FAILED (logs: REHEARSE_KEEP=1 keeps /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.YUMsBL)

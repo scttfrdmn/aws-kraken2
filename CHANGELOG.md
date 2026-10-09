@@ -134,6 +134,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - that failures are surfaced.
 
     It is not part of `make test`, because it needs podman.
+- Host tunes and the tune-selection probe (#41; #25 WP-5, which fixes ladder 1's S3 set);
+  docs/probes.md, "Host tunes":
+  - `scripts/g3/hosttune.sh`, sourced by a body:
+    - `ht_apply none|<set>` sets THP `enabled` and `defrag`, `vm.compaction_proactiveness` and
+      `read_ahead_kb`, then runs an optional timed `compact_memory` step. It records every
+      knob's before, wanted and after value, and fails loudly when a set does not read back.
+    - `ht_restore` returns the host to its boot values.
+    - `ht_record LABEL` pushes buddyinfo, the `compact_*` and `thp_*` vmstat lines, the
+      huge-page meminfo lines and the THP settings on every call.
+    - `none` never writes.
+  - `runs/g3-probe-tune-x8g.24xlarge.json` (`scripts/g3/probe-tune.body.sh`), one x8g.24xlarge
+    in us-west-2b:
+    - 6 sets (`none`, `precompact`, `proactive`, `defer`, `defermadv`, `always`) × 2 regimes
+      (upstream `-M` on a huge=always tmpfs staged by s5cmd; ours' engine N = 1 ranged-GET load)
+      × 3 repetitions, every trial cold, after a discarded `none` warm-up pair;
+    - each repetition complete before the next, in a registered order (`SCHED`): every set's
+      regime order flips per repetition, every cell's predecessors differ, every cell has
+      2 of its 3 trials right after the other regime, and mean positions are balanced;
+    - load, classify, teardown and fragmentation counters per trial, streamed;
+    - a network ceiling before and after;
+    - the selection rule and the resolution check registered in the spec header.
+  - `scripts/lib/tune_tables.py` (the post) writes `tables/probe-tune{,-trials,-selection,-drift}.tsv`.
+    - It counts only complete repetitions, and it prints the resolution and the load ceiling
+      before any null.
+    - It exits 1 if the trials' outputs or reports differ, and 3, with a loud UNDETERMINED line,
+      if a regime has no selection (for example after a TTL kill in rep 3).
+    - `probe-tune-trials.tsv` records each trial's `prev_regime` and `prev_set`.
+    - `make test` runs its `--self-test`, which includes the schedule's properties, read from
+      the body.
+  - `scripts/g3/mkspec-u.sh` takes an optional ACCESSIONS argument for `env.AK2_ACCESSIONS`.
+  - `make hosttune-test` (`scripts/lib/hosttune_test.sh`) runs on an AL2023 podman container.
+    `make rehearse SPEC=runs/g3-probe-tune-x8g.24xlarge.json` adds the `tune` kind to
+    `scripts/lib/probe_rehearse.sh`: the full plan on the viral DB with a fake `/sys` and `/proc`.
+
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's
