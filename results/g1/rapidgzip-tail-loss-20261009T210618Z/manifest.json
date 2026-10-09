@@ -1,0 +1,24 @@
+{
+  "gate": "g1",
+  "what": "#48 review N4: bytes rapidgzip -d -c [-P n] writes for a gzip member followed by 4096 zero bytes or a garbage line, vs GNU gzip; two repetitions each (probe.sh)",
+  "commit": "a81e2bc729279e50923f300bfebea581aad6b61f",
+  "host": "Darwin 27.0.0 arm64",
+  "ncpu": 16,
+  "canonical_platform": false,
+  "rapidgzip": "0.14.5",
+  "python": "Python 3.13.16",
+  "gnu_gzip": "gzip 1.12",
+  "inputs": [
+    {
+      "file": "SRR062634_200000_1.fq.gz",
+      "sha256": "4d13958862d7e45cb179acff08d11d327af24376570ddf17c71af527233df341",
+      "source": "accession SRR062634\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/SRR062/SRR062634/SRR062634_2.fastq.gz\nsha256 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 SRR062634_200000_1.fq\nsha256 e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1 SRR062634_200000_2.fq\nfetched 2026-10-06T00:20:27Z\n"
+    },
+    {
+      "file": "ERR478965_200000_1.fq.gz",
+      "sha256": "12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9",
+      "source": "accession ERR478965\nrecords_per_mate 200000\nurls ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_1.fastq.gz ftp.sra.ebi.ac.uk/vol1/fastq/ERR478/ERR478965/ERR478965_2.fastq.gz\nsha256 385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be ERR478965_200000_1.fq\nsha256 71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7 ERR478965_200000_2.fq\nfetched 2026-10-06T00:29:07Z\n"
+    }
+  ],
+  "date_utc": "2026-10-09T21:06:34Z"
+}

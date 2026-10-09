@@ -1,0 +1,41 @@
+hosttune-test: at 863b16f (dirty); shell flags huB; record results/rehearse/hosttune-test-20261009T201126Z-863b16f.log
+inner: shell flags hBc (errexit off, as a body after the preamble)
+inner: kernel 6.12.13-200.fc41.aarch64; block devices: vda 
+  boot: /sys/kernel/mm/transparent_hugepage/enabled=always [madvise] never
+  boot: /sys/kernel/mm/transparent_hugepage/defrag=always defer defer+madvise [madvise] never
+  boot: /sys/kernel/mm/transparent_hugepage/shmem_enabled=always within_size advise [never] deny force
+  boot: /proc/sys/vm/compaction_proactiveness=20
+  boot: /sys/block/vda/queue/read_ahead_kb=128
+ht-apply 1 2026-10-09T20:11:26Z none enabled madvise - madvise kept
+ht-apply 1 2026-10-09T20:11:26Z none defrag madvise - madvise kept
+ht-apply 1 2026-10-09T20:11:26Z none proactiveness 20 - 20 kept
+ht-apply 1 2026-10-09T20:11:26Z none ra:vda 128 - 128 kept
+ok   ht_apply none: rc 0, 0 writes, 0 sudo/tee calls, 4 rows all kept, every knob unchanged
+ok   ht_record r1: pushed at once (jsonl upload 1 with 1 lines, txt upload 1 of 1263 bytes)
+ok   ht_record r2: pushed at once (jsonl upload 2 with 2 lines, txt upload 2 of 2526 bytes)
+ok   ht_record r3: pushed at once (jsonl upload 3 with 3 lines, txt upload 3 of 3789 bytes)
+ok   ht_record content: 2 buddyinfo zones, 9 compact_ and 24 thp_ lines and the THP settings per record; free_huge_frac 0.467447
+  ht-record {"kind":"ht","label":"r3","t":1791576688.809588629,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":5235617792,"free_huge_bytes":2447376384,"free_huge_frac":0.467447,"buddy"
+ht-apply 2 2026-10-09T20:11:29Z defer enabled madvise - madvise kept
+ht-apply 2 2026-10-09T20:11:29Z defer defrag madvise defer madvise failed
+ht-apply 2 2026-10-09T20:11:29Z defer proactiveness 20 - 20 kept
+ht-apply 2 2026-10-09T20:11:29Z defer ra:vda 128 - 128 kept
+ok   ht_apply defer on a read-only /sys: rc 1, applied false, defrag row failed, knobs unchanged (2 sudo/tee calls tried)
+ok   ht_restore after it: rc 0 (nothing differs from boot)
+ht-apply 4 2026-10-09T20:11:29Z none enabled madvise - madvise kept
+ht-apply 4 2026-10-09T20:11:29Z none defrag madvise - madvise kept
+ht-apply 4 2026-10-09T20:11:29Z none proactiveness 20 - 20 kept
+ht-apply 4 2026-10-09T20:11:29Z none ra:xvda 128 - 128 kept
+ok   fake tree: ht_apply none left every file's content and mtime as it was
+ht-apply 5 2026-10-09T20:11:29Z defrag=defer,proactiveness=100,ra=4096,precompact=1 enabled madvise - madvise kept
+ht-apply 5 2026-10-09T20:11:29Z defrag=defer,proactiveness=100,ra=4096,precompact=1 defrag madvise defer defer set
+ht-apply 5 2026-10-09T20:11:29Z defrag=defer,proactiveness=100,ra=4096,precompact=1 proactiveness 20 100 100 set
+ht-apply 5 2026-10-09T20:11:30Z defrag=defer,proactiveness=100,ra=4096,precompact=1 ra:xvda 128 4096 4096 set
+ht-apply 5 2026-10-09T20:11:30Z defrag=defer,proactiveness=100,ra=4096,precompact=1 precompact - 1 0.001s done
+ok   fake tree: inline set applied (defer 100 4096 1), 3 rows set with before and after, precompact done in 0.001s
+ht-apply 6 2026-10-09T20:11:30Z restore defrag defer madvise madvise restored
+ht-apply 6 2026-10-09T20:11:30Z restore proactiveness 100 20 20 restored
+ht-apply 6 2026-10-09T20:11:30Z restore ra:xvda 4096 128 128 restored
+ok   fake tree: ht_restore back to the baseline (madvise madvise 20 128)
+hosttune-test: container (rootful, podman-machine-default-root; public.ecr.aws/amazonlinux/amazonlinux:2023) exit 0
+hosttune-test: ok

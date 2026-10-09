@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/scttfrdmn/aws-kraken2/internal/rangeread"
 )
 
 func init() {
@@ -54,12 +55,7 @@ func serveFile(args []string) error {
 	}
 	fmt.Fprintln(os.Stderr, "serve-file:", *file, "at", url)
 	mux := http.NewServeMux()
-	mux.HandleFunc(*path, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("ETag", `"`+*etag+`"`)
-		// A reader of its own per request: ServeContent seeks, and concurrent ranged GETs on
-		// one *os.File would read at each other's offsets. SectionReader reads with ReadAt.
-		http.ServeContent(w, r, "", st.ModTime(), io.NewSectionReader(f, 0, st.Size()))
-	})
+	mux.Handle(*path, rangeread.FileHandler(f, st.Size(), st.ModTime(), *etag))
 	srv := &http.Server{Handler: mux}
 	go func() {
 		ch := make(chan os.Signal, 1)

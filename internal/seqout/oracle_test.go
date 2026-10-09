@@ -58,8 +58,8 @@ func loadCases(t *testing.T, dir string) []oracleCase {
 func TestOracleSeqout(t *testing.T) {
 	dir := os.Getenv("K2_SEQOUT_ORACLE")
 	if dir == "" {
-		// The latest make equiv-seqout work directory, if there is one.
-		dir = filepath.Join(oracletest.Root(), ".cache", "equiv-seqout", "latest")
+		// The latest make equiv-seqout work directory, if there is one (a default PASS, or fail).
+		dir = oracletest.EquivSeqoutLatest(t)
 	}
 	if _, err := os.Stat(filepath.Join(dir, "cases.tsv")); err != nil {
 		oracletest.Skip(t, "no seqout oracle at %s (make equiv-seqout)", dir)
@@ -122,9 +122,14 @@ func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// AK2_DECOMPRESS=pipe: read through seqio.OpenPipe (make equiv-seqout under pipe mode).
+	dec, err := seqio.ParseDecompressor(os.Getenv("AK2_DECOMPRESS"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	var readers []*seqio.Reader
 	for _, in := range c.inputs {
-		r, err := seqio.Open(in, comp)
+		r, err := seqio.OpenWith(in, comp, dec)
 		if err != nil {
 			t.Fatal(err)
 		}

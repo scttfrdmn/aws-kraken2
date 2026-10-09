@@ -25,6 +25,9 @@ type Peer struct {
 	Published string  `json:"published"`        // RFC 3339, UTC
 	LoadS     float64 `json:"load_s"`           // seconds the node took to load its shard
 	Status    int     `json:"status,omitempty"` // barriers: the node's failure count
+	// ETagParts are the md5s of the hash.k2d parts that start in the node's byte range
+	// (AK2_ENGINE_VERIFY_ETAG=1; etag.go); absent otherwise.
+	ETagParts *PartDigests `json:"etag_parts,omitempty"`
 }
 
 // Rendezvous is peer discovery through an object store: each node writes

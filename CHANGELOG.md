@@ -9,6 +9,165 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `make g3-fit` (`scripts/lib/fit26.py`; #26, WP-10 of the #25 ladder). It fits the registered
+  T(N) and cost model to the nine cohort-100 campaign points, from the record only, and writes
+  `results/g3/fit26/`:
+  - the registered form exactly as registered, end to end and per term;
+  - then each addition as a separate fit: t_input, t_emit, t_net, t_fetch, t_sync, c_used and
+    B_nic;
+  - then every addition together, per term.
+
+  For each fit it gives parameters with standard errors, residuals per point, leave-one-out
+  refits, a designated held-out point (E4 N=32) and a cohort-size check of the classify term. It
+  also gives the predicted time-optimal and cost-optimal N per cohort size (1, 10, 100, 1000) and
+  family, with draw-based ranges and extrapolation flags (per regressor, and joint by leverage).
+  It reports the registered cost formula's per-point residuals against derived and billed $
+  (`cost_residuals.tsv`), and H-width's cost knee N* = (S/B + W/(c·r)) / (t_boot + t_tail) per
+  type and cohort (`hwidth_knee.tsv`). Held-out z uses the prediction interval
+  sqrt(se_param² + s²). Every point is marked pre-fix (#44), and so is every table.
+  `manifest.json` lists every input with its sha256 and the commit. Stdlib only. `make test`
+  runs `scripts/lib/fit26_test.py`, which tests the fitting code on synthetic data with known
+  parameters. The runbook is in docs/cohort.md, "make g3-fit".
+- `AK2_DECOMPRESS=pipe` (#48), ours' counterpart to upstream's ladder lever S5. With it, ours
+  reads compressed input from `gzip -dc FILE` / `bzip2 -dc FILE` found on `PATH`, as upstream's
+  `scripts/kraken2` wrapper does (`seqio.OpenPipe`). There is one child per input file, including
+  each mate. Its exit status is ignored, its stderr is the run's, and it shares standard input.
+  The in-process klauspost path stays the default. Any other value exits 64.
+  - `make decomp-shim TOOL=gnu|pigz|rapidgzip DIR=…` (`scripts/decomp-shim.sh`) writes a `gzip`
+    shim for `DECOMP_BIN`. It runs the tool for `gzip -dc FILE` and GNU gzip for everything else.
+  - `make oracle` adds variants and cases for a truncated `.gz`, a garbage tail, a plain mate 2
+    behind a gzip mate 1, and `--gzip-compressed` on a missing file and on a plain one. It also
+    adds coverage checks, including one showing which decompressor ours used. An expected exit
+    may list alternatives (`0,65`).
+  - `make oracle`, `oracle-engine`, `oracle-cohort` and `equiv-seqout` record `AK2_DECOMPRESS`
+    and the gzip on `PATH` in their manifests. `oracle-cohort` takes `DECOMP_BIN`, and the
+    equiv-seqout Go tests read through `OpenPipe` under pipe mode.
+  - The shared `.cache/equiv-seqout/latest` moves only for a PASS with the default decompressor.
+    Each work directory records `decompressor` and `result`. `TestOracleSeqout` and
+    `TestOracleDecompress` fail loudly on any other `latest`, or when `AK2_DECOMPRESS` is set in a
+    plain `go test`. `make test` unsets `AK2_DECOMPRESS`.
+  - `make oracle`, `oracle-cohort` and `equiv-seqout` fail if a `gzip` or `bzip2` sits in the
+    upstream install directory, which the wrapper puts first on `PATH`. Shims go on `PATH`.
+  - `make oracle` adds a zero-padding case (`se-zeropad-gz`) and a positive marker for pipe mode:
+    every decompressor line in upstream's stderr also appears in ours. equiv-seqout's zero-padding
+    and garbage cases accept exit `0,65`.
+  - rapidgzip 0.14.5's loss on padded and garbage-tailed members varies with `-P`
+    (`results/g1/rapidgzip-tail-loss-20261009T210618Z/`).
+- `AK2_ENGINE_VERIFY_ETAG=1` (#49): the engine checks the S3 ETag of hash.k2d
+  (`AK2_ENGINE_HASH_ETAG`) against the bytes its shards loaded, before the first sample. The part
+  size is inferred as `scripts/lib/etagcheck.py` does (RODA v205: 8860 parts of 128 MiB), or
+  given by `AK2_ENGINE_ETAG_PART_BYTES`. Single-part ETags are the plain md5.
+  - **Guarantee:** every byte any node holds in memory, and every header a node parsed, is
+    covered. Each is one of the bytes the ETag was recomputed from, or md5-equal to a copy of
+    them. No byte is counted twice.
+  - **Parts:** each node hashes the parts that start in its byte range, by file offset. It
+    fetches the rest of its last part with one extra ranged GET.
+  - **Cross-checks:** with no GET, the holder and the user of every overlap publish digests of
+    their copies, which must be equal. An overlap is where a node's cells meet bytes another node
+    used for the ETag: a straddling part's head, the overlap tails, and the last shard's wrapped
+    tail. Each node also publishes the md5 of its header.
+  - **Records and combine:** each node publishes all of this in its rendezvous record
+    (`etag_parts`). Every node, rank 0 included, combines all the records and compares.
+  - **Failures:** a mismatch (`ErrETagMismatch`) fails the run (exit 1) before any output is
+    opened. So does an unverifiable ETag (`ErrETagFormat`: not an md5, as for SSE-KMS, or no
+    part size). Setting it without `AK2_ENGINE_N` is a usage error.
+  - **Timing:** it is timed as the `etag` phase, with an `ak2-engine etag` counter line that
+    carries the extra GET. The `load` line excludes it.
+
+  The in-process engine verifies too. Code:
+  `internal/engine/etag.go`, `cmd/aws-kraken2/etag.go`. `rangeread.FileHandler` is now
+  `k2probe serve-file`'s handler, shared with the tests. Shard bytes are unchanged.
+- The ladder lever library, `scripts/g3/lever.sh` (#50; the #25 ladder build, WP-6), shared by
+  both arms and sourced by a body after the preamble. Its header is the function contract, and
+  `docs/ladder.md` is the runbook.
+  - `lv_nvme single|raid`.
+  - `lv_stage_db awscp-default|awscp-classic|s5cmd`. Stock (`awscp-default`) is the AMI's aws
+    CLI as shipped, with no config override. `awscp-classic` forces the classic client in a
+    private `AWS_CONFIG_FILE`. Each aws client is recorded:
+    - the CLI version and the `configure get` value;
+    - for `default`, the AMI's `~/.aws/config` and `/etc/aws`;
+    - the client it resolves to. For CLI v2 on auto this is the CLI's own rule:
+      `awscrt.s3.is_optimized_for_system()` with the CRT process lock as a caveat. It is read
+      from the CLI's source and evaluated with its python, with awscrt's optimised-platform
+      list recorded. The ladder types are not on that list, so `default` resolves to classic
+      on them. Otherwise `unknown`.
+
+    `lv_db_etag` reads back a recorded ETag.
+  - `lv_etag`, as its own phase.
+  - `lv_fetch_inputs serial|lanes<K> default|classic|crt`, sha256-checked through
+    `scripts/g3/fetch.sh`. The client is an argument, so S6 varies only the lane count. `crt`
+    sets `multipart_chunksize = 8MB`.
+  - `lv_upload_start awscp-default|awscp-classic|awscp-overlap|s5cmd-serial|s5cmd-overlap`
+    (`awscp-serial` is accepted as `awscp-classic`), `lv_upload_enqueue` and `lv_upload_drain`.
+    - Tool and schedule are separate levers, so S7 is two rungs: s5cmd-serial, then
+      s5cmd-overlap.
+    - The sha256 is taken on the node at enqueue, before the upload. LOCAL must not change
+      until drain.
+    - The overlap lane is waited on by PID. It checks every iteration that the body's shell is
+      alive, and is killed if drain cannot write END.
+  - `lv_gunzip_shim gzip|rapidgzip-P<k>`: rapidgzip 0.14.5 behind a `gzip` on PATH, for
+    upstream's `gzip -dc`.
+    - It is installed with `pip --require-hashes` against the pinned sha256 of its manylinux
+      wheels (aarch64 and x86_64, cp39 to cp313).
+    - The record holds the wheel's and the extension's sha256, and the paired concurrency
+      (2 shims, 2k threads).
+  - `lv_s5`, the only s5cmd entry point: s5cmd 2.3.0, its tarball checked against sha256 pinned
+    in lever.sh.
+    - It allow-lists buckets.
+    - It refuses `run` as any argument, `--endpoint-url`/`-endpoint-url` and a set
+      `S3_ENDPOINT_URL`.
+    - It parses single-dash long flags.
+  - Every call writes a JSON record (streamed as `lever {json}`, pushed to `out/lever.jsonl`)
+    and counts its requests with `ak2_req`. Counts from an aws client that did not resolve to
+    classic are written as `<op>-estimate` and flagged `estimate: true`. Every failure also goes
+    through `ak2_err`.
+  - `make lever-test` runs `scripts/tests/lever_test.sh` in AL2023 under podman, with the real
+    preamble under `bash -e -c` and stub aws and s5cmd. It checks:
+    - the upload overlap by timestamps, against the serial contrast;
+    - that the shim is byte-identical to `gzip -dc`;
+    - that s5cmd is refused undeclared buckets, endpoints and `run`;
+    - that the sha256 is recorded before each upload;
+    - that serial and lane fetches both verify;
+    - the estimate tagging;
+    - the auto rule on AL2023's real `awscli-2` rpm;
+    - the hash-pinned installs, and their refusal of tampered files;
+    - that failures are surfaced.
+
+    It is not part of `make test`, because it needs podman.
+- Host tunes and the tune-selection probe (#41; #25 WP-5, which fixes ladder 1's S3 set);
+  docs/probes.md, "Host tunes":
+  - `scripts/g3/hosttune.sh`, sourced by a body:
+    - `ht_apply none|<set>` sets THP `enabled` and `defrag`, `vm.compaction_proactiveness` and
+      `read_ahead_kb`, then runs an optional timed `compact_memory` step. It records every
+      knob's before, wanted and after value, and fails loudly when a set does not read back.
+    - `ht_restore` returns the host to its boot values.
+    - `ht_record LABEL` pushes buddyinfo, the `compact_*` and `thp_*` vmstat lines, the
+      huge-page meminfo lines and the THP settings on every call.
+    - `none` never writes.
+  - `runs/g3-probe-tune-x8g.24xlarge.json` (`scripts/g3/probe-tune.body.sh`), one x8g.24xlarge
+    in us-west-2b:
+    - 6 sets (`none`, `precompact`, `proactive`, `defer`, `defermadv`, `always`) × 2 regimes
+      (upstream `-M` on a huge=always tmpfs staged by s5cmd; ours' engine N = 1 ranged-GET load)
+      × 3 repetitions, every trial cold, after a discarded `none` warm-up pair;
+    - each repetition complete before the next, in a registered order (`SCHED`): every set's
+      regime order flips per repetition, every cell's predecessors differ, every cell has
+      2 of its 3 trials right after the other regime, and mean positions are balanced;
+    - load, classify, teardown and fragmentation counters per trial, streamed;
+    - a network ceiling before and after;
+    - the selection rule and the resolution check registered in the spec header.
+  - `scripts/lib/tune_tables.py` (the post) writes `tables/probe-tune{,-trials,-selection,-drift}.tsv`.
+    - It counts only complete repetitions, and it prints the resolution and the load ceiling
+      before any null.
+    - It exits 1 if the trials' outputs or reports differ, and 3, with a loud UNDETERMINED line,
+      if a regime has no selection (for example after a TTL kill in rep 3).
+    - `probe-tune-trials.tsv` records each trial's `prev_regime` and `prev_set`.
+    - `make test` runs its `--self-test`, which includes the schedule's properties, read from
+      the body.
+  - `scripts/g3/mkspec-u.sh` takes an optional ACCESSIONS argument for `env.AK2_ACCESSIONS`.
+  - `make hosttune-test` (`scripts/lib/hosttune_test.sh`) runs on an AL2023 podman container.
+    `make rehearse SPEC=runs/g3-probe-tune-x8g.24xlarge.json` adds the `tune` kind to
+    `scripts/lib/probe_rehearse.sh`: the full plan on the viral DB with a fake `/sys` and `/proc`.
+
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

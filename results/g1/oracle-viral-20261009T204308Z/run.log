@@ -1,0 +1,57 @@
+shell flags: huB
+invocation: scripts/oracle.sh viral  (db=viral threads=8 filter='trunc|garbage')
++  /Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2 --db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626 --threads 8 --output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.output --report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.report --classified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.cls.fq --unclassified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.uncls.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/trunc_1.fq.gz
++   /Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a9ea9313ce5bf14fa/bin/aws-kraken2 --db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626 --threads 8 --output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.output --report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.report --classified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.cls.fq --unclassified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.uncls.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/trunc_1.fq.gz
+DIFF viral se-trunc-gz-trunc output:
+/Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.output differ: char 2974753, line 98645
+98645c98645,98762
+< U	SRR062634.98645	0	72	0:38 
+---
+> U	SRR062634.98645	0	100	0:66 
+> U	SRR062634.98646	0	100	0:66 
+> U	SRR062634.98647	0	100	0:66 
+DIFF viral se-trunc-gz-trunc report:
+/Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.report differ: char 10, line 1
+1c1
+<  99.43	98085	98085	U	0	unclassified
+---
+>  99.43	98202	98202	U	0	unclassified
+DIFF viral se-trunc-gz-trunc u1:
+/Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/upstream.uncls.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-trunc-gz-trunc/ours.uncls.fq differ: char 25348619, line 392337
+392337,392338c392337,392806
+< >SRR062634.98645 HWI-EAS110_103327062:6:1:9625:8199/1
+< CATTTCCTTTATTCATGCGTGCATCTATTCATTCAATACACATAATAAATAGTTCCACTGCTGATCTAAGAT
+---
+> @SRR062634.98645 HWI-EAS110_103327062:6:1:9625:8199/1
+> CATTTCCTTTATTCATGCGTGCATCTATTCATTCAATACACATAATAAATAGTTCCACTGCTGATCTAAGATATAAAGAATTTCAGAGGGCGTTCCATAA
+case viral se-trunc-gz-trunc: upstream exit 0, ours 0, 5 files, identical=no, control=no, pass=no, stderr_same=no
++  /Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2 --db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626 --threads 8 --paired --output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/upstream.output --report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/upstream.report --classified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/upstream.cls#.fq --unclassified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/upstream.uncls#.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/trunc_1.fq.gz /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/trunc_2.fq.gz
++   /Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a9ea9313ce5bf14fa/bin/aws-kraken2 --db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626 --threads 8 --paired --output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/ours.output --report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/ours.report --classified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/ours.cls#.fq --unclassified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/ours.uncls#.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/trunc_1.fq.gz /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/trunc_2.fq.gz
+DIFF viral pe-trunc-garbage-gz-trunc output:
+/Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/upstream.output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/ours.output differ: char 4282740, line 98645
+98645c98645,98762
+< U	SRR062634.98645	0	72|100	0:38 |:| 0:66 
+---
+> U	SRR062634.98645	0	100|100	0:66 |:| 0:66 
+> U	SRR062634.98646	0	100|100	0:66 |:| 0:66 
+> U	SRR062634.98647	0	100|100	0:66 |:| 0:66 
+DIFF viral pe-trunc-garbage-gz-trunc u1:
+/Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/upstream.uncls_1.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/pe-trunc-garbage-gz-trunc/ours.uncls_1.fq differ: char 25210843, line 390205
+390205,390206c390205,390674
+< >SRR062634.98645 HWI-EAS110_103327062:6:1:9625:8199/1
+< CATTTCCTTTATTCATGCGTGCATCTATTCATTCAATACACATAATAAATAGTTCCACTGCTGATCTAAGAT
+---
+> @SRR062634.98645 HWI-EAS110_103327062:6:1:9625:8199/1
+> CATTTCCTTTATTCATGCGTGCATCTATTCATTCAATACACATAATAAATAGTTCCACTGCTGATCTAAGATATAAAGAATTTCAGAGGGCGTTCCATAA
+DIFF viral pe-trunc-garbage-gz-trunc u2:
+390208a390209,390676
+> @SRR062634.98646 HWI-EAS110_103327062:6:1:9625:14550/2
+> TCATCAAATAATCTCAACAATACAATTATCAATGTGATAACATATAAGCTAGCCTGAACTCTAGTGGAATGTATTTCTAATAAAGTGACATTTAAACTAA
+> +
+> GFGGGGGGGEGGFGGGGGFGGGGGGGGFGGGGGGGGGGGGGGGGDGGGFGGDEFGFGFFGGFGGEFFBBFFCFGEEFEEEGEEEE?EDCDFEAEDGEEEE
+> @SRR062634.98647 HWI-EAS110_103327062:6:1:9625:8439/2
+case viral pe-trunc-garbage-gz-trunc: upstream exit 65, ours 65, 7 files, identical=no, control=no, pass=no, stderr_same=no
++  /Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2 --db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626 --threads 8 --output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/upstream.output --report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/upstream.report --classified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/upstream.cls.fq --unclassified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/upstream.uncls.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/garbage_1.fq.gz
++   /Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a9ea9313ce5bf14fa/bin/aws-kraken2 --db /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626 --threads 8 --output /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/ours.output --report /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/ours.report --classified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/ours.cls.fq --unclassified-out /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/viral/se-garbage-gz-garbage/ours.uncls.fq /Users/scttfrdmn/src/aws-kraken2/.cache/oracle/20261009T204308Z/variants/garbage_1.fq.gz
+case viral se-garbage-gz-garbage: upstream exit 0, ours 0, 5 files, identical=yes, control=no, pass=yes, stderr_same=no
+results: results/g1/oracle-viral-20261009T204308Z

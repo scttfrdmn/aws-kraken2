@@ -12,6 +12,9 @@ package main
 //	AK2_ENGINE_HASH_URL=<https url>         load the shard from this object by ranged GETs
 //	AK2_ENGINE_HASH_ETAG / _SIZE            its ETag (sent as If-Match) and size; required with
 //	                                        the URL. hash.k2d need not exist locally then.
+//	AK2_ENGINE_VERIFY_ETAG=1                check that ETag (or, for a local hash.k2d, the
+//	                                        AK2_ENGINE_HASH_ETAG given) against the loaded
+//	                                        shards before the first sample (etag.go)
 //
 // Node r loads shard r (its floor-cut slot range plus the tail), serves it over TCP, publishes
 // its addresses to the rendezvous, waits for every rank, and connects to every other shard.
@@ -368,7 +371,7 @@ func (nd *node) stop() {
 // startNode connects this node to the run: rendezvous, shard clients, and the emitter
 // connections.
 func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, srv *engine.Server,
-	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads, files int) (*node, *engine.Router, []*engine.TCPClient, error) {
+	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads, files int, ev *etagCheck) (*node, *engine.Router, []*engine.TCPClient, error) {
 	emitLn, err := emitListen(cc)
 	if err != nil {
 		return nil, nil, nil, err
@@ -376,7 +379,7 @@ func startNode(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, sr
 	if emitLn != nil {
 		defer emitLn.Close()
 	}
-	peers, router, tcps, err := connectShards(ctx, cc, n, sh, srv, shardLn, rv, loadS, threads, emitLn)
+	peers, router, tcps, err := connectShards(ctx, cc, n, sh, srv, shardLn, rv, loadS, threads, emitLn, ev)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -407,13 +410,18 @@ func emitListen(cc *clusterConf) (net.Listener, error) {
 func listenPort(ln net.Listener) string { return strconv.Itoa(ln.Addr().(*net.TCPAddr).Port) }
 
 // connectShards publishes this node's shard address (and emitLn's, if any), waits for every
-// rank, and dials every other shard: the router over all n shards.
+// rank, and dials every other shard: the router over all n shards. With ev (the ETag check),
+// the record carries this node's part digests, and once every rank is in, the node combines
+// them all and checks the ETag before dialing anything: a mismatch fails every node here.
 func connectShards(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard, srv *engine.Server,
-	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads int, emitLn net.Listener) ([]engine.Peer, *engine.Router, []*engine.TCPClient, error) {
+	shardLn net.Listener, rv *engine.Rendezvous, loadS float64, threads int, emitLn net.Listener, ev *etagCheck) ([]engine.Peer, *engine.Router, []*engine.TCPClient, error) {
 	me := engine.Peer{Rank: cc.rank, N: n, Shard: net.JoinHostPort(cc.advertise, listenPort(shardLn)), PID: os.Getpid(), LoadS: loadS}
 	me.Host, _ = os.Hostname()
 	if emitLn != nil {
 		me.Emit = net.JoinHostPort(cc.advertise, listenPort(emitLn))
+	}
+	if ev != nil {
+		me.ETagParts = &ev.mine[0]
 	}
 	wctx, cancel := context.WithTimeout(ctx, cc.timeout)
 	defer cancel()
@@ -426,6 +434,11 @@ func connectShards(ctx context.Context, cc *clusterConf, n int, sh *engine.Shard
 		return nil, nil, nil, err
 	}
 	pr.end()
+	if ev != nil {
+		if err := ev.combinePeers(peers); err != nil {
+			return nil, nil, nil, err
+		}
+	}
 	pc := phase("connect")
 	clients := make([]engine.Client, n)
 	var tcps []*engine.TCPClient
@@ -872,7 +885,7 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 		}
 		src, size = &rangeread.FileSource{F: f}, st.Size()
 	}
-	_, l, err := engine.ReadLayout(ctx, src, size)
+	h, l, err := engine.ReadLayout(ctx, src, size)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
@@ -893,6 +906,15 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 		e.close()
 		return nil, err
 	}
+	// The load's request accounting (shard and table id), before the ETag check's GET, which
+	// the etag line reports.
+	e.loadRequests, e.loadRetries, e.loadBytes = srcCounters(src)
+	if conf.verifyTag != "" {
+		if e.etag, err = hashETag(ctx, conf, h, size, src, e.shards); err != nil {
+			e.close()
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
+	}
 	ln, err := net.Listen("tcp", net.JoinHostPort(cc.listen, "0"))
 	if err != nil {
 		e.close()
@@ -907,9 +929,9 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 	var tcps []*engine.TCPClient
 	if conf.cohort {
 		// Cohort mode: the shards once; control sessions per block-striped sample (cohort.go).
-		_, router, tcps, err = connectShards(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, nil)
+		_, router, tcps, err = connectShards(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, nil, e.etag)
 	} else {
-		nd, router, tcps, err = startNode(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, files)
+		nd, router, tcps, err = startNode(ctx, cc, conf.n, sh, srv, ln, rv, loadS, threads, files, e.etag)
 	}
 	if err != nil {
 		e.close()
@@ -918,11 +940,5 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 	e.node, e.router, e.tcp = nd, router, tcps
 	e.rvRequests = rv.Requests
 	e.loadS = loadS
-	switch s := src.(type) {
-	case *rangeread.HTTPSource:
-		e.loadRequests, e.loadRetries, e.loadBytes = s.Requests.Load(), s.Retries.Load(), s.Bytes.Load()
-	case *rangeread.FileSource:
-		e.loadRequests, e.loadBytes = s.Requests.Load(), s.Bytes.Load()
-	}
 	return e, nil
 }

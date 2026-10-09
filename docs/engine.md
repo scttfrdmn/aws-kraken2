@@ -26,6 +26,10 @@ Node settings (`cmd/aws-kraken2/cluster.go`):
 - `AK2_ENGINE_HASH_URL`, `_ETAG`, `_SIZE`: load the shard from this object by ranged GETs with
   If-Match. This is RODA's public HTTPS URL, or a presigned URL of a staged copy. `hash.k2d`
   then need not exist locally.
+- `AK2_ENGINE_VERIFY_ETAG=1`: check the ETag of hash.k2d against the loaded shards (see "ETag
+  verification" below). It uses `AK2_ENGINE_HASH_ETAG`, which a local hash.k2d may also be given.
+  The in-process engine verifies too. Setting it without `AK2_ENGINE_N` is a usage error.
+  `AK2_ENGINE_ETAG_PART_BYTES=<n>` gives the part size.
 - `AK2_ENGINE_WINDOW` (blocks, default 64): flow control.
 - `AK2_ENGINE_TIMEOUT` (default 15m): the rendezvous, peer-accept and barrier deadline.
 
@@ -58,6 +62,92 @@ probes); `route` (keys, batches, route, wait and gather seconds); `worker` (scan
 classify seconds); `node` (blocks cut and owned, `read_s`, window wait, bytes sent, emit wait and
 emit seconds); `rendezvous` (object-store requests). Together with the spec's `ak2_phase` (boot,
 setup, fetch) they give #25's decomposition: boot, load, scan, probe, gather, emit, tail.
+
+## ETag verification (#49)
+
+With `AK2_ENGINE_VERIFY_ETAG=1`, every arm checks the table's ETag, as upstream's arm runs
+`scripts/lib/etagcheck.py` on its staged copy. Without it, the engine relies on If-Match alone.
+The code is in `internal/engine/etag.go` and `cmd/aws-kraken2/etag.go`.
+
+- **Format.** A multipart ETag is `md5(concat(md5(part_i)))-count`; a single-part ETag is the
+  plain md5. The part size is not stored, so it is inferred as `etagcheck.py` does: the smallest
+  power-of-two MiB size whose part count for the object's size equals the ETag's. RODA v205
+  (`…-8860`, 1,189,091,671,800 bytes) has 128 MiB parts. `AK2_ENGINE_ETAG_PART_BYTES=<n>`
+  gives the part size instead, for uploads whose parts are not a power-of-two MiB.
+- **Unverifiable ETags.** Some ETags cannot be checked at all: one that is not an md5 (an SSE-KMS
+  or SSE-C object's), or one whose part size cannot be inferred, or does not give its part count.
+  These fail the run with `engine: ETag cannot be verified: …` (`engine.ErrETagFormat`), which is
+  distinct from a mismatch.
+- **The guarantee.** Every byte any node holds in memory is covered, and so is the header each
+  node parsed. That means its owned cells, its overlap tail, and the last shard's wrapped tail.
+  Each such byte either is one of the bytes the ETag was recomputed from, or is md5-equal to a
+  copy of those bytes that is. No byte is counted twice in the ETag.
+- **Who hashes what.** Node r of n owns the bytes of its owned slots, `[32 + lo·cb, 32 + hi·cb)`.
+  Node 0's range starts at byte 0, so it includes the header, and node n−1's ends at the
+  object's end. These ranges partition the object. Each node hashes exactly the parts that
+  *start* in its range, by file offset: its *used* bytes. They come from the shard's unwrapped
+  cells, from the header, and, for the node's last part, from **one extra ranged GET** of
+  whatever lies past its cells.
+- **Cross-checks** (no GET). Node q may hold bytes that another node r used for the ETag:
+  - the head of q's own range, when r = q−1's last part straddles into it;
+  - q's overlap tail, past its range;
+  - the last shard's wrapped tail, at the table's start, which node 0 used.
+
+  For every such pair (holder q, user r) and every interval where q's held cells meet r's used
+  bytes, q publishes the md5 of its memory there, and r publishes the md5 of the bytes it used
+  there. The two must both exist and be equal. Each node also publishes the md5 of the header it
+  parsed, which must equal node 0's. A held byte inside the node's own used bytes is hashed from
+  its memory directly. The intervals are computed from the cut, the tail and the part size, so
+  every node must run with the same `AK2_ENGINE_TAIL`. If they do not, a check is one-sided and
+  the run fails.
+- **Combine.** Each node publishes its record in its rendezvous record as `etag_parts`:
+  `rank`, `part_bytes`, `parts`, `first`, `md5[]`, `header_md5`, `held[]` and `used[]`. Each
+  `held` and `used` entry is `holder`, `user`, `off`, `len` and `md5`. Once all records are in,
+  every node, rank 0 included, assembles them. It checks that each part was hashed exactly once
+  and that every cross-check pairs up and is equal, then recomputes the ETag and compares it.
+  Any failure fails every node there, before any shard is dialled and before any sample is
+  read: a mismatch, a differing copy, a missing record, a gap or a one-sided check. So no output
+  object or multipart upload exists yet. The run exits 1. A mismatch or a differing copy reports
+  `classify: engine: hash.k2d does not match its ETag: …` (`engine.ErrETagMismatch`); a missing
+  record, a gap or a one-sided check reports its own plain error. In-process, the one process
+  hashes all its shards and combines.
+- **Timing and counts.** The hashing is phase `etag`, after `shard-load-<r>` and before
+  `rendezvous`; md5 runs on GOMAXPROCS goroutines. With `AK2_TIMINGS=1` the counter line is:
+
+      ak2-engine etag etag <etag> computed <etag> part_bytes <n> parts <n> hashed <n> requests <n> retries <n> bytes <n> cross_bytes <n> hash_s <s> combine_s <s>
+
+  `requests`, `retries` and `bytes` are the source's counts over the phase, that is, the extra
+  GET. The `load` line is snapshotted before the phase and excludes them. `cross_bytes` are the
+  bytes hashed from memory for the cross-checks.
+- **Cost on RODA v205** (default tail of 302 cells):
+
+  | N | extra GETs | extra bytes | share of object | cross-check md5 bytes (both sides, from memory) |
+  |---|---|---|---|---|
+  | 1 | 0 | 0 | 0 | 0 |
+  | 8 | 7 | 405,103,152 | 0.034% | 810,225,632 |
+  | 32 | 31 | 1,736,506,368 | 0.15% | 3,473,090,048 |
+
+  At N = 1 the shard holds the whole object. The last rank never fetches, because its range
+  ends at the object's end. Each node also hashes about size/N bytes of md5 for its parts.
+- **Memory.** The extra GET is buffered in memory while it is hashed. For a multipart ETag it is
+  under one part (under 128 MiB on RODA). For a **single-part** ETag (the plain md5), rank 0
+  hashes the whole object. Its one GET is everything past its own cells, about (N−1)/N of the
+  object, held in memory at once. S3 gives an md5 ETag to a single-part object only up to 5 GiB,
+  which bounds this.
+- **Tests.**
+  - `internal/engine/etag_test.go`: N = 1, 2, 3, 4 and 7 over 4- and 5-byte cells; part sizes
+    that straddle cells, shard boundaries and tails; a wrapping last shard; single-part ETags;
+    one-byte corruptions of the object.
+  - The same file, for memory: a flip of every byte of every shard's memory at N = 2, 3 and 4,
+    including Full shards at N = 3. This includes the review's case (N = 2, 1000-byte parts,
+    offset 6035 in shard 1) and each shard's last tail cell. The object is intact, and every
+    flip must fail with `ErrETagMismatch`.
+  - `cmd/aws-kraken2/etag_test.go`: serves the viral hash.k2d through `k2probe serve-file`'s
+    handler with a real 8 MiB-part ETag, which `etagcheck.py` checks. Outputs go to the fake S3.
+    It runs 3 verified nodes against the plain path, and 2 nodes on a one-byte-corrupted object:
+    both exit 1 with `ErrETagMismatch`, no outputs and no open uploads. It also covers the
+    in-process engine (right ETag, wrong ETag, a given part size, a wrong part size, a non-md5
+    ETag) and `AK2_ENGINE_VERIFY_ETAG=1` without `AK2_ENGINE_N`, which is a usage error.
 
 ## Security
 
@@ -96,6 +186,9 @@ Each failure ends the run with exit 1 and a `classify: engine: …` message, rat
 - a lookup that times out (2 min) or a peer that disconnects;
 - a node that ends without a block the emitter needs;
 - a missing rendezvous record after the timeout;
+- with `AK2_ENGINE_VERIFY_ETAG=1`: loaded bytes that do not give the ETag, a node's copy that
+  differs from the copy another node hashed, an unverifiable ETag, or a record without
+  `etag_parts`;
 - a Result frame from a rank that does not own the block, for an input the run lacks, or sent
   twice;
 - a Done whose per-input block and byte counts disagree with what arrived or with the emitter's

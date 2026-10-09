@@ -15,6 +15,18 @@
 #     probe_tables.py stage marks rget and s5cmd ok = yes;
 #   cont: 3 members run concurrently (N = 3, stages 1 2 3), each exits 0; member k streams one
 #     done line per stage with N > k; probe_tables.py cont reports N = 1, 2, 3 with N nodes each.
+#   tune (#41): the viral DB stands in for RODA (its hash.k2d served by serve-file with a real
+#     multipart ETag, and copied by the s5cmd stub), SRR062634 200k pairs for the fixed sample, a
+#     fake /sys and /proc tree for the host knobs (AK2_REHEARSE_HT_ROOT); the full plan (the
+#     warm-up pair, then 6 sets x 2 regimes x 3 reps in the registered SCHED). Exit 0; 38 trial
+#     lines streamed and in the pushed tune.jsonl, each valid (load and classify exit 0, the set
+#     applied), 2 of them warm-up, 3 per regime and set otherwise; one output sha256 and one report
+#     sha256 across all 38 (upstream -M and ours' engine N = 1 agree); every trial has a
+#     teardown_s; 2 net lines; the ht-record lines streamed equal the pushed hosttune.jsonl (97:
+#     setup, pre and post per trial, load per regime-a trial, end); every none trial wrote nothing
+#     (ht_writes 0, its apply rows all "kept"), every other
+#     trial wrote; the end record is back at the tree's boot values; tune_tables.py makes a
+#     selection row per regime and 12 cell rows.
 # Usage: scripts/lib/probe_rehearse.sh runs/g3-probe-<kind>-<type>.json
 set +e
 set -uo pipefail
@@ -77,13 +89,20 @@ ak2_phase() { echo "ak2-phase $(date -u +%FT%TZ) $1"; }
 ak2_req() { printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}" >> "$AK2T_OUT/requests.tsv"; }
 ak2_push() { mkdir -p "$AK2T_OUT" && cp "$1" "$AK2T_OUT/${2:-$(basename "$1")}"; }
 ak2_drop_caches() { echo "ak2: drop_caches (rehearsal: nothing)"; }
+ak2_stage() { aws s3 cp --only-show-errors "$1" "$2"; }
 EOF
 cat "$T/helpers.sh" <(jq -r '.command[2]' "$SPEC") > "$T/node.sh"
 
 # The stand-in hash.k2d and its server (stage and cont).
 HASH_ETAG=
 if [ "$KIND" != decomp ]; then
-  head -c $((320 << 20)) /dev/urandom > "$T/hash.k2d" || exit 1
+  if [ "$KIND" = tune ]; then
+    TDB="$K2_DB_ROOT/k2_viral_20260626"
+    [ -s "$TDB/hash.k2d" ] || { echo "rehearse: need the viral DB at $TDB" >&2; exit 1; }
+    ln -s "$TDB/hash.k2d" "$T/hash.k2d" || exit 1  # served and copied as is; no second copy on disk
+  else
+    head -c $((320 << 20)) /dev/urandom > "$T/hash.k2d" || exit 1
+  fi
   HASH_ETAG=$(python3 - "$T/hash.k2d" <<'EOF'
 import hashlib, sys
 ds, p = [], 128 << 20
@@ -101,7 +120,7 @@ EOF
   SRV=$!
   for _ in $(seq 50); do [ -s "$T/url" ] && break; sleep 0.1; done
   [ -s "$T/url" ] || { echo "rehearse: serve-file did not start" >&2; exit 1; }
-  echo "rehearse: stand-in hash.k2d 320 MiB, ETag $HASH_ETAG, at $(cat "$T/url")"
+  echo "rehearse: stand-in hash.k2d $(wc -c < "$T/hash.k2d" | tr -d ' ') bytes, ETag $HASH_ETAG, at $(cat "$T/url")"
   cat > "$BIN/s5cmd" <<EOF
 #!/usr/bin/env bash
 [ "\$1" = version ] && { echo "v-rehearse-stub"; exit 0; }
@@ -183,6 +202,63 @@ cont)
     > "$T/g3/$CID/cohort.json"
   python3 scripts/lib/probe_tables.py cont "$T/g3/$CID" || RC=1
   cat "$T/g3/$CID/tables/probe-contention.tsv"
+  ;;
+tune)
+  RP=Kraken2_RefSeqCompleteV205
+  mkdir -p "$FAKE/$RB/$RP" "$T/out" "$T/home" || exit 1
+  cp "$TDB/opts.k2d" "$TDB/taxo.k2d" "$FAKE/$RB/$RP/" || exit 1
+  for m in 1 2; do cp "$K2_READS/SRR062634_200000_$m.fq.gz" "$FAKE/$B/$CK/SRR5935740_$m.fastq.gz" || exit 1; done
+  # The fake host: THP and compaction knobs at an instance's boot values, and a buddyinfo,
+  # vmstat and meminfo (U1's ref 0 values) for ht_record.
+  H="$T/htroot"; mkdir -p "$H/sys/kernel/mm/transparent_hugepage" "$H/proc/sys/vm" || exit 1
+  echo 'always [madvise] never' > "$H/sys/kernel/mm/transparent_hugepage/enabled"
+  echo 'always defer defer+madvise [madvise] never' > "$H/sys/kernel/mm/transparent_hugepage/defrag"
+  echo 'always within_size advise [never] deny force' > "$H/sys/kernel/mm/transparent_hugepage/shmem_enabled"
+  echo 20 > "$H/proc/sys/vm/compaction_proactiveness"; : > "$H/proc/sys/vm/compact_memory"
+  printf 'Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 \nNode 0, zone   Normal  28665  38806  26483  13971   5428   2445    682    420    337      2  68158 \n' > "$H/proc/buddyinfo"
+  printf 'compact_stall 0\ncompact_success 0\ncompact_fail 0\nthp_fault_alloc 0\nthp_fault_fallback 0\nthp_file_alloc 618601\nthp_file_fallback 0\nnr_free_pages 1\n' > "$H/proc/vmstat"
+  printf 'MemFree:        1500000000 kB\nAnonHugePages:         0 kB\nShmemHugePages:  1200000000 kB\nShmemPmdMapped:        0 kB\n' > "$H/proc/meminfo"
+  env -i "${ENVV[@]}" HOME="$T/home" AK2T_OUT="$T/out" AK2_RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$SHA" \
+    AK2_REHEARSE_HASH_URL="$(cat "$T/url")" AK2_REHEARSE_S5CMD="$BIN/s5cmd" AK2_REHEARSE_NET_S=2 \
+    AK2_REHEARSE_RAMDB_ROOT="$T/ramdb" AK2_REHEARSE_HT_ROOT="$H" \
+    bash -c "cd \$HOME; $(cat "$T/node.sh")" > "$T/body.log" 2>&1
+  b=$?; echo "rehearse: body exit $b"; [ "$b" = 0 ] || { tail -25 "$T/body.log" | sed 's/^/  body | /'; RC=1; }
+  J="$T/out/tune.jsonl"
+  st=$(grep -c '^probe-tune {"kind":"trial"' "$T/body.log"); jt=$(grep -c '"kind":"trial"' "$J" 2>/dev/null)
+  bad=$(jq -c 'select(.kind == "trial" and (.load_exit != 0 or .classify_exit != 0 or .applied != true))' "$J" | grep -c .)
+  cells=$(jq -r 'select(.kind == "trial" and .warmup == false) | "\(.regime) \(.set)"' "$J" | sort | uniq -c | awk '$1 == 3' | grep -c .)
+  warm=$(jq -c 'select(.kind == "trial" and .warmup == true and .set == "none")' "$J" | grep -c .)
+  shas=$(jq -r 'select(.kind == "trial") | .output_sha256' "$J" | sort -u | grep -vc '^-$')
+  rshas=$(jq -r 'select(.kind == "trial") | .report_sha256' "$J" | sort -u | grep -vc '^-$')
+  notd=$(jq -c 'select(.kind == "trial" and .teardown_s == null)' "$J" | grep -c .)
+  nets=$(jq -c 'select(.kind == "net" and .exit == 0)' "$J" | grep -c .)
+  echo "rehearse: streamed $st trial lines, tune.jsonl has $jt (want 38); $bad invalid; $warm warm-up (want 2); $cells cells of 3 (want 12); $shas distinct outputs and $rshas reports (want 1, 1); $notd without teardown_s (want 0); $nets net lines (want 2)"
+  [ "$st" = 38 ] && [ "$jt" = 38 ] && [ "$bad" = 0 ] && [ "$warm" = 2 ] && [ "$cells" = 12 ] && [ "$shas" = 1 ] && [ "$rshas" = 1 ] \
+    && [ "$notd" = 0 ] && [ "$nets" = 2 ] \
+    || { echo "rehearse: tune trials wrong" >&2; RC=1; }
+  sr=$(grep -c '^ht-record ' "$T/body.log"); jr=$(grep -c . "$T/out/hosttune.jsonl" 2>/dev/null)
+  echo "rehearse: streamed $sr ht-record lines, hosttune.jsonl has $jr (want 97)"
+  [ "$sr" = 97 ] && [ "$jr" = 97 ] || { echo "rehearse: ht_record streaming wrong" >&2; RC=1; }
+  nw=$(jq -c 'select(.kind == "trial" and .set == "none" and .ht_writes != 0)' "$J" | grep -c .)
+  ow=$(jq -c 'select(.kind == "trial" and .set != "none" and .ht_writes == 0)' "$J" | grep -c .)
+  nk=$(awk -F'\t' '$3 == "none" && $8 != "kept"' "$T/out/hosttune-apply.tsv" | grep -c .)
+  nr=$(awk -F'\t' '$3 == "none"' "$T/out/hosttune-apply.tsv" | grep -c .)
+  endrec=$(grep '"label":"end"' "$T/out/hosttune.jsonl" | jq -r '"\(.enabled) \(.defrag) \(.proactiveness)"')
+  echo "rehearse: none trials that wrote: $nw (want 0); other trials that did not: $ow (want 0); none apply rows $nr, not kept $nk (want 0); end state $endrec (want madvise madvise 20)"
+  [ "$nw" = 0 ] && [ "$ow" = 0 ] && [ "$nr" -gt 0 ] && [ "$nk" = 0 ] && [ "$endrec" = "madvise madvise 20" ] \
+    || { echo "rehearse: host-tune application wrong" >&2; RC=1; }
+  mkdir -p "$T/run/out" && cp "$J" "$T/run/out/"
+  python3 scripts/lib/tune_tables.py "$T/run" || RC=1
+  ns=$(awk 'END{print NR - 1}' "$T/run/tables/probe-tune-selection.tsv" 2>/dev/null); nc=$(awk 'END{print NR - 1}' "$T/run/tables/probe-tune.tsv" 2>/dev/null)
+  [ "$ns" = 2 ] && [ "$nc" = 12 ] || { echo "rehearse: tune tables have $ns selection and $nc cell rows, want 2 and 12" >&2; RC=1; }
+  # Carry-over in the record: every trial but the first names its predecessor, and the trial
+  # order the body ran is the registered one (warm-up, then SCHED).
+  np=$(awk -F'\t' 'NR == 1 {for (i = 1; i <= NF; i++) if ($i == "prev_regime") c = i} NR > 1 && $c != "-"' "$T/run/tables/probe-tune-trials.tsv" | grep -c .)
+  ran=$(jq -r 'select(.kind == "trial") | "\(.set):\(.regime)"' "$J" | tr '\n' ' ')
+  want="none:a none:b $(awk '/^SCHED=\(/{f=1; next} f && /^\)/{f=0} f' scripts/g3/probe-tune.body.sh | tr -d '"' | tr -s ' \n' ' ' | sed 's/^ //')"
+  echo "rehearse: $np trials with a predecessor (want 37); trial order $([ "$ran" = "$want" ] && echo "is" || echo "is NOT") warm-up + SCHED"
+  [ "$np" = 37 ] && [ "$ran" = "$want" ] || { echo "rehearse: prev_regime column or trial order wrong" >&2; RC=1; }
+  cat "$T/run/tables/probe-tune-selection.tsv"
   ;;
 *) echo "rehearse: unknown probe kind $KIND" >&2; exit 2 ;;
 esac

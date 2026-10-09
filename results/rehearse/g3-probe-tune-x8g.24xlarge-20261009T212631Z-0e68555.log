@@ -1,0 +1,18 @@
+rehearse: record results/rehearse/g3-probe-tune-x8g.24xlarge-20261009T212631Z-0e68555.log
+rehearse: runs/g3-probe-tune-x8g.24xlarge.json (tune) at 0e68555, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.fo4IJ1
+rehearse: stand-in hash.k2d 648733288 bytes, ETag efa030d6b7b3e26244a0c49f1639bbde-5, at http://127.0.0.1:64456/Kraken2_RefSeqCompleteV205/hash.k2d
+rehearse: body exit 0
+rehearse: streamed 38 trial lines, tune.jsonl has 38 (want 38); 0 invalid; 2 warm-up (want 2); 12 cells of 3 (want 12); 1 distinct outputs and 1 reports (want 1, 1); 0 without teardown_s (want 0); 2 net lines (want 2)
+rehearse: streamed 97 ht-record lines, hosttune.jsonl has 97 (want 97)
+rehearse: none trials that wrote: 0 (want 0); other trials that did not: 0 (want 0); none apply rows 24, not kept 0 (want 0); end state madvise madvise 20 (want madvise madvise 20)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.fo4IJ1/run/tables/probe-tune-trials.tsv (38 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.fo4IJ1/run/tables/probe-tune.tsv (12 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.fo4IJ1/run/tables/probe-tune-selection.tsv (2 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.fo4IJ1/run/tables/probe-tune-drift.tsv (36 rows)
+tune_tables: regime a -> none (resolution 2.044 s, ceiling 0.013 s; evidence: no: the load ceiling is below the resolution, so this null is not evidence)
+tune_tables: regime b -> none (resolution 0.034 s, ceiling -0.003 s; evidence: no: the load ceiling is below the resolution, so this null is not evidence)
+rehearse: 37 trials with a predecessor (want 37); trial order is warm-up + SCHED
+regime	chosen	resolution_s	resolution_pct	classify_resolution_s	load_floor_s	load_ceiling_s	evidence	reason
+a	none	2.044	102.56	2.038	0.120	0.013	no: the load ceiling is below the resolution, so this null is not evidence	no set's gain exceeds its threshold (resolution 2.044 s)
+b	none	0.034	10.49	0.004	0.120	-0.003	no: the load ceiling is below the resolution, so this null is not evidence	no set's gain exceeds its threshold (resolution 0.034 s)
+rehearse: ok

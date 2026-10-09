@@ -92,6 +92,7 @@ targets; ad hoc commands only during exploration.
 |---|---|
 | `make build` / `make test` / `make lint` | [docs/build.md](docs/build.md) |
 | `make oracle [DB=viral\|standard8\|all]` / `make stage-db DB=…` / `make stage-reads` | [docs/oracle.md](docs/oracle.md) |
+| `make decomp-shim TOOL=gnu\|pigz\|rapidgzip DIR=…` (a `gzip` shim for `DECOMP_BIN`; ours' `AK2_DECOMPRESS=pipe`) | [docs/oracle.md](docs/oracle.md) ("Decompressor shims") |
 | `make harness [NAME=…] [VARIANTS=…]` | [docs/harness.md](docs/harness.md) |
 | `make g0b [G0B=hash\|scan\|all]` | [docs/g0b.md](docs/g0b.md) |
 | `make g0c [PART=local\|runs\|probes]` | [docs/g0c.md](docs/g0c.md) |
@@ -104,9 +105,10 @@ targets; ad hoc commands only during exploration.
 | `make tag-objects [PREFIX=…]` | [docs/tag-objects.md](docs/tag-objects.md) |
 | `make sortfuzz [SORTFUZZ=quick\|full]` | [docs/sortfuzz.md](docs/sortfuzz.md) |
 | `make hitorderfuzz [HITORDERFUZZ=quick\|full]` / `make hitorder-golden` | [docs/hitorderfuzz.md](docs/hitorderfuzz.md), [docs/hitorder.md](docs/hitorder.md) |
-| `make g3-spec` / `make g3-tables` / `make g3-frontier` | [docs/cohort.md](docs/cohort.md) |
+| `make g3-spec` / `make g3-tables` / `make g3-frontier` / `make g3-fit` | [docs/cohort.md](docs/cohort.md) |
 | `make bash-jobs-test` | [docs/cohort.md](docs/cohort.md) |
-| G3 probes (staging, contention, decompression, hitbench) | [docs/probes.md](docs/probes.md) |
+| G3 probes (staging, contention, decompression, hitbench, host tunes) / `make hosttune-test` | [docs/probes.md](docs/probes.md) |
+| `make lever-test` (the ladder lever library, `scripts/g3/lever.sh`) | [docs/ladder.md](docs/ladder.md) |
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
 | `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
