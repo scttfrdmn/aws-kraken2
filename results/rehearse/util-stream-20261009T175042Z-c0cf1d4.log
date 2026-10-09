@@ -1,0 +1,13 @@
+util-stream-test: 1 node(s) at c0cf1d4 (clean); shell flags huB; record results/rehearse/util-stream-20261009T175042Z-c0cf1d4.log
+util-stream-test: BREAK=nopush: a negative control; this run must FAIL
+util-stream-test: ok   early stub exit: sampler 4 exited with its stub (2 ticks)
+util-stream-test: ok   interface re-resolved: once tick re-resolved the interface (rx 90)
+util-stream-test: node r0 container exit 0
+util-stream-test: r0 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'hold', 'net', 'preamble', 'shm'])
+util-stream-test: r0 FAIL util.tsv uploaded 0 time(s) before the end phase (1 in all; ticks [73])
+util-stream-test: r0 ok   each upload during the run has more ticks than the last
+util-stream-test: r0 FAIL longest run stretch without an upload 65.0 s (a TTL kill loses at most that; pusher every 30 s)
+util-stream-test: r0 ok   the last upload is non-empty
+util-stream-test: r0 sampler CPU 0.19 s over 71 ticks (2.68 ms per tick)
+util-stream-test: r0 uploads over 64 s: run.log x13 requests.tsv x13 preflight.json x1 util.tsv x1
+util-stream-test: FAILED (KEEP=1 keeps the work dir)

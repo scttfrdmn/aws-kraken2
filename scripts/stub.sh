@@ -4,9 +4,17 @@
 # (scripts/preamble.sh + the spec body) therefore travels via the run's in-region results
 # prefix, uploaded by run.sh before launch and fetched here with a presigned URL for that one
 # object (no IAM grant needed). This stub keeps Law 4's order: $- first, set +e, the region
-# assert before any I/O, then one GET, a sha256 check, and exec.
+# assert before any I/O, then one GET, a sha256 check, and exec. The sampler reads only /proc and
+# /sys (and runs ethtool -S once), so it starts ahead of the assert.
 AK2_STUB_FLAGS="$-"
 set +e
+# The utilisation sampler first, before any I/O (docs/run.md, "Utilisation"): run.sh splices
+# scripts/util-sampler.sh in at the marker (scripts/lib/mkstub.sh); double-forked, so no shell's
+# bare `wait` waits for it, with no inherited stdio.
+cat > /tmp/ak2-util.sh <<'AK2UTIL'
+#@AK2_UTIL_SAMPLER@
+AK2UTIL
+( bash /tmp/ak2-util.sh loop "$$" < /dev/null > /dev/null 2>&1 & )
 echo "ak2-stub: inherited \$-=$AK2_STUB_FLAGS"
 AK2_T=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 300')
 AK2_R=$(curl -sf -m 5 -H "X-aws-ec2-metadata-token: $AK2_T" http://169.254.169.254/latest/meta-data/placement/region)

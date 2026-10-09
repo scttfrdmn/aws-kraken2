@@ -110,7 +110,8 @@ targets; ad hoc commands only during exploration.
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
 | `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
-| `make rehearse SPEC=…` (local rehearsal of a spec under the nodes' environment) | [docs/cohort.md](docs/cohort.md) |
+| `make rehearse SPEC=…` (local rehearsal of a spec under the nodes' environment; runs `make util-stream-test` first) | [docs/cohort.md](docs/cohort.md) |
+| `make util-stream-test [N=…]` / `make util DIR=…` / `make util-backfill` / `make instance-types` | [docs/util.md](docs/util.md), [docs/run.md](docs/run.md) ("Utilisation") |
 | `make run GATE=… SPEC=… [NODES=n]` | [docs/run.md](docs/run.md) ("Multi-node runs"), [docs/engine.md](docs/engine.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
 | `make report GATE=… RUN=…` | [docs/report.md](docs/report.md) |

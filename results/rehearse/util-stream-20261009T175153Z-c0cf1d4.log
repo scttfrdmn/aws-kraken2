@@ -1,0 +1,26 @@
+util-stream-test: 1 node(s) at c0cf1d4 (clean); shell flags huB; record results/rehearse/util-stream-20261009T175153Z-c0cf1d4.log
+util-stream-test: BREAK=nostub: a negative control; this run must FAIL
+util-stream-test: ok   early stub exit: sampler 4 exited with its stub (2 ticks)
+util-stream-test: ok   interface re-resolved: once tick re-resolved the interface (rx 90)
+util-stream-test: node r0 container exit 0
+util-stream-test: r0 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'hold', 'net', 'preamble', 'shm'])
+util-stream-test: r0 ok   util.tsv uploaded 2 time(s) before the end phase (3 in all; ticks [36, 66, 72])
+util-stream-test: r0 ok   each upload during the run has more ticks than the last
+util-stream-test: r0 ok   longest run stretch without an upload 31.1 s (a TTL kill loses at most that; pusher every 30 s)
+util-stream-test: r0 ok   the last upload is non-empty
+util-stream-test: r0 ok   no malformed lines (0)
+util-stream-test: r0 FAIL first tick (preamble, 1791568319.867) precedes the preamble (1791568319): the stub started it
+util-stream-test: r0 ok   last tick is final (final) at/after the end phase
+util-stream-test: r0 ok   max gap between ticks 1.02 s
+util-stream-test: r0 FAIL phases in the ticks: ['preamble', 'body', 'burn', 'shm', 'net', 'hold', 'end']
+util-stream-test: r0 ok   72 ticks over 63.8 s (1 Hz)
+util.py: wrote /Users/scttfrdmn/.ak2-util-stream.REjvZ6/runs/g9/20261009-175159-c0cf1d4-util-n1-r0/tables/util.tsv (12 rows) and its util.json
+util.py: node 20261009-175159-c0cf1d4-util-n1-r0: U_cpu 0.004183 U_mem 0.000034 (peak 0.156334) U_net 0.000000/0.000000 [full]
+util.py: fleet 1 of 1 node(s): U_cpu 0.004183 U_mem 0.000034 (peak 0.156334) U_net 0.000000/0.000000 [full]
+util-stream-test: r0 ok   burn: 7.8 busy vCPU-s in 7.1 s (one vCPU burnt)
+util-stream-test: r0 ok   shm: peak used 1237 MiB vs 1005 MiB at the phase's start; Shmem +256 MiB (256 MiB written to /dev/shm)
+util-stream-test: r0 ok   net: 70869770 bytes on eth0 (64 MiB downloaded)
+util-stream-test: r0 node U_cpu 0.004183 U_mem 0.000034 (peak 0.156334) U_net 0.000000; unobservable 0.0/215529.9/0.4 s
+util-stream-test: r0 sampler CPU 0.15 s over 70 ticks (2.14 ms per tick)
+util-stream-test: r0 uploads over 64 s: run.log x13 requests.tsv x13 preflight.json x1 util.tsv x3
+util-stream-test: FAILED (KEEP=1 keeps the work dir)

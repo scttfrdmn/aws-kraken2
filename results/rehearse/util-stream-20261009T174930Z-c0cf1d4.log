@@ -1,0 +1,67 @@
+util-stream-test: 3 node(s) at c0cf1d4 (clean); shell flags huB; record results/rehearse/util-stream-20261009T174930Z-c0cf1d4.log
+util-stream-test: ok   early stub exit: sampler 4 exited with its stub (2 ticks)
+util-stream-test: ok   interface re-resolved: once tick re-resolved the interface (rx 90)
+util-stream-test: node r0 container exit 0
+util-stream-test: r0 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'hold', 'net', 'preamble', 'shm'])
+util-stream-test: r0 ok   util.tsv uploaded 2 time(s) before the end phase (3 in all; ticks [37, 67, 73])
+util-stream-test: r0 ok   each upload during the run has more ticks than the last
+util-stream-test: r0 ok   longest run stretch without an upload 31.1 s (a TTL kill loses at most that; pusher every 30 s)
+util-stream-test: r0 ok   the last upload is non-empty
+util-stream-test: r0 ok   no malformed lines (0)
+util-stream-test: r0 ok   first tick (stub, 1791568176.746) precedes the preamble (1791568176): the stub started it
+util-stream-test: r0 ok   last tick is final (final) at/after the end phase
+util-stream-test: r0 ok   max gap between ticks 1.02 s
+util-stream-test: r0 ok   phases in the ticks: ['stub', 'preamble', 'body', 'burn', 'shm', 'net', 'hold', 'end']
+util-stream-test: r0 ok   73 ticks over 65.0 s (1 Hz)
+util.py: wrote /Users/scttfrdmn/.ak2-util-stream.ozOwLQ/runs/g9/20261009-174936-c0cf1d4-util-n3-r0/tables/util.tsv (13 rows) and its util.json
+util.py: node 20261009-174936-c0cf1d4-util-n3-r0: U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000/0.000000 [full]
+util.py: fleet 1 of 1 node(s): U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000/0.000000 [full]
+util-stream-test: r0 ok   burn: 22.4 busy vCPU-s in 7.1 s (one vCPU burnt)
+util-stream-test: r0 ok   shm: peak used 1674 MiB vs 904 MiB at the phase's start; Shmem +768 MiB (256 MiB written to /dev/shm)
+util-stream-test: r0 ok   net: 71536538 bytes on eth0 (64 MiB downloaded)
+util-stream-test: r0 node U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000; unobservable 0.0/215386.7/0.2 s
+util-stream-test: r0 sampler CPU 0.15 s over 71 ticks (2.11 ms per tick)
+util-stream-test: r0 uploads over 65 s: run.log x13 requests.tsv x13 preflight.json x1 util.tsv x3
+util-stream-test: node r1 container exit 0
+util-stream-test: r1 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'hold', 'net', 'preamble', 'shm'])
+util-stream-test: r1 ok   util.tsv uploaded 2 time(s) before the end phase (3 in all; ticks [37, 66, 73])
+util-stream-test: r1 ok   each upload during the run has more ticks than the last
+util-stream-test: r1 ok   longest run stretch without an upload 30.9 s (a TTL kill loses at most that; pusher every 30 s)
+util-stream-test: r1 ok   the last upload is non-empty
+util-stream-test: r1 ok   no malformed lines (0)
+util-stream-test: r1 ok   first tick (stub, 1791568176.724) precedes the preamble (1791568176): the stub started it
+util-stream-test: r1 ok   last tick is final (final) at/after the end phase
+util-stream-test: r1 ok   max gap between ticks 1.02 s
+util-stream-test: r1 ok   phases in the ticks: ['stub', 'preamble', 'body', 'burn', 'shm', 'net', 'hold', 'end']
+util-stream-test: r1 ok   73 ticks over 65.1 s (1 Hz)
+util.py: wrote /Users/scttfrdmn/.ak2-util-stream.ozOwLQ/runs/g9/20261009-174936-c0cf1d4-util-n3-r1/tables/util.tsv (13 rows) and its util.json
+util.py: node 20261009-174936-c0cf1d4-util-n3-r1: U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000/0.000000 [full]
+util.py: fleet 1 of 1 node(s): U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000/0.000000 [full]
+util-stream-test: r1 ok   burn: 23.0 busy vCPU-s in 7.2 s (one vCPU burnt)
+util-stream-test: r1 ok   shm: peak used 1674 MiB vs 904 MiB at the phase's start; Shmem +768 MiB (256 MiB written to /dev/shm)
+util-stream-test: r1 ok   net: 71539794 bytes on eth0 (64 MiB downloaded)
+util-stream-test: r1 node U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000; unobservable 0.0/215386.7/0.2 s
+util-stream-test: r1 sampler CPU 0.15 s over 71 ticks (2.11 ms per tick)
+util-stream-test: r1 uploads over 65 s: run.log x13 requests.tsv x13 preflight.json x1 util.tsv x3
+util-stream-test: node r2 container exit 0
+util-stream-test: r2 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'hold', 'net', 'preamble', 'shm'])
+util-stream-test: r2 ok   util.tsv uploaded 2 time(s) before the end phase (3 in all; ticks [37, 66, 73])
+util-stream-test: r2 ok   each upload during the run has more ticks than the last
+util-stream-test: r2 ok   longest run stretch without an upload 30.9 s (a TTL kill loses at most that; pusher every 30 s)
+util-stream-test: r2 ok   the last upload is non-empty
+util-stream-test: r2 ok   no malformed lines (0)
+util-stream-test: r2 ok   first tick (stub, 1791568176.724) precedes the preamble (1791568176): the stub started it
+util-stream-test: r2 ok   last tick is final (final) at/after the end phase
+util-stream-test: r2 ok   max gap between ticks 1.02 s
+util-stream-test: r2 ok   phases in the ticks: ['stub', 'preamble', 'body', 'burn', 'shm', 'net', 'hold', 'end']
+util-stream-test: r2 ok   73 ticks over 65.1 s (1 Hz)
+util.py: wrote /Users/scttfrdmn/.ak2-util-stream.ozOwLQ/runs/g9/20261009-174936-c0cf1d4-util-n3-r2/tables/util.tsv (13 rows) and its util.json
+util.py: node 20261009-174936-c0cf1d4-util-n3-r2: U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000/0.000000 [full]
+util.py: fleet 1 of 1 node(s): U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000/0.000000 [full]
+util-stream-test: r2 ok   burn: 23.0 busy vCPU-s in 7.2 s (one vCPU burnt)
+util-stream-test: r2 ok   shm: peak used 1674 MiB vs 904 MiB at the phase's start; Shmem +768 MiB (256 MiB written to /dev/shm)
+util-stream-test: r2 ok   net: 71533098 bytes on eth0 (64 MiB downloaded)
+util-stream-test: r2 node U_cpu 0.004145 U_mem 0.000036 (peak 0.211619) U_net 0.000000; unobservable 0.0/215386.7/1.2 s
+util-stream-test: r2 sampler CPU 0.15 s over 71 ticks (2.11 ms per tick)
+util-stream-test: r2 uploads over 65 s: run.log x13 requests.tsv x13 preflight.json x1 util.tsv x3
+util-stream-test: ok (3 node(s))

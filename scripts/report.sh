@@ -14,6 +14,10 @@ M="$D/manifest.json"
 jq -e . "$M" >/dev/null || die "$M is not valid JSON"
 [ -n "$(jq -r '.manifest_finalised_at // empty' "$M")" ] || die "$M was never finalised (run still in progress or aborted)"
 
+# Utilisation is derived from files in the run dir only (manifest.json, log/util.tsv), so it is
+# regenerated here: a run finalised before the sampler gets a table that says what is missing.
+python3 scripts/lib/util.py "$D" > /dev/null || die "scripts/lib/util.py failed on $D"
+
 m() { jq -r "($1) | if . == null then \"—\" else tostring end" "$M"; }
 tsv_md() { # tsv file -> markdown table, at most 60 rows
   awk -F'\t' 'NR==1{h="|"; s="|"; for(i=1;i<=NF;i++){h=h" "$i" |"; s=s"---|"}; print h; print s; next}

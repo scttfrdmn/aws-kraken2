@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -14,6 +14,7 @@ build:
 test:
 	$(GO) test $(PKGS)
 	python3 scripts/lib/errexit_check.py --self-test
+	python3 scripts/lib/util_test.py
 	bash scripts/lib/harness_poll_test.sh
 	bash scripts/lib/run_multi_test.sh
 
@@ -106,14 +107,34 @@ hitorderfuzz:
 	scripts/hitorderfuzz.sh $(HITORDERFUZZ)
 
 # Rehearse a cohort spec locally before any launch (docs/cohort.md, "Rehearsal"): the spec's own
-# body as N nodes (default 3) under the harness's env, every output against upstream.
-rehearse:
+# body as N nodes (default 3) under the harness's env, every output against upstream. First, the
+# utilisation sampler must stream on every one of N nodes (make util-stream-test; docs/util.md).
+rehearse: util-stream-test
 	case "$(or $(SPEC),runs/g3-e1.json)" in runs/g3-e1.json) scripts/lib/e1_rehearse.sh runs/g3-e1.json $(or $(N),3) ;; \
 	  runs/g3-u1-*) scripts/lib/u_rehearse.sh $(SPEC) ;; \
 	  runs/g3-u2-*) scripts/lib/u2_rehearse.sh $(SPEC) ;; \
 	  runs/g3-diag44-*) scripts/lib/diag44_rehearse.sh $(SPEC) ;; \
 	  runs/g3-probe-*) scripts/lib/probe_rehearse.sh $(SPEC) ;; \
 	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
+
+# Utilisation (docs/util.md): the sampler streams log/util.tsv on N AL2023 nodes (podman) running
+# run.sh's stub and preamble, checked on the uploads; BREAK=nopush|nostub are negative controls.
+util-stream-test:
+	scripts/lib/util_stream_test.sh $(or $(N),3)
+
+# tables/util.tsv for one run or cohort dir (DIR=results/<gate>/<run>); run.sh, run-multi.sh and
+# make report do this themselves.
+util:
+	python3 scripts/lib/util.py $(DIR)
+
+# Lower-bound utilisation of the results/g2 and results/g3 runs that predate the sampler, from what
+# their logs recorded (results/util-backfill/util-backfill.tsv; docs/util.md). $0: reads results/ only.
+util-backfill:
+	python3 scripts/lib/util_backfill.py
+
+# describe-instance-types for every instance type in results/ (results/instance-types/<region>.json).
+instance-types:
+	scripts/instance-types.sh
 
 # The G3 sweep's real cohort (docs/cohort.md, #25): PART=record (once, before use) or stage
 # (default), PROJECT (default PRJNA398089), COUNT (record: 1000; stage: 10).

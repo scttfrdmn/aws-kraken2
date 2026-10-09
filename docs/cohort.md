@@ -239,7 +239,11 @@ make g3-tables                                            # results/g3/campaign/
 
 ## Rehearsal: make rehearse SPEC=runs/g3-e1.json [N=3]
 
-Run before every launch of a cohort spec. `scripts/lib/e1_rehearse.sh` runs the spec's own body
+Run before every launch of a cohort spec. Every `make rehearse` first runs `make util-stream-test`
+with the same N ([util.md](util.md)), and fails if it fails. That test checks, on N AL2023
+containers running the real stub and preamble, that `log/util.tsv` streams on every node. The
+stand-ins below replace the preamble, so the rehearsal proper cannot check it.
+`scripts/lib/e1_rehearse.sh` runs the spec's own body
 (its `command[2]`, unmodified) locally as N nodes, under the environment the harness gives a
 cohort member. Three E1 spec bugs were found only on AWS; this finds that kind of bug for free.
 - **Harness and instance stand-ins:**

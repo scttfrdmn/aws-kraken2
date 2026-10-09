@@ -11,9 +11,16 @@ make -s report GATE=g0a RUN=<run-id> > /tmp/comment.md
 **Inputs:** `results/<gate>/<run>/manifest.json`, which must be finalised
 (`manifest_finalised_at` set). Also, if present: `decoded/*.json` (flat objects, rendered as
 field/value tables) and `tables/*.tsv` (header row + data, rendered as markdown tables, first 60
-rows). Derived files come from `run.sh` (`tables/phases.tsv`, `tables/requests.tsv`) and from the
+rows). Derived files come from `run.sh` (`tables/phases.tsv`, `tables/requests.tsv`,
+`tables/util.tsv`) and from the
 spec's `scripts/post/<name>.sh` (for g0a: `decoded/`, `tables/etag-check.tsv`, listing tables). To add a number to a report, add
 it to one of these files from a script, never to the comment.
+
+**Utilisation:** before rendering, `make report` regenerates `tables/util.tsv` with
+`scripts/lib/util.py` from the run dir's own `manifest.json` and `log/util.tsv`
+([run.md](run.md), "Utilisation"; [util.md](util.md)). So the table is always current, and a
+run that predates the sampler gets rows whose `coverage` says what is missing. U_cpu, U_mem
+and U_net are separate columns, each with its own effective cost; they are never combined.
 
 **Outputs:** markdown on stdout, in this order: the run table (commit, pin, spec hash, instance,
 AMI, region/AZ, truffle price, start/stop, billed seconds, cost and its basis, TTL/cost_limit,
@@ -23,5 +30,6 @@ JSON, each table, then a collapsed list of every file with its size and sha256 p
 the comment is the coordinator's job.
 
 **Failure looks like:** exit 2 with `make report: …`, meaning the run dir or manifest is missing,
-the manifest is invalid JSON, or it was never finalised (the run is in progress or aborted). A
+the manifest is invalid JSON, it was never finalised (the run is in progress or aborted), or
+`util.py` failed on the run dir. A
 `—` cell means the manifest lacks that field; fix the harness, not the comment.

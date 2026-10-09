@@ -1,0 +1,24 @@
+{
+  "what": "lower-bound utilisation of the results/g2 and results/g3 runs from their recorded logs (scripts/lib/util_backfill.py)",
+  "commit": "c0cf1d4b399f5f111a676ca21dddc4c847e5c8f5",
+  "generated_at": "2026-10-09T17:49:30Z",
+  "caveats": [
+    "Every U is a lower bound: unrecorded processes and windows count as 0.",
+    "Rows cannot be compared across arms or run types: their CPU sources differ (engine whole-process getrusage, upstream per-run getrusage, loadbench per-run getrusage, or none).",
+    "Upstream and loadbench memory is a per-process peak RSS (rss_peak_gib), not U_mem: under mmap it is reclaimable file-backed page cache.",
+    "Node-to-node engine traffic has no byte count and is not in net_bytes_lb."
+  ],
+  "inputs": {
+    "gates": [
+      "g2",
+      "g3"
+    ],
+    "runs": 418,
+    "cohorts": 28,
+    "instance_types": {
+      "file": "results/instance-types/us-west-2.json",
+      "queried_at": "2026-10-09T16:44:29Z"
+    }
+  },
+  "definition": "docs/util.md, 'make util-backfill'"
+}

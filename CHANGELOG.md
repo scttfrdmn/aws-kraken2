@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
+  - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
+    records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's
+    `cpu.stat` and the current phase, plus `ethtool -S` `*_allowance_exceeded` at start and end.
+  - `scripts/lib/mkstub.sh` splices the sampler into the user-data stub, which starts it before
+    anything else.
+  - The preamble streams the record to `log/util.tsv` every 30 s from the pusher. `ak2_phase`
+    takes a boundary tick, and `ak2_finish` takes a `final` tick before the last push.
+  - `run.sh` records `instance.type_info` at launch: vCPUs, MiB, and the baseline and peak Gbit/s
+    from describe-instance-types. It keeps the launched stub as `stub.sh`.
+  - `scripts/lib/util.py` writes `tables/util.tsv`: per-node, fleet and per-phase U_cpu,
+    U_mem (mean and peak) and U_net (at the baseline and the peak rate), each with its own
+    effective cost and multiplier, plus the unobservable-window durations. `run.sh`,
+    `run-multi.sh`, `refinalise.sh` and `make report` call it. `make test` runs its unit test
+    (`scripts/lib/util_test.py`).
+  - `make util-stream-test`: on N AL2023 containers running the real stub and preamble, checks
+    that the record streams on every node and resolves known CPU, tmpfs and network effects.
+    `make rehearse` runs it first. `BREAK=nopush|nostub` are negative controls.
+  - `make util-backfill`: lower-bound utilisation of the existing `results/g2` and `results/g3`
+    runs. It draws on the engine's getrusage and memory samples, the G2 runner's and loadbench's
+    per-run getrusage, and the logged byte counts. It has explicit coverage and arm columns;
+    upstream peak RSS is reported as `rss_peak_gib`, not U_mem. Written to
+    `results/util-backfill/`.
+  - Review fixes before merge:
+    - fleet numerators and denominators now cover the same nodes;
+    - memory gaps are no longer interpolated (`mem_gap_s`);
+    - network is counted from boot, with per-direction U_net_rx/tx;
+    - backwards counters give empty cells plus a note;
+    - the sampler looks the interface up again after a late default route;
+    - util.tsv is re-uploaded every 30 s (the TTL-kill loss is bounded, and the test asserts it);
+    - cohort rows are labelled by run_id;
+    - a `tables/util.json` sidecar is written.
+    - a late interface's since-boot counter is counted in the boot window;
+    - the sampler renices itself to -10 (`H nice`), and util.py reports the largest tick gap
+      per phase;
+    - the streaming test runs the stub under `bash -e -c` and rootful, adds a saturating
+      `starve` phase (it asserts `mem_gap_s` = 0), and adds a one-node round that checks the
+      CPU, memory and network magnitudes from above.
+  - `make instance-types`: `results/instance-types/us-west-2.json`.
+  - Runbook `docs/util.md`.
+
 - Repository bootstrap: license, changelog, CLAUDE.md with the experiment's laws, make targets.
 - Run harness: `make run` (`scripts/run.sh`, on-instance hygiene preamble `scripts/preamble.sh`,
   settings `scripts/ak2.env`), `make orphans`, `make report`, with runbooks `docs/run.md`,

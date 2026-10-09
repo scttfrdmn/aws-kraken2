@@ -1,0 +1,23 @@
+util-stream-test: 1 node(s) at 4e1393f (clean); shell flags huB; record results/rehearse/util-stream-20261009T170557Z-4e1393f.log
+util-stream-test: BREAK=nostub: a negative control; this run must FAIL
+util-stream-test: ok   early stub exit: sampler 4 exited with its stub (2 ticks)
+util-stream-test: node r0 container exit 0
+util-stream-test: r0 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'net', 'preamble', 'shm'])
+util-stream-test: r0 ok   util.tsv uploaded 2 time(s) before the end phase (3 in all; ticks [9, 15, 21])
+util-stream-test: r0 ok   each upload during the run has more ticks than the last
+util-stream-test: r0 ok   the last upload is non-empty
+util-stream-test: r0 ok   no malformed lines (0)
+util-stream-test: r0 FAIL first tick (preamble, 1791565563.876) precedes the preamble (1791565563): the stub started it
+util-stream-test: r0 ok   last tick is final (final) at/after the end phase
+util-stream-test: r0 ok   max gap between ticks 1.01 s
+util-stream-test: r0 FAIL phases in the ticks: ['preamble', 'body', 'burn', 'shm', 'net', 'end']
+util-stream-test: r0 ok   21 ticks over 13.8 s (1 Hz)
+util.py: wrote /Users/scttfrdmn/.ak2-util-stream.ATEhBG/runs/g9/20261009-170603-4e1393f-util-n1-r0/tables/util.tsv (11 rows)
+util.py: node 20261009-170603-4e1393f-util-n1-r0: U_cpu 0.004021 U_mem 0.000009 (peak 0.154339) U_net 0.000000/0.000000 [full]
+util.py: fleet 1 node(s): U_cpu 0.004021 U_mem 0.000009 (peak 0.154339) U_net 0.000000/0.000000 [full]
+util-stream-test: r0 ok   burn: 7.7 busy vCPU-s in 7.1 s (one vCPU burnt)
+util-stream-test: r0 ok   shm: peak used 1222 MiB vs 1009 MiB at the phase's start; Shmem +256 MiB (256 MiB written to /dev/shm)
+util-stream-test: r0 ok   net: 70906344 bytes on eth0 (64 MiB downloaded)
+util-stream-test: r0 node U_cpu 0.004021 U_mem 0.000009 (peak 0.154339) U_net 0.000000; unobservable 0.0/212773.9/0.4 s
+util-stream-test: r0 sampler CPU 0.01 s over 19 ticks (0.53 ms per tick)
+util-stream-test: FAILED (KEEP=1 keeps the work dir)

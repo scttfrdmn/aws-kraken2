@@ -8,7 +8,8 @@
 #   - `set +e` is in force (run.sh refuses a body that turns -e back on, and $- is checked at
 #     body start and at exit); check statuses by hand.
 #   - stdout/stderr go to $AK2_LOG, pushed to S3 every 5 s and once more on exit or on
-#     TERM/HUP/INT/PIPE. Do not replace the EXIT or signal traps.
+#     TERM/HUP/INT/PIPE. Do not replace the EXIT or signal traps. The utilisation sampler's
+#     $AK2_UTIL (1 Hz, tagged with the current phase) goes to log/util.tsv every 30 s and at exit.
 #   - `aws` on PATH is a shim that refuses s3/s3api calls naming a bucket outside
 #     $AK2_ALLOWED_BUCKETS (declared buckets plus the results bucket), then execs the real CLI.
 #     It covers anything that finds `aws` via PATH; not curl, SDKs, or `sudo aws`.
@@ -28,10 +29,12 @@ AK2_REQS=/tmp/ak2-requests.tsv
 AK2_FIFO=/tmp/ak2-log.fifo
 AK2_BIN=/tmp/ak2-bin
 AK2_STATE=/tmp/ak2-state
+AK2_UTIL=/tmp/ak2-util.tsv      # the utilisation sampler's record (scripts/util-sampler.sh, started by the stub)
 AK2_PUSH_EVERY=5
+AK2_UTIL_PUSH_EVERY=30          # util.tsv grows by a line a second: re-uploaded every 30 s (and at exit)
 AK2_MAIN_PID=$BASHPID
 readonly AK2_EXPECT_REGION AK2_BUCKETS AK2_ALLOWED_BUCKETS AK2_S3_PREFIX AK2_RUN_ID AK2_GATE \
-  AK2_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN AK2_STATE AK2_MAIN_PID AK2_INHERITED_FLAGS
+  AK2_PUSH_EVERY AK2_UTIL_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN AK2_STATE AK2_UTIL AK2_MAIN_PID AK2_INHERITED_FLAGS
 AK2_REAL_AWS=$(command -v aws)
 readonly AK2_REAL_AWS
 : > "$AK2_LOG"
@@ -47,6 +50,7 @@ ak2_boot_fail() {
   local m; m=$(printf 'ak2: [%s] FATAL: %s' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*")
   echo "$m" >> "$AK2_LOG"; echo "$m" >&2
   "$AK2_REAL_AWS" s3 cp --only-show-errors "$AK2_LOG" "$AK2_S3_PREFIX/log/run.log" >/dev/null 2>&1
+  [ -s "$AK2_UTIL" ] && "$AK2_REAL_AWS" s3 cp --only-show-errors "$AK2_UTIL" "$AK2_S3_PREFIX/log/util.tsv" >/dev/null 2>&1
   exit 97
 }
 rm -f "$AK2_FIFO"
@@ -83,6 +87,8 @@ ak2_phase() {
   [ -e "$AK2_STATE/cold_next" ] && { cold=yes; rm -f "$AK2_STATE/cold_next"; }
   echo "$name" > "$AK2_STATE/phase"
   printf 'ak2-phase\t%s\t%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$(date +%s)" "$name" "$cold"
+  # A utilisation tick at the boundary: the interval up to it is the previous phase's.
+  [ -s /tmp/ak2-util.sh ] && bash /tmp/ak2-util.sh once phase
 }
 ak2_req() {
   local op=${1:-} n=${2:-} b=${3:-}
@@ -94,6 +100,17 @@ ak2_req() {
   printf '%s\t%s\t%s\t%s\n' "$(cat "$AK2_STATE/phase" 2>/dev/null)" "$op" "$n" "$b" >> "$AK2_REQS"
 }
 ak2_phase preamble
+# The utilisation sampler (docs/run.md, "Utilisation"): the stub started it; start it here only if
+# the stub could not (its record then begins late, and util.py measures from its first tick).
+AK2_UPID=$(cat "${AK2_UTIL%.tsv}.pid" 2>/dev/null)
+if [ -n "$AK2_UPID" ] && kill -0 "$AK2_UPID" 2>/dev/null; then
+  ak2_say "util sampler running (pid $AK2_UPID, $(grep -c '^S' "$AK2_UTIL") ticks so far) -> log/util.tsv"
+elif [ -s /tmp/ak2-util.sh ]; then
+  ( bash /tmp/ak2-util.sh loop "$$" < /dev/null > /dev/null 2>&1 & )
+  ak2_say "WARN: util sampler was not running; started it from the preamble"
+else
+  ak2_say "WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation"
+fi
 ak2_say "inherited \$-=$AK2_INHERITED_FLAGS (stub, as spawn started it: \$-=${AK2_STUB_FLAGS:-none})"
 ak2_say "after set +e \$-=$-"
 ak2_say "gate=$AK2_GATE run=$AK2_RUN_ID"
@@ -184,9 +201,17 @@ ak2_finish() {
   ak2_say "spec body exit rc=$rc${why:+ ($why)}"
   ak2_phase end
   [ -n "$AK2_PUSHER" ] && kill "$AK2_PUSHER" 2>/dev/null
+  # The sampler's last tick: stop the loop (it exits between ticks), one `final` sample with the
+  # end-of-run ethtool counters, then the push below.
+  local up i; up=$(cat "${AK2_UTIL%.tsv}.pid" 2>/dev/null)
+  if [ -n "$up" ] && kill "$up" 2>/dev/null; then
+    for i in 1 2 3 4 5 6 7 8 9 10; do kill -0 "$up" 2>/dev/null || break; sleep 0.1; done
+  fi
+  [ -s /tmp/ak2-util.sh ] && bash /tmp/ak2-util.sh once final
+  [ -s "$AK2_UTIL" ] && ak2_put "$AK2_UTIL" log/util.tsv
   ak2_put "$AK2_REQS" out/requests.tsv
   [ -s "$AK2_STATE/errors" ] && ak2_put "$AK2_STATE/errors" out/helper-errors.tsv
-  local i; for i in 1 2 3 4; do kill -0 "$AK2_TEE_PID" 2>/dev/null || break; sleep 0.5; done
+  for i in 1 2 3 4; do kill -0 "$AK2_TEE_PID" 2>/dev/null || break; sleep 0.5; done
   ak2_put "$AK2_LOG" log/run.log
   exit "$rc"
 }
@@ -236,7 +261,8 @@ printf '{"inherited_flags":"%s","payload_inherited_flags":"%s","flags_after_set"
 ak2_put /tmp/ak2-preflight.json preflight.json || ak2_say "WARN: preflight push failed"
 
 # ---- log streaming ----
-( while sleep "$AK2_PUSH_EVERY"; do ak2_put "$AK2_LOG" log/run.log; ak2_put "$AK2_REQS" out/requests.tsv; done ) >/dev/null 2>&1 &
+( AK2_N=0; while sleep "$AK2_PUSH_EVERY"; do ak2_put "$AK2_LOG" log/run.log; ak2_put "$AK2_REQS" out/requests.tsv
+    AK2_N=$((AK2_N + 1)); [ $((AK2_N * AK2_PUSH_EVERY % AK2_UTIL_PUSH_EVERY)) = 0 ] && [ -s "$AK2_UTIL" ] && ak2_put "$AK2_UTIL" log/util.tsv; done ) >/dev/null 2>&1 &
 AK2_PUSHER=$!
 readonly AK2_PUSHER
 disown "$AK2_PUSHER"
