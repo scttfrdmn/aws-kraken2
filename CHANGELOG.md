@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `AK2_ENGINE_VERIFY_ETAG=1` (#49): the engine checks the S3 ETag of hash.k2d
+  (`AK2_ENGINE_HASH_ETAG`) against the bytes its shards loaded, before the first sample. The part
+  size is inferred as `scripts/lib/etagcheck.py` does (RODA v205: 8860 parts of 128 MiB);
+  single-part ETags are the plain md5. Each node hashes the parts that start in its byte range,
+  by file offset, so the overlap tails are never counted twice. It fetches the rest of its last
+  part with one extra ranged GET and publishes its part digests in its rendezvous record
+  (`etag_parts`). Every node, rank 0 included, combines all the records and compares. A mismatch
+  fails the run (exit 1) before any output is opened. It is timed as the `etag` phase, with an
+  `ak2-engine etag` counter line. The in-process engine verifies too. Code:
+  `internal/engine/etag.go`, `cmd/aws-kraken2/etag.go`. `rangeread.FileHandler` is now
+  `k2probe serve-file`'s handler, shared with the tests. Shard bytes are unchanged.
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

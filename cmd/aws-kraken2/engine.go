@@ -7,6 +7,8 @@ package main
 //	AK2_ENGINE_TRANSPORT=local  shards called in-process (default)
 //	                    =tcp    each shard behind its own loopback TCP server
 //	AK2_ENGINE_TAIL=<cells>     overlap tail per shard (default engine.DefaultTail, 302)
+//	AK2_ENGINE_VERIFY_ETAG=1    check hash.k2d's S3 ETag (AK2_ENGINE_HASH_ETAG) against the
+//	                            loaded shards before the first sample (etag.go, #49)
 //
 // Every lookup of an input block is routed to the shard owning its home slot, and the values
 // come back to the worker that scanned the block, which then classifies its reads exactly as
@@ -35,6 +37,7 @@ type engineConf struct {
 	tail      uint64
 	cluster   *clusterConf // multi-node (AK2_ENGINE_RANK; cluster.go); nil = in-process
 	cohort    bool         // AK2_COHORT: control sessions per block-striped sample (cohort.go)
+	verifyTag string       // AK2_ENGINE_VERIFY_ETAG=1: the ETag to check (AK2_ENGINE_HASH_ETAG); "" = off
 }
 
 // engineFromEnv returns nil when AK2_ENGINE_N is unset.
@@ -65,6 +68,15 @@ func engineFromEnv(lookup func(string) (string, bool)) (*engineConf, error) {
 	if c.cluster, err = clusterFromEnv(n, lookup); err != nil {
 		return nil, err
 	}
+	switch v := getenv("AK2_ENGINE_VERIFY_ETAG"); v {
+	case "", "0":
+	case "1":
+		if c.verifyTag = getenv("AK2_ENGINE_HASH_ETAG"); c.verifyTag == "" {
+			return nil, fmt.Errorf("AK2_ENGINE_VERIFY_ETAG=1 needs AK2_ENGINE_HASH_ETAG, the S3 ETag of hash.k2d")
+		}
+	default:
+		return nil, fmt.Errorf("AK2_ENGINE_VERIFY_ETAG=%q: want 1 or 0", v)
+	}
 	_, c.cohort = lookup("AK2_COHORT")
 	return c, nil
 }
@@ -77,7 +89,8 @@ type engineIndex struct {
 	servers []*engine.Server
 	tcp     []*engine.TCPClient
 	router  *engine.Router
-	node    *node // multi-node only
+	node    *node      // multi-node only
+	etag    *etagCheck // AK2_ENGINE_VERIFY_ETAG=1 only
 
 	rvRequests int64
 	// The node's shard load: seconds, and the source's request counters (ranged GETs or preads,
@@ -100,7 +113,7 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 	}
 	ctx := context.Background()
 	src := &rangeread.FileSource{F: f}
-	_, l, err := engine.ReadLayout(ctx, src, st.Size())
+	h, l, err := engine.ReadLayout(ctx, src, st.Size())
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
@@ -115,6 +128,15 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 		}
 		p.end()
 		e.shards = append(e.shards, s)
+	}
+	if conf.verifyTag != "" {
+		if e.etag, err = hashETag(ctx, conf.verifyTag, h, st.Size(), src, e.shards); err == nil {
+			err = e.etag.combine(e.etag.mine)
+		}
+		if err != nil {
+			e.close()
+			return nil, fmt.Errorf("%s: %w", path, err)
+		}
 	}
 	clients := make([]engine.Client, conf.n)
 	switch conf.transport {
@@ -197,6 +219,7 @@ func (e *engineIndex) report() {
 	if e.node != nil {
 		e.node.report()
 	}
+	e.etag.report()
 	multi := e.conf.cluster != nil
 	if multi { // a node's own shard load (the in-process engine prints shard-load phases only)
 		fmt.Fprintf(os.Stderr, "ak2-engine\tload\tseconds\t%.6f\trequests\t%d\tretries\t%d\tbytes\t%d\n",

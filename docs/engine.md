@@ -26,6 +26,9 @@ Node settings (`cmd/aws-kraken2/cluster.go`):
 - `AK2_ENGINE_HASH_URL`, `_ETAG`, `_SIZE`: load the shard from this object by ranged GETs with
   If-Match. This is RODA's public HTTPS URL, or a presigned URL of a staged copy. `hash.k2d`
   then need not exist locally.
+- `AK2_ENGINE_VERIFY_ETAG=1`: check the ETag of hash.k2d against the loaded shards (see "ETag
+  verification" below). It uses `AK2_ENGINE_HASH_ETAG`, which a local hash.k2d may also be given.
+  The in-process engine verifies too.
 - `AK2_ENGINE_WINDOW` (blocks, default 64): flow control.
 - `AK2_ENGINE_TIMEOUT` (default 15m): the rendezvous, peer-accept and barrier deadline.
 
@@ -58,6 +61,51 @@ probes); `route` (keys, batches, route, wait and gather seconds); `worker` (scan
 classify seconds); `node` (blocks cut and owned, `read_s`, window wait, bytes sent, emit wait and
 emit seconds); `rendezvous` (object-store requests). Together with the spec's `ak2_phase` (boot,
 setup, fetch) they give #25's decomposition: boot, load, scan, probe, gather, emit, tail.
+
+## ETag verification (#49)
+
+With `AK2_ENGINE_VERIFY_ETAG=1`, every arm checks the table's ETag, as upstream's arm runs
+`scripts/lib/etagcheck.py` on its staged copy. Without it, the engine relies on If-Match alone.
+The code is in `internal/engine/etag.go` and `cmd/aws-kraken2/etag.go`.
+
+- **Format.** A multipart ETag is `md5(concat(md5(part_i)))-count`; a single-part ETag is the
+  plain md5. The part size is not stored, so it is inferred as `etagcheck.py` does: the smallest
+  power-of-two MiB size whose part count for the object's size equals the ETag's. RODA v205
+  (`…-8860`, 1,189,091,671,800 bytes) has 128 MiB parts. An ETag that gives no such size is an
+  error.
+- **Who hashes what.** Node r of n owns the bytes of its owned slots, `[32 + lo·cb, 32 + hi·cb)`.
+  Node 0's range starts at byte 0, so it includes the header, and node n−1's ends at the
+  object's end. These ranges partition the object, and each node hashes exactly the parts that
+  *start* in its range, by file offset. The bytes come from the shard's unwrapped cells, from
+  the header, and, for the node's last part, from **one extra ranged GET** of whatever lies past
+  its cells. The overlap tail is read by file offset like any other bytes, so it is never
+  counted twice. The last shard's wrapped tail lies past the object's end and is never read for
+  the ETag.
+- **Combine.** Each node publishes its digests in its rendezvous record as `etag_parts`
+  (`part_bytes`, `parts`, `first`, `md5[]`). Once all records are in, every node, rank 0
+  included, assembles them. It checks that each part was hashed exactly once, recomputes the
+  ETag and compares it. A mismatch, a missing record or a gap fails every node there, before
+  any shard is dialled and before any sample is read. So no output object or multipart upload
+  exists yet: the run exits 1 with `classify: engine: hash.k2d does not match its ETag:
+  computed … the ETag is …`. In-process, the one process hashes all its shards and combines.
+- **Timing and counts.** The hashing is phase `etag`, after `shard-load-<r>` and before
+  `rendezvous`; md5 runs on GOMAXPROCS goroutines. With `AK2_TIMINGS=1` the counter line is:
+
+      ak2-engine etag etag <etag> computed <etag> part_bytes <n> parts <n> hashed <n> extra_requests <n> extra_bytes <n> hash_s <s> combine_s <s>
+
+  The extra GET is also counted in the `load` line's requests and bytes.
+- **Cost on RODA v205** (default tail of 302 cells). At N = 1, no GET is added: the shard holds
+  the whole object. N = 8 adds 7 GETs and 405,103,152 bytes (0.034% of the object), and N = 32
+  adds 31 GETs and 1,736,506,368 bytes (0.15%). The last rank never fetches, because its range
+  ends at the object's end. Each fetch is under one part (128 MiB) and is buffered in memory
+  while it is hashed. Every node hashes about size/N bytes of md5.
+- **Tests.** `internal/engine/etag_test.go` covers N = 1, 2, 3, 4 and 7 over 4- and 5-byte
+  cells, part sizes that straddle cells, shard boundaries and tails, a wrapping last shard,
+  single-part ETags, and one-byte corruptions (all must fail).
+  `cmd/aws-kraken2/etag_test.go` serves the viral hash.k2d through `k2probe serve-file`'s
+  handler with a real 8 MiB-part ETag, which `etagcheck.py` checks. Outputs go to the fake S3.
+  It runs 3 verified nodes against the plain path, 2 nodes on a one-byte-corrupted object (both
+  exit 1, with no outputs and no open uploads), and the in-process engine.
 
 ## Security
 
@@ -96,6 +144,8 @@ Each failure ends the run with exit 1 and a `classify: engine: …` message, rat
 - a lookup that times out (2 min) or a peer that disconnects;
 - a node that ends without a block the emitter needs;
 - a missing rendezvous record after the timeout;
+- with `AK2_ENGINE_VERIFY_ETAG=1`: loaded bytes that do not give the ETag, or a record without
+  `etag_parts`;
 - a Result frame from a rank that does not own the block, for an input the run lacks, or sent
   twice;
 - a Done whose per-input block and byte counts disagree with what arrived or with the emitter's
