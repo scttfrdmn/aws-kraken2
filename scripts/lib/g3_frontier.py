@@ -466,7 +466,10 @@ for key in sorted({(s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], s
                                      "both mates at once)"}[s["overlap"]]
         lab = (f"{SP if s['N'] > 1 else 'upstream single node (derived)'}: {s['node']} N={s['N']}, {s['config']}; "
                f"{SV_LABEL[s['svar']] if regime == 'from-scratch' else 'table resident'}; {dec} ({', '.join(whys)})")
-        add(c, regime, "upstream", lab, s["time_s"], s["N"], s["vcpus"], s["price"], "-", "derived",
+        # Probe (a)'s rate without probe (b)'s contention is not physical for N > 1 nodes staging at
+        # once: it stays in the lever table, out of the bests, the Pareto sets and the kill.
+        kind = "derived-uncapped" if (s["svar"] == "probe-a" and s["N"] > 1 and CONT) else "derived"
+        add(c, regime, "upstream", lab, s["time_s"], s["N"], s["vcpus"], s["price"], "-", kind,
             f"LPT of measured per-sample walls over N x {s['slots_per_node']} slots; input bytes per node at {U1['in_note']}"
             + ("; per-node staging paid N times ($), once in time" if regime == "from-scratch" else "; table already resident on each node"),
             *st, ph=s["ph"], extra={"svar": s["svar"], "tool": s["tool"], "overlap": s["overlap"], "N": s["N"],
@@ -531,7 +534,7 @@ for regime in ("resident", "from-scratch"):
     for c in (1, 10, 100, 1000):
         sel = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["kind"] not in ("placeholder",)]
         ours = [r for r in sel if r["side"] == "ours"]
-        up = [r for r in sel if r["side"] == "upstream" and r["kind"] != "modelled-infeasible"]
+        up = [r for r in sel if r["side"] == "upstream" and r["kind"] not in ("modelled-infeasible", "derived-uncapped")]
         if c == 1000:
             best.append([regime, c, "placeholder only (ours); upstream modelled and infeasible as specified"] + ["-"] * 9)
             continue
@@ -573,21 +576,24 @@ def uset(r):
         return 1
     if dec:
         return 2 if e.get("svar") == "probe-a" else 3
-    return 4 if e.get("svar") == "measured" else 5
+    return {"measured": 4, "probe-a": 5}.get(e.get("svar"), 6)
 
 
-LEVERS = ["single node as measured (U1, U2)", "+ sample-parallel N (derived; staging as measured, pigz)",
-          "+ staging at probe (a)'s rate (no contention)", "+ probe (b)'s contention at N",
-          "+ decompression options (probe (c); staging as measured)", "+ decompression options with probe staging"]
+LEVERS = [("single node as measured (U1, U2)", {0}),
+          ("+ sample-parallel N (derived; staging as measured, pigz)", {0, 1}),
+          ("+ staging at probe (a)'s rate, contention ignored (not physical for N > 1; shown for attribution)", {0, 1, 2}),
+          ("+ staging at probe (a)'s rate x probe (b)'s contention f(N)", {0, 1, 3}),
+          ("+ decompression options (probe (c)), staging as measured", {0, 1, 4}),
+          ("+ decompression options, staging at probe (a) x contention (all measured levers)", {0, 1, 3, 4, 6})]
 sens = []
 for regime in ("resident", "from-scratch"):
-    for k, name in enumerate(LEVERS):
-        allowed = {0, 1, 2, 3, 4, 5} if k == 5 else ({0, 1, 4} if k == 4 else set(range(k + 1)))
+    for name, allowed in LEVERS:
         cells, kill_k = [], True
         for c in (1, 10, 100):
             ours = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == "ours" and r["kind"] == "measured"]
             up = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == "upstream"
-                  and r["kind"] not in ("placeholder", "modelled-infeasible") and uset(r) in allowed]
+                  and r["kind"] not in ("placeholder", "modelled-infeasible") and uset(r) in allowed
+                  and (r["kind"] != "derived-uncapped" or 2 in allowed)]
             if not ours or not up:
                 cells.append("-")
                 continue
@@ -656,7 +662,8 @@ with open(os.path.join(OUT, "frontier.md"), "w") as fh:
     for regime, k in kills.items():
         fh.write(f"\nKill condition, {regime} (under 5x on both axes at every measured cohort size 1, 10, 100): "
                  f"{'MET' if k else 'not met'}.\n")
-    fh.write("\n## Kill condition by upstream lever (each row adds one lever; ratios are upstream best / ours best)\n\n")
+    fh.write("\n## Kill condition by upstream lever (each row adds one lever to the first two; ratios are upstream best / "
+             "ours best; the last row is every measured lever together and is the one the verdicts above use)\n\n")
     fh.write("| regime | upstream levers | cohort 1 | cohort 10 | cohort 100 | kill |\n|---|---|---|---|---|---|\n")
     for r in sens:
         fh.write("| " + " | ".join(r) + " |\n")
