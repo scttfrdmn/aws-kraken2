@@ -77,6 +77,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The in-process engine verifies too. Code:
   `internal/engine/etag.go`, `cmd/aws-kraken2/etag.go`. `rangeread.FileHandler` is now
   `k2probe serve-file`'s handler, shared with the tests. Shard bytes are unchanged.
+- The ladder lever library, `scripts/g3/lever.sh` (#50; the #25 ladder build, WP-6), shared by
+  both arms and sourced by a body after the preamble. Its header is the function contract, and
+  `docs/ladder.md` is the runbook.
+  - `lv_nvme single|raid`.
+  - `lv_stage_db awscp-default|awscp-classic|s5cmd`. Stock (`awscp-default`) is the AMI's aws
+    CLI as shipped, with no config override. `awscp-classic` forces the classic client in a
+    private `AWS_CONFIG_FILE`. Each aws client is recorded:
+    - the CLI version and the `configure get` value;
+    - for `default`, the AMI's `~/.aws/config` and `/etc/aws`;
+    - the client it resolves to. For CLI v2 on auto this is the CLI's own rule:
+      `awscrt.s3.is_optimized_for_system()` with the CRT process lock as a caveat. It is read
+      from the CLI's source and evaluated with its python, with awscrt's optimised-platform
+      list recorded. The ladder types are not on that list, so `default` resolves to classic
+      on them. Otherwise `unknown`.
+
+    `lv_db_etag` reads back a recorded ETag.
+  - `lv_etag`, as its own phase.
+  - `lv_fetch_inputs serial|lanes<K> default|classic|crt`, sha256-checked through
+    `scripts/g3/fetch.sh`. The client is an argument, so S6 varies only the lane count. `crt`
+    sets `multipart_chunksize = 8MB`.
+  - `lv_upload_start awscp-default|awscp-classic|awscp-overlap|s5cmd-serial|s5cmd-overlap`
+    (`awscp-serial` is accepted as `awscp-classic`), `lv_upload_enqueue` and `lv_upload_drain`.
+    - Tool and schedule are separate levers, so S7 is two rungs: s5cmd-serial, then
+      s5cmd-overlap.
+    - The sha256 is taken on the node at enqueue, before the upload. LOCAL must not change
+      until drain.
+    - The overlap lane is waited on by PID. It checks every iteration that the body's shell is
+      alive, and is killed if drain cannot write END.
+  - `lv_gunzip_shim gzip|rapidgzip-P<k>`: rapidgzip 0.14.5 behind a `gzip` on PATH, for
+    upstream's `gzip -dc`.
+    - It is installed with `pip --require-hashes` against the pinned sha256 of its manylinux
+      wheels (aarch64 and x86_64, cp39 to cp313).
+    - The record holds the wheel's and the extension's sha256, and the paired concurrency
+      (2 shims, 2k threads).
+  - `lv_s5`, the only s5cmd entry point: s5cmd 2.3.0, its tarball checked against sha256 pinned
+    in lever.sh.
+    - It allow-lists buckets.
+    - It refuses `run` as any argument, `--endpoint-url`/`-endpoint-url` and a set
+      `S3_ENDPOINT_URL`.
+    - It parses single-dash long flags.
+  - Every call writes a JSON record (streamed as `lever {json}`, pushed to `out/lever.jsonl`)
+    and counts its requests with `ak2_req`. Counts from an aws client that did not resolve to
+    classic are written as `<op>-estimate` and flagged `estimate: true`. Every failure also goes
+    through `ak2_err`.
+  - `make lever-test` runs `scripts/tests/lever_test.sh` in AL2023 under podman, with the real
+    preamble under `bash -e -c` and stub aws and s5cmd. It checks:
+    - the upload overlap by timestamps, against the serial contrast;
+    - that the shim is byte-identical to `gzip -dc`;
+    - that s5cmd is refused undeclared buckets, endpoints and `run`;
+    - that the sha256 is recorded before each upload;
+    - that serial and lane fetches both verify;
+    - the estimate tagging;
+    - the auto rule on AL2023's real `awscli-2` rpm;
+    - the hash-pinned installs, and their refusal of tampered files;
+    - that failures are surfaced.
+
+    It is not part of `make test`, because it needs podman.
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

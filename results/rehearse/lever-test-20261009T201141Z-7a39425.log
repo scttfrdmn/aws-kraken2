@@ -1,0 +1,143 @@
+lever-test: at 7a39425 (clean); shell flags huB; record results/rehearse/lever-test-20261009T201141Z-7a39425.log
+lever-test: ok   lever.sh passes errexit_check.py
+lever-test: ok   lever.sh and the body parse
+lever-test: image localhost/ak2-lever-test:7942185c3167 (0328b5163ddc)
+lever-test: ok   synthetic bucket written
+lever-test: ok   main: container exit 0 (want 0)
+lever-test: ok   main: lever-loaded -- LV_DIR=/tmp/ak2/lever; $-=hBc
+lever-test: ok   main: nvme -- rc 0 (want 0) LV_NVME=/tmp/nvme
+lever-test: ok   main: nvme-seam -- LV_NVME=/tmp/nvme
+lever-test: ok   main: stage-classic -- rc 0 (want 0) 
+lever-test: ok   main: stage-classic-etag-recorded -- hash.k2d etag 139a683d5500e810633ac72d2265895b-3 (multipart, 3 parts)
+lever-test: ok   main: stage-classic-config -- 1 hash.k2d get(s) by aws s3 cp under a config with preferred_transfer_client=classic
+lever-test: ok   main: stage-classic-config-recorded
+lever-test: ok   main: etag-classic -- rc 0 (want 0) 
+lever-test: ok   main: etag-own-phase -- phase etag-hash.k2d
+lever-test: ok   main: stage-s5cmd -- rc 0 (want 0) 
+lever-test: ok   main: stage-s5cmd-flags -- s5cmd called with probe (a)'s flags, anonymous after the signed head-object was refused
+lever-test: ok   main: etag-s5cmd -- rc 0 (want 0) 
+lever-test: ok   main: stage-identical-opts.k2d
+lever-test: ok   main: stage-identical-taxo.k2d
+lever-test: ok   main: stage-identical-hash.k2d
+lever-test: ok   main: stage-classic-requests -- GetObject 5 (want 5), HeadObject 9 (want 9); hash.k2d 20983865 bytes
+lever-test: ok   main: stage-s5cmd-requests -- GetObject 3 (want 3: one 64 MiB part per file), HeadObject 9 (want 9)
+lever-test: ok   main: fetch-serial -- rc 0 (want 0) 
+lever-test: ok   main: fetch-lanes3 -- rc 0 (want 0) 
+lever-test: ok   main: fetch-identical -- 0 files differ from their sha256 or between serial and lanes
+lever-test: ok   main: fetch-lane-concurrency -- max concurrent gets: serial 1 (want 1), lanes3 3 (want >= 2)
+lever-test: ok   main: fetch-requests -- serial GetObject 6 (want 6), HeadObject 12 (want 12)
+lever-test: ok   main: fetch-recorded
+lever-test: ok   main: gunzip-reference -- gzip -dc reproduces the fq
+lever-test: ok   main: gunzip-shim -- rc 0 (want 0) 
+lever-test: ok   main: gunzip-shim-on-path -- /tmp/ak2/lever/gzbin/gzip
+lever-test: ok   main: gunzip-identical-mate1 -- shim f1a36b135c435ca340fd0eb1cb23547de9a6d85dd2125f4d6e7e47049be95f4b vs gzip -dc f1a36b135c435ca340fd0eb1cb23547de9a6d85dd2125f4d6e7e47049be95f4b (21595392 gz bytes)
+lever-test: ok   main: gunzip-identical-mate1-via-perl-open -- f1a36b135c435ca340fd0eb1cb23547de9a6d85dd2125f4d6e7e47049be95f4b
+lever-test: ok   main: gunzip-identical-mate2 -- shim 4b314f432652f86aec02b6e729ba2acb1e2bbf58ca1111443dbb983979f2b3c1 vs gzip -dc 4b314f432652f86aec02b6e729ba2acb1e2bbf58ca1111443dbb983979f2b3c1 (16782497 gz bytes)
+lever-test: ok   main: gunzip-identical-mate2-via-perl-open -- 4b314f432652f86aec02b6e729ba2acb1e2bbf58ca1111443dbb983979f2b3c1
+lever-test: ok   main: gunzip-shim-used-rapidgzip -- 4 rapidgzip calls (want 4)
+lever-test: ok   main: gunzip-shim-passthrough -- gzip --version went to the real gzip (1 call)
+lever-test: ok   main: gunzip-shim-recorded
+lever-test: ok   main: gunzip-off -- rc 0 (want 0) 
+lever-test: ok   main: gunzip-off-path -- /usr/bin/gzip
+lever-test: ok   main: upload-start-serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-serial-2 -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-serial-blocks -- serial enqueue returned at 1791576715.886, after its upload ended at 1791576715.879 (the contrast: the probe resolves blocking)
+lever-test: ok   main: upload-serial-requests -- PutObject 1 UploadPart 2 (want 1 and 2: 3 MiB single, 10 MiB in 8 MiB parts)
+lever-test: ok   main: upload-start-overlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-overlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-overlap-2 -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-overlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-overlap-enqueue-returns -- enqueue 1791576717.994 -> 1791576718.010 returned before upload 1 ended (1791576720.235)
+lever-test: ok   main: upload-overlap-by-timestamps -- upload 1 ran 1791576718.203 -> 1791576720.235, inside the body's work 1791576718.011 -> 1791576721.025
+lever-test: ok   main: upload-overlap-order -- upload 2 (1791576721.067) started after upload 1 ended (1791576720.235): one lane, enqueue order
+lever-test: ok   main: upload-overlap-drain-waits -- drain returned at 1791576723.160 after upload 2 ended at 1791576723.101
+lever-test: ok   main: upload-overlap-recorded
+lever-test: ok   main: upload-overlap-requests -- PutObject 2 (want 2: both below s5cmd's 64 MiB part)
+lever-test: ok   main: upload-sha256-recorded -- 0 of 4 uploads lack a matching sha256 recorded before the upload
+lever-test: ok   main: s5-allowed -- rc 0 (want 0) 4 objects listed
+lever-test: ok   main: s5-counted -- s5cmd-ls 1
+lever-test: ok   main: the payload started under errexit (bash -e -c) and the preamble ran
+lever-test: ok   main: lever lines streamed into run.log (34) and lever.jsonl pushed (      33 lines)
+lever-test: lever.jsonl: 33 lines, all valid JSON
+lever-test: ok   main: lever.jsonl is valid JSON lines
+lever-test: ok   main: no helper errors 
+lever-test: ok   main: uploads.tsv and the db SOURCE pushed
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic GetObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic GetObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic GetObject 3 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd GetObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd GetObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd GetObject 1 ak2-roda-test
+lever-test: requests fetch-serial GetObject 6 ak2-data-test
+lever-test: requests fetch-serial HeadObject 12 ak2-data-test
+lever-test: requests fetch-lanes GetObject 6 ak2-data-test
+lever-test: requests fetch-lanes HeadObject 12 ak2-data-test
+lever-test: requests upload-serial PutObject 1 ak2-results-test
+lever-test: requests upload-serial CreateMultipartUpload 1 ak2-results-test
+lever-test: requests upload-serial UploadPart 2 ak2-results-test
+lever-test: requests upload-serial CompleteMultipartUpload 1 ak2-results-test
+lever-test: requests upload-overlap PutObject 1 ak2-results-test
+lever-test: requests upload-overlap PutObject 1 ak2-results-test
+lever-test: requests s5-guard s5cmd-ls 1 ak2-results-test
+lever-test: ok   refuse: container exit 126 (want 126)
+lever-test: ok   refuse: lever-loaded -- LV_DIR=/tmp/ak2/lever; $-=hBc
+lever-test: ok   refuse: refuse-ls -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-upload -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-mixed -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-embedded -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-run -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-never-reached-s5cmd -- head: cannot open '/work/bucket/.s5-calls.refuse' for reading: No such file or directory;
+lever-test: ok   refuse: refuse-recorded -- 5 refusals recorded
+lever-test: ok   refuse: refuse-guard-readonly
+lever-test: ok   refuse: refuse-enqueue -- rc 1 (want 1) 
+lever-test: ok   refuse: refuse-drain-empty -- rc 0 (want 0) 
+lever-test: ok   refuse: the payload started under errexit (bash -e -c) and the preamble ran
+lever-test: ok   refuse: lever lines streamed into run.log (8) and lever.jsonl pushed (       8 lines)
+lever-test: lever.jsonl: 8 lines, all valid JSON
+lever-test: ok   refuse: lever.jsonl is valid JSON lines
+lever-test: ok   refuse: helper-errors.tsv has the 5 refusals (5)
+lever-test: ok   fail: container exit 1 (want 1)
+lever-test: ok   fail: lever-loaded -- LV_DIR=/tmp/ak2/lever; $-=hBc
+lever-test: ok   fail: fail-etag -- rc 1 (want 1) 
+lever-test: ok   fail: fail-fetch -- rc 1 (want 1) 
+lever-test: ok   fail: fail-fetch-recorded
+lever-test: ok   fail: fail-enqueue-ok -- rc 0 (want 0) 
+lever-test: ok   fail: fail-enqueue-bad -- rc 0 (want 0) (the failure is the lane's)
+lever-test: ok   fail: fail-enqueue-ok-3 -- rc 0 (want 0) 
+lever-test: ok   fail: fail-drain -- rc 1 (want 1) 
+lever-test: ok   fail: fail-lane-continues -- the lane went on past the failed upload
+lever-test: ok   fail: fail-bad-mode -- rc 1 (want 1) 
+lever-test: ok   fail: fail-bad-shim -- rc 1 (want 1) 
+lever-test: ok   fail: fail-no-session -- rc 1 (want 1) 
+lever-test: ok   fail: the payload started under errexit (bash -e -c) and the preamble ran
+lever-test: ok   fail: lever lines streamed into run.log (15) and lever.jsonl pushed (      15 lines)
+lever-test: lever.jsonl: 15 lines, all valid JSON
+lever-test: ok   fail: lever.jsonl is valid JSON lines
+lever-test: ok   fail: helper-errors.tsv: does not match ETag
+lever-test: ok   fail: helper-errors.tsv: lv_fetch_inputs: 2 of 3 verified
+lever-test: ok   fail: helper-errors.tsv: upload of /tmp/x.bin to s3://ak2-results-test/lvt/fail/up/FAILME-2 failed
+lever-test: ok   fail: helper-errors.tsv: lv_upload_drain: s5cmd-overlap: 3 of 3 uploaded, 1 failed
+lever-test: ok   fail: helper-errors.tsv: mode 'awscp-crt'
+lever-test: ok   fail: helper-errors.tsv: mode 'rapidgzip-P0'
+lever-test: ok   fail: helper-errors.tsv: no session
+lever-test: ok (main refuse fail)

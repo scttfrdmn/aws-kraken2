@@ -1,0 +1,207 @@
+lever-test: at 3d4e783 (clean); shell flags huB; record results/rehearse/lever-test-20261009T210843Z-3d4e783.log
+lever-test: ok   lever.sh passes errexit_check.py
+lever-test: ok   lever.sh and the body parse
+lever-test: image localhost/ak2-lever-test:7064a308cddd (c4a50d1ba8f3)
+lever-test: ok   synthetic bucket written
+lever-test: ok   main: container exit 0 (want 0)
+lever-test: ok   main: lever-loaded -- LV_DIR=/tmp/ak2/lever; $-=hBc
+lever-test: ok   main: nvme -- rc 0 (want 0) LV_NVME=/tmp/nvme
+lever-test: ok   main: nvme-seam -- LV_NVME=/tmp/nvme
+lever-test: ok   main: stage-default -- rc 0 (want 0) 
+lever-test: ok   main: stage-default-no-override -- 1 hash.k2d get(s) by aws s3 cp with no AWS_CONFIG_FILE (the body's crt config removed for the call)
+lever-test: ok   main: stage-default-client-recorded -- {"kind":"aws-client","t":1791580123.588,"client":"default","cli_version":"aws-cli/stub","config":"none","content":"","caller_config":"/tmp/body.config","configure_get":"","instance_type":"t.test","resolved":"unknown","how":"could not determine: the CLI (/work/bin/aws) is not a python script (a frozen build), so its auto rule cannot be evaluated","estimate":true,"optimized_platforms":"","ladder_types":"","home_aws_config":"present sha256 8c9abb7295a349c32d7bc878336708189aa8669f55b520e53c4b6a39a35d7809: [default]\nregion = us-west-2","home_aws_credentials":"absent","etc_aws":"absent"}
+lever-test: ok   main: stage-default-ami-config-recorded
+lever-test: ok   main: stage-default-requests-estimate -- GetObject-estimate 5 (want 5), HeadObject 6 (want 6, made), HeadObject-estimate 3 (want 3), plain GetObject 0 (want 0)
+lever-test: ok   main: stage-default-estimate-recorded
+lever-test: ok   main: etag-default -- rc 0 (want 0) 
+lever-test: ok   main: auto-rule-real-cli -- aws-cli/2.36.47: classic (auto: awscrt.s3.is_optimized_for_system() false (the rule in /usr/lib/python3.9/site-packages/awscli/customizations/s3/factory.py, CLI python /usr/bin/python3; host r8gd.48xlarge is not on the optimised list): classic regardless of the CRT process lock); optimised: trn1n.32xlarge trn1.32xlarge p6-b300.48xlarge p6-b200.48xlarge p5en.48xlarge p5e.48xlarge p5.48xlarge p4de.24xlarge p4d.24xlarge; ladder types: r8gd.48xlarge=off x8g.24xlarge=off
+lever-test: ok   main: stage-classic -- rc 0 (want 0) 
+lever-test: ok   main: stage-classic-etag-recorded -- hash.k2d etag 139a683d5500e810633ac72d2265895b-3 (multipart, 3 parts)
+lever-test: ok   main: stage-classic-config -- 1 hash.k2d get(s) by aws s3 cp under a config with preferred_transfer_client=classic
+lever-test: ok   main: stage-classic-client-recorded -- {"kind":"aws-client","t":1791580124.094,"client":"classic","cli_version":"aws-cli/stub","config":"/tmp/ak2/lever/aws-classic.config","content":"[default]\ns3 =\n  preferred_transfer_client = classic","caller_config":"","configure_get":"classic","instance_type":"t.test","resolved":"classic","how":"configured","estimate":false,"optimized_platforms":"","ladder_types":"","home_aws_config":"","home_aws_credentials":"","etc_aws":""}
+lever-test: ok   main: etag-classic -- rc 0 (want 0) 
+lever-test: ok   main: etag-own-phase -- phase etag-hash.k2d
+lever-test: ok   main: stage-s5cmd -- rc 0 (want 0) 
+lever-test: ok   main: stage-s5cmd-flags -- s5cmd called with probe (a)'s flags, anonymous after the signed head-object was refused
+lever-test: ok   main: etag-s5cmd -- rc 0 (want 0) 
+lever-test: ok   main: stage-identical-opts.k2d
+lever-test: ok   main: stage-identical-taxo.k2d
+lever-test: ok   main: stage-identical-hash.k2d
+lever-test: ok   main: stage-classic-requests -- GetObject 5 (want 5), HeadObject 9 (want 9); hash.k2d 20983865 bytes
+lever-test: ok   main: stage-s5cmd-requests -- GetObject 3 (want 3: one 64 MiB part per file), HeadObject 9 (want 9)
+lever-test: ok   main: fetch-serial -- rc 0 (want 0) 
+lever-test: ok   main: fetch-lanes3 -- rc 0 (want 0) 
+lever-test: ok   main: fetch-lanes2-crt -- rc 0 (want 0) 
+lever-test: ok   main: fetch-client -- 12 of 12 serial/lanes gets with no config (default), 6 of 6 under the crt config
+lever-test: ok   main: fetch-crt-recorded
+lever-test: ok   main: fetch-crt-estimate -- crt: GetObject-estimate 6 (want 6), plain 0
+lever-test: ok   main: fetch-identical -- 0 files differ from their sha256 or between serial and lanes
+lever-test: ok   main: fetch-lane-concurrency -- max concurrent gets: serial 1 (want 1), lanes3 3 (want >= 2)
+lever-test: ok   main: fetch-requests -- serial (default client, unresolved): GetObject-estimate 6 (want 6), HeadObject-estimate 6 (want 6), HeadObject 6 (want 6: fetch.sh's own), plain GetObject 0 (want 0)
+lever-test: ok   main: fetch-recorded
+lever-test: ok   main: gunzip-reference -- gzip -dc reproduces the fq
+lever-test: ok   main: gunzip-shim -- rc 0 (want 0) 
+lever-test: ok   main: gunzip-shim-on-path -- /tmp/ak2/lever/gzbin/gzip
+lever-test: ok   main: gunzip-identical-mate1 -- shim f1a36b135c435ca340fd0eb1cb23547de9a6d85dd2125f4d6e7e47049be95f4b vs gzip -dc f1a36b135c435ca340fd0eb1cb23547de9a6d85dd2125f4d6e7e47049be95f4b (21595392 gz bytes)
+lever-test: ok   main: gunzip-identical-mate1-via-perl-open -- f1a36b135c435ca340fd0eb1cb23547de9a6d85dd2125f4d6e7e47049be95f4b
+lever-test: ok   main: gunzip-identical-mate2 -- shim 4b314f432652f86aec02b6e729ba2acb1e2bbf58ca1111443dbb983979f2b3c1 vs gzip -dc 4b314f432652f86aec02b6e729ba2acb1e2bbf58ca1111443dbb983979f2b3c1 (16782497 gz bytes)
+lever-test: ok   main: gunzip-identical-mate2-via-perl-open -- 4b314f432652f86aec02b6e729ba2acb1e2bbf58ca1111443dbb983979f2b3c1
+lever-test: ok   main: gunzip-shim-used-rapidgzip -- 4 rapidgzip calls (want 4)
+lever-test: ok   main: gunzip-shim-passthrough -- gzip --version went to the real gzip (1 call)
+lever-test: ok   main: gunzip-shim-recorded
+lever-test: ok   main: rapidgzip-hash-pinned -- rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl 499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee, installed by pip --require-hashes; LV_RG=/tmp/ak2/lever/rg-venv/bin/rapidgzip
+lever-test: ok   main: gunzip-off -- rc 0 (want 0) 
+lever-test: ok   main: gunzip-off-path -- /usr/bin/gzip
+lever-test: ok   main: upload-start-default -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-default -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-default -- rc 0 (want 0) 
+lever-test: ok   main: upload-default-no-override -- 1 put(s) with no AWS_CONFIG_FILE; PutObject-estimate 1
+lever-test: ok   main: upload-start-serial -- rc 0 (want 0) (the first contract's name for awscp-classic)
+lever-test: ok   main: upload-enqueue-serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-serial-2 -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-classic-config -- 2 of 2 puts under the classic config, recorded as awscp-classic
+lever-test: ok   main: upload-serial-blocks -- serial enqueue returned at 1791580142.445, after its upload ended at 1791580142.438 (the contrast: the probe resolves blocking)
+lever-test: ok   main: upload-serial-requests -- PutObject 1 UploadPart 2 (want 1 and 2: 3 MiB single, 10 MiB in 8 MiB parts)
+lever-test: ok   main: upload-start-s5serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-s5serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-s5serial -- rc 0 (want 0) 
+lever-test: ok   main: upload-s5serial-blocks -- s5cmd-serial enqueue returned at 1791580146.629, after its upload ended at 1791580146.621 (S7a: the tool alone)
+lever-test: ok   main: upload-start-awsoverlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-awsoverlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-awsoverlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-awsoverlap -- awscp-overlap: enqueue returned at 1791580146.683, upload ran 1791580146.879 -> 1791580148.902 in the lane, with no config (1), PutObject-estimate 1
+lever-test: ok   main: upload-start-overlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-overlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-enqueue-overlap-2 -- rc 0 (want 0) 
+lever-test: ok   main: upload-drain-overlap -- rc 0 (want 0) 
+lever-test: ok   main: upload-overlap-enqueue-returns -- enqueue 1791580149.814 -> 1791580149.831 returned before upload 1 ended (1791580152.060)
+lever-test: ok   main: upload-overlap-by-timestamps -- upload 1 ran 1791580150.017 -> 1791580152.060, inside the body's work 1791580149.832 -> 1791580152.848
+lever-test: ok   main: upload-overlap-order -- upload 2 (1791580152.904) started after upload 1 ended (1791580152.060): one lane, enqueue order
+lever-test: ok   main: upload-overlap-drain-waits -- drain returned at 1791580154.988 after upload 2 ended at 1791580154.952
+lever-test: ok   main: upload-overlap-recorded
+lever-test: ok   main: upload-overlap-requests -- PutObject 2 (want 2: both below s5cmd's 64 MiB part)
+lever-test: ok   main: upload-sha256-recorded -- 0 of 4 uploads lack a matching sha256 recorded before the upload
+lever-test: ok   main: s5-allowed -- rc 0 (want 0) 7 objects listed
+lever-test: ok   main: s5-counted -- s5cmd-ls 1
+lever-test: ok   main: s5-single-dash -- rc 0 (want 0) 
+lever-test: ok   main: s5-single-dash-sub -- s5cmd-ls 2 (want 2)
+lever-test: ok   main: s5-tarball-pinned -- rc 0 (want 0) /opt/s5/s5cmd_2.3.0_Linux-arm64.tar.gz
+lever-test: ok   main: s5-tarball-recorded -- tarball sha256 1439f0d00ecedcd2a2f1f2c6749bbb0152b2257bf5086f29646ec8ae38798e24 = pin 1439f0d00ecedcd2a2f1f2c6749bbb0152b2257bf5086f29646ec8ae38798e24
+lever-test: ok   main: the payload started under errexit (bash -e -c) and the preamble ran
+lever-test: ok   main: lever lines streamed into run.log (56) and lever.jsonl pushed (      53 lines)
+lever-test: lever.jsonl: 53 lines, all valid JSON
+lever-test: ok   main: lever.jsonl is valid JSON lines
+lever-test: ok   main: no helper errors 
+lever-test: ok   main: uploads.tsv and the db SOURCE pushed
+lever-test: requests stage-default HeadObject 1 ak2-roda-test
+lever-test: requests stage-default HeadObject 1 ak2-roda-test
+lever-test: requests stage-default HeadObject-estimate 1 ak2-roda-test
+lever-test: requests stage-default GetObject-estimate 1 ak2-roda-test
+lever-test: requests stage-default HeadObject 1 ak2-roda-test
+lever-test: requests stage-default HeadObject 1 ak2-roda-test
+lever-test: requests stage-default HeadObject-estimate 1 ak2-roda-test
+lever-test: requests stage-default GetObject-estimate 1 ak2-roda-test
+lever-test: requests stage-default HeadObject 1 ak2-roda-test
+lever-test: requests stage-default HeadObject 1 ak2-roda-test
+lever-test: requests stage-default HeadObject-estimate 1 ak2-roda-test
+lever-test: requests stage-default GetObject-estimate 3 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic GetObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic GetObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic HeadObject 1 ak2-roda-test
+lever-test: requests stage-classic GetObject 3 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd GetObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd GetObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd HeadObject 1 ak2-roda-test
+lever-test: requests stage-s5cmd GetObject 1 ak2-roda-test
+lever-test: requests fetch-serial GetObject-estimate 6 ak2-data-test
+lever-test: requests fetch-serial HeadObject-estimate 6 ak2-data-test
+lever-test: requests fetch-serial HeadObject 6 ak2-data-test
+lever-test: requests fetch-lanes GetObject-estimate 6 ak2-data-test
+lever-test: requests fetch-lanes HeadObject-estimate 6 ak2-data-test
+lever-test: requests fetch-lanes HeadObject 6 ak2-data-test
+lever-test: requests fetch-crt GetObject-estimate 6 ak2-data-test
+lever-test: requests fetch-crt HeadObject-estimate 6 ak2-data-test
+lever-test: requests fetch-crt HeadObject 6 ak2-data-test
+lever-test: requests upload-default PutObject-estimate 1 ak2-results-test
+lever-test: requests upload-serial PutObject 1 ak2-results-test
+lever-test: requests upload-serial CreateMultipartUpload 1 ak2-results-test
+lever-test: requests upload-serial UploadPart 2 ak2-results-test
+lever-test: requests upload-serial CompleteMultipartUpload 1 ak2-results-test
+lever-test: requests upload-s5serial PutObject 1 ak2-results-test
+lever-test: requests upload-awsoverlap PutObject-estimate 1 ak2-results-test
+lever-test: requests upload-overlap PutObject 1 ak2-results-test
+lever-test: requests upload-overlap PutObject 1 ak2-results-test
+lever-test: requests s5-guard s5cmd-ls 1 ak2-results-test
+lever-test: requests s5-guard s5cmd-ls 1 ak2-results-test
+lever-test: ok   refuse: container exit 126 (want 126)
+lever-test: ok   refuse: lever-loaded -- LV_DIR=/tmp/ak2/lever; $-=hBc
+lever-test: ok   refuse: refuse-ls -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-upload -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-mixed -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-embedded -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-run -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-run-anywhere -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-endpoint -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-endpoint-single-dash -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-endpoint-env -- rc 126 (want 126) 
+lever-test: ok   refuse: refuse-never-reached-s5cmd -- head: cannot open '/work/bucket/.s5-calls.refuse' for reading: No such file or directory;
+lever-test: ok   refuse: refuse-recorded -- 9 refusals recorded (want 9)
+lever-test: ok   refuse: refuse-guard-readonly
+lever-test: ok   refuse: refuse-enqueue -- rc 1 (want 1) 
+lever-test: ok   refuse: refuse-drain-empty -- rc 0 (want 0) 
+lever-test: ok   refuse: the payload started under errexit (bash -e -c) and the preamble ran
+lever-test: ok   refuse: lever lines streamed into run.log (12) and lever.jsonl pushed (      12 lines)
+lever-test: lever.jsonl: 12 lines, all valid JSON
+lever-test: ok   refuse: lever.jsonl is valid JSON lines
+lever-test: ok   refuse: helper-errors.tsv has the 9 refusals (9)
+lever-test: ok   fail: container exit 1 (want 1)
+lever-test: ok   fail: lever-loaded -- LV_DIR=/tmp/ak2/lever; $-=hBc
+lever-test: ok   fail: fail-etag -- rc 1 (want 1) 
+lever-test: ok   fail: fail-fetch -- rc 1 (want 1) 
+lever-test: ok   fail: fail-fetch-client -- rc 1 (want 1) 
+lever-test: ok   fail: fail-fetch-recorded
+lever-test: ok   fail: fail-enqueue-ok -- rc 0 (want 0) 
+lever-test: ok   fail: fail-enqueue-bad -- rc 0 (want 0) (the failure is the lane's)
+lever-test: ok   fail: fail-enqueue-ok-3 -- rc 0 (want 0) 
+lever-test: ok   fail: fail-drain -- rc 1 (want 1) 
+lever-test: ok   fail: fail-lane-continues -- the lane went on past the failed upload
+lever-test: ok   fail: fail-bad-mode -- rc 1 (want 1) 
+lever-test: ok   fail: fail-bad-shim -- rc 1 (want 1) 
+lever-test: ok   fail: fail-no-session -- rc 1 (want 1) 
+lever-test: ok   fail: fail-drain-end -- rc 1 (want 1) 
+lever-test: ok   fail: fail-drain-end-lane-killed -- lane 623 gone; drain took 0.03 s
+lever-test: ok   fail: fail-s5-tarball -- rc 1 (want 1) 
+lever-test: ok   fail: fail-rapidgzip-wheel -- rc 1 (want 1) 
+lever-test: ok   fail: the payload started under errexit (bash -e -c) and the preamble ran
+lever-test: ok   fail: lever lines streamed into run.log (18) and lever.jsonl pushed (      18 lines)
+lever-test: lever.jsonl: 18 lines, all valid JSON
+lever-test: ok   fail: lever.jsonl is valid JSON lines
+lever-test: ok   fail: helper-errors.tsv: does not match ETag
+lever-test: ok   fail: helper-errors.tsv: lv_fetch_inputs: 2 of 3 verified
+lever-test: ok   fail: helper-errors.tsv: upload of /tmp/x.bin to s3://ak2-results-test/lvt/fail/up/FAILME-2 failed
+lever-test: ok   fail: helper-errors.tsv: lv_upload_drain: s5cmd-overlap: 3 of 3 uploaded, 1 failed
+lever-test: ok   fail: helper-errors.tsv: mode 'awscp-crt'
+lever-test: ok   fail: helper-errors.tsv: mode 'rapidgzip-P0'
+lever-test: ok   fail: helper-errors.tsv: no session
+lever-test: ok   fail: helper-errors.tsv: aws client 'bogus'
+lever-test: ok   fail: helper-errors.tsv: cannot write /tmp/ak2/lever/upq/END
+lever-test: ok   fail: helper-errors.tsv: != pinned
+lever-test: ok   fail: helper-errors.tsv: pip install --require-hashes rapidgzip==0.14.5 failed
+lever-test: ok (main refuse fail)
