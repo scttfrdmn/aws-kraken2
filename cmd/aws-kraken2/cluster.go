@@ -906,8 +906,11 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 		e.close()
 		return nil, err
 	}
+	// The load's request accounting (shard and table id), before the ETag check's GET, which
+	// the etag line reports.
+	e.loadRequests, e.loadRetries, e.loadBytes = srcCounters(src)
 	if conf.verifyTag != "" {
-		if e.etag, err = hashETag(ctx, conf.verifyTag, h, size, src, e.shards); err != nil {
+		if e.etag, err = hashETag(ctx, conf, h, size, src, e.shards); err != nil {
 			e.close()
 			return nil, fmt.Errorf("%s: %w", path, err)
 		}
@@ -937,11 +940,5 @@ func loadNode(path string, conf *engineConf, readThreads, threads, files int) (*
 	e.node, e.router, e.tcp = nd, router, tcps
 	e.rvRequests = rv.Requests
 	e.loadS = loadS
-	switch s := src.(type) {
-	case *rangeread.HTTPSource:
-		e.loadRequests, e.loadRetries, e.loadBytes = s.Requests.Load(), s.Retries.Load(), s.Bytes.Load()
-	case *rangeread.FileSource:
-		e.loadRequests, e.loadBytes = s.Requests.Load(), s.Bytes.Load()
-	}
 	return e, nil
 }

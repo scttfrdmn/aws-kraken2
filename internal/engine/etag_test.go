@@ -63,7 +63,7 @@ func verifyN(t *testing.T, l chash.Layout, src []byte, n int, tail uint64, tag E
 	var costs []ETagCost
 	for _, s := range shards {
 		cs := &countingSource{memSource: memSource{src}}
-		d, c, err := s.HashParts(context.Background(), tag, HeaderBytes(h), cs, 3)
+		d, c, err := s.HashParts(context.Background(), tag, HeaderBytes(h), cs, tail, 3)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -79,10 +79,6 @@ func verifyN(t *testing.T, l chash.Layout, src []byte, n int, tail uint64, tag E
 		}
 		ds = append(ds, d)
 		costs = append(costs, c)
-	}
-	// Combine in reverse order: the order of the records does not matter.
-	for i, j := 0, len(ds)-1; i < j; i, j = i+1, j-1 {
-		ds[i], ds[j] = ds[j], ds[i]
 	}
 	got, err := tag.Combine(ds)
 	return got, costs, err
@@ -197,24 +193,170 @@ func TestETagCorruption(t *testing.T) {
 	}
 }
 
-// TestETagCombineCoverage: a missing or twice-hashed part is an error, not a pass.
+// TestETagCombineCoverage: a missing or twice-hashed part, a one-sided or differing cross-check,
+// or a different header is an error, not a pass.
 func TestETagCombineCoverage(t *testing.T) {
 	tag := ETag{Multipart: true, Parts: 3, PartSize: 10, Size: 25}
-	d := func(first int, n int) PartDigests {
-		p := PartDigests{PartSize: 10, Parts: 3, First: first}
+	zero := hex.EncodeToString(make([]byte, 16))
+	d := func(rank, first, n int) PartDigests {
+		p := PartDigests{Rank: rank, PartSize: 10, Parts: 3, First: first, Header: "h"}
 		for range n {
-			p.MD5 = append(p.MD5, hex.EncodeToString(make([]byte, 16)))
+			p.MD5 = append(p.MD5, zero)
 		}
 		return p
 	}
-	for _, ds := range [][]PartDigests{{d(0, 1), d(2, 1)}, {d(0, 2), d(1, 2)}, {d(0, 4)}} {
+	for _, ds := range [][]PartDigests{{d(0, 0, 1), d(1, 2, 1)}, {d(0, 0, 2), d(1, 1, 2)}, {d(0, 0, 4)}, {d(1, 0, 3)}} {
 		if _, err := tag.Combine(ds); err == nil || errors.Is(err, ErrETagMismatch) {
 			t.Fatalf("%+v: %v", ds, err)
 		}
 	}
-	if _, err := tag.Combine([]PartDigests{d(0, 3)}); !errors.Is(err, ErrETagMismatch) {
+	if _, err := tag.Combine([]PartDigests{d(0, 0, 3)}); !errors.Is(err, ErrETagMismatch) {
 		t.Fatalf("full coverage of wrong digests: %v", err)
 	}
+	a, b := d(0, 0, 2), d(1, 2, 1)
+	b.Held = []Overlap{{Holder: 1, User: 0, Off: 15, Len: 5, MD5: "x"}}
+	if _, err := tag.Combine([]PartDigests{a, b}); err == nil || errors.Is(err, ErrETagMismatch) {
+		t.Fatalf("one-sided cross-check: %v", err)
+	}
+	a.Used = []Overlap{{Holder: 1, User: 0, Off: 15, Len: 5, MD5: "y"}}
+	if _, err := tag.Combine([]PartDigests{a, b}); !errors.Is(err, ErrETagMismatch) {
+		t.Fatalf("differing cross-check: %v", err)
+	}
+	b.Held[0].MD5, b.Header = "y", "other"
+	if _, err := tag.Combine([]PartDigests{a, b}); !errors.Is(err, ErrETagMismatch) {
+		t.Fatalf("different header: %v", err)
+	}
+}
+
+// memCheck loads src as n shards, hashes them all once, then for every byte position (stride
+// apart) of every shard's memory flips that byte in memory only, re-hashes that shard, and
+// requires Combine to fail with ErrETagMismatch: every byte any node holds is covered.
+func memCheck(t *testing.T, l chash.Layout, img []byte, n int, tail uint64, tag ETag, stride int) {
+	t.Helper()
+	shards, err := loadAll(t, l, img, n, tail)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		for _, s := range shards {
+			s.Close()
+		}
+	}()
+	h, _ := chash.ParseHeader(img[:chash.HeaderSize])
+	hdr := HeaderBytes(h)
+	src := memSource{img}
+	ctx := context.Background()
+	ds := make([]PartDigests, n)
+	for i, s := range shards {
+		if ds[i], _, err = s.HashParts(ctx, tag, hdr, src, tail, 2); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := tag.Combine(ds); err != nil {
+		t.Fatalf("N=%d pristine: %v", n, err)
+	}
+	for i, s := range shards {
+		mem := s.region.Bytes()
+		for j := 0; j < len(mem); j += stride {
+			mem[j] ^= 0x10
+			d, _, err := s.HashParts(ctx, tag, hdr, src, tail, 2)
+			mem[j] ^= 0x10
+			if err != nil {
+				t.Fatal(err)
+			}
+			bad := append([]PartDigests(nil), ds...)
+			bad[i] = d
+			if _, err := tag.Combine(bad); !errors.Is(err, ErrETagMismatch) {
+				t.Fatalf("N=%d part=%d tail=%d: byte %d of shard %d's memory (cells from %d, %d held) flipped: %v",
+					n, tag.PartSize, tail, j, i, s.Lo, s.Len, err)
+			}
+		}
+	}
+}
+
+// TestETagMemoryCorruption: a byte flipped in any shard's memory (owned cells, the head of its
+// range that the previous node's last part covers, its overlap tail, the last shard's wrapped
+// tail) fails the check, though the object itself is intact. The first case is the review's
+// (#49): N = 2, 32-bit cells, 1000-byte parts, file offset 6035 in shard 1's own range.
+func TestETagMemoryCorruption(t *testing.T) {
+	l, cells, img := etagTable(t, 3001, 12, 20, 0.7, 7)
+	tagOf := func(ps int) ETag {
+		tag, err := ParseETagParts(refETag(img, ps), int64(len(img)), int64(ps))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return tag
+	}
+	// The review's case, explicitly.
+	{
+		tail := neededTail(l, cells, 2)
+		tag := tagOf(1000)
+		shards, err := loadAll(t, l, img, 2, tail)
+		if err != nil {
+			t.Fatal(err)
+		}
+		h, _ := chash.ParseHeader(img[:chash.HeaderSize])
+		var ds []PartDigests
+		for _, s := range shards {
+			if s.Index == 1 {
+				off := int64(6035) - (chash.HeaderSize + int64(s.Lo)*4)
+				if off < 0 {
+					t.Fatalf("offset 6035 is not in shard 1 (cells from %d)", s.Lo)
+				}
+				s.region.Bytes()[off] ^= 0x01
+			}
+			d, _, err := s.HashParts(context.Background(), tag, HeaderBytes(h), memSource{img}, tail, 2)
+			if err != nil {
+				t.Fatal(err)
+			}
+			ds = append(ds, d)
+			s.Close()
+		}
+		if _, err := tag.Combine(ds); !errors.Is(err, ErrETagMismatch) {
+			t.Fatalf("review case (N=2, 1000-byte parts, offset 6035 in shard 1's memory): %v", err)
+		}
+	}
+	// Each shard's tail, explicitly: the last byte it holds is its overlap tail's last cell (for
+	// the last shard, its wrapped tail's, at the start of the table).
+	for _, n := range []int{2, 3} {
+		tail := neededTail(l, cells, n) + 3
+		tag := tagOf(1000)
+		h, _ := chash.ParseHeader(img[:chash.HeaderSize])
+		for victim := 0; victim < n; victim++ {
+			shards, err := loadAll(t, l, img, n, tail)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var ds []PartDigests
+			for _, s := range shards {
+				if s.Index == victim {
+					if s.Full || s.Tail == 0 {
+						t.Fatalf("N=%d shard %d has no tail", n, victim)
+					}
+					mem := s.region.Bytes()
+					mem[len(mem)-1] ^= 0x01
+				}
+				d, _, err := s.HashParts(context.Background(), tag, HeaderBytes(h), memSource{img}, tail, 2)
+				if err != nil {
+					t.Fatal(err)
+				}
+				ds = append(ds, d)
+				s.Close()
+			}
+			if _, err := tag.Combine(ds); !errors.Is(err, ErrETagMismatch) {
+				t.Fatalf("N=%d: shard %d's last tail cell flipped: %v", n, victim, err)
+			}
+		}
+	}
+	for _, n := range []int{2, 3, 4} {
+		tail := neededTail(l, cells, n) + 3 // a few cells more, so the tails are not all empty
+		for _, ps := range []int{1000, 4096, 777} {
+			memCheck(t, l, img, n, tail, tagOf(ps), 1)
+		}
+		memCheck(t, l, img, n, tail, tagOf(0), 5)
+	}
+	// Full shards at N > 1: a tail that covers the whole table.
+	memCheck(t, l, img, 3, 3001, tagOf(1000), 7)
 }
 
 func TestParseETag(t *testing.T) {
@@ -224,9 +366,15 @@ func TestParseETag(t *testing.T) {
 		t.Fatalf("RODA: %+v, %v", tag, err)
 	}
 	for _, bad := range []string{"", "xyz", "f80959f9556b50d76b3e744afdd3b22a-0", "f80959f9556b50d76b3e744afdd3b22a-3"} {
-		if _, err := ParseETag(bad, roda); err == nil {
-			t.Fatalf("%q parsed", bad)
+		if _, err := ParseETag(bad, roda); !errors.Is(err, ErrETagFormat) {
+			t.Fatalf("%q: %v", bad, err)
 		}
+	}
+	if _, err := ParseETagParts("f80959f9556b50d76b3e744afdd3b22a-8860", roda, 64<<20); !errors.Is(err, ErrETagFormat) {
+		t.Fatalf("wrong given part size: %v", err)
+	}
+	if tag, err := ParseETagParts("f80959f9556b50d76b3e744afdd3b22a-8860", roda, 134217728); err != nil || tag.PartSize != 128<<20 {
+		t.Fatalf("given part size: %+v, %v", tag, err)
 	}
 	if tag, err := ParseETag("f80959f9556b50d76b3e744afdd3b22a", 100); err != nil || tag.Parts != 1 || tag.PartSize != 100 {
 		t.Fatalf("single part: %+v, %v", tag, err)

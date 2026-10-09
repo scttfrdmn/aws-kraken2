@@ -8,7 +8,9 @@ package main
 //	                    =tcp    each shard behind its own loopback TCP server
 //	AK2_ENGINE_TAIL=<cells>     overlap tail per shard (default engine.DefaultTail, 302)
 //	AK2_ENGINE_VERIFY_ETAG=1    check hash.k2d's S3 ETag (AK2_ENGINE_HASH_ETAG) against the
-//	                            loaded shards before the first sample (etag.go, #49)
+//	                            loaded shards before the first sample (etag.go, #49); an
+//	                            error without AK2_ENGINE_N
+//	AK2_ENGINE_ETAG_PART_BYTES=<n>  the ETag's part size (default: inferred)
 //
 // Every lookup of an input block is routed to the shard owning its home slot, and the values
 // come back to the worker that scanned the block, which then classifies its reads exactly as
@@ -38,6 +40,8 @@ type engineConf struct {
 	cluster   *clusterConf // multi-node (AK2_ENGINE_RANK; cluster.go); nil = in-process
 	cohort    bool         // AK2_COHORT: control sessions per block-striped sample (cohort.go)
 	verifyTag string       // AK2_ENGINE_VERIFY_ETAG=1: the ETag to check (AK2_ENGINE_HASH_ETAG); "" = off
+	// AK2_ENGINE_ETAG_PART_BYTES: the ETag's part size; 0 = inferred
+	etagPartBytes int64
 }
 
 // engineFromEnv returns nil when AK2_ENGINE_N is unset.
@@ -45,6 +49,9 @@ func engineFromEnv(lookup func(string) (string, bool)) (*engineConf, error) {
 	getenv := func(k string) string { v, _ := lookup(k); return v }
 	ns, ok := lookup("AK2_ENGINE_N")
 	if !ok {
+		if v := getenv("AK2_ENGINE_VERIFY_ETAG"); v != "" && v != "0" {
+			return nil, fmt.Errorf("AK2_ENGINE_VERIFY_ETAG=%s needs the engine (AK2_ENGINE_N); the plain path does not verify", v)
+		}
 		return nil, nil
 	}
 	n, err := strconv.Atoi(ns)
@@ -76,6 +83,16 @@ func engineFromEnv(lookup func(string) (string, bool)) (*engineConf, error) {
 		}
 	default:
 		return nil, fmt.Errorf("AK2_ENGINE_VERIFY_ETAG=%q: want 1 or 0", v)
+	}
+	if v := getenv("AK2_ENGINE_ETAG_PART_BYTES"); v != "" {
+		p, err := strconv.ParseInt(v, 10, 64)
+		if err != nil || p <= 0 {
+			return nil, fmt.Errorf("AK2_ENGINE_ETAG_PART_BYTES=%q: want a positive byte count", v)
+		}
+		if c.verifyTag == "" {
+			return nil, fmt.Errorf("AK2_ENGINE_ETAG_PART_BYTES needs AK2_ENGINE_VERIFY_ETAG=1")
+		}
+		c.etagPartBytes = p
 	}
 	_, c.cohort = lookup("AK2_COHORT")
 	return c, nil
@@ -130,7 +147,7 @@ func loadEngine(path string, conf *engineConf, readThreads, threads int) (*engin
 		e.shards = append(e.shards, s)
 	}
 	if conf.verifyTag != "" {
-		if e.etag, err = hashETag(ctx, conf.verifyTag, h, st.Size(), src, e.shards); err == nil {
+		if e.etag, err = hashETag(ctx, conf, h, st.Size(), src, e.shards); err == nil {
 			err = e.etag.combine(e.etag.mine)
 		}
 		if err != nil {

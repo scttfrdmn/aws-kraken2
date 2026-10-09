@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http/httptest"
@@ -15,6 +16,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/scttfrdmn/aws-kraken2/internal/engine"
 	"github.com/scttfrdmn/aws-kraken2/internal/objstore"
 	"github.com/scttfrdmn/aws-kraken2/internal/oracletest"
 	"github.com/scttfrdmn/aws-kraken2/internal/rangeread"
@@ -181,5 +183,66 @@ func TestETagVerifyEndToEnd(t *testing.T) {
 	}
 	if st := inproc(string(wrong)); st != exitFailure {
 		t.Fatalf("in-process run with a wrong ETag: exit %d, want %d", st, exitFailure)
+	}
+
+	// The failure reasons, from the loaders themselves.
+	load := func(env map[string]string, rank int) error {
+		conf, err := engineFromEnv(func(k string) (string, bool) { v, ok := env[k]; return v, ok })
+		if err != nil {
+			return err
+		}
+		var e *engineIndex
+		if conf.cluster != nil {
+			e, err = loadNode(hashPath, conf, 8, 2, 1)
+		} else {
+			e, err = loadEngine(hashPath, conf, 8, 2)
+		}
+		if e != nil {
+			e.close()
+		}
+		return err
+	}
+	var wg sync.WaitGroup
+	errs := make([]error, 2)
+	for rank := range 2 {
+		env := map[string]string{"AK2_ENGINE_N": "2", "AK2_ENGINE_RANK": strconv.Itoa(rank),
+			"AK2_ENGINE_RENDEZVOUS": filepath.Join(dir, "rv-reason"), "AK2_ENGINE_TIMEOUT": "2m",
+			"AK2_ENGINE_HASH_URL": bad.URL, "AK2_ENGINE_HASH_ETAG": etag,
+			"AK2_ENGINE_HASH_SIZE": strconv.FormatInt(size, 10), "AK2_ENGINE_VERIFY_ETAG": "1"}
+		wg.Add(1)
+		go func() { defer wg.Done(); errs[rank] = load(env, rank) }()
+	}
+	wg.Wait()
+	for rank, err := range errs {
+		if !errors.Is(err, engine.ErrETagMismatch) {
+			t.Errorf("corrupted object, rank %d: %v; want ErrETagMismatch", rank, err)
+		}
+	}
+	inEnv := func(tag, part string) map[string]string {
+		m := map[string]string{"AK2_ENGINE_N": "2", "AK2_ENGINE_HASH_ETAG": tag, "AK2_ENGINE_VERIFY_ETAG": "1"}
+		if part != "" {
+			m["AK2_ENGINE_ETAG_PART_BYTES"] = part
+		}
+		return m
+	}
+	for _, c := range []struct {
+		name, tag, part string
+		want            error
+	}{
+		{"right ETag, given part size", etag, "8388608", nil},
+		{"wrong ETag", string(wrong), "", engine.ErrETagMismatch},
+		{"wrong given part size", etag, "4194304", engine.ErrETagFormat},
+		{"not an md5 ETag (SSE-KMS)", "abc123-78", "", engine.ErrETagFormat},
+	} {
+		if err := load(inEnv(c.tag, c.part), 0); (c.want == nil) != (err == nil) || (c.want != nil && !errors.Is(err, c.want)) {
+			t.Errorf("in-process, %s: %v; want %v", c.name, err, c.want)
+		}
+	}
+	// Verification without the engine is an error, not ignored.
+	if st := runEnv(args(filepath.Join(dir, "inproc"), filepath.Join(dir, "inproc", "rep")),
+		func(k string) (string, bool) {
+			return map[string]string{"AK2_ENGINE_VERIFY_ETAG": "1"}[k], k == "AK2_ENGINE_VERIFY_ETAG"
+		}); st != exUsage {
+		t.Errorf("AK2_ENGINE_VERIFY_ETAG=1 without AK2_ENGINE_N: exit %d, want %d", st, exUsage)
 	}
 }
