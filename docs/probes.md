@@ -131,8 +131,8 @@ Out of scope:
 
 ### The probe: `runs/g3-probe-tune-x8g.24xlarge.json`
 
-The probe is one x8g.24xlarge in us-west-2b. Its body is `scripts/g3/probe-tune.body.sh`, and
-its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 360 ... us-west-2b SRR5935740`
+The probe is one x8g.24xlarge in us-west-2c (2b had no x8g.24xlarge capacity on 2026-10-09, run 20261009-222826-d410776; 2a has failed before). Its body is `scripts/g3/probe-tune.body.sh`, and
+its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 360 ... us-west-2c SRR5935740`
 (the accession goes into `env.AK2_ACCESSIONS`, and so into the manifest). The
 spec header registers the plan, the selection rule and the resolution check.
 
