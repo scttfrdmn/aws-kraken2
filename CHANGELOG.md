@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `cpu.stat` and the current phase, plus `ethtool -S` `*_allowance_exceeded` at start and end.
   - `scripts/lib/mkstub.sh` splices the sampler into the user-data stub, which starts it before
     anything else.
-  - The preamble streams the record to `log/util.tsv` on the 5 s pusher. `ak2_phase` takes a
-    boundary tick, and `ak2_finish` takes a `final` tick before the last push.
+  - The preamble streams the record to `log/util.tsv` every 30 s from the pusher. `ak2_phase`
+    takes a boundary tick, and `ak2_finish` takes a `final` tick before the last push.
   - `run.sh` records `instance.type_info` at launch: vCPUs, MiB, and the baseline and peak Gbit/s
     from describe-instance-types. It keeps the launched stub as `stub.sh`.
   - `scripts/lib/util.py` writes `tables/util.tsv`: per-node, fleet and per-phase U_cpu,
@@ -27,9 +27,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `make util-stream-test`: on N AL2023 containers running the real stub and preamble, checks
     that the record streams on every node and resolves known CPU, tmpfs and network effects.
     `make rehearse` runs it first. `BREAK=nopush|nostub` are negative controls.
-  - `make util-backfill`: lower-bound utilisation of the existing `results/g3` runs, from the
-    engine's getrusage and memory samples, U2's per-run getrusage and the logged byte counts,
-    with explicit coverage columns. Written to `results/g3/util-backfill/`.
+  - `make util-backfill`: lower-bound utilisation of the existing `results/g2` and `results/g3`
+    runs. It draws on the engine's getrusage and memory samples, the G2 runner's and loadbench's
+    per-run getrusage, and the logged byte counts. It has explicit coverage and arm columns;
+    upstream peak RSS is reported as `rss_peak_gib`, not U_mem. Written to
+    `results/util-backfill/`.
+  - Review fixes before merge:
+    - fleet numerators and denominators now cover the same nodes;
+    - memory gaps are no longer interpolated (`mem_gap_s`);
+    - network is counted from boot, with per-direction U_net_rx/tx;
+    - backwards counters give empty cells plus a note;
+    - the sampler looks the interface up again after a late default route;
+    - util.tsv is re-uploaded every 30 s (the TTL-kill loss is bounded, and the test asserts it);
+    - cohort rows are labelled by run_id;
+    - a `tables/util.json` sidecar is written.
   - `make instance-types`: `results/instance-types/us-west-2.json`.
   - Runbook `docs/util.md`.
 

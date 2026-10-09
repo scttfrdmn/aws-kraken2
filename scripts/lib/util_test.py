@@ -12,6 +12,7 @@ import util  # noqa: E402
 
 GIB_KIB = 1048576
 FAIL = []
+CAP = {"vcpus": 4, "memory_mib": 8192, "baseline_gbps": 10.0, "peak_gbps": 25.0}
 
 
 def check(what, got, want, tol=1e-9):
@@ -32,41 +33,43 @@ def iso(t):
     return dt.datetime.fromtimestamp(t, dt.timezone.utc).isoformat()
 
 
-def node_dir(root, name, with_util=True, cap=True):
-    """launch 1000, btime 1010, ticks 1020..1030 (1 Hz), terminated 1040: billed 40 s.
-    4 vCPUs, USER_HZ 100. Busy ticks: 400 at the first tick (4 s from boot), +200 per s (2 vCPUs).
-    Memory: MemTotal 8 GiB, used 1 GiB, 3 GiB at tick 7. Network: +125e6 B/s (1 Gbit/s).
-    Phases: ticks 0-4 "a", 5-10 "b" (the last tagged final, phase "end" on the last tick)."""
+def write_run(root, name, launch, term, btime, ticks, cap=True, extra_lines=()):
+    """ticks: (t, phase, tag, busy_ticks, used_kib, rx, tx, k). busy is split across user, system,
+    softirq and steal; iowait is non-zero and must not count."""
     d = os.path.join(root, name)
     os.makedirs(os.path.join(d, "log"))
-    man = {"region": "us-west-2", "billed_seconds": 40, "cost_usd": 0.4,
-           "instance": {"type": "x.test", "launch_time": iso(1000), "terminated_at": iso(1040)}}
+    man = {"run_id": name, "region": "us-west-2", "billed_seconds": term - launch, "cost_usd": 0.4,
+           "instance": {"type": "x.test", "launch_time": iso(launch), "terminated_at": iso(term)}}
     if cap:
-        man["instance"]["type_info"] = {"vcpus": 4, "memory_mib": 8192, "baseline_gbps": 10.0, "peak_gbps": 25.0}
+        man["instance"]["type_info"] = CAP
     with open(os.path.join(d, "manifest.json"), "w") as f:
         json.dump(man, f)
-    if not with_util:
+    if ticks is None:
         return d
-    lines = ["H\tformat\tak2-util-1", "H\tbtime\t1010", "H\tclk_tck\t100", "H\tncpu\t4", "H\tiface\teth0",
-             "E\t1020.000\tstart\tbw_in_allowance_exceeded\t5", "E\t1020.000\tstart\tpps_allowance_exceeded\t0"]
-    for k in range(11):
-        b = 400 + 200 * k
-        # user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice: busy split
-        # across user (half), system (a quarter), softirq and steal (an eighth each); iowait is idle.
+    lines = ["H\tformat\tak2-util-1", f"H\tbtime\t{btime}", "H\tclk_tck\t100", "H\tncpu\t4", "H\tiface\teth0", "H\tevery\t1"]
+    lines += list(extra_lines)
+    for t, phase, tag, b, used, rx, tx, k in ticks:
         user, system, sirq, steal = b // 2, b // 4, b // 8, b - b // 2 - b // 4 - b // 8
-        used = 3 * GIB_KIB if k == 7 else GIB_KIB
-        rx, tx = 1000 + 100_000_000 * k, 2000 + 25_000_000 * k
-        phase = "a" if k < 5 else ("end" if k == 10 else "b")
-        tag = "final" if k == 10 else "tick"
-        lines.append("\t".join(map(str, ["S", f"{1020 + k}.000", phase, tag, user, 0, system, 9999, 77, 0, sirq, steal,
-                                          user // 3, 0, 8 * GIB_KIB, 8 * GIB_KIB - used, 0, rx, tx, 100 * k, k,
+        lines.append("\t".join(map(str, ["S", f"{t}.000", phase, tag, user, 0, system, 9999, 77, 0, sirq, steal, user // 3, 0,
+                                          8 * GIB_KIB, 8 * GIB_KIB - used, 0, rx, tx, 100 * k, k,
                                           1_000_000 * k, 600_000 * k, 400_000 * k])))
-        if k == 4:
-            lines.append("S\t1024.5\tb\ttick\t1")   # a tick cut off by a kill: skipped
-    lines += ["E\t1030.000\tend\tbw_in_allowance_exceeded\t12", "E\t1030.000\tend\tpps_allowance_exceeded\t0"]
     with open(os.path.join(d, "log", "util.tsv"), "w") as f:
         f.write("\n".join(lines) + "\n")
     return d
+
+
+def std_ticks(reset_tx=False):
+    """Ticks 1020..1030 (1 Hz). Busy: 400 ticks at the first (4 s since boot), +200 per s (2 vCPUs).
+    Used memory 1 GiB, 3 GiB at tick 7. rx: 250e6 bytes before the first tick (since boot), then
+    +100e6 B/s; tx +25e6 B/s. Phases: ticks 0-4 "a", 5-9 "b", 10 "end" (final)."""
+    out = []
+    for k in range(11):
+        tx = 25_000_000 * k
+        if reset_tx and k >= 7:
+            tx = 1000 * k       # the counter restarts between ticks 6 and 7
+        out.append((1020 + k, "a" if k < 5 else ("end" if k == 10 else "b"), "final" if k == 10 else "tick",
+                    400 + 200 * k, 3 * GIB_KIB if k == 7 else GIB_KIB, 250_000_000 + 100_000_000 * k, tx, k))
+    return out
 
 
 def read(path):
@@ -74,25 +77,37 @@ def read(path):
         return list(csv.DictReader(f, delimiter="\t"))
 
 
+def by(rows, scope, key="phase"):
+    return {r[key]: r for r in rows if r["scope"] == scope}
+
+
 with tempfile.TemporaryDirectory() as T:
     g = os.path.join(T, "results", "g9")
-    d = node_dir(g, "run-a")
+    ext = ["E\t1020.000\tstart\tbw_in_allowance_exceeded\t5", "E\t1020.000\tstart\tpps_allowance_exceeded\t0",
+           "S\t1024.5\tb\ttick\t1", "E\t1030.000\tend\tbw_in_allowance_exceeded\t12", "E\t1030.000\tend\tpps_allowance_exceeded\t0"]
+    d = write_run(g, "run-a", 1000, 1040, 1010, std_ticks(), extra_lines=ext)
     assert util.main([d]) == 0
     rows = read(os.path.join(d, "tables", "util.tsv"))
-    node = [r for r in rows if r["scope"] == "node"][0]
+    node = by(rows, "node", "scope")["node"]
     check("node seconds = billed", node["seconds"], 40)
     check("busy vCPU-s from /proc/stat since boot (2400 ticks / 100)", node["busy_vcpu_s"], 24)
     check("U_cpu = 24 / (4 x 40)", node["U_cpu"], 0.15)
     check("U_mem mean = (10 GiB-s + 2 GiB-s trapezoid) / 40 s / 8 GiB", node["U_mem_mean"], 0.0375)
     check("U_mem peak = 3 / 8", node["U_mem_peak"], 0.375)
-    check("net bytes = 10 x 125e6", node["net_bytes"], 1.25e9)
-    check("U_net baseline = 1.25e9 / (10 Gbit/s x 40 s)", node["U_net_baseline"], 0.025)
-    check("U_net peak = 1.25e9 / (25 Gbit/s x 40 s)", node["U_net_peak"], 0.01)
+    check("mem_gap_s = 0 (no gaps)", node["mem_gap_s"], 0)
+    check("rx from boot = 250e6 + 10 x 100e6", node["rx_bytes"], 1.25e9)
+    check("tx from boot = 10 x 25e6", node["tx_bytes"], 2.5e8)
+    check("net bytes = rx + tx", node["net_bytes"], 1.5e9)
+    check("U_net baseline = 1.5e9 / (1.25e9 B/s x 40 s)", node["U_net_baseline"], 0.03)
+    check("U_net peak = 1.5e9 / (3.125e9 B/s x 40 s)", node["U_net_peak"], 0.012)
+    check("U_net_rx baseline = 1.25e9 / 50e9", node["U_net_rx_baseline"], 0.025)
+    check("U_net_tx baseline = 2.5e8 / 50e9", node["U_net_tx_baseline"], 0.005)
+    check("U_net_tx peak = 2.5e8 / 125e9", node["U_net_tx_peak"], 0.002)
     check("eff cost cpu = 0.4 / 0.15", node["eff_cost_cpu_usd"], 0.4 / 0.15, 1e-6)
     check("x_cpu = 1 / 0.15", node["x_cpu"], 6.67, 0.005)
-    check("eff cost net at baseline = 0.4 / 0.025", node["eff_cost_net_baseline_usd"], 16.0)
+    check("eff cost net at baseline = 0.4 / 0.03", node["eff_cost_net_baseline_usd"], 0.4 / 0.03, 1e-6)
     check("unobservable launch -> btime", node["unobs_launch_to_boot_s"], 10)
-    check("unobservable btime -> first tick", node["unobs_boot_to_sampler_s"], 10)
+    check("btime -> first tick", node["unobs_boot_to_sampler_s"], 10)
     check("unobservable last tick -> terminated", node["unobs_last_to_term_s"], 10)
     check("task cgroup CPU (10 s of 1e6 usec)", node["task_cgroup_cpu_s"], 10)
     check("task cgroup sys", node["task_cgroup_sys_s"], 4)
@@ -100,7 +115,7 @@ with tempfile.TemporaryDirectory() as T:
     check("allowance deltas", node["allowance_exceeded"], "bw_in_allowance_exceeded=7;pps_allowance_exceeded=0")
     check("ticks (the cut-off line skipped)", node["ticks"], 11)
     check("coverage notes the skipped line", node["coverage"], "1 malformed line(s) skipped")
-    ph = {r["phase"]: r for r in rows if r["scope"] == "node-phase"}
+    ph = by(rows, "node-phase")
     check("phase a seconds (intervals 0->5)", ph["a"]["seconds"], 5)
     check("phase a busy = 5 s x 2 vCPUs", ph["a"]["busy_vcpu_s"], 10)
     check("phase a U_cpu = 10 / (4 x 5)", ph["a"]["U_cpu"], 0.5)
@@ -108,38 +123,91 @@ with tempfile.TemporaryDirectory() as T:
     check("phase b peak memory GiB", ph["b"]["mem_used_peak_gib"], 3)
     check("phase b mean memory GiB = (5 + 2) / 5", ph["b"]["mem_used_mean_gib"], 1.4)
     check("boot window carries boot CPU", ph["(boot->first tick)"]["busy_vcpu_s"], 4)
+    check("boot window carries boot network (counters since boot)", ph["(boot->first tick)"]["rx_bytes"], 2.5e8)
     check("boot window memory counts 0", ph["(boot->first tick)"]["mem_used_mean_gib"], 0)
+    check("launch window CPU counts 0", ph["(launch->boot)"]["busy_vcpu_s"], 0)
     check("post window seconds", ph["(last tick->terminated)"]["seconds"], 10)
-    secs = sum(float(r["seconds"]) for r in rows if r["scope"] == "node-phase")
-    check("node-phase seconds sum to billed", secs, 40)
-    bsum = sum(float(r["busy_vcpu_s"]) for r in rows if r["scope"] == "node-phase")
-    check("node-phase busy sums to the node's", bsum, 24)
+    check("post window network counts 0", ph["(last tick->terminated)"]["net_bytes"], 0)
+    for col, want in (("seconds", 40), ("busy_vcpu_s", 24), ("net_bytes", 1.5e9)):
+        check(f"node-phase {col} sum to the node's", sum(float(r[col]) for r in ph.values()), want)
+    side = json.load(open(os.path.join(d, "tables", "util.json")))
+    truth("util.json records the generator and each input's sha256",
+          side["generator"] == "scripts/lib/util.py" and "commit" in side
+          and any(x["path"].endswith("run-a/log/util.tsv") and len(x.get("sha256", "")) == 64 for x in side["inputs"]), side["inputs"][:2])
 
-    # A cohort of two: rank 1 has no sampler record (missing, counted as 0, named).
+    # A cohort of two: r1 has no sampler record (missing, counted as 0, named by run_id).
     c = os.path.join(g, "coh-n2")
     os.makedirs(c)
-    node_dir(g, "coh-n2-r0")
-    node_dir(g, "coh-n2-r1", with_util=False)
+    write_run(g, "coh-n2-r0", 1000, 1040, 1010, std_ticks())
+    write_run(g, "coh-n2-r1", 1000, 1040, 1010, None)
     with open(os.path.join(c, "cohort.json"), "w") as f:
         json.dump({"cohort_id": "coh-n2", "members": [{"rank": 0, "run_id": "coh-n2-r0"}, {"rank": 1, "run_id": "coh-n2-r1"}]}, f)
     assert util.main([c]) == 0
     rows = read(os.path.join(c, "tables", "util.tsv"))
-    fl = [r for r in rows if r["scope"] == "fleet"][0]
+    fl = by(rows, "fleet", "scope")["fleet"]
     check("fleet node-seconds", fl["seconds"], 80)
     check("fleet U_cpu = 24 / (4 x 80)", fl["U_cpu"], 0.075)
     check("fleet U_mem mean = 12 GiB-s / (8 GiB x 80 s)", fl["U_mem_mean"], 0.01875)
-    check("fleet U_net baseline = 1.25e9 / (10 Gbit/s x 80 s)", fl["U_net_baseline"], 0.0125)
+    check("fleet U_net baseline = 1.5e9 / (1.25e9 B/s x 80 s)", fl["U_net_baseline"], 0.015)
     check("fleet cost", fl["cost_usd"], 0.8)
     check("fleet eff cost cpu = 0.8 / 0.075", fl["eff_cost_cpu_usd"], 0.8 / 0.075, 1e-5)
-    truth("fleet coverage names the missing node", "CPU missing on 1 of 2 node(s) (r1)" in fl["coverage"], fl["coverage"])
-    n1 = [r for r in rows if r["scope"] == "node" and r["node"] == "r1"][0]
+    truth("fleet coverage names the missing node by run_id", "CPU missing on 1 of 2 node(s) (coh-n2-r1)" in fl["coverage"], fl["coverage"])
+    truth("fleet coverage carries the node notes", "node notes: coh-n2-r1: no log/util.tsv" in fl["coverage"], fl["coverage"])
+    n1 = by(rows, "node", "node")["coh-n2-r1"]
     check("node without util.tsv: U_cpu empty", n1["U_cpu"], "")
     truth("node without util.tsv: coverage says why", n1["coverage"].startswith("no log/util.tsv"), n1["coverage"])
 
-    # No capacity: utilisations empty, named.
-    d = node_dir(g, "run-nocap", cap=False)
+    # B1: a node without capacity must leave the numerators too. With it counted only in the
+    # numerators the fleet's U_cpu was 48 / (4 x 40) = 0.30 here (1.5 with 4x the work).
+    c = os.path.join(g, "coh-b1")
+    os.makedirs(c)
+    write_run(g, "coh-b1-r0", 1000, 1040, 1010, std_ticks())
+    write_run(g, "coh-b1-r1", 1000, 1040, 1010, std_ticks(), cap=False)
+    with open(os.path.join(c, "cohort.json"), "w") as f:
+        json.dump({"cohort_id": "coh-b1", "members": [{"rank": 0, "run_id": "coh-b1-r0"}, {"rank": 1, "run_id": "coh-b1-r1"}]}, f)
+    util.main([c])
+    rows = read(os.path.join(c, "tables", "util.tsv"))
+    fl = by(rows, "fleet", "scope")["fleet"]
+    check("B1: fleet U_cpu over the capacity nodes only = 24 / (4 x 40)", fl["U_cpu"], 0.15)
+    check("B1: fleet busy vCPU-s excludes the capacity-less node", fl["busy_vcpu_s"], 24)
+    check("B1: fleet seconds = the included node's", fl["seconds"], 40)
+    check("B1: fleet U_net baseline = 1.5e9 / 50e9", fl["U_net_baseline"], 0.03)
+    truth("B1: the excluded node is named", "excluded (no capacity or billed window): 1 of 2 node(s) (coh-b1-r1)" in fl["coverage"], fl["coverage"])
+    fp = by(rows, "fleet-phase")
+    check("B1: fleet-phase a U_cpu = 0.5 (one node)", fp["a"]["U_cpu"], 0.5)
+
+    # B2: a 990 s gap must not be interpolated. Billed 1000 s; used memory 8 GiB (all of it) at
+    # every tick; ticks at 1..5 and 995..1000 (1 Hz). Observed memory-s = (4 + 5) x 8 GiB, so
+    # U_mem = 9 / 1000; interpolating the gap gave 0.999 with coverage "full".
+    tk = [(t, "w", "final" if t == 1000 else "tick", 100 * t, 8 * GIB_KIB, 0, 0, t) for t in list(range(1, 6)) + list(range(995, 1001))]
+    d = write_run(g, "run-gap", 0, 1000, 0, tk)
     util.main([d])
-    node = [r for r in read(os.path.join(d, "tables", "util.tsv")) if r["scope"] == "node"][0]
+    rows = read(os.path.join(d, "tables", "util.tsv"))
+    node = by(rows, "node", "scope")["node"]
+    check("B2: U_mem mean counts the gap as 0", node["U_mem_mean"], 0.009)
+    check("B2: mem_gap_s", node["mem_gap_s"], 990)
+    check("B2: U_mem peak still sees the samples", node["U_mem_peak"], 1.0)
+    truth("B2: coverage names the gap", "memory: 1 gap(s) > 2.5 s totalling 990.0 s counted as 0" in node["coverage"], node["coverage"])
+    check("B2: CPU is a counter, integrated across the gap (1000 s x 1 vCPU)", node["busy_vcpu_s"], 1000)
+
+    # A counter that goes backwards: None plus a note, never a silent 0.
+    d = write_run(g, "run-reset", 1000, 1040, 1010, std_ticks(reset_tx=True))
+    util.main([d])
+    rows = read(os.path.join(d, "tables", "util.tsv"))
+    node = by(rows, "node", "scope")["node"]
+    check("reset: node tx empty", node["tx_bytes"], "")
+    check("reset: node U_net empty", node["U_net_baseline"], "")
+    check("reset: node rx still counted", node["rx_bytes"], 1.25e9)
+    truth("reset: coverage says so", "tx counter went backwards" in node["coverage"], node["coverage"])
+    ph = by(rows, "node-phase")
+    check("reset: phase b tx empty", ph["b"]["tx_bytes"], "")
+    truth("reset: phase b coverage says so", "tx counter went backwards" in ph["b"]["coverage"], ph["b"]["coverage"])
+    check("reset: phase a tx intact (5 x 25e6)", ph["a"]["tx_bytes"], 1.25e8)
+
+    # No capacity: utilisations empty, named.
+    d = write_run(g, "run-nocap", 1000, 1040, 1010, std_ticks(), cap=False)
+    util.main([d])
+    node = by(read(os.path.join(d, "tables", "util.tsv")), "node", "scope")["node"]
     check("no capacity: U_cpu empty", node["U_cpu"], "")
     truth("no capacity: coverage", "no capacity" in node["coverage"], node["coverage"])
 

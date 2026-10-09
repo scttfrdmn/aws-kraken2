@@ -7,16 +7,19 @@
 # answers IMDS, the bucket-region HEAD and the payload GET; aws copies `s3 cp` uploads into a
 # shared directory and keeps every upload as its own timestamped version; sudo runs the command.
 # The body burns one vCPU for 8 s (phase burn), holds 256 MiB in /dev/shm for 6 s (phase shm),
-# downloads 64 MiB over the container's eth0 from a host-side server (phase net), then exits 0.
+# downloads 64 MiB over the container's eth0 from a host-side server (phase net), sleeps 50 s
+# (phase hold: the pusher re-uploads util.tsv every 30 s), then exits 0.
 # Fails unless, for every node:
 #   - the container exits 0 and log/util.tsv was uploaded >= 2 times before the body's end phase,
-#     each upload with more ticks than the one before (it streamed; it was not only pushed at exit);
+#     each upload with more ticks than the one before (it streamed; it was not only pushed at exit),
+#     and no stretch of the run longer than 36 s went without an upload (what a TTL kill loses);
 #   - the last upload's first tick precedes the preamble (the stub started the sampler), its last
 #     tick is the `final` one, at or after the end phase, no gap between ticks exceeds 2.5 s, and
 #     the phases stub, preamble, body, burn, shm, net and end all appear;
 #   - scripts/lib/util.py resolves the three effects it must see: burn's busy vCPU-s >= 0.8 x its
 #     seconds (one vCPU at least), shm's peak used memory >= its start + 200 MiB (Shmem +250 MiB), and net's bytes
-#     >= 64 MiB; and a sampler whose stub exits before exec (exit 97) stops with it.
+#     >= 64 MiB; a sampler whose stub exits before exec (exit 97) stops with it; and a `once` tick
+#     after a loop that found no default route looks the interface up again.
 # Prints the sampler's own CPU per tick (its overhead). Record: results/rehearse/util-stream-<UTC>-<commit>.log.
 set +e
 set -uo pipefail
@@ -52,6 +55,8 @@ ak2_phase shm
 head -c 268435456 /dev/zero > /dev/shm/ak2-util-test; sleep 6; rm -f /dev/shm/ak2-util-test
 ak2_phase net
 /usr/bin/curl -sf -o /dev/null "http://host.containers.internal:$AK2T_PORT/blob" || ak2_say "net download failed"
+ak2_phase hold
+sleep 50
 up=$(cat /tmp/ak2-util.pid)
 read -r -a st < "/proc/$up/stat"
 ak2_say "util-overhead pid $up utime ${st[13]} stime ${st[14]} ticks $(grep -c '^S' /tmp/ak2-util.tsv)"
@@ -61,11 +66,11 @@ EOF
 # Negative controls (docs/util.md): BREAK=nopush removes the pusher's util.tsv push (the record
 # then reaches S3 only at exit), BREAK=nostub removes the stub's sampler start (the preamble's
 # fallback starts it late). Each must make this test FAIL.
-PUSHLINE='    [ -s "$AK2_UTIL" ] && ak2_put "$AK2_UTIL" log/util.tsv; done ) >/dev/null 2>&1 &'
+PUSHLINE='[ -s "$AK2_UTIL" ] && ak2_put "$AK2_UTIL" log/util.tsv; done )'
 case ${BREAK:-} in
   "") ;;
   nopush)
-    python3 -c 'import sys; p, a = sys.argv[1], sys.argv[2]; s = open(p).read(); assert a in s; open(p, "w").write(s.replace(a, "    done ) >/dev/null 2>&1 &"))' \
+    python3 -c 'import sys; p, a = sys.argv[1], sys.argv[2]; s = open(p).read(); assert a in s; open(p, "w").write(s.replace(a, "true; done )"))' \
       "$T/payload.sh" "$PUSHLINE" || { echo "util-stream-test: BREAK=nopush did not apply" >&2; exit 2; } ;;
   nostub)
     python3 -c 'import sys; p, a = sys.argv[1], sys.argv[2]; s = open(p).read(); assert a in s; open(p, "w").write(s.replace(a, ":"))' \
@@ -100,7 +105,8 @@ case "$1 $2" in
     a=(); for x in "${@:3}"; do case $x in --*) ;; *) a+=("$x") ;; esac; done
     case ${a[1]} in s3://*) k=${a[1]#s3://}
       mkdir -p "/bucket/$(dirname "$k")" "/bucket/.v/$(dirname "$k")"
-      cp "${a[0]}" "/bucket/$k" && cp "${a[0]}" "/bucket/.v/$k.$(date +%s%N)" ;; *) exit 1 ;; esac ;;
+      cp "${a[0]}" "/bucket/$k" && cp "${a[0]}" "/bucket/.v/$k.$(date +%s%N)"
+      echo "$(date +%s) ${k##*/}" >> "/bucket/.calls.$AK2T_NODE" ;; *) exit 1 ;; esac ;;
   "s3api get-bucket-request-payment") echo BucketOwner ;;
   *) [ "$1" = --version ] && echo aws-cli/stub; exit 0 ;;
 esac
@@ -121,6 +127,18 @@ echo "sampler $p exited with its stub ($n ticks)"
 EOF
 OR=$(podman run --rm -v "$T:/work:ro" "$IMG" bash /work/orphan.sh 2>&1); orc=$?
 echo "util-stream-test: $([ $orc = 0 ] && echo 'ok  ' || echo FAIL) early stub exit: $OR"
+[ $orc = 0 ] || RC=1
+# A loop that started with no default route records iface "-" in its context file; a later
+# `once` tick must look the interface up again, not read /sys/class/net/-/.
+cat > "$T/iface.sh" <<'EOF'
+printf -- '- -\n' > /tmp/ak2-util.ctx
+bash /work/sampler.sh once phase
+rx=$(awk -F'\t' '$1=="S"{print $18}' /tmp/ak2-util.tsv | tail -1)
+case $rx in ''|*[!0-9]*) echo "once tick has no rx bytes ('$rx') after a '-' interface in the context"; exit 1 ;; esac
+echo "once tick re-resolved the interface (rx $rx)"
+EOF
+OR=$(podman run --rm -v "$T:/work:ro" "$IMG" bash /work/iface.sh 2>&1); orc=$?
+echo "util-stream-test: $([ $orc = 0 ] && echo 'ok  ' || echo FAIL) interface re-resolved: $OR"
 [ $orc = 0 ] || RC=1
 
 RUN="$(date -u +%Y%m%d-%H%M%S)-$SHA-util-n$N"
@@ -177,6 +195,12 @@ end = ph.get("end", 0)
 during = [n for f, n in zip(vers, ticks) if int(f.rsplit(".", 1)[1]) / 1e9 < end]
 need(len(during) >= 2, f"util.tsv uploaded {len(during)} time(s) before the end phase ({len(vers)} in all; ticks {ticks})")
 need(all(b > a for a, b in zip(during, during[1:])), "each upload during the run has more ticks than the last")
+# What a TTL kill would lose: the longest stretch of the run with no util.tsv upload (from the
+# preamble's start, between uploads, to the end phase). The pusher re-uploads every 30 s.
+ut = [int(f.rsplit(".", 1)[1]) / 1e9 for f in vers]
+marks = [ph.get("preamble", 0)] + [t for t in ut if t < end] + [end]
+loss = max(b - a for a, b in zip(marks, marks[1:]))
+need(loss <= 36, f"longest run stretch without an upload {loss:.1f} s (a TTL kill loses at most that; pusher every 30 s)")
 up = os.path.join(R, "log", "util.tsv")
 need(os.path.exists(up) and os.path.getsize(up) > 0, "the last upload is non-empty")
 if bad:
@@ -188,7 +212,7 @@ need(rows[-1]["tag"] == "final" and rows[-1]["t"] >= end, f"last tick is final (
 gaps = [b["t"] - a["t"] for a, b in zip(rows, rows[1:])]
 need(max(gaps) <= 2.5, f"max gap between ticks {max(gaps):.2f} s")
 seen = list(dict.fromkeys(r["phase"] for r in rows))
-need(all(p in seen for p in ("stub", "preamble", "body", "burn", "shm", "net", "end")), f"phases in the ticks: {seen}")
+need(all(p in seen for p in ("stub", "preamble", "body", "burn", "shm", "net", "hold", "end")), f"phases in the ticks: {seen}")
 need(len(rows) >= (rows[-1]["t"] - rows[0]["t"]) * 0.9, f"{len(rows)} ticks over {rows[-1]['t'] - rows[0]['t']:.1f} s (1 Hz)")
 util.main([R])
 import csv
@@ -210,6 +234,9 @@ sys.exit(1 if bad else 0)
 PY
   grep -h 'util-overhead' "$R/log/run.log" 2>/dev/null | sed 's/.*util-overhead/util-overhead/' |
     awk -v k="$k" '{printf "util-stream-test: r%s sampler CPU %.2f s over %d ticks (%.2f ms per tick)\n", k, ($5+$7)/100, $9, ($5+$7)*10/$9}'
+  # The pusher's uploads (each one an aws CLI process on an instance; the stub here costs nothing).
+  awk -v k="$k" '{n[$2]++; if (!t0 || $1 < t0) t0 = $1; if ($1 > t1) t1 = $1}
+    END {printf "util-stream-test: r%s uploads over %d s:", k, t1 - t0; for (o in n) printf " %s x%d", o, n[o]; printf "\n"}' "$T/bucket/.calls.r$k"
 done
 [ "$RC" = 0 ] && echo "util-stream-test: ok ($N node(s))" || echo "util-stream-test: FAILED (KEEP=1 keeps the work dir)"
 exit "$RC"

@@ -196,13 +196,23 @@ combined. Each gets its own effective cost, billed $ ÷ U_r.
 - **U_mem** = time-mean (MemTotal − MemAvailable) ÷ installed memory (`MemoryInfo.SizeInMiB`).
   - The peak (the largest 1 Hz sample) is reported beside it.
   - Shmem/tmpfs counts as used.
-- **U_net** = Δ(rx + tx bytes) of the default-route (ENA) interface ÷ (line rate × billed s).
+  - Memory is a gauge, so it is integrated only over tick intervals no longer than 2.5 × the
+    sampling period. A longer interval is a gap: it counts as 0, and `mem_gap_s` and the
+    coverage column report it.
+- **U_net** = (rx + tx bytes) of the default-route (ENA) interface ÷ (line rate × billed s).
   - It is computed against both line rates: NetworkCards[0]'s baseline and its peak.
+  - `U_net_rx` and `U_net_tx` give each direction alone over the same line rates, in case EC2's
+    rates apply per direction. Scott chooses which to use.
+  - The sysfs byte counters run from boot, like `/proc/stat`, so network is counted from
+    `btime` too.
   - A burst can exceed the baseline rate, so U_net at baseline can exceed 1.
+  - Only the default-route interface and NetworkCards[0] are counted.
 - **Unobservable windows** count as 0%, and their durations are columns:
-  - `launch_time` → `btime`;
-  - `btime` → the first tick, for memory and network only (CPU is integrated, as above);
-  - the last tick → `terminated_at`.
+  - `launch_time` → `btime`, for all three;
+  - `btime` → the first tick, for memory only (CPU and network are counters integrated from
+    boot, so this window is counted for them);
+  - the last tick → `terminated_at`, for all three.
+- A counter that goes backwards (an interface reset) gives an empty cell and a note, never 0.
 
 **The sampler** is `scripts/util-sampler.sh`: dependency-free bash, at 1 Hz.
 - **Start.** `scripts/lib/mkstub.sh` splices it into the stub. The stub's first act after
@@ -210,14 +220,23 @@ combined. Each gets its own effective cost, billed $ ÷ U_r.
   stdio. It reads only `/proc` and `/sys`, and runs `ethtool -S` once, so it starts ahead of
   the region assert.
 - **Record.** One record per tick goes to `/tmp/ak2-util.tsv`. Its tab-separated record types:
-  - `H key value`: the header. It holds btime, clk_tck, ncpu, the interface and the cgroup.
+  - `H key value`: the header. It holds the sampling period, btime, clk_tck, ncpu, the
+    interface and the cgroup. If the default route only appears later, a later `H iface` line
+    records it, and the sampler keeps looking until it does.
   - `S t phase tag …`: raw counters, tagged with the phase in `$AK2_STATE/phase` (`stub` before
     the preamble). The counters are `/proc/stat`'s aggregate line, MemTotal, MemAvailable,
     Shmem, rx/tx bytes, pgfault, pgmajfault, and the task cgroup's `cpu.stat`.
   - `E t start|end name value`: the `ethtool -S` `*_allowance_exceeded` counters.
-- **Cost.** No fork per tick: builtins only, and the wait is `read -t` on a private FIFO. That
-  is about 1 ms of CPU per tick.
-- **Streaming.** The preamble's 5 s pusher sends the record to `log/util.tsv`.
+- **Cost.** No fork per tick: builtins only, and the wait is `read -t` on a private FIFO. In the
+  AL2023 test containers the loop used 0.5–2.4 ms of CPU per tick (at most 0.24% of one vCPU).
+  Each `ak2_phase` tick is one extra `bash` process.
+- **Streaming.** The preamble's pusher sends the record to `log/util.tsv` every 30 s, and at
+  exit. The pusher's other uploads, `run.log` and `requests.tsv`, still go every 5 s. Every
+  upload is one `aws s3 cp`, a Python CLI process, and costs far more than the sampler. The
+  harness's own overhead (the task cgroup's CPU against the workload's) is to be measured on
+  the first instance run.
+- **TTL kill.** A kill loses at most the last 30 s of the record; `make util-stream-test`
+  asserts this.
 - **Phase boundaries.** `ak2_phase` takes one tick at each phase start (`once phase`). The
   interval before it belongs to the previous phase, so the boundaries are exact.
 - **End.** `ak2_finish` stops the loop, takes a `final` tick together with the end-of-run
@@ -237,13 +256,19 @@ cohort's. Its rows:
 - `fleet-phase`: the phases summed across nodes.
 
 Its columns:
-- the utilisations: U_cpu, U_mem_mean and U_mem_peak, U_net_baseline and U_net_peak;
+- the utilisations: U_cpu, U_mem_mean and U_mem_peak (with `mem_gap_s`), U_net_baseline and
+  U_net_peak, and the per-direction U_net_rx_* and U_net_tx_*;
 - the effective cost and the multiplier (1/U) of each;
 - the unobservable durations;
 - the task cgroup's CPU (spored's service cgroup: the workload plus the harness, without the
   rest of the system);
 - pgfault and pgmajfault, so page-fault time can be seen per phase;
 - the allowance-counter deltas, tick count and largest gap, the capacity source, and coverage.
+
+A fleet takes only the nodes that have capacity and a billed window, in both numerators and
+denominators; any other node is excluded and named. A fleet row's coverage also carries its
+nodes' notes. In a cohort's table the node column is the member's run_id. Beside every table,
+`tables/util.json` records util.py's commit and every input file with its sha256.
 
 **Useful-work CPU.** The definition asks for the workload's CPU in a named cgroup scope
 (`systemd-run --scope`). That is not in place. The bodies do not start the workload in a scope
@@ -310,7 +335,7 @@ On the instance, `preamble.sh` runs first:
    instance role cannot read our own buckets' Payer and the launch host already verified it.
 4. A `drop_caches` probe (`sudo -n` plus a writable `/proc/sys/vm/drop_caches`), recorded as
    `drop_caches_ok`, then `preflight.json`.
-5. The log, `requests.tsv` and the utilisation record (`log/util.tsv`) push every 5 s (fixed),
+5. The log and `requests.tsv` push every 5 s, the utilisation record (`log/util.tsv`) every 30 s (fixed),
    plus a final push on exit, after the sampler's `final` tick.
 
 ## Outputs

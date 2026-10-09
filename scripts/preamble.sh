@@ -9,7 +9,7 @@
 #     body start and at exit); check statuses by hand.
 #   - stdout/stderr go to $AK2_LOG, pushed to S3 every 5 s and once more on exit or on
 #     TERM/HUP/INT/PIPE. Do not replace the EXIT or signal traps. The utilisation sampler's
-#     $AK2_UTIL (1 Hz, tagged with the current phase) goes to log/util.tsv on the same pushes.
+#     $AK2_UTIL (1 Hz, tagged with the current phase) goes to log/util.tsv every 30 s and at exit.
 #   - `aws` on PATH is a shim that refuses s3/s3api calls naming a bucket outside
 #     $AK2_ALLOWED_BUCKETS (declared buckets plus the results bucket), then execs the real CLI.
 #     It covers anything that finds `aws` via PATH; not curl, SDKs, or `sudo aws`.
@@ -31,9 +31,10 @@ AK2_BIN=/tmp/ak2-bin
 AK2_STATE=/tmp/ak2-state
 AK2_UTIL=/tmp/ak2-util.tsv      # the utilisation sampler's record (scripts/util-sampler.sh, started by the stub)
 AK2_PUSH_EVERY=5
+AK2_UTIL_PUSH_EVERY=30          # util.tsv grows by a line a second: re-uploaded every 30 s (and at exit)
 AK2_MAIN_PID=$BASHPID
 readonly AK2_EXPECT_REGION AK2_BUCKETS AK2_ALLOWED_BUCKETS AK2_S3_PREFIX AK2_RUN_ID AK2_GATE \
-  AK2_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN AK2_STATE AK2_UTIL AK2_MAIN_PID AK2_INHERITED_FLAGS
+  AK2_PUSH_EVERY AK2_UTIL_PUSH_EVERY AK2_LOG AK2_REQS AK2_FIFO AK2_BIN AK2_STATE AK2_UTIL AK2_MAIN_PID AK2_INHERITED_FLAGS
 AK2_REAL_AWS=$(command -v aws)
 readonly AK2_REAL_AWS
 : > "$AK2_LOG"
@@ -260,8 +261,8 @@ printf '{"inherited_flags":"%s","payload_inherited_flags":"%s","flags_after_set"
 ak2_put /tmp/ak2-preflight.json preflight.json || ak2_say "WARN: preflight push failed"
 
 # ---- log streaming ----
-( while sleep "$AK2_PUSH_EVERY"; do ak2_put "$AK2_LOG" log/run.log; ak2_put "$AK2_REQS" out/requests.tsv
-    [ -s "$AK2_UTIL" ] && ak2_put "$AK2_UTIL" log/util.tsv; done ) >/dev/null 2>&1 &
+( AK2_N=0; while sleep "$AK2_PUSH_EVERY"; do ak2_put "$AK2_LOG" log/run.log; ak2_put "$AK2_REQS" out/requests.tsv
+    AK2_N=$((AK2_N + 1)); [ $((AK2_N * AK2_PUSH_EVERY % AK2_UTIL_PUSH_EVERY)) = 0 ] && [ -s "$AK2_UTIL" ] && ak2_put "$AK2_UTIL" log/util.tsv; done ) >/dev/null 2>&1 &
 AK2_PUSHER=$!
 readonly AK2_PUSHER
 disown "$AK2_PUSHER"

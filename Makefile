@@ -127,8 +127,8 @@ util-stream-test:
 util:
 	python3 scripts/lib/util.py $(DIR)
 
-# Lower-bound utilisation of the runs that predate the sampler, from what their logs recorded
-# (results/util-backfill/; docs/util.md). $0: reads results/ only.
+# Lower-bound utilisation of the results/g2 and results/g3 runs that predate the sampler, from what
+# their logs recorded (results/util-backfill/util-backfill.tsv; docs/util.md). $0: reads results/ only.
 util-backfill:
 	python3 scripts/lib/util_backfill.py
 

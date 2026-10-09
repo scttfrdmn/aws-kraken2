@@ -2,13 +2,14 @@
 # builtins only per tick (no fork; the wait is `read -t` on a private FIFO). scripts/lib/mkstub.sh
 # splices this file into the user-data stub, which writes it to /tmp/ak2-util.sh and starts
 # `loop` before anything else; the preamble's pusher streams $OUT to <run prefix>/log/util.tsv
-# every 5 s, and ak2_finish stops the loop and appends one `once final` sample before the last push.
+# every 30 s, and ak2_finish stops the loop and appends one `once final` sample before the last push.
 #   bash /tmp/ak2-util.sh loop PID header, ethtool at start, then one S record per second until
 #                                  PID (the stub's shell, which execs the payload) is gone
 #   bash /tmp/ak2-util.sh once TAG one S record tagged TAG (ak2_phase: `phase`, at each phase start,
 #                                  so phase boundaries are exact; ak2_finish: `final`, then ethtool)
 # Records (tab-separated, appended to $AK2_UTIL_OUT, default /tmp/ak2-util.tsv):
-#   H key value   format, btime, clk_tck, ncpu, iface, cgroup, uptime_s, kernel, pid, started_at
+#   H key value   format, every, btime, clk_tck, ncpu, iface, cgroup, uptime_s, kernel, pid, started_at
+#                 (a later `H iface` line: the default route appeared after the start)
 #   S t phase tag user nice system idle iowait irq softirq steal guest guest_nice
 #     mem_total_kib mem_avail_kib shmem_kib rx_bytes tx_bytes pgfault pgmajfault
 #     cg_usage_usec cg_user_usec cg_system_usec
@@ -39,7 +40,8 @@ ak2u_sample() {
     case $k in MemTotal:) mt=$v ;; MemAvailable:) ma=$v ;; Shmem:) sh=$v; break ;; esac
   done < /proc/meminfo
   while read -r k v; do case $k in pgfault) pf=$v ;; pgmajfault) pmf=$v; break ;; esac; done < /proc/vmstat
-  [ -n "$IF" ] || ak2u_iface
+  # No default route yet: look again every tick; when found, record it for `once` and the header.
+  [ -n "$IF" ] || { ak2u_iface && { printf '%s %s\n' "$IF" "${CG:--}" > "$CTX"; printf 'H\tiface\t%s\n' "$IF" >> "$OUT"; }; }
   if [ -n "$IF" ]; then
     read -r rx < "/sys/class/net/$IF/statistics/rx_bytes"; read -r tx < "/sys/class/net/$IF/statistics/tx_bytes"
   fi
@@ -67,6 +69,7 @@ ak2u_ethtool() {
 case ${1:-loop} in
   once)
     [ -r "$CTX" ] && read -r IF CG < "$CTX"
+    [ "$IF" = - ] && IF=""
     [ "$CG" = - ] && CG=""
     [ -n "$CG" ] || ak2u_cgroup
     ak2u_sample "${2:-final}"; [ "${2:-final}" = final ] && ak2u_ethtool end ;;
@@ -79,8 +82,8 @@ case ${1:-loop} in
     read -r UP r < /proc/uptime
     HZ=$(getconf CLK_TCK 2>/dev/null) || HZ=100
     printf '%s %s\n' "${IF:--}" "${CG:--}" > "$CTX"
-    printf 'H\tformat\tak2-util-1\nH\tbtime\t%s\nH\tclk_tck\t%s\nH\tncpu\t%s\nH\tiface\t%s\nH\tcgroup\t%s\nH\tuptime_s\t%s\nH\tkernel\t%s\nH\tpid\t%s\nH\tstarted_at\t%s\n' \
-      "$BT" "${HZ:-100}" "$NC" "${IF:--}" "${CG:--}" "$UP" "$(uname -r 2>/dev/null)" "$BASHPID" "$START" >> "$OUT"
+    printf 'H\tformat\tak2-util-1\nH\tevery\t%s\nH\tbtime\t%s\nH\tclk_tck\t%s\nH\tncpu\t%s\nH\tiface\t%s\nH\tcgroup\t%s\nH\tuptime_s\t%s\nH\tkernel\t%s\nH\tpid\t%s\nH\tstarted_at\t%s\n' \
+      "${AK2_UTIL_EVERY:-1}" "$BT" "${HZ:-100}" "$NC" "${IF:--}" "${CG:--}" "$UP" "$(uname -r 2>/dev/null)" "$BASHPID" "$START" >> "$OUT"
     echo "$BASHPID" > "${OUT%.tsv}.pid"
     ak2u_ethtool start
     FIFO=${OUT%.tsv}.fifo; rm -f "$FIFO"; mkfifo "$FIFO" && exec 9<>"$FIFO"
