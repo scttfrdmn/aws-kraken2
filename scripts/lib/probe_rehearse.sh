@@ -97,7 +97,7 @@ if [ "$KIND" != decomp ]; then
   if [ "$KIND" = tune ]; then
     TDB="$K2_DB_ROOT/k2_viral_20260626"
     [ -s "$TDB/hash.k2d" ] || { echo "rehearse: need the viral DB at $TDB" >&2; exit 1; }
-    cp "$TDB/hash.k2d" "$T/hash.k2d" || exit 1
+    ln -s "$TDB/hash.k2d" "$T/hash.k2d" || exit 1  # served and copied as is; no second copy on disk
   else
     head -c $((320 << 20)) /dev/urandom > "$T/hash.k2d" || exit 1
   fi
