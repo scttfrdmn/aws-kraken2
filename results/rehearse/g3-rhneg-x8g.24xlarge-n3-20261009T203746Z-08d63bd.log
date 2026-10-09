@@ -1,0 +1,49 @@
+rehearse: record results/rehearse/g3-rhneg-x8g.24xlarge-n3-20261009T203746Z-08d63bd.log
+rehearse: runs/g3-rhneg-x8g.24xlarge-n3.json at 08d63bd, N=3, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D
+rehearse: rank 0 body exit 1
+  rank0 | ak2: [2026-10-09T20:38:02Z] rh cohort 20261009-203802-08d63bd-beef-n3 rank 0 of 3, commit 08d63bd; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 10
+  rank0 | ak2-phase 2026-10-09T20:38:02Z setup
+  rank0 | ak2: [2026-10-09T20:38:06Z] built 08d63bd; go version go1.27.1 darwin/arm64; ip 127.0.0.1; nproc 4; mem_gib 64; threads 16, inflight 1
+  rank0 | ak2-phase 2026-10-09T20:38:06Z manifest
+  rank0 | ak2: staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r0/ak2/db/roda/opts.k2d
+  rank0 | ak2: staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r0/ak2/db/roda/taxo.k2d
+  rank0 | ak2: [2026-10-09T20:38:06Z] RODA hash.k2d etag=6c60e422b621b8116b7a3451fe25c682-rehearse size=8000000032
+  rank0 | ak2: [2026-10-09T20:38:06Z] ERROR: env.AK2_ACCESSIONS '@PRJNA398089:2-11' does not name the first 10 runs of /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r0/ak2/repo/results/cohort/PRJNA398089/runs.tsv
+rehearse: rank 1 body exit 1
+  rank1 | ak2: [2026-10-09T20:38:02Z] rh cohort 20261009-203802-08d63bd-beef-n3 rank 1 of 3, commit 08d63bd; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 10
+  rank1 | ak2-phase 2026-10-09T20:38:02Z setup
+  rank1 | ak2: [2026-10-09T20:38:06Z] built 08d63bd; go version go1.27.1 darwin/arm64; ip 127.0.0.1; nproc 4; mem_gib 64; threads 16, inflight 1
+  rank1 | ak2-phase 2026-10-09T20:38:06Z manifest
+  rank1 | ak2: staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r1/ak2/db/roda/opts.k2d
+  rank1 | ak2: staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r1/ak2/db/roda/taxo.k2d
+  rank1 | ak2: [2026-10-09T20:38:06Z] RODA hash.k2d etag=6c60e422b621b8116b7a3451fe25c682-rehearse size=8000000032
+  rank1 | ak2: [2026-10-09T20:38:06Z] ERROR: env.AK2_ACCESSIONS '@PRJNA398089:2-11' does not name the first 10 runs of /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r1/ak2/repo/results/cohort/PRJNA398089/runs.tsv
+rehearse: rank 2 body exit 1
+  rank2 | ak2: [2026-10-09T20:38:02Z] rh cohort 20261009-203802-08d63bd-beef-n3 rank 2 of 3, commit 08d63bd; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 10
+  rank2 | ak2-phase 2026-10-09T20:38:02Z setup
+  rank2 | ak2: [2026-10-09T20:38:06Z] built 08d63bd; go version go1.27.1 darwin/arm64; ip 127.0.0.1; nproc 4; mem_gib 64; threads 16, inflight 1
+  rank2 | ak2-phase 2026-10-09T20:38:06Z manifest
+  rank2 | ak2: staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r2/ak2/db/roda/opts.k2d
+  rank2 | ak2: staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r2/ak2/db/roda/taxo.k2d
+  rank2 | ak2: [2026-10-09T20:38:06Z] RODA hash.k2d etag=6c60e422b621b8116b7a3451fe25c682-rehearse size=8000000032
+  rank2 | ak2: [2026-10-09T20:38:06Z] ERROR: env.AK2_ACCESSIONS '@PRJNA398089:2-11' does not name the first 10 runs of /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D/home-r2/ak2/repo/results/cohort/PRJNA398089/runs.tsv
+rehearse: rank 0 pushed no manifest
+rehearse: rank 0 streamed 0 [null] ak2-sample lines (0 home or emitter)
+rehearse: rank 0 streamed no [null] ak2-sample lines
+rehearse: rank 1 streamed 0 [null] ak2-sample lines (0 home or emitter)
+rehearse: rank 1 streamed no [null] ak2-sample lines
+rehearse: rank 2 streamed 0 [null] ak2-sample lines (0 home or emitter)
+rehearse: rank 2 streamed no [null] ak2-sample lines
+rehearse: 0 home/emitter sample lines streamed, manifest has 0
+rehearse: batch 0's LPT placement is not distinguishable from j mod N
+rehearse: rank 0 recorded no GetObject-range (the shard load)
+rehearse: rank 1 recorded no GetObject-range (the shard load)
+rehearse: rank 2 recorded no GetObject-range (the shard load)
+rehearse: 0 objects under out/ (want 0); requests say 0 (CompleteMultipartUpload 0 + PutObject 0 - Rendezvous-PutObject 0)
+rehearse: memory: x8g.24xlarge has 1649.3 GB; N=3 at 12 in flight needs 553.8 GB
+rehearse: rank 0 streamed no ak2-engine mem lines
+rehearse: rank 1 streamed no ak2-engine mem lines
+rehearse: rank 2 streamed no ak2-engine mem lines
+rehearse: every rank streamed ak2-engine mem lines
+rehearse: 0 of 0 outputs identical to upstream (want 0)
+rehearse: FAILED (logs: REHEARSE_KEEP=1 keeps /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.WKqz6D)
