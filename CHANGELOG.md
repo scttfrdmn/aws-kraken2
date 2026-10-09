@@ -23,13 +23,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     in us-west-2b:
     - 6 sets (`none`, `precompact`, `proactive`, `defer`, `defermadv`, `always`) × 2 regimes
       (upstream `-M` on a huge=always tmpfs staged by s5cmd; ours' engine N = 1 ranged-GET load)
-      × 3 repetitions, rotated and interleaved, every trial cold;
-    - load, classify and fragmentation counters per trial, streamed;
+      × 3 repetitions, every trial cold, after a discarded `none` warm-up pair;
+    - each repetition complete before the next, in a registered order (`SCHED`): every set's
+      regime order flips per repetition, every cell's predecessors differ, and mean positions
+      are balanced;
+    - load, classify, teardown and fragmentation counters per trial, streamed;
     - a network ceiling before and after;
     - the selection rule and the resolution check registered in the spec header.
   - `scripts/lib/tune_tables.py` (the post) writes `tables/probe-tune{,-trials,-selection,-drift}.tsv`.
-    It prints the resolution and the load ceiling before any null, and exits 1 if the trials'
-    outputs differ. `make test` runs its `--self-test`.
+    - It counts only complete repetitions, and it prints the resolution and the load ceiling
+      before any null.
+    - It exits 1 if the trials' outputs or reports differ.
+    - `make test` runs its `--self-test`, which includes the schedule's properties, read from
+      the body.
+  - `scripts/g3/mkspec-u.sh` takes an optional ACCESSIONS argument for `env.AK2_ACCESSIONS`.
   - `make hosttune-test` (`scripts/lib/hosttune_test.sh`) runs on an AL2023 podman container.
     `make rehearse SPEC=runs/g3-probe-tune-x8g.24xlarge.json` adds the `tune` kind to
     `scripts/lib/probe_rehearse.sh`: the full plan on the viral DB with a fake `/sys` and `/proc`.

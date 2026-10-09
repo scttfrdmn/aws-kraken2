@@ -17,12 +17,14 @@
 #     done line per stage with N > k; probe_tables.py cont reports N = 1, 2, 3 with N nodes each.
 #   tune (#41): the viral DB stands in for RODA (its hash.k2d served by serve-file with a real
 #     multipart ETag, and copied by the s5cmd stub), SRR062634 200k pairs for the fixed sample, a
-#     fake /sys and /proc tree for the host knobs (AK2_REHEARSE_HT_ROOT); the full plan (6 sets x
-#     2 regimes x 3 reps). Exit 0; 36 trial lines streamed and in the pushed tune.jsonl, each valid
-#     (load and classify exit 0, the set applied), 3 per regime and set; one output sha256 across
-#     all 36 (upstream -M and ours' engine N = 1 agree); 2 net lines; the ht-record lines streamed
-#     equal the pushed hosttune.jsonl (92: setup, pre and post per trial, load per regime-a trial,
-#     end); every none trial wrote nothing (ht_writes 0, its apply rows all "kept"), every other
+#     fake /sys and /proc tree for the host knobs (AK2_REHEARSE_HT_ROOT); the full plan (the
+#     warm-up pair, then 6 sets x 2 regimes x 3 reps in the registered SCHED). Exit 0; 38 trial
+#     lines streamed and in the pushed tune.jsonl, each valid (load and classify exit 0, the set
+#     applied), 2 of them warm-up, 3 per regime and set otherwise; one output sha256 and one report
+#     sha256 across all 38 (upstream -M and ours' engine N = 1 agree); every trial has a
+#     teardown_s; 2 net lines; the ht-record lines streamed equal the pushed hosttune.jsonl (97:
+#     setup, pre and post per trial, load per regime-a trial, end); every none trial wrote nothing
+#     (ht_writes 0, its apply rows all "kept"), every other
 #     trial wrote; the end record is back at the tree's boot values; tune_tables.py makes a
 #     selection row per regime and 12 cell rows.
 # Usage: scripts/lib/probe_rehearse.sh runs/g3-probe-<kind>-<type>.json
@@ -224,15 +226,19 @@ tune)
   J="$T/out/tune.jsonl"
   st=$(grep -c '^probe-tune {"kind":"trial"' "$T/body.log"); jt=$(grep -c '"kind":"trial"' "$J" 2>/dev/null)
   bad=$(jq -c 'select(.kind == "trial" and (.load_exit != 0 or .classify_exit != 0 or .applied != true))' "$J" | grep -c .)
-  cells=$(jq -r 'select(.kind == "trial") | "\(.regime) \(.set)"' "$J" | sort | uniq -c | awk '$1 == 3' | grep -c .)
+  cells=$(jq -r 'select(.kind == "trial" and .warmup == false) | "\(.regime) \(.set)"' "$J" | sort | uniq -c | awk '$1 == 3' | grep -c .)
+  warm=$(jq -c 'select(.kind == "trial" and .warmup == true and .set == "none")' "$J" | grep -c .)
   shas=$(jq -r 'select(.kind == "trial") | .output_sha256' "$J" | sort -u | grep -vc '^-$')
+  rshas=$(jq -r 'select(.kind == "trial") | .report_sha256' "$J" | sort -u | grep -vc '^-$')
+  notd=$(jq -c 'select(.kind == "trial" and .teardown_s == null)' "$J" | grep -c .)
   nets=$(jq -c 'select(.kind == "net" and .exit == 0)' "$J" | grep -c .)
-  echo "rehearse: streamed $st trial lines, tune.jsonl has $jt (want 36); $bad invalid; $cells cells of 3 (want 12); $shas distinct outputs (want 1); $nets net lines (want 2)"
-  [ "$st" = 36 ] && [ "$jt" = 36 ] && [ "$bad" = 0 ] && [ "$cells" = 12 ] && [ "$shas" = 1 ] && [ "$nets" = 2 ] \
+  echo "rehearse: streamed $st trial lines, tune.jsonl has $jt (want 38); $bad invalid; $warm warm-up (want 2); $cells cells of 3 (want 12); $shas distinct outputs and $rshas reports (want 1, 1); $notd without teardown_s (want 0); $nets net lines (want 2)"
+  [ "$st" = 38 ] && [ "$jt" = 38 ] && [ "$bad" = 0 ] && [ "$warm" = 2 ] && [ "$cells" = 12 ] && [ "$shas" = 1 ] && [ "$rshas" = 1 ] \
+    && [ "$notd" = 0 ] && [ "$nets" = 2 ] \
     || { echo "rehearse: tune trials wrong" >&2; RC=1; }
   sr=$(grep -c '^ht-record ' "$T/body.log"); jr=$(grep -c . "$T/out/hosttune.jsonl" 2>/dev/null)
-  echo "rehearse: streamed $sr ht-record lines, hosttune.jsonl has $jr (want 92)"
-  [ "$sr" = 92 ] && [ "$jr" = 92 ] || { echo "rehearse: ht_record streaming wrong" >&2; RC=1; }
+  echo "rehearse: streamed $sr ht-record lines, hosttune.jsonl has $jr (want 97)"
+  [ "$sr" = 97 ] && [ "$jr" = 97 ] || { echo "rehearse: ht_record streaming wrong" >&2; RC=1; }
   nw=$(jq -c 'select(.kind == "trial" and .set == "none" and .ht_writes != 0)' "$J" | grep -c .)
   ow=$(jq -c 'select(.kind == "trial" and .set != "none" and .ht_writes == 0)' "$J" | grep -c .)
   nk=$(awk -F'\t' '$3 == "none" && $8 != "kept"' "$T/out/hosttune-apply.tsv" | grep -c .)

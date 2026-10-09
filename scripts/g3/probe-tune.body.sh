@@ -8,13 +8,21 @@
 #      = 48 as E2's x8g.24xlarge N = 1 point) into MADV_HUGEPAGE anonymous memory; load_s = the
 #      shard-load-0 phase. Then the same classify, in the same process.
 # Sets (scripts/g3/hosttune.sh; rationale in docs/probes.md): none, precompact, proactive, defer,
-# defermadv, always. Order: rep r runs the sets rotated by r-1 places; each set's two regimes run
-# back to back, a first when r + i is odd, else b (the first trial is none, a, at fresh boot).
-# REPS = 3: 36 trials. Before every trial: ht_restore (the boot values), drop_caches (Law 4; a
-# cold rung), ht_apply SET (its knobs, then its timed pre-compaction step), ht_record. After: an
-# ht_record. Between load and classify (a), an ht_record; during both, a 2 s sampler of meminfo's
-# AnonHugePages and ShmemPmdMapped (huge-page coverage). Fragmentation is not reset between
-# trials: trial position is recorded, so the state after successive loads is in the record.
+# defermadv, always. For (b), always and defermadv give the same allocation flags as none (v6.18
+# vma_thp_gfp_mask, madvised faults): null controls, so a "win" among them reads as noise.
+# SCHEDULE (registered here; scripts/lib/tune_tables.py --self-test checks it): first a warm-up
+# pair, none a then none b (rep 0, "warmup": streamed and recorded, never in a cell), so that no
+# cell carries the fresh-boot trial alone. Then 3 reps, each complete (all 12 cells) before the
+# next starts; within a rep the 12 cells run in the fixed order SCHED[rep] below (a searched
+# design, not a rotation): every set's a-before-b order flips from rep to rep; every cell's 3
+# trials follow 3 different predecessors, of both regimes; the sets' mean positions differ by at
+# most 1 trial and the cells' by at most 3; no regime runs 3 times in a row. 38 trials. Before
+# every trial: ht_restore (the boot values), drop_caches (Law 4; a cold rung), ht_apply SET (its
+# knobs, then its timed pre-compaction step), ht_record. After: an ht_record. Between load and
+# classify (a), an ht_record; during both, a 2 s sampler of meminfo's AnonHugePages and
+# ShmemPmdMapped (huge-page coverage). Fragmentation is not reset between trials: trial position
+# is recorded, so the state after successive loads is in the record. teardown_s, outside
+# total_s: (a) the tmpfs unmount; (b) the process's close, report, unmap and exit after classify.
 # Fixed sample: SRR5935740 (rank 1 of results/cohort/PRJNA398089/runs.tsv, U1's drift reference),
 # gunzipped once onto a tmpfs before any trial (not timed), so classify is table-bound.
 # Network ceiling: a 30 s ranged-GET discard read at 64 workers (probe (a)'s fastest), before and after;
@@ -22,9 +30,11 @@
 #
 # SELECTION RULE (registered here before any run; scripts/lib/tune_tables.py applies it):
 #   Per regime, separately. A trial is valid if its load and classify exit 0, ht_apply returned 0
-#   (the set read back as wanted) and its --output sha256 equals the run's modal one. Per trial
-#   total_s = precompact_s (0 without the step) + load_s + classify_s. A cell (regime, set) needs
-#   >= 3 valid trials. range(cell) = max - min of total_s; crange(cell) the same of classify_s.
+#   (the set read back as wanted), and its --output and --report sha256 equal the run's modal
+#   ones. Warm-up trials are excluded, and so is every trial of a rep that did not record all 12
+#   of its trials (a TTL kill then leaves whole reps only, so it cannot favour the sets that ran
+#   early in the last rep). Per trial total_s = precompact_s (0 without the step) + load_s +
+#   classify_s. A cell (regime, set) needs >= 3 valid trials. range(cell) = max - min of total_s; crange(cell) the same of classify_s.
 #   A set S != none qualifies iff
 #     gain = median total(none) - median total(S) > 2 x max(range(none), range(S)), and
 #     median classify(S) <= median classify(none) + 2 x max(crange(none), crange(S))
@@ -46,7 +56,11 @@ RB=kraken2-ncbi-refseq-complete-v205; RP=Kraken2_RefSeqCompleteV205
 B=aws-kraken2-942542972736-us-west-2; CK=aws-kraken2/data/cohort
 S1=SRR5935740
 SETS=(none precompact proactive defer defermadv always)
-REPS=${AK2_REHEARSE_REPS:-3}
+SCHED=(
+  "defer:b precompact:a always:a precompact:b none:a defermadv:a defermadv:b none:b proactive:a proactive:b always:b defer:a"
+  "always:b proactive:b defer:a always:a defermadv:b precompact:b proactive:a precompact:a none:b defermadv:a none:a defer:b"
+  "none:a proactive:a defer:b defermadv:a none:b defermadv:b precompact:a defer:a proactive:b always:a always:b precompact:b"
+)
 NET_S=${AK2_REHEARSE_NET_S:-30}
 RW=48; NW=64
 S5V=2.3.0
@@ -141,7 +155,7 @@ sec() { awk -v a="$1" -v b="$2" 'BEGIN{printf "%.3f", b - a}'; }
 # trial POS REP SET REGIME: one cold load and classify; one "trial" line.
 FAIL=0
 trial() {
-  local pos=$1 rep=$2 set=$3 reg=$4 tag="t$1-$4-$3" d arc pre mid=null post t0 t1 tl0 tl1 tc0 tc1 td0 td1 lrc=1 crc=1 cs ls hw
+  local pos=$1 rep=$2 set=$3 reg=$4 warm=${5:-false} tag="t$1-$4-$3" d arc pre mid=null post t0 t1 tl0 tl1 tc0 tc1 td0 td1 lrc=1 crc=1 cs ls hw
   local RAMDB req=0 osha=- rsha=- applied
   ak2_phase "$tag"
   ht_restore || ak2_say "ht_restore before $tag did not restore every knob"
@@ -178,16 +192,23 @@ trial() {
     td1=$(now)
   else
     mkdir -p "$W/rv/$tag"
+    tc0=$(now)
     env AK2_ENGINE_N=1 AK2_ENGINE_RANK=0 AK2_ENGINE_RENDEZVOUS="$W/rv/$tag" AK2_ENGINE_LISTEN=127.0.0.1 AK2_ENGINE_TIMEOUT=30m \
       AK2_ENGINE_HASH_URL="$URL" AK2_ENGINE_HASH_ETAG="$ET" AK2_ENGINE_HASH_SIZE="$SZ" AK2_TIMINGS=1 K2_DB_READ_THREADS="$RW" \
       "$OURS" --db "$DB" --paired --threads "$T" --output "$d/output" --report "$d/report" "$FQ1" "$FQ2" \
       2> >(tee "$d/stderr" | grep --line-buffered -E '^ak2-(timing|engine)' | sed -u "s/^/[$tag] /") > /dev/null
-    crc=$?
+    crc=$?; tc1=$(now)
     sleep 1 # let the tee drain
     ls=$(awk -F'\t' '$1 == "ak2-timing" && $2 == "shard-load-0" {print $4}' "$d/stderr" | tail -1)
     [ -n "$ls" ] && lrc=0
     req=$(awk -F'\t' '$1 == "ak2-engine" && $2 == "load" {print $6}' "$d/stderr" | tail -1)
-    tc0=; tc1=; td0=; td1=
+    # Teardown: from the classify phase's end (its start + seconds after process start, ~ tc0)
+    # to the process's exit; classify_wall_s is the classify phase itself.
+    local ce cw
+    ce=$(awk -F'\t' '$1 == "ak2-timing" && $2 == "classify" {e = $3 + $4} END {if (e != "") print e}' "$d/stderr")
+    cw=$(awk -F'\t' '$1 == "ak2-timing" && $2 == "classify" {print $4}' "$d/stderr" | tail -1)
+    if [ -n "$ce" ]; then td0=$(awk -v a="$tc0" -v e="$ce" 'BEGIN{printf "%.3f", a + e}'); td1=$tc1; else td0=; td1=; fi
+    [ -n "$cw" ] && tc1=$(awk -v a="$tc0" -v w="$cw" 'BEGIN{printf "%.3f", a + w}') || { tc0=; tc1=; }
   fi
   t1=$(now)
   kill "$hw" 2>/dev/null; wait "$hw" 2>/dev/null
@@ -196,14 +217,14 @@ trial() {
   [ -s "$d/output" ] && osha=$(sha256sum "$d/output" | cut -d' ' -f1)
   [ -s "$d/report" ] && rsha=$(sha256sum "$d/report" | cut -d' ' -f1)
   ht_record "post-$tag"; post=$HT_LAST_JSON
-  emit "$(jq -nc --argjson pos "$pos" --argjson rep "$rep" --arg set "$set" --arg reg "$reg" --argjson arc "$arc" --arg applied "$applied" \
+  emit "$(jq -nc --argjson pos "$pos" --argjson rep "$rep" --argjson warm "$warm" --arg set "$set" --arg reg "$reg" --argjson arc "$arc" --arg applied "$applied" \
     --argjson writes "$writes" --arg pcs "$pcs" --arg ls "${ls:-}" --arg cs "${cs:-}" --argjson lrc "$lrc" --argjson crc "$crc" \
     --arg t0 "$t0" --arg t1 "$t1" --arg tc0 "${tc0:-}" --arg tc1 "${tc1:-}" --arg td0 "${td0:-}" --arg td1 "${td1:-}" \
     --arg osha "$osha" --arg rsha "$rsha" --argjson pre "$pre" --argjson mid "$mid" --argjson post "$post" \
     --argjson ha "$(peak "$d/huge.txt" 2)" --argjson hs "$(peak "$d/huge.txt" 3)" --arg tail "$(tail -2 "$d/stderr" 2>/dev/null | tr '\n' ' ' | cut -c1-200)" '
     def n($s): if $s == "" then null else ($s | tonumber) end;
     def delta($k): if ($pre.vmstat[$k] != null and $post.vmstat[$k] != null) then $post.vmstat[$k] - $pre.vmstat[$k] else null end;
-    {kind:"trial", pos:$pos, rep:$rep, set:$set, regime:$reg, applied:($applied == "true" and $arc == 0), ht_apply_rc:$arc,
+    {kind:"trial", pos:$pos, rep:$rep, warmup:$warm, set:$set, regime:$reg, applied:($applied == "true" and $arc == 0), ht_apply_rc:$arc,
      ht_writes:$writes, precompact_s:n($pcs), load_s:n($ls), classify_s:n($cs), load_exit:$lrc, classify_exit:$crc,
      classify_wall_s:(if $tc0 == "" or $tc1 == "" then null else n($tc1) - n($tc0) end),
      teardown_s:(if $td0 == "" then null else n($td1) - n($td0) end),
@@ -224,15 +245,15 @@ trial() {
 
 ak2_phase net-0
 net net-0 || FAIL=1
-NS=${#SETS[@]}; POS=0
-for ((rep = 1; rep <= REPS; rep++)); do
-  for ((i = 0; i < NS; i++)); do
-    set=${SETS[$(( (i + rep - 1) % NS ))]}
-    if (( (rep + i) % 2 == 1 )); then regs="a b"; else regs="b a"; fi
-    for reg in $regs; do
-      POS=$((POS + 1))
-      trial "$POS" "$rep" "$set" "$reg" || { FAIL=1; ak2_say "trial $POS ($reg, $set) failed"; }
-    done
+POS=0
+for reg in a b; do
+  POS=$((POS + 1))
+  trial "$POS" 0 none "$reg" true || { FAIL=1; ak2_say "warm-up $POS ($reg) failed"; }
+done
+for ((rep = 1; rep <= ${#SCHED[@]}; rep++)); do
+  for c in ${SCHED[$((rep - 1))]}; do
+    POS=$((POS + 1))
+    trial "$POS" "$rep" "${c%%:*}" "${c#*:}" || { FAIL=1; ak2_say "trial $POS (${c#*:}, ${c%%:*}) failed"; }
   done
 done
 ak2_phase net-1

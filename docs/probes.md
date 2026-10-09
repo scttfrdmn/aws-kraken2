@@ -118,6 +118,11 @@ AL2023 on x8g boots kernel 6.18 with `enabled=madvise` and `defrag=madvise`. Und
 | `defermadv` | `defrag=defer+madvise` (named in #41) | (b) keeps direct compaction; (a) behaves as under `defer`. It is measured rather than assumed equal to either |
 | `always` | `defrag=always` | the only setting under which (a)'s tmpfs writes compact directly, which maximises (a)'s huge-page coverage at the cost of staging time |
 
+**Null controls in (b):** for a madvised fault, v6.18's `vma_thp_gfp_mask` gives `always`,
+`defer+madvise` and `madvise` (`none`) the same direct-compaction behaviour. So in regime (b),
+`always` and `defermadv` are null controls for `none`. Read any "win" among those three cells as
+noise: it shows what the probe's spread can produce by chance.
+
 Out of scope:
 - **`read_ahead_kb`:** neither regime reads a block device (the table comes over the network,
   the inputs sit on tmpfs), so no candidate sets it. `ht_apply` supports it for the NVMe rungs.
@@ -127,7 +132,8 @@ Out of scope:
 ### The probe: `runs/g3-probe-tune-x8g.24xlarge.json`
 
 The probe is one x8g.24xlarge in us-west-2b. Its body is `scripts/g3/probe-tune.body.sh`, and
-its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 300 ... us-west-2b`. The
+its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 315 ... us-west-2b SRR5935740`
+(the accession goes into `env.AK2_ACCESSIONS`, and so into the manifest). The
 spec header registers the plan, the selection rule and the resolution check.
 
 **Regimes:**
@@ -137,9 +143,19 @@ spec header registers the plan, the selection rule and the resolution check.
 
 **Plan:**
 - Each regime classifies the same fixed sample, SRR5935740 as fq, at `--threads $(nproc)`.
-- 6 sets × 2 regimes × 3 repetitions = 36 cold trials.
-- The sets rotate by one place per repetition, and the regime order alternates. The first
-  trial is `none` on (a) at fresh boot.
+- First a warm-up pair, `none` on (a) then on (b), labelled `warmup`. It is streamed and
+  recorded but never counted in a cell, so the fresh-boot trial cannot widen range(none, a) on
+  its own.
+- Then 6 sets × 2 regimes × 3 repetitions = 36 cold trials, 38 in all.
+- Each repetition runs all 12 cells before the next one starts, in the fixed order `SCHED` that
+  the body registers. That order is a searched design, not a rotation:
+  - every set's a-before-b order flips from one repetition to the next;
+  - each cell's 3 trials follow 3 different predecessors, of both regimes;
+  - the sets' mean positions differ by at most 1 trial, and the cells' by at most 3;
+  - no regime runs 3 times in a row.
+- `tune_tables.py --self-test` (`make test`) reads `SCHED` from the body and asserts these
+  properties. It also asserts that the rotated design this replaced fails them: there the
+  regime order depended on the set alone, so carry-over was confounded with the set.
 
 **Each trial:**
 1. `ht_restore`.
@@ -151,7 +167,9 @@ spec header registers the plan, the selection rule and the resolution check.
 6. `ht_record post-…`.
 7. One `probe-tune {"kind":"trial",...}` line, which carries:
    - `load_s`, `classify_s`, `precompact_s` and `total_s`;
-   - the output's sha256;
+   - `teardown_s`, kept out of `total_s`: for (a) the tmpfs unmount; for (b) the process's close,
+     report, unmap and exit after its classify phase;
+   - the output's and the report's sha256;
    - the free fraction in 2 MiB blocks before the trial;
    - the vmstat deltas: compaction stalls and successes, and THP allocations and fallbacks.
 
@@ -162,8 +180,11 @@ Fragmentation is not reset between trials. The trial position is recorded, so
 again after them. The object's bytes divided by the faster of the two rates is the load floor.
 
 **Selection rule** (as registered; `scripts/lib/tune_tables.py`), applied per regime:
-- **Valid trial:** load and classify exit 0, the set applied, and the output sha256 is the
-  run's modal one.
+- **Valid trial:** load and classify exit 0, the set applied, and the output and report sha256
+  are the run's modal ones.
+- **Counted:** warm-up trials never count. Neither does any trial of a repetition that did not
+  record all 12 of its trials, so a TTL kill leaves whole repetitions only and cannot favour the
+  sets that ran early in the last one.
 - **Cell:** a cell (regime, set) needs at least 3 valid trials.
 - **Qualifying:** a set qualifies if both of these hold:
   - its median total beats `none`'s by more than 2 × the larger of the two cells' ranges;
@@ -179,8 +200,8 @@ S3 takes regime (a)'s pick. Regime (b)'s pick is recorded for ours (O0b).
 - If the ceiling is below the resolution, the selection table says that a `none` verdict is not
   evidence.
 
-**Law 1:** every completed trial must write the same output, so upstream `-M` and ours' engine
-agree. If they do not, the post exits 1.
+**Law 1:** every completed trial must write the same output and the same report, so upstream
+`-M` and ours' engine agree. If they do not, the post exits 1.
 
 **Tables** (post: `scripts/post/g3-probe-tune-x8g.24xlarge.sh`):
 - `tables/probe-tune-trials.tsv`
@@ -203,9 +224,10 @@ these stand-ins:
 - a fake `/sys` and `/proc` tree for the knobs.
 
 It runs the full plan, and passes on observed output:
-- 36 valid trial lines, streamed and pushed, 3 per cell;
-- one output sha256 across both regimes;
-- 92 `ht-record` lines, streamed and pushed;
+- 38 valid trial lines, streamed and pushed: 2 warm-up, and 3 per cell;
+- one output sha256 and one report sha256 across both regimes;
+- a `teardown_s` on every trial;
+- 97 `ht-record` lines, streamed and pushed;
 - `none` trials wrote nothing, and every other trial wrote;
 - the host is back at its boot values at the end;
 - `tune_tables.py` makes the tables. `make test` runs its `--self-test` on synthetic cells.
@@ -214,6 +236,7 @@ It runs the full plan, and passes on observed output:
 - (a) is about 280 s a trial: s5cmd at about 4.75 GB/s from probe (a), about 2 s of classify
   (U1), and the unmount.
 - (b) is about 345 s a trial: E2's N = 1 load of 324 s, then classify and exit.
-- 18 of each, plus about 15 min of setup and ceilings, comes to about 3.3 h, about $31 at the
-  on-demand price.
-- The TTL is 5 h, with a cost_limit of $46.90 (a runaway backstop under `AK2_MAX_COST_USD`).
+- 19 of each (the warm-up included), plus about 15 min of setup and ceilings, comes to about
+  3.5 h, about $33 at the on-demand price.
+- The TTL is 315 min, with a cost_limit of $49.25: a runaway backstop, and the most the $50
+  `AK2_MAX_COST_USD` cap allows at $9.38/h (360 min would need $56.28).

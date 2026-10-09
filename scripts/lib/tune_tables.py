@@ -4,10 +4,13 @@ from the record only (the run dir's pushed out/tune.jsonl):
 
   tune_tables.py RUN_DIR      -> tables/probe-tune-trials.tsv, probe-tune.tsv,
                                  probe-tune-selection.tsv, probe-tune-drift.tsv
-  tune_tables.py --self-test  the selection rule on synthetic cells (make test)
+  tune_tables.py --self-test  the selection rule on synthetic cells, and the body's registered
+                              SCHED checked for its properties (make test)
 
 The selection rule is the one registered in the spec's header (applied per regime):
-  valid trial: load_exit == classify_exit == 0, applied, output_sha256 == the run's modal one;
+  valid trial: load_exit == classify_exit == 0, applied, output_sha256 and report_sha256 == the
+  run's modal ones; warm-up trials and every trial of a rep that did not record all 12 of its
+  trials are excluded from the cells;
   total_s = precompact_s (0 without the step) + load_s + classify_s; a cell needs >= 3 valid;
   S != none qualifies iff median(none) - median(S) > 2 x max(range(none), range(S)) and
   median classify(S) <= median classify(none) + 2 x max(crange(none), crange(S));
@@ -16,14 +19,16 @@ Resolution, per regime: the smallest gain the rule can accept is 2 x range(none)
 threshold is lower). The load ceiling is median load_s(none) - the load floor (object bytes /
 the faster network-ceiling rate): an upper bound on what a set could gain on the load side. If
 the ceiling is below the resolution, a none verdict is "not evidence". The classify resolution,
-2 x crange(none), is printed beside it (the classify side has no ceiling of its own here). Exits 1 if a table cannot be made or if
-the valid trials' outputs are not all identical across both regimes (a Law 1 defect).
+2 x crange(none), is printed beside it (the classify side has no ceiling of its own here).
+Exits 1 if a table cannot be made, or if the completed trials' outputs or reports are not all
+identical across both regimes (a Law 1 defect).
 """
-import csv, json, os, statistics, sys
+import csv, json, os, re, statistics, sys
 from collections import Counter
 
 SETS = ["none", "precompact", "proactive", "defer", "defermadv", "always"]
 MIN_N = 3
+CELLS_PER_REP = 2 * len(SETS)
 
 
 def med(v):
@@ -38,14 +43,69 @@ def f(x, p=3):
     return "-" if x is None else f"{x:.{p}f}"
 
 
-def valid(t, modal):
+def valid(t, modal, modal_rep=None):
     return (t.get("load_exit") == 0 and t.get("classify_exit") == 0 and t.get("applied") is True
-            and t.get("total_s") is not None and t.get("output_sha256") == modal)
+            and t.get("total_s") is not None and t.get("output_sha256") == modal
+            and (modal_rep is None or t.get("report_sha256") == modal_rep))
 
 
-def modal_sha(trials):
-    c = Counter(t.get("output_sha256") for t in trials if t.get("output_sha256") not in (None, "-"))
+def modal_sha(trials, key="output_sha256"):
+    c = Counter(t.get(key) for t in trials if t.get(key) not in (None, "-"))
     return c.most_common(1)[0][0] if c else None
+
+
+def complete_reps(trials):
+    """The reps (> 0) that recorded all their trials: only these count in the cells."""
+    n = Counter(t["rep"] for t in trials if not t.get("warmup") and t.get("rep", 0) > 0)
+    return {r for r, k in n.items() if k == CELLS_PER_REP}
+
+
+def schedule_check(sched, warmup=(("none", "a"), ("none", "b"))):
+    """sched: one list of (set, regime) per rep. Returns the violated properties (empty = ok):
+    every rep runs all 12 cells once; every set's a-before-b order flips from rep to rep; every
+    cell's trials follow distinct predecessors, of both regimes; the sets' mean positions differ
+    by at most 1 trial and the cells' by at most 3; no regime runs 3 times in a row."""
+    bad = []
+    cells = {(s, g) for s in SETS for g in "ab"}
+    for r, rep in enumerate(sched):
+        if sorted(rep) != sorted(cells):
+            bad.append(f"rep {r + 1} does not run every cell exactly once")
+    if bad:
+        return bad
+    for s in SETS:
+        o = [rep.index((s, "a")) < rep.index((s, "b")) for rep in sched]
+        if any(o[i] == o[i + 1] for i in range(len(o) - 1)):
+            bad.append(f"{s}: regime order does not flip every rep ({o})")
+    seq = list(warmup) + [c for rep in sched for c in rep]
+    pos, pred = {}, {}
+    for i in range(len(warmup), len(seq)):
+        c = seq[i]
+        pos.setdefault(c[0], []).append(i)
+        pos.setdefault(c, []).append(i)
+        pred.setdefault(c, []).append(seq[i - 1])
+    for c, p in pred.items():
+        if len(set(p)) != len(p):
+            bad.append(f"{c}: repeated predecessor {p}")
+        if len({x[1] for x in p}) < 2:
+            bad.append(f"{c}: predecessors all of regime {p[0][1]}")
+    sm = [statistics.mean(pos[s]) for s in SETS]
+    cm = [statistics.mean(pos[c]) for c in cells]
+    if max(sm) - min(sm) > 1.0:
+        bad.append(f"set mean positions spread {max(sm) - min(sm):.2f} > 1")
+    if max(cm) - min(cm) > 3.0:
+        bad.append(f"cell mean positions spread {max(cm) - min(cm):.2f} > 3")
+    for i in range(2, len(seq)):
+        if seq[i][1] == seq[i - 1][1] == seq[i - 2][1]:
+            bad.append(f"regime {seq[i][1]} three times in a row at {i - 1}")
+    return bad
+
+
+def body_schedule(path):
+    """The SCHED array registered in the probe body."""
+    m = re.search(r"^SCHED=\(\n(.*?)\n\)", open(path).read(), re.S | re.M)
+    if not m:
+        raise SystemExit(f"tune_tables: no SCHED in {path}")
+    return [[tuple(c.split(":")) for c in line.strip().strip('"').split()] for line in m.group(1).splitlines()]
 
 
 def select(trials, floor_s=None):
@@ -113,18 +173,22 @@ def tables(d):
     nets = [x for x in L if x.get("kind") == "net" and x.get("exit") == 0 and x.get("load_floor_s")]
     if not trials:
         sys.exit("tune_tables: no trial lines")
-    modal = modal_sha(trials)
+    modal, modal_rep = modal_sha(trials), modal_sha(trials, "report_sha256")
+    reps = complete_reps(trials)
     for t in trials:
-        t["valid"] = valid(t, modal)
+        t["valid"] = valid(t, modal, modal_rep)
+        t["counted"] = t["valid"] and not t.get("warmup") and t.get("rep") in reps
+    partial = sorted({t["rep"] for t in trials if not t.get("warmup") and t.get("rep") not in reps})
     floor = min(x["load_floor_s"] for x in nets) if nets else None  # the faster read: the larger (upper-bound) ceiling
     td = os.path.join(d, "tables")
     vd = lambda t, k: (t.get("vmstat_delta") or {}).get(k)
     write(os.path.join(td, "probe-tune-trials.tsv"),
-          ["pos", "rep", "regime", "set", "valid", "applied", "precompact_s", "load_s", "classify_s", "total_s", "wall_s",
+          ["pos", "rep", "warmup", "regime", "set", "valid", "counted", "applied", "precompact_s", "load_s", "classify_s", "total_s", "wall_s",
            "teardown_s", "pre_free_huge_frac", "compact_stall", "compact_success", "compact_fail", "thp_fault_alloc",
            "thp_fault_fallback", "thp_file_alloc", "thp_file_fallback", "shmem_huge_kb_after_load", "anon_huge_kb_peak",
            "shmem_pmd_mapped_kb_peak", "output_sha256"],
-          [[t["pos"], t["rep"], t["regime"], t["set"], "yes" if t["valid"] else "no", t.get("applied"),
+          [[t["pos"], t["rep"], "yes" if t.get("warmup") else "no", t["regime"], t["set"], "yes" if t["valid"] else "no",
+            "yes" if t["counted"] else "no", t.get("applied"),
             f(t.get("precompact_s")), f(t.get("load_s")), f(t.get("classify_s")), f(t.get("total_s")), f(t.get("wall_s")),
             f(t.get("teardown_s")), f(t.get("pre_free_huge_frac"), 4), vd(t, "compact_stall"), vd(t, "compact_success"),
             vd(t, "compact_fail"), vd(t, "thp_fault_alloc"), vd(t, "thp_fault_fallback"), vd(t, "thp_file_alloc"),
@@ -132,7 +196,7 @@ def tables(d):
             t.get("shmem_pmd_mapped_kb_peak"), (t.get("output_sha256") or "-")[:16]] for t in sorted(trials, key=lambda t: t["pos"])])
     cell_rows, sel_rows, drift = [], [], []
     for reg in ("a", "b"):
-        R = [t for t in trials if t["regime"] == reg]
+        R = [dict(t, valid=t["counted"]) for t in trials if t["regime"] == reg and not t.get("warmup")]
         if not R:
             continue
         cells, sel = select(R, floor)
@@ -157,11 +221,16 @@ def tables(d):
           ["regime", "chosen", "resolution_s", "resolution_pct", "classify_resolution_s", "load_floor_s", "load_ceiling_s", "evidence", "reason"], sel_rows)
     write(os.path.join(td, "probe-tune-drift.tsv"),
           ["regime", "pos", "set", "pre_free_huge_frac", "load_s", "classify_s", "compact_stall", "valid"], drift)
-    shas = {t.get("output_sha256") for t in trials if t.get("load_exit") == 0 and t.get("classify_exit") == 0}
+    done = [t for t in trials if t.get("load_exit") == 0 and t.get("classify_exit") == 0]
+    shas = {t.get("output_sha256") for t in done}
+    rshas = {t.get("report_sha256") for t in done}
+    if partial:
+        print(f"tune_tables: reps {partial} did not record all {CELLS_PER_REP} trials; their trials are not counted")
     for row in sel_rows:
         print("tune_tables: regime %s -> %s (resolution %s s, ceiling %s s; evidence: %s)" % (row[0], row[1], row[2], row[6], row[7]))
-    if len(shas) > 1:
-        print(f"tune_tables: DEFECT: completed trials wrote {len(shas)} different outputs (Law 1)", file=sys.stderr)
+    if len(shas) > 1 or len(rshas) > 1:
+        print(f"tune_tables: DEFECT: completed trials wrote {len(shas)} different outputs and {len(rshas)} different reports (Law 1)",
+              file=sys.stderr)
         return 1
     return 0
 
@@ -199,6 +268,24 @@ def self_test():
     # Validity: a differing output is invalid.
     assert not valid({"load_exit": 0, "classify_exit": 0, "applied": True, "total_s": 1, "output_sha256": "y"}, "x")
     assert modal_sha([{"output_sha256": "x"}, {"output_sha256": "x"}, {"output_sha256": "y"}]) == "x"
+    assert not valid({"load_exit": 0, "classify_exit": 0, "applied": True, "total_s": 1, "output_sha256": "x",
+                      "report_sha256": "q"}, "x", "r")
+    # Only complete reps count (a TTL kill mid-rep cannot favour the sets that ran early in it).
+    tk = ([{"rep": r, "warmup": False} for r in (1, 2) for _ in range(CELLS_PER_REP)] + [{"rep": 3}] * 5
+          + [{"rep": 0, "warmup": True}] * 2)
+    assert complete_reps(tk) == {1, 2}, complete_reps(tk)
+    # The schedule registered in the body has its properties, and the checker catches their absence.
+    body = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "g3", "probe-tune.body.sh")
+    sched = body_schedule(body)
+    assert len(sched) == 3, sched
+    bad = schedule_check(sched)
+    assert not bad, bad
+    # The rotated, back-to-back design this replaced (#41 review B1) must fail.
+    rot = [[(SETS[(i + r) % 6], g) for i in range(6) for g in (("a", "b") if (r + 1 + i) % 2 else ("b", "a"))]
+           for r in range(3)]
+    rb = schedule_check(rot)
+    assert any("flip" in b for b in rb) and any("predecessor" in b for b in rb), rb
+    assert any("spread" in b or "flip" in b for b in schedule_check([sched[0]] * 3)), "a repeated rep must fail"
     print("tune_tables: self-test ok")
 
 
