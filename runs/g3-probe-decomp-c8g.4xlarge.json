@@ -1,0 +1,29 @@
+{
+  "task_id": "g3-probe-decomp-c8g.4xlarge",
+  "command": [
+    "bash",
+    "-c",
+    "# G3 probe (c) (#25, Scott approved the three cheap probes 2026-10-08): gzip decompression tools\n# on the largest cohort sample by bytes, SRR5935773 (both mates, 2.07 GB of gz), on one small\n# Graviton4 node (c8g.4xlarge, 16 vCPU: the same core as U1's x8g, and pigz -p 16 as U1's fq\n# preparation). Tools: gzip -dc (what upstream's kraken2 wrapper runs on gz input, one process per\n# mate), pigz -dc -p 16 (U1's preparation), igzip (ISA-L, python-isal's CLI), rapidgzip -P 16 and\n# -P 8. Modes: seq (mate 1 then mate 2, as U1's preparation) and conc (both mates at once, as the\n# wrapper's two pipes). Output to /dev/null for timing; each tool's output is also hashed once per\n# mate and compared with gzip -dc's (a tool whose output differs is reported, never used).\n# Inputs on /dev/shm (tmpfs): the probe times decompression, not storage, so no rung is cold and\n# no drop_caches applies. 3 repetitions, tool order rotated per repetition. Every result streams\n# as \"probe-decomp {json}\" and into out/decomp.jsonl, pushed after every repetition.\nW=$HOME/ak2; mkdir -p \"$W\"\nSHA=${AK2_RUN_ID##*-}\nB=aws-kraken2-942542972736-us-west-2; CK=aws-kraken2/data/cohort; S=SRR5935773\nREPS=${AK2_REHEARSE_REPS:-3}; P=16\nfail() { ak2_say \"ERROR: $*\"; exit 1; }\nnow() { perl -MTime::HiRes=time -e 'printf \"%.3f\\n\", time'; }\n\nak2_phase setup\nsudo -n dnf install -y -q git pigz gzip python3-pip perl jq > \"$W/dnf.log\" 2>&1 || { tail -5 \"$W/dnf.log\"; fail \"dnf failed\"; }\ngit clone -q https://github.com/scttfrdmn/aws-kraken2.git \"$W/repo\" || fail \"clone failed\"\ngit -C \"$W/repo\" checkout -q \"$SHA\" || fail \"checkout $SHA failed\"\nPY=${AK2_REHEARSE_PYTHON:-python3}  # make rehearse seam: a local python with the same wheels\n\"$PY\" -m venv \"$W/venv\" || fail \"venv failed\"\n\"$W/venv/bin/pip\" install -q --only-binary=:all: \"rapidgzip==0.14.5\" \"isal==1.8.0\" > \"$W/pip.log\" 2>&1 || { tail -5 \"$W/pip.log\"; fail \"pip install failed\"; }\nRG=\"$W/venv/bin/rapidgzip\"; IG=\"$W/venv/bin/python -m isal.igzip\"\nak2_say \"tools: $(gzip --version | head -1); pigz $(pigz --version 2>&1); rapidgzip $(\"$RG\" --version 2>&1 | head -1); isal $(\"$W/venv/bin/python\" -c 'import isal; print(isal.__version__)'); nproc $(nproc)\"\n\nak2_phase fetch-inputs\nIN=/dev/shm/ak2-in; [ -n \"${AK2_REHEARSE_SHM:-}\" ] && IN=$AK2_REHEARSE_SHM\nmkdir -p \"$IN\" || fail \"mkdir $IN\"\n\"$W/repo/scripts/g3/fetch.sh\" \"$B\" \"$CK\" \"$IN\" 2 \"${S}_1.fastq.gz\" \"${S}_2.fastq.gz\" > \"$W/fetched.txt\" 2>&1\nFERR=$?\ncat \"$W/fetched.txt\"\n[ \"$FERR\" = 0 ] && [ \"$(grep -vc ERROR \"$W/fetched.txt\")\" = 2 ] || fail \"input fetch failed\"\nak2_req GetObject \"$(awk '!/ERROR/{n += int(($2 + 8388607) / 8388608)} END{print n+0}' \"$W/fetched.txt\")\" \"$B\"\nak2_req HeadObject 2 \"$B\"\nak2_say \"inputs staged and verified: 2 files, $(awk '{s+=$2} END{printf \"%.3f GB\", s/1e9}' \"$W/fetched.txt\")\"\n\n# dc TOOL FILE: decompress FILE to stdout with TOOL.\ndc() {\n  case \"$1\" in\n    gzip) gzip -dc \"$2\" ;;\n    pigz-p16) pigz -dc -p \"$P\" \"$2\" ;;\n    igzip) $IG -d -c \"$2\" ;;\n    rapidgzip-p16) \"$RG\" -d -c -P 16 \"$2\" ;;\n    rapidgzip-p8) \"$RG\" -d -c -P 8 \"$2\" ;;\n  esac\n}\nTOOLS=(gzip pigz-p16 igzip rapidgzip-p16 rapidgzip-p8)\nJ=\"$W/decomp.jsonl\"; : > \"$J\"\nemit() { echo \"$1\" >> \"$J\"; echo \"probe-decomp $1\"; }\n\nak2_phase identity\ndeclare -A REF\nfor t in \"${TOOLS[@]}\"; do\n  for m in 1 2; do\n    h=$(dc \"$t\" \"$IN/${S}_$m.fastq.gz\" | sha256sum | cut -d' ' -f1); rc=${PIPESTATUS[0]}\n    [ \"$t\" = gzip ] && REF[$m]=$h\n    emit \"$(jq -nc --arg t \"$t\" --argjson m \"$m\" --arg h \"$h\" --arg ref \"${REF[$m]:-}\" --argjson rc \"$rc\" \\\n      '{kind:\"identity\", tool:$t, mate:$m, sha256:$h, identical:($h == $ref and $rc == 0), exit:$rc}')\"\n  done\ndone\nak2_push \"$J\" decomp.jsonl > /dev/null\n\nfor ((r = 1; r <= REPS; r++)); do\n  ak2_phase \"rep-$r\"\n  n=${#TOOLS[@]}\n  for ((i = 0; i < n; i++)); do\n    t=${TOOLS[$(( (i + r - 1) % n ))]}\n    for mode in seq conc; do\n      t0=$(now)\n      if [ \"$mode\" = seq ]; then\n        dc \"$t\" \"$IN/${S}_1.fastq.gz\" > /dev/null; r1=$?\n        dc \"$t\" \"$IN/${S}_2.fastq.gz\" > /dev/null; r2=$?\n      else\n        dc \"$t\" \"$IN/${S}_1.fastq.gz\" > /dev/null & p1=$!\n        dc \"$t\" \"$IN/${S}_2.fastq.gz\" > /dev/null & p2=$!\n        wait \"$p1\"; r1=$?; wait \"$p2\"; r2=$?\n      fi\n      t1=$(now)\n      emit \"$(jq -nc --arg t \"$t\" --arg mode \"$mode\" --argjson rep \"$r\" --arg t0 \"$t0\" --arg t1 \"$t1\" --argjson e $(( r1 + r2 )) \\\n        --arg s \"$S\" '{kind:\"time\", sample:$s, tool:$t, mode:$mode, rep:$rep, seconds:(($t1|tonumber)-($t0|tonumber)), exit:$e}')\"\n    done\n  done\n  ak2_push \"$J\" decomp.jsonl > /dev/null\ndone\nbad=$(grep -c '\"exit\":[1-9]' \"$J\")\nak2_say \"decomp probe done: $(grep -c '\"kind\":\"time\"' \"$J\") timings, $bad non-zero exits\"\nak2_phase push\nak2_push \"$J\" decomp.jsonl || exit 1\n[ \"$bad\" = 0 ] || exit 1\nexit 0\n"
+  ],
+  "resources": {
+    "instance_type": "c8g.4xlarge",
+    "architecture": "arm64",
+    "disk_gib": 60,
+    "s3_read_write": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"
+    ]
+  },
+  "placement": {
+    "availability_zone": "us-west-2b"
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/hash.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/ s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/"
+  },
+  "lifecycle": {
+    "ttl": "25m",
+    "on_complete": "terminate",
+    "cost_limit": 0.27
+  }
+}

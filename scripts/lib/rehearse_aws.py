@@ -92,6 +92,8 @@ if op == "head-object":
         print(h.get("Metadata", {}).get("sha256", "None"))
     elif opt("--query") == "ETag":
         print(h["ETag"])
+    elif opt("--query") == "ContentLength":
+        print(h["ContentLength"])
     else:
         print(json.dumps(h))
 elif op == "put-object":
