@@ -11,7 +11,7 @@
 #     lines, every exit 0; the same lines in the pushed out/decomp.jsonl; probe_tables.py decomp
 #     makes both tables with 5 tools each, all identical = yes;
 #   stage: exit 0; 3 sweep done lines; a complete whole-object rget and s5cmd write, each followed
-#     by a passing ETag check; one aws s3 cp sample done line; streamed lines = pushed lines;
+#     by a passing ETag check; one aws s3 cp sample done line with more than 0 bytes; streamed lines = pushed lines;
 #     probe_tables.py stage marks rget and s5cmd ok = yes;
 #   cont: 3 members run concurrently (N = 3, stages 1 2 3), each exits 0; member k streams one
 #     done line per stage with N > k; probe_tables.py cont reports N = 1, 2, 3 with N nodes each.
@@ -151,8 +151,9 @@ stage)
   fr=$(grep '"kind":"done"' "$J" | grep '"label":"full-rget' | grep -c '"complete":true')
   fs=$(grep '"kind":"done"' "$J" | grep '"label":"full-s5cmd' | grep -c '"complete":true')
   eo=$(grep '"kind":"etag"' "$J" | grep -c '"ok":true'); cr=$(grep '"kind":"done"' "$J" | grep -c '"label":"awscrt')
-  echo "rehearse: streamed $sl lines, stage.jsonl $jl; sweep done $sw (want 3); full rget $fr, s5cmd $fs complete; ETag ok $eo (want 2); aws sample $cr"
-  [ "$sl" = "$jl" ] && [ "$sw" = 3 ] && [ "$fr" = 1 ] && [ "$fs" = 1 ] && [ "$eo" = 2 ] && [ "$cr" = 1 ] \
+  cb=$(grep '"kind":"done"' "$J" | grep '"label":"awscrt' | jq -r '.bytes_allocated' | tail -1)
+  echo "rehearse: streamed $sl lines, stage.jsonl $jl; sweep done $sw (want 3); full rget $fr, s5cmd $fs complete; ETag ok $eo (want 2); aws sample $cr with ${cb:-0} bytes (want > 0)"
+  [ "$sl" = "$jl" ] && [ "$sw" = 3 ] && [ "$fr" = 1 ] && [ "$fs" = 1 ] && [ "$eo" = 2 ] && [ "$cr" = 1 ] && [ "${cb:-0}" -gt 0 ] \
     || { echo "rehearse: stage streaming or results wrong" >&2; RC=1; }
   mkdir -p "$T/run/out" && cp "$J" "$T/run/out/"
   python3 scripts/lib/probe_tables.py stage "$T/run" || RC=1

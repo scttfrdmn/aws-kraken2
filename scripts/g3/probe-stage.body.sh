@@ -83,13 +83,14 @@ sampled_run() {
   local p=$!
   while kill -0 "$p" 2>/dev/null; do
     sleep 5
-    b=$(stat -c%s "$RAMDB/hash.k2d" 2>/dev/null || echo 0)
+    b=$(du -sk "$RAMDB" 2>/dev/null | cut -f1); b=$(( ${b:-0} * 1024 ))  # the whole tmpfs: a tool may write a temporary name first
     emit "$(jq -nc --arg l "$l" --arg t0 "$t0" --arg t1 "$(now)" --argjson b "$b" \
       '{kind:"progress", label:$l, elapsed_s:(($t1|tonumber)-($t0|tonumber)), file_bytes:$b}')"
   done
   wait "$p"; rc=$?; t1=$(now)
-  # The bytes actually present: for a time-limited sparse write, the allocated size, not the length.
-  b=$(du -k "$RAMDB/hash.k2d" 2>/dev/null | cut -f1); b=$(( ${b:-0} * 1024 ))
+  # The bytes actually present on the tmpfs (allocated, so a sparse time-limited write counts what arrived), under
+  # any name: aws s3 cp writes a temporary file and renames it at the end (probe (a) at c0b50ca recorded 0 bytes).
+  b=$(du -sk "$RAMDB" 2>/dev/null | cut -f1); b=$(( ${b:-0} * 1024 ))
   emit "$(jq -nc --arg l "$l" --arg t0 "$t0" --arg t1 "$t1" --argjson b "$b" --argjson rc "$rc" --argjson sz "$SZ" --argjson lim "$lim" \
     '{kind:"done", label:$l, seconds:(($t1|tonumber)-($t0|tonumber)), bytes_allocated:$b, object_bytes:$sz, exit:$rc,
       complete:($rc == 0 and $lim == 0), gbps:($b / (($t1|tonumber)-($t0|tonumber)) / 1e9)}')"
@@ -114,7 +115,7 @@ rget_run "full-rget-w$BEST" "$RAMDB/hash.k2d" 0 "$BEST" || FAIL=1
 ak2_req GetObject "$(grep '"kind":"done"' "$W/rget.out" | jq -r '.requests')" "$RB"
 ak2_phase etag-rget
 etag_run "etag-after-rget" || FAIL=1
-rm -f "$RAMDB/hash.k2d"
+find "${RAMDB:?}" -mindepth 1 -delete  # any temporary names too
 ak2_push "$J" stage.jsonl > /dev/null
 
 ak2_phase s5cmd-full
@@ -122,7 +123,7 @@ sampled_run "full-s5cmd" 0 "$S5" --no-sign-request --numworkers 256 cp --concurr
 ak2_req GetObject $(( (SZ + 67108863) / 67108864 )) "$RB"
 ak2_phase etag-s5cmd
 etag_run "etag-after-s5cmd" || FAIL=1
-rm -f "$RAMDB/hash.k2d"
+find "${RAMDB:?}" -mindepth 1 -delete  # any temporary names too
 ak2_push "$J" stage.jsonl > /dev/null
 
 ak2_phase awscrt-sample
@@ -131,7 +132,7 @@ AWS_CONFIG_FILE="$W/aws-config" sampled_run "awscrt-${CRT_S}s" "$CRT_S" aws s3 c
 rc=$?
 [ "$rc" = 0 ] || [ "$rc" = 124 ] || FAIL=1   # 124: stopped by its time limit, as planned
 ak2_req GetObject "$(awk -v b="$(grep '"label":"awscrt' "$J" | tail -1 | jq -r '.bytes_allocated')" 'BEGIN{print int((b + 67108863) / 67108864)}')" "$RB"
-rm -f "$RAMDB/hash.k2d"
+find "${RAMDB:?}" -mindepth 1 -delete  # any temporary names too
 scripts/upstream-cohort.sh umount roda
 ak2_phase push
 ak2_push "$J" stage.jsonl || FAIL=1

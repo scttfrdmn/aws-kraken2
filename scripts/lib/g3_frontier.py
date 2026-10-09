@@ -28,7 +28,10 @@ Definitions (generated into frontier.md):
   - Phase split, per row (frontier.tsv ph_* columns; for derived upstream points, the critical
     node's): fixed (boot, setup; ours also manifest, rendezvous, skew and the body tail), table
     staging, input fetch, decompression/preparation (upstream's fq path; ours and upstream's gz
-    path decompress inside classify), classify. Each per-axis best gives each phase's ratio.
+    path, the wrapper's gzip -dc pipes, decompress inside classify), classify. Where decompression
+    overlaps classify (pipelined or streamed), the prep is hidden inside the overlapped span
+    (ph_prep_classify_span_s), so the phases do not sum to the wall. Each per-axis best gives each
+    phase's ratio.
   - Staging break-even, per from-scratch cell: the upstream staging rate (GB/s) at which the ratio
     would be 5x (the kill line) and 1x, the rest of that upstream point held fixed.
   - Time: measured wall seconds. $/sample: derived (on-demand price x nodes x that wall /
@@ -337,7 +340,7 @@ def schedule(items, N, P, cold_x=0.0, overlap=False):
             if sp_ > span:
                 span, prep, cls = sp_, sum(pr for _, pr, _ in js), sum(cl for _, _, cl in js)
             byt += sum(BYTES[s_] for s_, _, _ in js)
-        nodes.append({"span": span, "prep": prep, "classify": cls, "bytes": byt})
+        nodes.append({"span": span, "prep": prep, "classify": cls, "bytes": byt, "overlap": overlap or ""})
     return nodes
 
 
@@ -356,7 +359,7 @@ def evaluate(node, items, N, P, regime, svar, cold_x=0.0, overlap=False):
             t = p["fixed"] + p["stage"] + p["input"] + nd["span"]
         if t > best_t:
             best_t = t
-            ph_ = dict(p, prep=nd["prep"], classify=nd["classify"], span=nd["span"])
+            ph_ = dict(p, prep=nd["prep"], classify=nd["classify"], span=nd["span"], overlap=nd["overlap"])
     return best_t, ph_
 
 
@@ -432,7 +435,7 @@ for c in (1, 10, 100):
                                 continue  # staging does not enter the resident regime
                             t, phs = evaluate(U1, items, N, cf["P"], regime, svar, overlap=overlap)
                             sweep.append({"cohort": c, "regime": regime, "node": "x8g.24xlarge (U1, tmpfs)", "config": cfgname,
-                                          "svar": svar, "tool": tool if cf["input"] == "fq" else "in-process gzip",
+                                          "svar": svar, "tool": tool if cf["input"] == "fq" else "the wrapper's gzip -dc pipes",
                                           "overlap": overlap, "slots_per_node": cf["P"], "N": N, "time_s": t,
                                           "usd_per_sample": N * U1["price"] * t / 3600 / c, "price": U1["price"], "vcpus": 96,
                                           "ph": phs})
@@ -442,7 +445,7 @@ for c in (1, 10, 100):
             t, phs = evaluate(U2, u2_items(c), N, 1, regime, "measured", cold_x if regime == "from-scratch" else 0.0)
             sweep.append({"cohort": c, "regime": regime, "node": "r8gd.16xlarge (U2, NVMe)",
                           "config": f"warm T={U2['warm']['threads']}, first sample per node cold T={U2['cold']['threads']}",
-                          "svar": "measured", "tool": "in-process gzip", "overlap": False, "slots_per_node": 1, "N": N,
+                          "svar": "measured", "tool": "the wrapper's gzip -dc pipes", "overlap": False, "slots_per_node": 1, "N": N,
                           "time_s": t, "usd_per_sample": N * U2["price"] * t / 3600 / c, "price": U2["price"], "vcpus": 64,
                           "ph": phs})
 
@@ -454,9 +457,12 @@ for key in sorted({(s["cohort"], s["regime"], s["node"], s["svar"], s["tool"], s
     for why, s in (("min time", min(sel, key=lambda s: (s["time_s"], s["N"]))),
                    ("min $", min(sel, key=lambda s: (s["usd_per_sample"], s["N"])))):
         picks.setdefault(id(s), [s, []])[1].append(why)
+    one = [s_ for s_ in sel if s_["N"] == 1]
+    if one:
+        picks.setdefault(id(one[0]), [one[0], []])[1].append("N = 1")
     for s, whys in picks.values():
         c, regime = key[0], key[1]
-        if c == 1 and s["N"] == 1 and s["svar"] == "measured" and s["tool"] in ("pigz", "in-process gzip") and not s["overlap"]:
+        if c == 1 and s["N"] == 1 and s["svar"] == "measured" and s["tool"] in ("pigz", "the wrapper's gzip -dc pipes") and not s["overlap"]:
             continue  # the measured single-node rows already carry this point
         st = ("-", "-")
         if regime == "from-scratch":
@@ -482,15 +488,22 @@ def phase_text(o, u):
         return "-"
     fo, fu = po["fixed"] + po["stage"] + po["input"], pu["fixed"] + pu["stage"] + pu["input"]
     r = lambda a, b: f"{a / b:.2f}x" if b > 0 else "-"
-    tot_u = fu + pu["prep"] + pu["classify"]
-    share = pu["prep"] / tot_u if tot_u else 0
+    ov = pu.get("overlap") or ""
+    work_u = pu["span"] if ov else pu["prep"] + pu["classify"]
+    tot_u = fu + work_u
+    share = pu["prep"] / tot_u if tot_u and not ov else 0
     t = []
     if fu or fo:
         t.append(f"fixed+staging+input up {fu:.0f} s / ours {fo:.0f} s = {r(fu, fo)} (staging up {pu['stage']:.0f} / ours {po['stage']:.0f})")
-    t.append(f"decompression/prep up {pu['prep']:.1f} s / ours in classify")
-    t.append(f"classify up {pu['classify']:.1f} s / ours {po['classify']:.1f} s = {r(pu['classify'], po['classify'])}")
-    t.append(f"prep+classify up {pu['prep'] + pu['classify']:.1f} / ours {po['classify']:.1f} = {r(pu['prep'] + pu['classify'], po['classify'])}")
-    if share > 0.5 or (pu["prep"] > pu["classify"]):
+    if ov:
+        t.append(f"decompression/prep up {pu['prep']:.1f} s and classify {pu['classify']:.1f} s overlapped ({ov}): "
+                 f"prep hidden inside a span of {pu['span']:.1f} s / ours {po['classify']:.1f} s (decompression in classify) "
+                 f"= {r(pu['span'], po['classify'])}")
+    else:
+        t.append(f"decompression/prep up {pu['prep']:.1f} s / ours in classify")
+        t.append(f"classify up {pu['classify']:.1f} s / ours {po['classify']:.1f} s = {r(pu['classify'], po['classify'])}")
+        t.append(f"prep+classify up {work_u:.1f} / ours {po['classify']:.1f} = {r(work_u, po['classify'])}")
+    if share > 0.5 or (not ov and pu["prep"] > pu["classify"]):
         t.append(f"upstream critical node bound by preparation ({pu['prep']:.0f} s prep vs {pu['classify']:.0f} s classify)")
     return "; ".join(t)
 
@@ -528,13 +541,34 @@ def law5(o, u, axis):
     return txt
 
 
-best, kills = [], {}
-for regime in ("resident", "from-scratch"):
+# Kill sensitivity by upstream lever (Law 5): the verdict as upstream's levers are added one at a time.
+def uset(r):
+    """The smallest lever set an upstream row belongs to."""
+    if r["kind"] in ("measured", "modelled"):
+        return 0
+    e = r["extra"]
+    dec = e.get("tool") in ("pigz", "the wrapper's gzip -dc pipes") and not e.get("overlap")
+    if e.get("svar") == "measured" and dec:
+        return 1
+    if dec:
+        return 2 if e.get("svar") == "probe-a" else 3
+    return {"measured": 4, "probe-a": 5}.get(e.get("svar"), 6)
+
+
+
+
+DECOMP_DERIVED = {4, 5, 6}  # upstream points that rest on the derived decompression combination
+
+
+def bests_view(with_decomp):
+  best, kills = [], {}
+  for regime in ("resident", "from-scratch"):
     kills[regime] = True
     for c in (1, 10, 100, 1000):
         sel = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["kind"] not in ("placeholder",)]
         ours = [r for r in sel if r["side"] == "ours"]
-        up = [r for r in sel if r["side"] == "upstream" and r["kind"] not in ("modelled-infeasible", "derived-uncapped")]
+        up = [r for r in sel if r["side"] == "upstream" and r["kind"] not in ("modelled-infeasible", "derived-uncapped")
+              and (with_decomp or uset(r) not in DECOMP_DERIVED)]
         if c == 1000:
             best.append([regime, c, "placeholder only (ours); upstream modelled and infeasible as specified"] + ["-"] * 9)
             continue
@@ -564,27 +598,20 @@ for regime in ("resident", "from-scratch"):
                      f"{rc:.3f} = " + law5(oc, uc, "$"), phase_text(oc, uc), be,
                      "; ".join(refs) or "-", f"under 5x on both: {'yes' if kill else 'no'}",
                      f"engine pre-fix: {'/'.join(pre)}"])
-
-# Kill sensitivity by upstream lever (Law 5): the verdict as upstream's levers are added one at a time.
-def uset(r):
-    """The smallest lever set an upstream row belongs to."""
-    if r["kind"] in ("measured", "modelled"):
-        return 0
-    e = r["extra"]
-    dec = e.get("tool") in ("pigz", "in-process gzip") and not e.get("overlap")
-    if e.get("svar") == "measured" and dec:
-        return 1
-    if dec:
-        return 2 if e.get("svar") == "probe-a" else 3
-    return {"measured": 4, "probe-a": 5}.get(e.get("svar"), 6)
+  return best, kills
 
 
-LEVERS = [("single node as measured (U1, U2)", {0}),
-          ("+ sample-parallel N (derived; staging as measured, pigz)", {0, 1}),
-          ("+ staging at probe (a)'s rate, contention ignored (not physical for N > 1; shown for attribution)", {0, 1, 2}),
-          ("+ staging at probe (a)'s rate x probe (b)'s contention f(N)", {0, 1, 3}),
-          ("+ decompression options (probe (c)), staging as measured", {0, 1, 4}),
-          ("+ decompression options, staging at probe (a) x contention (all measured levers)", {0, 1, 3, 4, 6})]
+best, kills = bests_view(False)          # the verdict: every measured lever, no derived decompression
+best_d, kills_d = bests_view(True)       # including the derived decompression points (not the verdict)
+
+N1 = lambda r: (r["extra"] or {}).get("N", 1) == 1
+LEVERS = [("single node as measured (U1, U2)", lambda r: uset(r) == 0),
+          ("+ sample-parallel N (derived; staging as measured, pigz)", lambda r: uset(r) in (0, 1)),
+          ("staging only: single node at probe (a)'s rate (N = 1, no other lever)", lambda r: uset(r) == 0 or (uset(r) == 2 and N1(r))),
+          ("+ staging at probe (a)'s rate, contention ignored (not physical for N > 1; shown for attribution)", lambda r: uset(r) in (0, 1, 2)),
+          ("+ staging at probe (a)'s rate x probe (b)'s contention f(N) (the verdict's set)", lambda r: uset(r) in (0, 1, 3)),
+          ("+ decompression options (probe (c); derived), staging as measured", lambda r: uset(r) in (0, 1, 4)),
+          ("+ decompression options (derived), staging at probe (a) x contention", lambda r: uset(r) in (0, 1, 3, 4, 6))]
 sens = []
 for regime in ("resident", "from-scratch"):
     for name, allowed in LEVERS:
@@ -592,8 +619,7 @@ for regime in ("resident", "from-scratch"):
         for c in (1, 10, 100):
             ours = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == "ours" and r["kind"] == "measured"]
             up = [r for r in rows if r["cohort"] == c and r["regime"] == regime and r["side"] == "upstream"
-                  and r["kind"] not in ("placeholder", "modelled-infeasible") and uset(r) in allowed
-                  and (r["kind"] != "derived-uncapped" or 2 in allowed)]
+                  and r["kind"] not in ("placeholder", "modelled-infeasible") and allowed(r)]
             if not ours or not up:
                 cells.append("-")
                 continue
@@ -620,7 +646,7 @@ for c in (1, 10, 100):
 os.makedirs(OUT, exist_ok=True)
 head = ["cohort", "regime", "side", "point", "time_s", "usd_per_sample_derived", "fleet_vcpus", "usd_per_vcpu_h",
         "mpairs_per_s_per_vcpu", "staging_s", "staging_GBps", "billed_over_derived", "engine_pre_fix", "kind",
-        "ph_fixed_s", "ph_staging_s", "ph_input_s", "ph_prep_s", "ph_classify_s", "basis"]
+        "ph_fixed_s", "ph_staging_s", "ph_input_s", "ph_prep_s", "ph_classify_s", "ph_overlap", "ph_prep_classify_span_s", "basis"]
 PH = lambda r, k: f"{r['ph'][k]:.2f}" if r["ph"] else "-"
 with open(os.path.join(OUT, "frontier.tsv"), "w", newline="") as fh:
     w = csv.writer(fh, delimiter="\t", lineterminator="\n")
@@ -629,7 +655,9 @@ with open(os.path.join(OUT, "frontier.tsv"), "w", newline="") as fh:
         w.writerow([r["cohort"], r["regime"], r["side"], r["point"], f"{r['time_s']:.2f}", f"{r['usd_per_sample']:.6f}",
                     r["fleet_vcpus"], f"{r['usd_per_vcpu_h']:.4f}", f"{r['mpairs_per_s_per_vcpu']:.4f}", r["staging_s"],
                     r["staging_GBps"], r["billed_over_derived"], r["engine_pre_fix"], r["kind"]]
-                   + [PH(r, k) for k in ("fixed", "stage", "input", "prep", "classify")] + [r["basis"]])
+                   + [PH(r, k) for k in ("fixed", "stage", "input", "prep", "classify")]
+                   + [(r["ph"] or {}).get("overlap") or "-",
+                      f"{r['ph']['span']:.2f}" if r["ph"] and r["ph"].get("overlap") else "-"] + [r["basis"]])
 ph_ = ["cohort", "regime", "side", "point", "time_s", "usd_per_sample_derived", "fleet_vcpus", "usd_per_vcpu_h",
        "mpairs_per_s_per_vcpu", "engine_pre_fix", "kind"]
 with open(os.path.join(OUT, "pareto.tsv"), "w", newline="") as fh:
@@ -645,6 +673,30 @@ with open(os.path.join(OUT, "upstream_sp_sweep.tsv"), "w", newline="") as fh:
         w.writerow([s["cohort"], s["regime"], s["node"], s["config"], s["svar"], s["tool"], s["overlap"] or "no",
                     s["slots_per_node"], s["N"], f"{s['time_s']:.2f}", f"{s['usd_per_sample']:.6f}"]
                    + [f"{s['ph'][k]:.2f}" for k in ("fixed", "stage", "input", "prep", "classify")])
+HB = sorted(glob.glob(os.path.join(G, "hitbench", "*", "summary.tsv")))
+hb_ratio = "-"
+if HB:
+    for ln in open(HB[-1]):
+        f_ = ln.rstrip("\n").split("\t")
+        if f_[0] == "post/pre":
+            hb_ratio = f_[5]
+CAVEATS = [
+    "Cohort 1000 is not evaluated: ours is a placeholder and upstream's model is infeasible as specified; the verdicts "
+    "cover cohorts 1, 10 and 100 only (Scott to accept that scope).",
+    "Upstream's staging at probe (a)'s rate followed by its -M classify has never been run end to end: the from-scratch "
+    "upstream points add probe (a)'s staging seconds to U1's other measured phases.",
+    "The aws s3 cp (CRT) rate sample in probe (a) recorded 0 bytes (the CLI writes a temporary file, not hash.k2d), so "
+    "there is no unconfounded CRT rate; U1's 1.95 GB/s (with the upstream build running) stands as the measured CRT point.",
+    f"The #44 speed check (probe (d), scripts/g3/hitbench.sh) ran on a laptop against Standard-8, not on Graviton against "
+    f"RODA v205: post-fix classify / pre-fix = {hb_ratio}.",
+    f"Every engine point is pre-fix (#44) until regenerated; by probe (d), ours is about {(float(hb_ratio) - 1) * 100:.1f}% "
+    f"optimistic in its classify phases (staging and fixed phases unaffected)." if hb_ratio != "-" else
+    "Every engine point is pre-fix (#44) until regenerated.",
+    "The resident verdict rests on the derived sample-parallel arm (LPT of U1's measured per-sample walls over N nodes), "
+    "not on a measured multi-node upstream run.",
+    "The decompression rows (and the second per-axis-bests table) rest on a derived combination: U1's fq classify walls "
+    "with probe (c)'s decompression time; they are not in either verdict.",
+]
 gc = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
 with open(os.path.join(OUT, "frontier.md"), "w") as fh:
     fh.write("# H-main per-axis bests and Pareto sets (generated by scripts/lib/g3_frontier.py)\n\n")
@@ -662,6 +714,21 @@ with open(os.path.join(OUT, "frontier.md"), "w") as fh:
     for regime, k in kills.items():
         fh.write(f"\nKill condition, {regime} (under 5x on both axes at every measured cohort size 1, 10, 100): "
                  f"{'MET' if k else 'not met'}.\n")
+    SR = {(r[0], r[1]): r for r in sens}
+    base_r, sp_r = SR[("resident", LEVERS[0][0])], SR[("resident", LEVERS[1][0])]
+    base_f, st_f = SR[("from-scratch", LEVERS[0][0])], SR[("from-scratch", LEVERS[2][0])]
+    fh.write("\nThese bests and verdicts use every measured lever (single node as measured, sample-parallel N, staging at "
+             "probe (a)'s rate x probe (b)'s contention) and exclude the derived decompression points. The decisive lever, "
+             f"from the lever table below: resident, sample-parallel N alone ({base_r[1]}: {base_r[5]}; adding it: "
+             f"cohort 1 {sp_r[2]}, cohort 10 {sp_r[3]}, cohort 100 {sp_r[4]}: {sp_r[5]}); from scratch, staging alone "
+             f"(one node at probe (a)'s rate, no other lever: cohort 1 {base_f[2]} -> {st_f[2]}, cohort 10 {base_f[3]} -> "
+             f"{st_f[3]}, cohort 100 {base_f[4]} -> {st_f[4]}: {st_f[5]}). Neither verdict depends on the derived "
+             "decompression rows; with them as well (the next table) the verdicts are resident "
+             f"{'MET' if kills_d['resident'] else 'not met'}, from scratch {'MET' if kills_d['from-scratch'] else 'not met'}.\n")
+    fh.write("\n## Per-axis bests including the derived decompression points (derived; not the verdict)\n\n")
+    fh.write("| " + " | ".join(hs) + " |\n|" + "---|" * len(hs) + "\n")
+    for s_ in best_d:
+        fh.write("| " + " | ".join(str(x) for x in s_) + " |\n")
     fh.write("\n## Kill condition by upstream lever (each row adds one lever to the first two; ratios are upstream best / "
              "ours best; the last row is every measured lever together and is the one the verdicts above use)\n\n")
     fh.write("| regime | upstream levers | cohort 1 | cohort 10 | cohort 100 | kill |\n|---|---|---|---|---|---|\n")
@@ -670,6 +737,9 @@ with open(os.path.join(OUT, "frontier.md"), "w") as fh:
     fh.write("\nThe decompression rows rest on a derived combination not run end to end: U1's fq classify walls with "
              "probe (c)'s decompression time on the same core type (gz streamed: the slower of the two per sample); the "
              "wrapper calls `gzip -dc`, so it needs a gzip-compatible decompressor on PATH.\n")
+    fh.write("\n## Caveats\n\n")
+    for cv in CAVEATS:
+        fh.write(f"- {cv}\n")
     fh.write("\nE1's cohort-10 from-scratch path includes its three earlier cohort-1 invocations (it ran c10 last), "
              "so it overstates a cohort-10-only run.\n")
     fh.write("\n## Billed / derived (where a run's bill is known)\n\n")
