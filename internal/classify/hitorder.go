@@ -35,47 +35,5 @@ type HitCounts interface {
 	Range(f func(taxon, count uint64) bool)
 }
 
-// newHitCounts returns one worker's map.
-//
-// TODO(#44 clean-room): replace with the clean-room implementation of upstream's iteration
-// order. Until then this placeholder iterates in first-insertion order, which is NOT upstream's
-// order; TestIssue44OrphanTies fails on purpose while it stands.
-func newHitCounts() HitCounts { return &firstHitOrder{} }
-
-// firstHitOrder is the placeholder: entries in first-insertion order.
-type firstHitOrder struct{ hits []hit }
-
-func (m *firstHitOrder) Clear() { m.hits = m.hits[:0] }
-
-func (m *firstHitOrder) find(taxon uint64) int {
-	for i := len(m.hits) - 1; i >= 0; i-- {
-		if m.hits[i].taxon == taxon {
-			return i
-		}
-	}
-	return -1
-}
-
-func (m *firstHitOrder) Increment(taxon uint64) {
-	if i := m.find(taxon); i >= 0 {
-		m.hits[i].count++
-		return
-	}
-	m.hits = append(m.hits, hit{taxon, 1})
-}
-
-func (m *firstHitOrder) Lookup(taxon uint64) uint64 {
-	if i := m.find(taxon); i >= 0 {
-		return m.hits[i].count
-	}
-	m.hits = append(m.hits, hit{taxon, 0})
-	return 0
-}
-
-func (m *firstHitOrder) Range(f func(taxon, count uint64) bool) {
-	for _, h := range m.hits {
-		if !f(h.taxon, h.count) {
-			return
-		}
-	}
-}
+// newHitCounts (hitcounts.go) returns one worker's map: the clean-room implementation of
+// upstream's iteration order (#44).
