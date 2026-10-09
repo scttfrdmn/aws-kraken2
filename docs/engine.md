@@ -107,9 +107,10 @@ The code is in `internal/engine/etag.go` and `cmd/aws-kraken2/etag.go`.
   and that every cross-check pairs up and is equal, then recomputes the ETag and compares it.
   Any failure fails every node there, before any shard is dialled and before any sample is
   read: a mismatch, a differing copy, a missing record, a gap or a one-sided check. So no output
-  object or multipart upload exists yet. The run exits 1 with `classify: engine: hash.k2d does
-  not match its ETag: …` (`engine.ErrETagMismatch`). In-process, the one process hashes all its
-  shards and combines.
+  object or multipart upload exists yet. The run exits 1. A mismatch or a differing copy reports
+  `classify: engine: hash.k2d does not match its ETag: …` (`engine.ErrETagMismatch`); a missing
+  record, a gap or a one-sided check reports its own plain error. In-process, the one process
+  hashes all its shards and combines.
 - **Timing and counts.** The hashing is phase `etag`, after `shard-load-<r>` and before
   `rendezvous`; md5 runs on GOMAXPROCS goroutines. With `AK2_TIMINGS=1` the counter line is:
 
