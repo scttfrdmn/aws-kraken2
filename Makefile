@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -21,6 +21,8 @@ test:
 	bash scripts/lib/harness_poll_test.sh
 	bash scripts/lib/run_multi_test.sh
 	python3 scripts/lib/tune_tables.py --self-test
+	bash scripts/lib/quota_check_test.sh
+	bash scripts/lib/run_sh_test.sh
 
 lint:
 	$(GO) vet $(PKGS)
@@ -199,6 +201,11 @@ ami:
 # docs/run.md, "Multi-node runs").
 run:
 	$(if $(NODES),scripts/run-multi.sh "$(GATE)" "$(SPEC)" "$(NODES)",scripts/run.sh "$(GATE)" "$(SPEC)")
+
+# DRY_RUN=1 of every runs/*.json plus GEN="EXP TYPE N COHORT; ..." generated campaign specs, with
+# user-data size and vCPU quota per spec (results/rehearse/dryrun-userdata-<ts>-<sha>.tsv; docs/run.md).
+dryrun-userdata:
+	GEN="$(GEN)" scripts/dryrun-userdata.sh
 
 orphans:
 	scripts/orphans.sh
