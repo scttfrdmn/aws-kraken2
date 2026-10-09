@@ -1,0 +1,11 @@
+tidy: 0 rows, 0 invocations -> results/g3/20261008-050436-8a6dbe6-b5de-n1/tables/
+Traceback (most recent call last):
+  File "/Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a96d23ec57f36e740/scripts/lib/g3_tables.py", line 30, in <module>
+    assert len(inv) == 1, f"want one c<C> invocation, got {inv}"
+           ^^^^^^^^^^^^^
+AssertionError: want one c<C> invocation, got []
+Traceback (most recent call last):
+  File "/Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a96d23ec57f36e740/scripts/lib/lpt_check.py", line 48, in <module>
+    for line in open(p, errors="replace"):
+                ~~~~^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'results/g3/20261008-050436-8a6dbe6-b5de-n1-r*/out/rank*/eng-c*.stderr'

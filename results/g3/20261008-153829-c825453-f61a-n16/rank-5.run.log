@@ -1,0 +1,28 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-153829-c825453-f61a-n16-r5  task ak2-g3-20261008-153829-c825453-f61a-n16-r5  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r5
+make run: user data: 12654 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c9g.12xlarge (0 vCPU, 0 GiB)
+make run: launched i-02ffd91834721a777 (c9g.12xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T15:39:14Z	1791473954	preamble	no
+  | ak2: [2026-10-08T15:39:14Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T15:39:14Z] after set +e $-=hBc
+  | ak2: [2026-10-08T15:39:14Z] gate=g3 run=20261008-153829-c825453-f61a-n16-r5
+  | ak2: [2026-10-08T15:39:14Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T15:39:14Z] imds region=us-west-2 az=us-west-2a instance=i-02ffd91834721a777 type=c9g.12xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-08T15:39:14Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T15:39:14Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T15:39:14Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T15:39:14Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-08T15:39:15Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-08T15:39:15Z] region assert passed
+  | ak2: [2026-10-08T15:39:15Z] drop_caches_ok=true
+  | ak2: [2026-10-08T15:39:15Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T15:39:15Z	1791473955	body	no
+  | ak2: [2026-10-08T15:39:15Z] e3 cohort 20261008-153829-c825453-f61a-n16 rank 5 of 16, commit c825453; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+  | ak2-phase	2026-10-08T15:39:15Z	1791473955	setup	no
+make run: instance is shutting-down
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r5/: 4 objects, 3 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261008-153829-c825453-f61a-n16-r5  (task exit 99, state terminated, cost $0.034776)
+orphans: this run's instance(s) and task ak2-g3-20261008-153829-c825453-f61a-n16-r5 are gone (18 regions checked)

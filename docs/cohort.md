@@ -9,7 +9,8 @@ cohort 1000 is modelled from real upstream runs at 1, 10 and 100 and flagged as 
 ```bash
 make stage-cohort PART=record            # once, before any use: results/cohort/PRJNA398089/
 make stage-cohort COUNT=10               # stage the first 10 (from the launch host: slow, see below)
-make run GATE=g3 SPEC=runs/stage-cohort.json   # the same, on an instance (ENA is fast from AWS)
+make run GATE=g3 SPEC=runs/stage-cohort.json NODES=8   # ranks 11..1000 on 8 instances, one slice each
+make tag-objects PREFIX=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/        # afterwards, from the launch host
 ```
 
 - **PRJNA398089** is IBDMDB/HMP2 stool metagenomes, from ENA.
@@ -27,8 +28,16 @@ make run GATE=g3 SPEC=runs/stage-cohort.json   # the same, on an instance (ENA i
   `results/cohort/PRJNA398089/staged.tsv` (run, mate, bytes, md5, sha256, key, VersionId). It is
   idempotent.
   - On an instance (`runs/stage-cohort.json`), the role is the credential and cannot tag. Tag
-    afterwards with `make tag-objects PREFIX=aws-kraken2/data/cohort/`, and commit the run's
-    `out/staged.tsv` as `results/cohort/PRJNA398089/staged.tsv`.
+    afterwards with `make tag-objects PREFIX=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/`.
+  - **Slices.** STAGE_FROM, STAGE_STRIDE and STAGE_OFFSET select the ranks r in STAGE_FROM..COUNT
+    with (r − STAGE_FROM) mod STRIDE = OFFSET. The spec stages ranks 11..1000 and, with
+    `NODES=n`, gives member k the slice STRIDE = n, OFFSET = k. The spec's body records the
+    requests from its log: RANGES ranged GETs to ENA per fetched file; per upload, one PutObject,
+    or CreateMultipartUpload + ceil(bytes / 8 MiB) UploadPart + Complete; and the HeadObjects.
+  - The cohort post (`scripts/post/stage-cohort.cohort.sh`, `scripts/lib/stage_merge.py`) merges
+    every member's `out/staged.tsv` into `results/cohort/PRJNA398089/staged.tsv`, in cohort order
+    and one row per object version. It checks that every rank 11..1000 has both mates with
+    runs.tsv's bytes and md5 (`tables/staged-check.tsv`), and exits 1 otherwise.
   - From an instance in us-west-2, one ENA stream is about 1 MB/s (2026-10-08), so `stage`
     fetches STAGE_PARALLEL files at once (default 4) in STAGE_RANGES ranged streams (default 8).
     An object already staged is not fetched again but is recorded from its metadata.
@@ -43,10 +52,19 @@ multi-node run, `AK2_ENGINE_RANK`, `AK2_ENGINE_RENDEZVOUS` and so on; [engine.md
 The table, or this node's shard, is loaded **once** for every sample. The manifest is
 tab-separated, one sample per line:
 
-    batch  inflight  mode  s3client  name  argument…
+    batch  inflight  mode  s3client  name  [weight=<n>]  argument…
 
-- **mode `parallel`** (the default design): sample j of a batch has home node j mod N, which
-  reads, classifies and writes it alone, its lookups routed to every shard.
+- **mode `parallel`** (sample-parallel): each sample has one home node, which reads, classifies
+  and writes it alone, its lookups routed to every shard. Placement (`cmd/aws-kraken2/place.go`):
+  - `parallel` or `parallel:mod`: sample j of the batch is homed on node j mod N, and a node runs
+    its samples in manifest order. This was E1's design and is now the control.
+  - `parallel:lpt`: samples are taken heaviest first by `weight=<n>` (pairs or bytes, one unit
+    per batch; required on every sample), each going to the node with the least weight so far.
+    Ties go to manifest order, then to the lowest rank. A node runs its samples heaviest first.
+    Every node computes the same placement from the manifest.
+  - `make oracle-cohort`'s `n3-lpt` mode checks byte-identity under LPT, and checks every
+    observed home rank against the placement recomputed from the manifest
+    (`scripts/lib/lpt_check.py`). It requires the LPT placement to differ from j mod N there.
 - **mode `striped`:** every node takes every N-th block of the sample and rank 0 emits it, as a
   single multi-node invocation does. One control session per sample; the shards stay loaded.
 - **inflight:** samples a node runs at once. **s3client:** `sdk` (aws-sdk-go-v2), `cli` (an aws
@@ -60,9 +78,13 @@ tab-separated, one sample per line:
 - **Check-only mode:** `AK2_COHORT_CHECK=1` parses the manifest and every sample's arguments,
   then exits without loading anything. E1 checks its manifests this way before the first shard
   load.
-- **Per-sample record:** one `ak2-sample` line per sample on stderr: batch, name, mode, client,
-  rank, role, inflight, threads, start, wall, setup, classify, close and report seconds, exit
-  status, sequences, bases, classified.
+- **Per-sample record:** one `ak2-sample` line per sample on stderr, with these fields:
+  - batch, name, mode, client, rank, role, inflight, threads;
+  - start, wall, setup, classify, close and report seconds;
+  - exit status, sequences, bases, classified;
+  - place and weight.
+- **Memory samples:** with `AK2_TIMINGS=1`, an `ak2-engine mem` line every `AK2_MEM_EVERY`
+  seconds (default 15). It gives VmRSS, VmHWM, the Go heap and MemAvailable.
 - **The SDK path** goes around the aws PATH shim, so the engine enforces the bucket allow-list
   itself. `AK2_ALLOWED_BUCKETS` (set by `make run`) must name the bucket, or the SDK store refuses
   it. `AK2_S3_INFLIGHT` sets parts in flight (default 8 SDK, 4 CLI). `AK2_S3_ENDPOINT` is for
@@ -77,6 +99,143 @@ every output. `ramdb SRC NAME SIZE` puts the database on a huge=always tmpfs at 
 invoking user's, mode 0700; `umount NAME` removes it), so
 with `--db <tmpfs> --memory-mapping` in the common arguments no sample reloads the table:
 upstream at its best for a cohort (Law 2).
+
+## The G3 campaign (#25; Scott approved it 2026-10-08)
+
+```bash
+make g3-spec EXP=e2 TYPE=x8g.4xlarge N=8 COHORT=100 [ARGS="INFLIGHT=4 TTL=60"]   # runs/g3-e2-x8g.4xlarge-n8.json
+make rehearse SPEC=runs/g3-e2-x8g.4xlarge-n8.json N=3     # must pass; commit its results/rehearse/ log
+make run GATE=g3 SPEC=runs/g3-e2-x8g.4xlarge-n8.json NODES=8
+make g3-tables                                            # results/g3/campaign/{points,spend,rules}.tsv, summary.md
+```
+
+- **Spec generation.** `scripts/g3/mkspec.sh` writes the spec from `scripts/g3/campaign.body.sh`,
+  with the parameters as a block at its head. It also symlinks the cohort post
+  (`scripts/post/<spec>.cohort.sh` points to `g3-campaign.cohort.sh`).
+  - It refuses a type whose memory cannot hold the shard plus 15%, plus 8 GB, plus 7.5 GB per
+    sample in flight. Before this rule, E3's 96 GiB c8g.12xlarge at 6 in flight was OOM-killed.
+  - Disk is sized for the inputs a node reads. The per-member cost_limit is the truffle price
+    times the TTL.
+- **The body.** It runs one cohort-mode invocation `c<COHORT>` over the first COHORT runs of the
+  recorded cohort. The batches are:
+  - 0: LPT;
+  - 1: the j mod N control;
+  - 2: LPT again, for the within-run spread;
+  - then sample 1 block-striped, C1_REPS times;
+  - then sample 1 on its home node, C1_REPS times.
+  Each node fetches only the inputs it reads, through `scripts/g3/fetch.sh`. That runs as a child
+  process with lanes waited for by PID, under a watchdog. The body's earlier `wait -n` loops
+  failed at 8a6dbe6 and hung at 1a4dbfe on AWS. Defaults are the SDK emitter, T16, and in flight
+  = vCPUs / 8.
+- **The tables.** `scripts/post/g3-campaign.cohort.sh` writes them under `tables/`, from the record
+  only:
+  - `tidy`, `rates`;
+  - `batches`, with imbalance and planned imbalance;
+  - `samples`;
+  - `consistency`, from `outputs.tsv`;
+  - `point`, the phases, the batch walls by role, and the derived cohort time and $/sample;
+  - `placement-check.txt`;
+  - `provenance.tsv`.
+  `scripts/lib/g3_campaign.py` gathers every point and every run's spend since the campaign
+  began. It evaluates the stopping rules of #25 into `rules.tsv`.
+- **T, defined** (`point.tsv`, `points.tsv`):
+  - **derived_T:** the sum, over the terms below, of each term's maximum over the ranks. It is
+    not any one rank's path. The terms are boot (launch to body start), setup, manifest, fetch,
+    load, and the LPT batch's wall.
+  - **observed_T:** the first launch to the last rank's end of batch 0, the measured critical
+    path. **skew_rendezvous** = observed_T − derived_T: ranks reaching the rendezvous at
+    different times, the rendezvous itself, and the batch's start skew. The gap grows with N, to
+    19–25 s at N = 16.
+  - **Tails:**
+    - the body tail runs from the engine process's end (its `total` timing) to the body's end:
+      request accounting and the stderr push;
+    - the harness tail runs from the body's end to EC2's terminated, so it is the harness, not
+      the engine. Its maximum, median and top 3 over ranks are listed, because one slow node sets
+      the maximum.
+  - **T_engine** = observed_T + body tail. **T_with_harness** = T_engine + the maximum harness
+    tail.
+  - **The rules are evaluated both ways.** The x8g knee is read next to `fleet_vcpus`: E2's fleets
+    are memory-equal, not vCPU-equal (96, 96, 128, 128, 128).
+  - **$/sample:**
+    - `derived_usd_per_sample_*` = N × price × T / cohort;
+    - `measured_usd_per_sample_whole_run` = the summed member cost / cohort, which covers every
+      batch of the run.
+  - **The placement + order lever** (j mod N against LPT, which also orders each node's samples
+    heaviest first) is resolved only if its gain exceeds 2 × the within-run spread.
+- **`make g3-frontier`** (`scripts/lib/g3_frontier.py`) writes the H-main per-axis bests and the
+  Pareto sets: `results/g3/campaign/frontier.{tsv,md}` and `pareto.tsv`.
+  - They are given per cohort size (1, 10, 100) and regime (resident, from-scratch), ours against
+    upstream at its best (U1, U2, with fq preparation added back).
+  - Upstream at its best is the better of single-node upstream and upstream sample-parallel (N
+    independent nodes, each holding the table; #25 ruling 1). The sample-parallel arm is derived
+    from the single-node measurements (per-node fixed costs plus measured per-sample walls, LPT
+    over N × P slots; per-node staging paid N times from scratch); the whole N sweep is
+    `upstream_sp_sweep.tsv`. The kill condition is evaluated per regime (#25 ruling 2).
+  - $/sample is derived (price × nodes × wall) on both sides.
+  - Each ratio is decomposed by Law 5: time into width × per-vCPU efficiency; $/sample into price
+    per vCPU-hour × per-vCPU efficiency; staging alongside, from scratch.
+  - The registered references and the kill condition are evaluated mechanically.
+  - Ours at cohort 1000 is a placeholder only; upstream's model there is infeasible as
+    specified.
+  - frontier.md's definitions are generated from the script's docstring.
+- **Defect attempts** are named in `scripts/lib/g3_defects.tsv` and carried into `spend.tsv` and
+  `summary.md`, in three classes:
+  - `defect`, our own;
+  - `capacity`, us-west-2a InsufficientInstanceCapacity;
+  - `partial`, a run completed by a later one.
+- **Pre-fix engine (#44):** the outputs of E1–E4 and checkpoint 2 come from an engine that walked
+  ResolveTree's hits in first-hit order. The fix, the clean-room `HitCounts`, is 904c2a5.
+  - `engine_pre_fix` marks every engine point affected, in `point.tsv`, `points.tsv`,
+    `u2-pairs.tsv` and `law1-u2.tsv`; the E1 summary records it too.
+  - By inference, only reads hitting an orphan taxonomy node can differ.
+  - The cohort samples whose U1 cross-check changes are in
+    `results/g3/campaign/prefix-engine.tsv`.
+- **`make bash-jobs-test`** runs `scripts/tests/bash_jobs.sh` under AL2023's bash, in podman.
+  - It rebuilds the body's environment: `bash -c`, the preamble's traps, a FIFO tee and push
+    loop, and process substitutions.
+  - The body's old fetch loops must fail there. On its first run, bare `wait -n` hung, and
+    `wait -n -p` looped on "no such job".
+  - The current `scripts/g3/fetch.sh` and U1's in-shell lanes, waited for by PID, must pass.
+  - The record goes to `results/rehearse/bash-jobs-*.txt`.
+- **`make rehearse` asserts memory feasibility** for a campaign spec: its type must hold 1/N of
+  hash.k2d plus 15%, 8 GB, and 7.5 GB per sample in flight. The per-sample figure is measured:
+  `scripts/lib/g3_memory.py` writes `results/g3/campaign/memory.tsv` from the `ak2-engine mem`
+  lines. The earlier 2 GB let E3 c8g.12xlarge at 3 in flight through, and it was OOM-killed.
+  Every rank must also stream
+  `ak2-engine mem` lines.
+- **`make g3-law1-u2`** downloads the engine's sample-1 output and report from the E2 N=8 cohort
+  and makes two checks:
+  - `ak2etag.py` must equal their real S3 ETags, multipart and single-part;
+  - their sha256 must equal U2's upstream sha256 for every SRR5935740 rung.
+  It writes `results/g3/campaign/law1-u2.tsv`.
+- **`scripts/lib/abort_uploads.sh KEYPREFIX RECORD`** records and aborts open multipart uploads
+  from the launch host.
+- **U1** (`runs/g3-u1-x8g.24xlarge.json`, `scripts/g3/u1.body.sh`) is upstream resident on
+  tmpfs with `-M`:
+  - cohorts 1, 10 and 100, with gz and fq;
+  - T in {48, 96, 192};
+  - P x T for gz at cohort scale, as LPT lanes: 12 x 8, 24 x 4, and 48 x 2, which is an
+    addition to the registered U1 (Scott, 2026-10-08) to bracket the optimum;
+  - fq is pre-decompressed onto tmpfs before each sample's rungs. Each preparation is timed (a
+    `u1-prep` line; `prep.tsv`), and the fq rungs are labelled pre-decompressed;
+  - upstream at cohort 100 gz, one process at a time, is modelled from the best measured
+    one-process gz rate. It is flagged MODELLED in `rungs.tsv`;
+  - drift references with buddyinfo and the compaction counters.
+  Its cohort-100 fq T=96 rung computes the engine writer's S3 ETag of every upstream output
+  (`scripts/lib/ak2etag.py`). `scripts/lib/u1_tables.py` compares those ETags with the `outputs.tsv` of every E2, E3 and E4
+  cohort that produced a point. That is Law 1 on the real cohort, without downloading the
+  outputs. It fails on any difference, on a sample or file missing from any cohort, and on zero
+  comparisons (`law1-coverage.tsv`).
+- **U2** (`runs/g3-u2-r8gd.16xlarge.json`, `scripts/g3/u2.body.sh`, `scripts/g2/u2.plan`) is the
+  #40 NVMe ladder, plus the cohort's sample 1, through make g2's runner.
+- **Rehearsals:**
+  - `make rehearse` dispatches by spec: `e1_rehearse.sh` for E1, `cohort_rehearse.sh` for E2–E6,
+    `u_rehearse.sh` for U1, `u2_rehearse.sh` for U2.
+  - The campaign rehearsal checks, on observed output:
+    - streaming: the streamed sample lines equal the manifest's lines;
+    - placement: lpt_check, and that LPT differs from j mod N when N > 1;
+    - requests: the objects under out/ equal both the manifest's outputs and the request counts;
+    - Law 1: every output is identical to upstream's.
 
 ## Rehearsal: make rehearse SPEC=runs/g3-e1.json [N=3]
 

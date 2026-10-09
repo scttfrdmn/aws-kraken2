@@ -1,0 +1,124 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-064058-4a8f57c-d64a-n16-r14  task ak2-g3-20261008-064058-4a8f57c-d64a-n16-r14  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16-r14
+make run: user data: 12660 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: x8g.2xlarge (0 vCPU, 0 GiB)
+make run: launched i-0cb2d80d132148e24 (x8g.2xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T06:41:49Z	1791441709	preamble	no
+  | ak2: [2026-10-08T06:41:49Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T06:41:49Z] after set +e $-=hBc
+  | ak2: [2026-10-08T06:41:49Z] gate=g3 run=20261008-064058-4a8f57c-d64a-n16-r14
+  | ak2: [2026-10-08T06:41:49Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T06:41:49Z] imds region=us-west-2 az=us-west-2a instance=i-0cb2d80d132148e24 type=x8g.2xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-08T06:41:49Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T06:41:50Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T06:41:50Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T06:41:50Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-08T06:41:51Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-08T06:41:51Z] region assert passed
+  | ak2: [2026-10-08T06:41:51Z] drop_caches_ok=true
+  | ak2: [2026-10-08T06:41:51Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T06:41:51Z	1791441711	body	no
+  | ak2: [2026-10-08T06:41:51Z] e2 cohort 20261008-064058-4a8f57c-d64a-n16 rank 14 of 16, commit 4a8f57c; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+  | ak2-phase	2026-10-08T06:41:51Z	1791441711	setup	no
+  | ak2: [2026-10-08T06:42:33Z] built 4a8f57c3f85688f9af904192e5c28dbcd186b4a3; go version go1.27.1 linux/arm64; ip 172.31.19.44; nproc 8; mem_gib 123; threads 16, inflight 1
+  | ak2-phase	2026-10-08T06:42:33Z	1791441753	manifest	no
+  | ak2: [2026-10-08T06:42:34Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+  | ak2: [2026-10-08T06:42:35Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+  | ak2: [2026-10-08T06:42:35Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+  | ak2: [2026-10-08T06:42:36Z] pushed out/rank14/c100.tsv
+  | ak2: [2026-10-08T06:42:36Z] pushed out/rank14/placement.tsv
+  | ak2: [2026-10-08T06:42:36Z] manifest c100: 306 lines in 9 batches; rank 14 reads 12 samples
+  | ak2-phase	2026-10-08T06:42:36Z	1791441756	fetch	no
+  | ak2: [2026-10-08T06:42:50Z] inputs staged and verified: 24 files, 13.59 GB
+  | ak2: [2026-10-08T06:42:50Z] manifest c100: cohort: 306 samples in 9 batches check
+  | ak2-phase	2026-10-08T06:42:50Z	1791441770	inv-c100	no
+  | [c100] ak2-timing	taxo	0.002868	0.100488	87767	0	0.033730	0.074140
+  | [c100] ak2-engine	mem	t_s	15.0	rss_kib	21454288	hwm_kib	21454288	heap_inuse	394240000	sys	409786728	avail_kib	106238612
+  | [c100] ak2-engine	mem	t_s	30.0	rss_kib	42324936	hwm_kib	42324940	heap_inuse	395943936	sys	409786728	avail_kib	85354296
+  | [c100] ak2-engine	mem	t_s	45.0	rss_kib	67730476	hwm_kib	67730476	heap_inuse	398073856	sys	413981032	avail_kib	59857888
+  | [c100] ak2-timing	shard-load-14	0.179857	47.839502	40611	0	34.474377	36.508277
+  | [c100] ak2-timing	rendezvous	48.408397	8.258031	4242	0	0.032807	0.034157
+  | [c100] ak2-timing	connect	56.666447	0.273519	3378	0	0.170785	0.000000
+  | [c100] ak2-timing	hash	0.103444	56.836551	50099	0	34.689261	36.546576
+  | [c100] ak2-engine	mem	t_s	60.0	rss_kib	77595384	hwm_kib	77595384	heap_inuse	4829454336	sys	5285920488	avail_kib	49976628
+  | [c100] ak2-sample	batch	0	name	0-SRR5935770	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	56.940043	wall_s	17.880677	setup_s	0.000081	classify_s	17.467946	close_s	0.243142	report_s	0.158117	status	0	sequences	16180463	bases	3026482353	classified	15739294	place	lpt	weight	16180463
+  | [c100] ak2-engine	mem	t_s	75.0	rss_kib	78442540	hwm_kib	78545452	heap_inuse	5280251904	sys	6243676120	avail_kib	48667604
+  | [c100] ak2-engine	mem	t_s	90.0	rss_kib	78535520	hwm_kib	78545452	heap_inuse	5134000128	sys	6243692504	avail_kib	48902812
+  | [c100] ak2-sample	batch	0	name	0-SRR5935808	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	74.820752	wall_s	16.786358	setup_s	0.000064	classify_s	16.328799	close_s	0.215006	report_s	0.231855	status	0	sequences	15500933	bases	2889469649	classified	14777244	place	lpt	weight	15500933
+  | [c100] ak2-engine	mem	t_s	105.1	rss_kib	78886720	hwm_kib	79195028	heap_inuse	5156945920	sys	6914429160	avail_kib	48460296
+  | [c100] ak2-sample	batch	0	name	0-SRR5935804	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	91.607144	wall_s	14.088571	setup_s	0.000069	classify_s	13.672643	close_s	0.215839	report_s	0.187761	status	0	sequences	13253368	bases	2414153428	classified	12329188	place	lpt	weight	13253368
+  | [c100] ak2-sample	batch	0	name	0-SRR5935769	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	105.695741	wall_s	12.437683	setup_s	0.000074	classify_s	12.002803	close_s	0.250753	report_s	0.171291	status	0	sequences	11374148	bases	2063466726	classified	10686284	place	lpt	weight	11374148
+  | [c100] ak2-engine	mem	t_s	120.1	rss_kib	78061392	hwm_kib	79195028	heap_inuse	4765114368	sys	6914740456	avail_kib	49139528
+  | [c100] ak2-sample	batch	0	name	0-SRR5935797	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	118.133455	wall_s	9.381960	setup_s	0.000083	classify_s	9.013190	close_s	0.212351	report_s	0.147369	status	0	sequences	8439357	bases	1550811438	classified	8138623	place	lpt	weight	8439357
+  | [c100] ak2-engine	mem	t_s	135.1	rss_kib	78853328	hwm_kib	79195028	heap_inuse	5351546880	sys	6915068136	avail_kib	48483888
+  | [c100] ak2-sample	batch	0	name	0-SRR5935815	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	127.515441	wall_s	7.820488	setup_s	0.000065	classify_s	7.386268	close_s	0.287498	report_s	0.139498	status	0	sequences	7153468	bases	1337267943	classified	6947959	place	lpt	weight	7153468
+  | [c100] ak2-timing	batch-barrier-0	135.335951	0.447570	1	0	0.029308	0.020078
+  | [c100] ak2-sample	batch	1	name	1-SRR5935754	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	135.783549	wall_s	11.276169	setup_s	0.000048	classify_s	10.848607	close_s	0.233844	report_s	0.177500	status	0	sequences	10479816	bases	1916830360	classified	9679024	place	mod	weight	10479816
+  | [c100] ak2-engine	mem	t_s	150.1	rss_kib	78215656	hwm_kib	79195028	heap_inuse	5001969664	sys	6915068136	avail_kib	49504028
+  | [c100] ak2-sample	batch	1	name	1-SRR5935770	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	147.059744	wall_s	17.740015	setup_s	0.000060	classify_s	17.321750	close_s	0.247043	report_s	0.159271	status	0	sequences	16180463	bases	3026482353	classified	15739294	place	mod	weight	16180463
+  | [c100] ak2-engine	mem	t_s	165.1	rss_kib	78782124	hwm_kib	79195028	heap_inuse	1476280320	sys	6915330280	avail_kib	48745576
+  | [c100] ak2-sample	batch	1	name	1-SRR5935786	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	164.799785	wall_s	11.259789	setup_s	0.000061	classify_s	10.885208	close_s	0.193967	report_s	0.169185	status	0	sequences	10054299	bases	1885642952	classified	9575405	place	mod	weight	10054299
+  | [c100] ak2-engine	mem	t_s	180.1	rss_kib	78183316	hwm_kib	79195028	heap_inuse	3541237760	sys	6915363048	avail_kib	49376976
+  | [c100] ak2-sample	batch	1	name	1-SRR5935802	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	176.059600	wall_s	18.008324	setup_s	0.000063	classify_s	17.555695	close_s	0.239098	report_s	0.204809	status	0	sequences	16720060	bases	3103131942	classified	16427692	place	mod	weight	16720060
+  | [c100] ak2-engine	mem	t_s	195.1	rss_kib	77591500	hwm_kib	79195028	heap_inuse	4059045888	sys	6915363048	avail_kib	49742196
+  | [c100] ak2-sample	batch	1	name	1-SRR5935818	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	194.067952	wall_s	9.861336	setup_s	0.000070	classify_s	9.508847	close_s	0.200598	report_s	0.141485	status	0	sequences	8877621	bases	1663945574	classified	8212460	place	mod	weight	8877621
+  | [c100] ak2-engine	mem	t_s	210.1	rss_kib	78613992	hwm_kib	79195028	heap_inuse	3143565312	sys	6915363048	avail_kib	48782712
+  | [c100] ak2-sample	batch	1	name	1-SRR5935834	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	203.929315	wall_s	12.962448	setup_s	0.000066	classify_s	12.553595	close_s	0.193049	report_s	0.206231	status	0	sequences	12610038	bases	2321592529	classified	12099380	place	mod	weight	12610038
+  | [c100] ak2-engine	mem	t_s	225.1	rss_kib	78557196	hwm_kib	79195028	heap_inuse	4426235904	sys	6915363048	avail_kib	49058624
+  | [c100] ak2-timing	batch-barrier-1	216.891787	8.394229	1	0	1.418343	0.148303
+  | [c100] ak2-engine	mem	t_s	240.1	rss_kib	78819124	hwm_kib	79195028	heap_inuse	4375044096	sys	6915428584	avail_kib	48663396
+  | [c100] ak2-sample	batch	2	name	2-SRR5935770	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	225.286058	wall_s	17.798651	setup_s	0.000045	classify_s	17.385348	close_s	0.245950	report_s	0.156471	status	0	sequences	16180463	bases	3026482353	classified	15739294	place	lpt	weight	16180463
+  | [c100] ak2-engine	mem	t_s	255.1	rss_kib	78775448	hwm_kib	79195028	heap_inuse	4107059200	sys	6915428584	avail_kib	48716724
+  | [c100] ak2-sample	batch	2	name	2-SRR5935808	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	243.084736	wall_s	16.764010	setup_s	0.000063	classify_s	16.350036	close_s	0.246285	report_s	0.158096	status	0	sequences	15500933	bases	2889469649	classified	14777244	place	lpt	weight	15500933
+  | [c100] ak2-engine	mem	t_s	270.1	rss_kib	78608288	hwm_kib	79195028	heap_inuse	4441628672	sys	6915428584	avail_kib	49004932
+  | [c100] ak2-sample	batch	2	name	2-SRR5935804	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	259.848774	wall_s	14.205025	setup_s	0.000058	classify_s	13.824761	close_s	0.212570	report_s	0.155137	status	0	sequences	13253368	bases	2414153428	classified	12329188	place	lpt	weight	13253368
+  | [c100] ak2-engine	mem	t_s	285.1	rss_kib	78476068	hwm_kib	79195028	heap_inuse	4986986496	sys	6915428584	avail_kib	48969744
+  | [c100] ak2-sample	batch	2	name	2-SRR5935769	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	274.053827	wall_s	12.451658	setup_s	0.000069	classify_s	12.058732	close_s	0.226758	report_s	0.153502	status	0	sequences	11374148	bases	2063466726	classified	10686284	place	lpt	weight	11374148
+  | [c100] ak2-sample	batch	2	name	2-SRR5935797	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	286.505521	wall_s	9.461187	setup_s	0.000070	classify_s	9.072088	close_s	0.222192	report_s	0.157093	status	0	sequences	8439357	bases	1550811438	classified	8138623	place	lpt	weight	8439357
+  | [c100] ak2-engine	mem	t_s	300.1	rss_kib	78411476	hwm_kib	79274448	heap_inuse	3118022656	sys	7035040008	avail_kib	48997172
+  | [c100] ak2-sample	batch	2	name	2-SRR5935815	mode	parallel	s3client	sdk	rank	14	role	home	inflight	1	threads	16	start_s	295.966737	wall_s	7.927064	setup_s	0.000056	classify_s	7.545436	close_s	0.226914	report_s	0.147441	status	0	sequences	7153468	bases	1337267943	classified	6947959	place	lpt	weight	7153468
+  | [c100] ak2-timing	batch-barrier-2	303.893820	2.094498	1	0	0.115723	0.002494
+  | [c100] ak2-timing	barrier	312.648768	0.253550	0	0	0.003100	0.000220
+  | [c100] ak2-sample	batch	3	name	3-SRR5935740	mode	striped	s3client	sdk	rank	14	role	peer	inflight	1	threads	16	start_s	306.928800	wall_s	5.973568	setup_s	0.000069	classify_s	5.715854	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0	place	-	weight	-
+  | [c100] ak2-timing	batch-barrier-3	312.902381	0.558724	0	0	0.005653	0.000401
+  | [c100] ak2-engine	mem	t_s	315.1	rss_kib	76837356	hwm_kib	79274448	heap_inuse	1122992128	sys	7035040008	avail_kib	50795160
+  | [c100] ak2-timing	barrier	319.875122	0.234105	2	0	0.006469	0.000000
+  | [c100] ak2-sample	batch	4	name	4-SRR5935740	mode	striped	s3client	sdk	rank	14	role	peer	inflight	1	threads	16	start_s	314.165823	wall_s	5.943447	setup_s	0.000055	classify_s	5.704710	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0	place	-	weight	-
+  | [c100] ak2-timing	batch-barrier-4	320.109285	0.507948	159	0	0.005716	0.000000
+  | [c100] ak2-timing	barrier	327.074857	0.100193	0	0	0.002727	0.000193
+  | [c100] ak2-sample	batch	5	name	5-SRR5935740	mode	striped	s3client	sdk	rank	14	role	peer	inflight	1	threads	16	start_s	321.383686	wall_s	5.791403	setup_s	0.000064	classify_s	5.687061	close_s	0.000000	report_s	0.000000	status	0	sequences	0	bases	0	classified	0	place	-	weight	-
+  | [c100] ak2-timing	batch-barrier-5	327.175099	0.504655	2	0	0.005033	0.000355
+  | [c100] ak2-engine	mem	t_s	330.1	rss_kib	76255540	hwm_kib	79274448	heap_inuse	3578339328	sys	7035040008	avail_kib	51262032
+  | [c100] ak2-timing	batch-barrier-6	327.679770	11.114487	2	0	0.746477	0.091543
+  | [c100] ak2-engine	mem	t_s	345.1	rss_kib	76255556	hwm_kib	79274448	heap_inuse	3579863040	sys	7035040008	avail_kib	51483444
+  | [c100] ak2-timing	batch-barrier-7	338.794276	9.217998	2	0	0.704691	0.085630
+  | [c100] ak2-timing	batch-barrier-8	348.012291	10.225625	2	0	0.732566	0.077606
+  | [c100] ak2-engine	shard	0	n	16	lo	260113803199	hi	278693360570	tail	302	full	false	empty_at	18579557380	keys	8473287081	batches	89910	probe_s	241.432668	tail_probes	0	wrap_probes	0
+  | [c100] ak2-engine	mem	t_s	358.2	rss_kib	76255564	hwm_kib	79274448	heap_inuse	3582386176	sys	7035040008	avail_kib	51579736
+  | [c100] ak2-engine	rendezvous	puts	13	gets	331
+  | [c100] ak2-engine	s3	client	sdk	put	31	get	331	create_multipart	18	upload_part	2301	complete_multipart	18	abort_multipart	0	part_bytes	19229712437
+  | [c100] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+  | [c100] ak2-engine	load	seconds	47.839498	requests	1126	retries	0	bytes	74318296292
+  | [c100] ak2-engine	route	transport	nodes	calls	5794	keys	8744465919	batches	92704	route_s	106.642119	wait_s	331.391436	gather_s	19.766313
+  | [c100] ak2-engine	worker	scan_s	793.923881	lookup_s	457.805080	classify_s	720.409967
+  | [c100] ak2-timing	total	0.000001	358.378987	7379920	0	1730.201601	122.496766
+  | ak2: [2026-10-08T06:48:49Z] inv c100 rank 14 exit 0
+  | [c100 stderr] Loading database information...ak2-timing	opts	0.002839	0.000020	0	0	0.000020	0.000000
+  | [c100 stderr]  done.
+  | ak2: [2026-10-08T06:48:50Z] pushed out/rank14/eng-c100.stderr
+  | ak2: [2026-10-08T06:48:50Z] rank 14 done (rc=0)
+  | ak2: [2026-10-08T06:48:50Z] spec body exit rc=0
+  | ak2-phase	2026-10-08T06:48:50Z	1791442130	end	no
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16-r14/: 10 objects, 9 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261008-064058-4a8f57c-d64a-n16-r14  (task exit 0, state terminated, cost $0.101174)
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-03167fb0812c62ce0	shutting-down	x8g.2xlarge	2026-10-08T06:41:10+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r1	ttl=60m	within TTL
+  us-west-2	i-0a75d4795b05aaf7d	shutting-down	x8g.2xlarge	2026-10-08T06:41:08+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r0	ttl=60m	within TTL
+  us-west-2	i-0343461648903a3be	shutting-down	x8g.2xlarge	2026-10-08T06:41:14+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r3	ttl=60m	within TTL
+  us-west-2	i-0e373dc9f8becdecf	running	x8g.2xlarge	2026-10-08T06:41:16+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r4	ttl=60m	within TTL
+  us-west-2	i-043c5c9570b963b35	shutting-down	x8g.2xlarge	2026-10-08T06:41:12+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r2	ttl=60m	within TTL
+  us-west-2	i-006350a5f723fc4d4	running	x8g.2xlarge	2026-10-08T06:41:20+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r6	ttl=60m	within TTL
+  us-west-2	i-04779e881a8b0e5e0	running	x8g.2xlarge	2026-10-08T06:41:18+00:00	ak2-g3-20261008-064058-4a8f57c-d64a-n16-r5	ttl=60m	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261008-064058-4a8f57c-d64a-n16-r14 are gone (18 regions checked)

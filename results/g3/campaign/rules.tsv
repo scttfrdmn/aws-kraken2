@@ -1,0 +1,13 @@
+rule	where	measured	outcome
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 1 -> 2 (T_engine_s)	T 585 -> 453 s; improvement 132 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 96 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 2 -> 4 (T_engine_s)	T 453 -> 349 s; improvement 104 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 4 -> 8 (T_engine_s)	T 349 -> 251 s; improvement 98 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 8 -> 16 (T_engine_s)	T 251 -> 239 s; improvement 12 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 1 -> 2 (T_with_harness_s)	T 627 -> 499 s; improvement 128 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 96 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 2 -> 4 (T_with_harness_s)	T 499 -> 390 s; improvement 109 s; 2 x spread 4.0 s; fleet vCPUs 96 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 4 -> 8 (T_with_harness_s)	T 390 -> 326 s; improvement 64 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	improves
+extend N while T(N) improves by more than 2x the within-run spread	E2 N 8 -> 16 (T_with_harness_s)	T 326 -> 375 s; improvement -49 s; 2 x spread 3.5 s; fleet vCPUs 128 -> 128 (E2's fleets are memory-equal, not vCPU-equal)	does not improve
+c8gn only if load > 50% of the cohort-1 wall	E3 c8g.12xlarge N=16	load 32 s of cohort-1 wall 121 s (boot+setup+fetch+load+c1 striped+body tail) = 26%	skip c8gn
+N=64 only if N=32 beats N=16 (c8g)	E3/E4 c8g (T_engine_s)	T(16) 173 s, T(32) 157 s	run N=64 (CONFOUNDED: N=16 ran c8g.12xlarge at 1 in flight, N=32 c8g.12xlarge at 6; N=64 on HOLD pending review)
+N=64 only if N=32 beats N=16 (c8g)	E3/E4 c8g (T_with_harness_s)	T(16) 295 s, T(32) 294 s	run N=64 (CONFOUNDED: N=16 ran c8g.12xlarge at 1 in flight, N=32 c8g.12xlarge at 6; N=64 on HOLD pending review)
+placement + order lever (j mod N vs LPT) resolved only if its gain exceeds 2 x the within-run spread	runs/g3-e2-x8g.12xlarge-n2.json	mod/LPT 1.028, spread 0.018	unresolved

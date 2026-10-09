@@ -226,6 +226,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     (`scripts/lib/tidy.py`, `scripts/post/g3-e1{,.cohort}.sh`; run-multi runs a cohort-level post);
   - an `ak2-engine result` line;
   - fixed a data race in `TCPClient.dial` (Lo and Hi were written on every concurrent dial).
+- `make hitorderfuzz [HITORDERFUZZ=quick|full|selftest]` (`scripts/hitorderfuzz.sh`,
+  `docs/hitorderfuzz.md`, `internal/classify/hitorderfuzz_test.go`): a differential fuzz of the
+  `HitCounts` from `newHitCounts()` against `std::unordered_map` under Amazon Linux 2023's
+  g++ 11.5.0 (`upstream/umap_order.cc`, natively or in podman). It compares orders and counts at
+  every print of seeded histories (random, lookup-heavy, clear cycles, growth across every rehash
+  boundary up to 10^5 elements, and the #44 reads), stops at the first mismatch, and fails on
+  unmet coverage. `umap_order` gains the ops `N`, `V`, `B` and `G`; existing histories are
+  unchanged. A CI job runs the full corpus in `amazonlinux:2023` (#44).
+  - `HITORDERFUZZ_SENSITIVITY=reversed|first-hit` records a sensitivity run that must fail.
+- LPT sample placement in cohort mode (`parallel:lpt`, `weight=<n>`; `cmd/aws-kraken2/place.go`),
+  with j mod N kept as `parallel:mod`, the control. `make oracle-cohort` gains `n3-lpt` and checks
+  every observed home rank against the manifest's placement (`scripts/lib/lpt_check.py`) (#25).
+- Engine memory samples: an `ak2-engine mem` line every 15 s with `AK2_TIMINGS=1` (#25).
+- The campaign memory rule: `scripts/g3/mkspec.sh` and `make rehearse` require the shard plus
+  15%, 8 GB, and 7.5 GB per sample in flight, measured (`scripts/lib/g3_memory.py`) (#25).
+- `make bash-jobs-test`: the body's job control under AL2023's bash, in podman
+  (`scripts/tests/bash_jobs.sh`). The old fetch loops must fail; the current fetch and PID lanes
+  must pass (#25).
+- `k2probe diag-reads`: the per-read Law-1 diagnosis. It compares scanner events with ambiguity
+  flags, lookups with probe counts against upstream's CompactHashTable (`chash_dump -m`),
+  upstream's values, and ResolveTree's arithmetic. It runs on RODA through
+  `runs/g3-diag44-r8gd.16xlarge.json` (#44).
+- `k2probe taxo-orphans`: lists taxonomy nodes whose lineage does not reach the root. RODA v205
+  has 246 (#44).
+- The G3 campaign tooling:
+  - `make g3-spec`, `make g3-tables` and `make g3-law1-u2`;
+  - U1 and U2;
+  - `make hitorder-golden`;
+  - `scripts/lib/abort_uploads.sh` (#25).
 
 ### Changed
 
@@ -270,6 +299,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and its own copies are gone.
 
 ### Fixed
+
+- Law 1 on RODA v205 (#44). ResolveTree walked the hits in first-hit order, but upstream walks
+  its per-thread `std::unordered_map` hit_counts (classify.cc:897-949). When a score tie's
+  LowestCommonAncestor is 0, which an orphan taxonomy node produces, the call depends on that
+  order. The fix routes the walk through `HitCounts` (`internal/classify/hitorder.go`), with a
+  clean-room implementation of the container's order (`hitcounts.go`, 904c2a5). It is checked
+  three ways:
+  - golden op histories from GCC 11.5.0 on AL2023;
+  - a differential fuzz;
+  - `TestIssue44OrphanTies` on the 16 real reads.
+  The RODA recheck then gave 0 differing reads on the 3 affected HMP2 samples, with digests
+  equal to upstream's (results/g3/20261009-015708-210e1b5).
 
 - `chash.Load` (#36): the table is 2 MiB-aligned and advised `MADV_HUGEPAGE`, as in upstream's
   LoadTable. Under THP mode `madvise` (Amazon Linux 2023's default) it was on 4 KiB pages, which

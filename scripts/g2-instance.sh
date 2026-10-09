@@ -44,6 +44,13 @@ g2i_setup() {
 # mounted at /mnt/nvme (1777). Sets G2_NVME, G2_DEVS (array + members) and G2_STORAGE.
 g2i_nvme() {
   local -a NV
+  # make rehearse's seam (AK2_REHEARSE_*, which run.sh never passes to an instance): a plain directory.
+  if [ -n "${AK2_REHEARSE_NVME:-}" ]; then
+    mkdir -p "$AK2_REHEARSE_NVME" || g2i_fail "rehearsal nvme dir"
+    G2_NVME=$AK2_REHEARSE_NVME G2_DEVS="" G2_STORAGE="rehearsal directory $AK2_REHEARSE_NVME"
+    export G2_DEVS G2_STORAGE G2_NVME
+    ak2_say "storage: $G2_STORAGE"; return 0
+  fi
   mapfile -t NV < <(lsblk -dpno NAME,MODEL | awk '/Instance Storage/{print $1}')
   [ "${#NV[@]}" -gt 0 ] || g2i_fail "no instance-store NVMe device"
   local dev members="" d

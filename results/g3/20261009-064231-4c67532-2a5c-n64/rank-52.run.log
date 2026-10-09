@@ -1,0 +1,73 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261009-064231-4c67532-2a5c-n64-r52  task ak2-g3-20261009-064231-4c67532-2a5c-n64-r52  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r52
+make run: user data: 12344 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c8gn.4xlarge (0 vCPU, 0 GiB)
+make run: launched i-0ce30a4d539c6f76e (c8gn.4xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-09T06:44:38Z	1791528278	preamble	no
+  | ak2: [2026-10-09T06:44:38Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-09T06:44:38Z] after set +e $-=hBc
+  | ak2: [2026-10-09T06:44:38Z] gate=g3 run=20261009-064231-4c67532-2a5c-n64-r52
+  | ak2: [2026-10-09T06:44:38Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-09T06:44:38Z] imds region=us-west-2 az=us-west-2b instance=i-0ce30a4d539c6f76e type=c8gn.4xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-09T06:44:38Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-09T06:44:39Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-09T06:44:39Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-09T06:44:39Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-09T06:44:40Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-09T06:44:40Z] region assert passed
+  | ak2: [2026-10-09T06:44:40Z] drop_caches_ok=true
+  | ak2: [2026-10-09T06:44:40Z] preamble done; spec body starts
+  | ak2-phase	2026-10-09T06:44:40Z	1791528280	body	no
+  | ak2-phase	2026-10-09T06:44:40Z	1791528280	setup	no
+  | go: downloading github.com/aws/aws-sdk-go-v2/config v1.33.7
+  | go: downloading github.com/aws/aws-sdk-go-v2 v1.47.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/credentials v1.20.7
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/s3 v1.114.1
+  | go: downloading github.com/klauspost/compress v1.20.0
+  | go: downloading github.com/aws/smithy-go v1.28.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/signin v1.10.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/sso v1.38.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/sts v1.51.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.19
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.11.5
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.14.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.20.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.4
+  | ak2: [2026-10-09T06:45:16Z] rank 52 of 64; hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800; stages 1 16 32 64 x 60s
+  | ak2-phase	2026-10-09T06:45:16Z	1791528316	rendezvous	no
+  | ak2: [2026-10-09T06:46:10Z] rendezvous: all 64 ready; stages start at 1791528368 (-2 s from now)
+  | ak2-phase	2026-10-09T06:46:10Z	1791528370	stage-n1	no
+  | ak2: [2026-10-09T06:46:10Z] stage n1: rank 52 waits
+  | ak2-phase	2026-10-09T06:46:10Z	1791528370	stage-n16	no
+  | ak2: [2026-10-09T06:47:28Z] stage n16: rank 52 waits
+  | ak2-phase	2026-10-09T06:47:28Z	1791528448	stage-n32	no
+  | ak2: [2026-10-09T06:48:48Z] stage n32: rank 52 waits
+  | ak2-phase	2026-10-09T06:48:48Z	1791528528	stage-n64	no
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528613.1947887,"elapsed_s":5.000068427,"bytes":28118614016,"gbps_cum":5.623645841357202,"gbps_interval":5.623645841357202,"requests":483,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528618.194789,"elapsed_s":10.000068845,"bytes":57176752128,"gbps_cum":5.717635849735992,"gbps_interval":5.811627136547972,"requests":916,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528623.1947978,"elapsed_s":15.000077643,"bytes":88113938432,"gbps_cum":5.874232155932848,"gbps_interval":6.187426373404554,"requests":1377,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528628.1948051,"elapsed_s":20.000085125,"bytes":117507620864,"gbps_cum":5.875356036215872,"gbps_interval":5.878727689471885,"requests":1815,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528633.1947875,"elapsed_s":25.00006745,"bytes":147371065344,"gbps_cum":5.894826709517538,"gbps_interval":5.972710009529885,"requests":2260,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528638.1947834,"elapsed_s":30.000063456,"bytes":177972707328,"gbps_cum":5.932411029364191,"gbps_interval":6.120333285722229,"requests":2716,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528643.1947904,"elapsed_s":35.000070337,"bytes":207366389760,"gbps_cum":5.924742086611882,"gbps_interval":5.878728396093981,"requests":3154,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528648.1948273,"elapsed_s":40.000107219,"bytes":238370684928,"gbps_cum":5.959251149576275,"gbps_interval":6.200813293920819,"requests":3616,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528653.1947887,"elapsed_s":45.00006857,"bytes":268301238272,"gbps_cum":5.962240654247963,"gbps_interval":5.98615694059592,"requests":4062,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528658.1947873,"elapsed_s":50.000067204,"bytes":298030465024,"gbps_cum":5.96060128895502,"gbps_interval":5.945846974805394,"requests":4505,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528663.194784,"elapsed_s":55.000063845,"bytes":328363671552,"gbps_cum":5.970241643307678,"gbps_interval":6.066645381172367,"requests":4957,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r52","unix_s":1791528668.1948302,"elapsed_s":60.00011013,"bytes":358294224896,"gbps_cum":5.971559454135955,"gbps_interval":5.986055255886496,"requests":5403,"retries":0,"complete":false}
+  | probe-cont {"kind":"done","label":"n64-r52","unix_s":1791528668.1953287,"elapsed_s":60.000608748,"bytes":358294224896,"gbps_cum":5.971509829188909,"gbps_interval":0,"requests":5403,"retries":0,"complete":false,"workers":64,"chunk_mib":64,"object":"https://kraken2-ncbi-refseq-complete-v205.s3.us-west-2.amazonaws.com/Kraken2_RefSeqCompleteV205/hash.k2d","object_bytes":1189091671800,"stopped_by":"seconds"}
+  | ak2-phase	2026-10-09T06:51:13Z	1791528673	push	no
+  | ak2: [2026-10-09T06:51:13Z] pushed out/cont-52.jsonl
+  | ak2: [2026-10-09T06:51:13Z] contention probe done FAIL=0
+  | ak2: [2026-10-09T06:51:13Z] spec body exit rc=0
+  | ak2-phase	2026-10-09T06:51:13Z	1791528674	end	no
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r52/: 8 objects, 7 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261009-064231-4c67532-2a5c-n64-r52  (task exit 0, state terminated, cost $0.122187)
+orphans: this run's instance(s) and task ak2-g3-20261009-064231-4c67532-2a5c-n64-r52 are gone (18 regions checked)

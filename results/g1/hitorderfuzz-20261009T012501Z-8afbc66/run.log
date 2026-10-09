@@ -1,0 +1,6 @@
+=== RUN   TestHitOrderFuzz
+    hitorderfuzz_test.go:1100: probe: bucket counts [1 13 29 59 127 257 541 1109 2357 5087 10273 20753 42043 85229 172933] at sizes [1 14 30 60 128 258 542 1110 2358 5088 10274 20754 42044 85230]
+    hitorderfuzz_test.go:1234: hitorderfuzz selftest seed 44: 1884 histories, 3346942 ops, 66495 prints, 11383714 entries, 118677 lookups, 5448 clears, 73.7s
+--- PASS: TestHitOrderFuzz (73.78s)
+PASS
+ok  	github.com/scttfrdmn/aws-kraken2/internal/classify	73.939s

@@ -1,0 +1,107 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-08T05:09:25Z] wrapper start
+spawn: [2026-10-08T05:09:25Z] stage-in start
+spawn: [2026-10-08T05:09:25Z] stage-in done rc=0
+spawn: [2026-10-08T05:09:25Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 027adc59f76cd7844d8d3367835d55dc87a23c69403fe6325469ad16322d722c); exec
+ak2: log tee up
+ak2-phase	2026-10-08T05:09:25Z	1791436165	preamble	no
+ak2: [2026-10-08T05:09:25Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-08T05:09:25Z] after set +e $-=hBc
+ak2: [2026-10-08T05:09:25Z] gate=g3 run=20261008-050900-9c4a5c7
+ak2: [2026-10-08T05:09:25Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-08T05:09:25Z] imds region=us-west-2 az=us-west-2a instance=i-091e369b1bef67147 type=r8gd.16xlarge ami=ami-09325776a00699513
+ak2: [2026-10-08T05:09:25Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-08T05:09:26Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-08T05:09:26Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-08T05:09:26Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-08T05:09:26Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-08T05:09:26Z] region assert passed
+ak2: [2026-10-08T05:09:26Z] drop_caches_ok=true
+ak2: [2026-10-08T05:09:27Z] preamble done; spec body starts
+ak2-phase	2026-10-08T05:09:27Z	1791436167	body	no
+ak2-phase	2026-10-08T05:09:27Z	1791436167	setup	no
+ak2: [2026-10-08T05:09:58Z] perf perf version 6.1.188-233.386.amzn2023.aarch64; events usable: task-clock,context-switches,cpu-migrations,page-faults,major-faults,minor-faults,cycles,instructions,dTLB-loads,dTLB-load-misses,dtlb_walk,stall_backend,syscalls:sys_enter_futex
+ak2: [2026-10-08T05:09:58Z] host: 64 CPUs; 518833360 kB; kernel 6.18.51-120.163.amzn2023.aarch64
+ak2: [2026-10-08T05:09:58Z] thp enabled=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] shmem_enabled=[always within_size advise [never] deny force]
+ak2: [2026-10-08T05:09:58Z] lscpu: Core(s) per socket: 64;Socket(s): 1;NUMA node(s): 1;
+ak2: [2026-10-08T05:09:58Z] numa: available: 1 nodes (0);node 0 size: 506673 MB;
+ak2: [2026-10-08T05:09:58Z] disks: nvme2n1   60G Amazon Elastic Block Store       vol078c11d9a55c0b261;nvme1n1  1.7T Amazon EC2 NVMe Instance Storage AWS64AC318263E8CBEF7;nvme0n1  1.7T Amazon EC2 NVMe Instance Storage AWS85816E862C6E4ECDD;
+log stripe unit (524288 bytes) is too large (maximum is 256KiB)
+log stripe unit adjusted to 32KiB
+ak2: [2026-10-08T05:10:02Z] storage: instance-store NVMe 2x ( 1.7T Amazon EC2 NVMe Instance Storage) mdadm RAID0 chunk 512K as md0; xfs noatime at /mnt/nvme; read_ahead_kb: md0=2048KiB nvme1n1=128KiB nvme0n1=128KiB; scheduler: md0= nvme1n1=[none]mq-deadlinekyberbfq nvme0n1=[none]mq-deadlinekyberbfq
+ak2-phase	2026-10-08T05:10:02Z	1791436202	fetch-reads	no
+ak2: [2026-10-08T05:10:02Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000.SOURCE -> /mnt/nvme/reads/SRR062634_8000000.SOURCE (403 bytes)
+ak2: [2026-10-08T05:10:09Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_1.fq -> /mnt/nvme/reads/SRR062634_8000000_1.fq (2093755239 bytes)
+ak2: [2026-10-08T05:10:17Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_2.fq -> /mnt/nvme/reads/SRR062634_8000000_2.fq (2093755239 bytes)
+ak2: [2026-10-08T05:10:22Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz -> /mnt/nvme/reads/SRR062634_8000000_1.fq.gz (630707754 bytes)
+ak2: [2026-10-08T05:10:25Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz -> /mnt/nvme/reads/SRR062634_8000000_2.fq.gz (626133309 bytes)
+ak2: [2026-10-08T05:10:49Z] reads SRR062634_8000000 verified against SOURCE
+ak2: [2026-10-08T05:10:51Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935740_1.fastq.gz -> /mnt/nvme/reads/SRR5935740_1.fq.gz (495118282 bytes)
+ak2: [2026-10-08T05:11:03Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/SRR5935740_2.fastq.gz -> /mnt/nvme/reads/SRR5935740_2.fq.gz (502062672 bytes)
+ak2: [2026-10-08T05:11:13Z] cohort sample 1 (SRR5935740) staged and verified
+ak2-phase	2026-10-08T05:11:13Z	1791436273	fetch-db	no
+ak2: [2026-10-08T05:11:13Z] aws: aws-cli/2.36.47 Python/3.9.25 Linux/6.18.51-120.163.amzn2023.aarch64 source/aarch64.amzn.2023; s3 transfer client crt, target_bandwidth 25Gb/s, 64 MB parts
+ak2: [2026-10-08T05:11:14Z] staged opts.k2d bytes=56 in 0.4 s (0.000 GB/s)
+ak2: [2026-10-08T05:11:14Z] etag opts.k2d: {"ok": true, "file": "/mnt/nvme/db/RefSeqCompleteV205/opts.k2d", "size": 56, "etag": "24fb1753eb45d74643ef13f16562df6b", "computed": "24fb1753eb45d74643ef13f16562df6b", "part_bytes": 56, "parts": 1, "workers": 64, "seconds": 0.0, "read_gb_s": 0.0}
+ak2: [2026-10-08T05:11:17Z] staged taxo.k2d bytes=179150665 in 2.1 s (0.084 GB/s)
+ak2: [2026-10-08T05:11:17Z] etag taxo.k2d: {"ok": true, "file": "/mnt/nvme/db/RefSeqCompleteV205/taxo.k2d", "size": 179150665, "etag": "9ee988cb814f39881e29623b9c8007cd-22", "computed": "9ee988cb814f39881e29623b9c8007cd-22", "part_bytes": 8388608, "parts": 22, "workers": 64, "seconds": 0.034, "read_gb_s": 5.211}
+ak2: [2026-10-08T05:22:02Z] staged hash.k2d bytes=1189091671800 in 645.0 s (1.843 GB/s)
+ak2: [2026-10-08T05:24:32Z] etag hash.k2d: {"ok": true, "file": "/mnt/nvme/db/RefSeqCompleteV205/hash.k2d", "size": 1189091671800, "etag": "f80959f9556b50d76b3e744afdd3b22a-8860", "computed": "f80959f9556b50d76b3e744afdd3b22a-8860", "part_bytes": 134217728, "parts": 8860, "workers": 64, "seconds": 150.286, "read_gb_s": 7.912}
+ak2: [2026-10-08T05:24:33Z] upstream: pin 2731b35f7abb26ec926517274f3d87e78d42fd76;describe 2.17.2-20-g2731b35;cxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5));version Kraken version 2.17.1;built 2026-10-08T05:11:33Z Linux aarch64;
+g2: shell flags hBc
+g2: plan=scripts/g2/u2.plan db=/mnt/nvme/db/RefSeqCompleteV205 ramdb= reads=/mnt/nvme/reads cold=true (ak2_drop_caches) thp=[always [madvise] never] defrag=[always defer defer+madvise [madvise] never] devs=md0,nvme1n1,nvme0n1
+g2: results /home/ec2-user/ak2/repo/results/g3/g2-u2-20261008T052433Z
+g2: plan line 9: read_ahead_kb now: md0=4 nvme1n1=4 nvme0n1=4 
+ak2: [2026-10-08T05:24:43Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:24:43Z	1791437083	g2-1-mmap-SRR062634_8000000-gz-cold-t768-r1	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t768-r1 {"exit":0,"timed_out":false,"wall_s":267.092179,"load_s":0.241218,"classify_s":237.349,"offcpu_frac":0.9398,"ipc":0.9342,"aqu":107.969,"majflt":178874904}
+ak2: [2026-10-08T05:30:31Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:30:31Z	1791437431	g2-2-mmap-SRR062634_8000000-gz-cold-t512-r1	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t512-r1 {"exit":0,"timed_out":false,"wall_s":268.322072,"load_s":0.212192,"classify_s":238.854,"offcpu_frac":0.9126,"ipc":0.9406,"aqu":107.951,"majflt":178886371}
+ak2: [2026-10-08T05:36:22Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:36:22Z	1791437782	g2-3-mmap-SRR062634_8000000-gz-cold-t384-r1	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t384-r1 {"exit":0,"timed_out":false,"wall_s":266.888216,"load_s":0.26643,"classify_s":236.318,"offcpu_frac":0.8815,"ipc":0.9325,"aqu":108.949,"majflt":178895241}
+ak2: [2026-10-08T05:42:13Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:42:13Z	1791438133	g2-4-mmap-SRR062634_8000000-gz-cold-t256-r1	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t256-r1 {"exit":0,"timed_out":false,"wall_s":261.965545,"load_s":0.266834,"classify_s":229.581,"offcpu_frac":0.8155,"ipc":0.9281,"aqu":112.14,"majflt":178866002}
+ak2: [2026-10-08T05:48:02Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:48:02Z	1791438482	g2-5-mmap-SRR062634_8000000-gz-cold-t768-r2	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t768-r2 {"exit":0,"timed_out":false,"wall_s":268.518742,"load_s":0.204922,"classify_s":238.094,"offcpu_frac":0.9408,"ipc":0.9304,"aqu":108.003,"majflt":178886820}
+ak2: [2026-10-08T05:53:55Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:53:55Z	1791438835	g2-6-mmap-SRR062634_8000000-gz-cold-t512-r2	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t512-r2 {"exit":0,"timed_out":false,"wall_s":268.262121,"load_s":0.28822,"classify_s":237.189,"offcpu_frac":0.9112,"ipc":0.9363,"aqu":108.622,"majflt":178893297}
+ak2: [2026-10-08T05:59:47Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T05:59:47Z	1791439187	g2-7-mmap-SRR062634_8000000-gz-cold-t384-r2	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t384-r2 {"exit":0,"timed_out":false,"wall_s":265.273301,"load_s":0.234639,"classify_s":232.609,"offcpu_frac":0.8788,"ipc":0.9297,"aqu":110.637,"majflt":178896000}
+ak2: [2026-10-08T06:05:40Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:05:40Z	1791439540	g2-8-mmap-SRR062634_8000000-gz-cold-t256-r2	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t256-r2 {"exit":0,"timed_out":false,"wall_s":265.645006,"load_s":0.26628,"classify_s":234.189,"offcpu_frac":0.8192,"ipc":0.9291,"aqu":110.063,"majflt":178878616}
+ak2: [2026-10-08T06:11:31Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:11:31Z	1791439891	g2-9-mmap-SRR062634_8000000-gz-cold-t768-r3	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t768-r3 {"exit":0,"timed_out":false,"wall_s":269.958491,"load_s":0.248117,"classify_s":240.262,"offcpu_frac":0.9414,"ipc":0.93,"aqu":107.197,"majflt":178868530}
+ak2: [2026-10-08T06:17:26Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:17:26Z	1791440246	g2-10-mmap-SRR062634_8000000-gz-cold-t512-r3	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t512-r3 {"exit":0,"timed_out":false,"wall_s":266.566828,"load_s":0.224173,"classify_s":233.456,"offcpu_frac":0.9094,"ipc":0.9303,"aqu":110.231,"majflt":178880040}
+ak2: [2026-10-08T06:23:20Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:23:20Z	1791440600	g2-11-mmap-SRR062634_8000000-gz-cold-t384-r3	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t384-r3 {"exit":0,"timed_out":false,"wall_s":269.728541,"load_s":0.296945,"classify_s":240.244,"offcpu_frac":0.8833,"ipc":0.9351,"aqu":107.236,"majflt":178881487}
+ak2: [2026-10-08T06:29:13Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:29:13Z	1791440953	g2-12-mmap-SRR062634_8000000-gz-cold-t256-r3	yes
+g2: L10-run-mmap-SRR062634_8000000-gz-cold-t256-r3 {"exit":0,"timed_out":false,"wall_s":269.756249,"load_s":0.264246,"classify_s":240.207,"offcpu_frac":0.826,"ipc":0.9397,"aqu":107.041,"majflt":178891987}
+ak2: [2026-10-08T06:35:05Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:35:05Z	1791441305	g2-13-mmap-SRR5935740-gz-cold-t768-r1	yes
+g2: L11-run-mmap-SRR5935740-gz-cold-t768-r1 {"exit":0,"timed_out":false,"wall_s":93.567831,"load_s":0.172543,"classify_s":76.934,"offcpu_frac":0.9539,"ipc":1.3234,"aqu":169.213,"majflt":72715744}
+ak2: [2026-10-08T06:37:26Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-08T06:37:27Z	1791441447	g2-14-mmap-SRR5935740-gz-cold-t512-r1	yes
+g2: L11-run-mmap-SRR5935740-gz-cold-t512-r1 {"exit":0,"timed_out":false,"wall_s":93.578897,"load_s":0.234907,"classify_s":76.895,"offcpu_frac":0.9305,"ipc":1.2926,"aqu":169.252,"majflt":72715761}
+ak2-phase	2026-10-08T06:39:01Z	1791441541	g2-15-mmap-SRR5935740-gz-warm-t512-r1	no
+g2: L12-run-mmap-SRR5935740-gz-warm-t512-r1 {"exit":0,"timed_out":false,"wall_s":55.480366,"load_s":0.104764,"classify_s":20.76,"offcpu_frac":0.9852,"ipc":1.8233,"aqu":0.0,"majflt":0}
+g2: plan line 13: read_ahead_kb now: md0=2048 nvme1n1=128 nvme0n1=128 
+g2: 15 rungs, 0 skipped, 0 failures; /home/ec2-user/ak2/repo/results/g3/g2-u2-20261008T052433Z
+ak2: [2026-10-08T06:40:04Z] g3 u2 rc=0
+ak2-phase	2026-10-08T06:40:04Z	1791441604	push	no
+spawn: [2026-10-08T06:40:05Z] command exit rc=0

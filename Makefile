@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -70,10 +70,50 @@ stage-db:
 oracle-cohort:
 	scripts/oracle-cohort.sh $(DB)
 
+# G3 campaign specs (docs/cohort.md, "The G3 campaign"): EXP TYPE N COHORT [ARGS="KEY=VALUE ..."],
+# and the campaign's generated tables (results/g3/campaign/).
+g3-spec:
+	scripts/g3/mkspec.sh $(EXP) $(TYPE) $(N) $(COHORT) $(ARGS)
+
+g3-tables:
+	python3 scripts/lib/g3_memory.py
+	python3 scripts/lib/g3_campaign.py
+
+# The H-main frontier: ours vs upstream at its best per cohort size, regime and axis, with the
+# registered references and the kill condition (results/g3/campaign/frontier.{tsv,md}).
+g3-frontier: g3-tables
+	python3 scripts/lib/g3_frontier.py
+
+# Real-S3 check of ak2etag.py (multipart and single-part) and Law 1 of the engine's sample 1
+# against U2's upstream sha256s (scripts/lib/law1_u2.sh; downloads about 1 GB).
+g3-law1-u2:
+	scripts/lib/law1_u2.sh $(E) $(U)
+
+# The bash job-control check in AL2023's bash (podman): the body's old wait patterns must fail
+# there and the current fetch and lanes must pass (scripts/tests/bash_jobs.sh).
+bash-jobs-test:
+	scripts/bash-jobs-test.sh
+
+# #44: regenerate the HitCounts golden data (upstream/umap_order.cc under AL2023's g++, podman;
+# docs/hitorder.md).
+hitorder-golden:
+	scripts/hitorder-golden.sh
+
+# #44: HitCounts vs std::unordered_map under AL2023's g++ 11.5.0, differential fuzz
+# (docs/hitorderfuzz.md): HITORDERFUZZ=quick|full|selftest.
+HITORDERFUZZ ?= quick
+hitorderfuzz:
+	scripts/hitorderfuzz.sh $(HITORDERFUZZ)
+
 # Rehearse a cohort spec locally before any launch (docs/cohort.md, "Rehearsal"): the spec's own
 # body as N nodes (default 3) under the harness's env, every output against upstream.
 rehearse:
-	scripts/lib/e1_rehearse.sh $(or $(SPEC),runs/g3-e1.json) $(or $(N),3)
+	case "$(or $(SPEC),runs/g3-e1.json)" in runs/g3-e1.json) scripts/lib/e1_rehearse.sh runs/g3-e1.json $(or $(N),3) ;; \
+	  runs/g3-u1-*) scripts/lib/u_rehearse.sh $(SPEC) ;; \
+	  runs/g3-u2-*) scripts/lib/u2_rehearse.sh $(SPEC) ;; \
+	  runs/g3-diag44-*) scripts/lib/diag44_rehearse.sh $(SPEC) ;; \
+	  runs/g3-probe-*) scripts/lib/probe_rehearse.sh $(SPEC) ;; \
+	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
 
 # The G3 sweep's real cohort (docs/cohort.md, #25): PART=record (once, before use) or stage
 # (default), PROJECT (default PRJNA398089), COUNT (record: 1000; stage: 10).

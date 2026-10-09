@@ -1,0 +1,39 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-161358-a8e9217-721c-n32-r30  task ak2-g3-20261008-161358-a8e9217-721c-n32-r30  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-161358-a8e9217-721c-n32-r30
+make run: user data: 12654 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c8g.12xlarge (0 vCPU, 0 GiB)
+2026/10/08 09:15:19 pricing: c8g.12xlarge in us-west-2 = $1.9142/hr (truffle, live AWS Price List)
+launch task: provision: launch: failed to launch instance: InsufficientInstanceCapacity: operation error EC2: RunInstances, exceeded maximum number of attempts, 3, https response error StatusCode: 500, RequestID: ffec347f-9d3a-44a4-b17b-1e1f15686bb4, api error InsufficientInstanceCapacity: We currently do not have sufficient c8g.12xlarge capacity in the Availability Zone you requested (us-west-2a). Our system will be working on provisioning additional capacity. You can currently get c8g.12xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2b, us-west-2c, us-west-2d.
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-037e605cadd179506	running	c8g.12xlarge	2026-10-08T16:15:13+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r24	ttl=40m	within TTL
+  us-west-2	i-0fb750dd41bcc3646	running	c8g.12xlarge	2026-10-08T16:15:18+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r29	ttl=40m	within TTL
+  us-west-2	i-09d62c382e8e3aa9e	running	c8g.12xlarge	2026-10-08T16:15:03+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r20	ttl=40m	within TTL
+  us-west-2	i-0e631523e5fbbb48e	running	c8g.12xlarge	2026-10-08T16:15:19+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r27	ttl=40m	within TTL
+  us-west-2	i-03743ec99e1d6fa9f	running	c8g.12xlarge	2026-10-08T16:14:50+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r14	ttl=40m	within TTL
+  us-west-2	i-05f2cc6a3fc2919a5	running	c8g.12xlarge	2026-10-08T16:14:39+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r9	ttl=40m	within TTL
+  us-west-2	i-02e253cb029c37c58	running	c8g.12xlarge	2026-10-08T16:15:08+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r21	ttl=40m	within TTL
+  us-west-2	i-06d7e88dc146ae827	running	c8g.12xlarge	2026-10-08T16:15:19+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r25	ttl=40m	within TTL
+  us-west-2	i-0600aa96486af5b6c	running	c8g.12xlarge	2026-10-08T16:14:57+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r17	ttl=40m	within TTL
+  us-west-2	i-0933001bafdabe155	running	c8g.12xlarge	2026-10-08T16:14:45+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r12	ttl=40m	within TTL
+  us-west-2	i-069ae5b7f4e17e8b5	running	c8g.12xlarge	2026-10-08T16:14:38+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r8	ttl=40m	within TTL
+  us-west-2	i-07d7c5c3592a5158a	running	c8g.12xlarge	2026-10-08T16:15:09+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r23	ttl=40m	within TTL
+  us-west-2	i-09e938aa79c05aa68	running	c8g.12xlarge	2026-10-08T16:14:36+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r7	ttl=40m	within TTL
+  us-west-2	i-076d09167d0ab2a24	running	c8g.12xlarge	2026-10-08T16:14:58+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r18	ttl=40m	within TTL
+  us-west-2	i-0b6f64360d5568c68	running	c8g.12xlarge	2026-10-08T16:15:05+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r22	ttl=40m	within TTL
+  us-west-2	i-035e2c0bd50794225	running	c8g.12xlarge	2026-10-08T16:15:01+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r19	ttl=40m	within TTL
+  us-west-2	i-0d0bc2d0eb1c5abdb	running	c8g.12xlarge	2026-10-08T16:14:28+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r4	ttl=40m	within TTL
+  us-west-2	i-07a9b08119cbbfe67	running	c8g.12xlarge	2026-10-08T16:14:27+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r3	ttl=40m	within TTL
+  us-west-2	i-0315646a20a55a117	running	c8g.12xlarge	2026-10-08T16:15:20+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r26	ttl=40m	within TTL
+  us-west-2	i-0758080821c62fbb1	running	c8g.12xlarge	2026-10-08T16:14:42+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r10	ttl=40m	within TTL
+  us-west-2	i-0427fa60c8bda8fb0	running	c8g.12xlarge	2026-10-08T16:14:32+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r5	ttl=40m	within TTL
+  us-west-2	i-029f3c6b202d8d04f	running	c8g.12xlarge	2026-10-08T16:14:23+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r0	ttl=40m	within TTL
+  us-west-2	i-030e087a023d7a1f1	running	c8g.12xlarge	2026-10-08T16:14:47+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r13	ttl=40m	within TTL
+  us-west-2	i-0bd6c30b4d7b763ce	running	c8g.12xlarge	2026-10-08T16:14:44+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r11	ttl=40m	within TTL
+  us-west-2	i-08644adf8e138a19e	running	c8g.12xlarge	2026-10-08T16:14:52+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r15	ttl=40m	within TTL
+  us-west-2	i-084ddab4035d27b16	running	c8g.12xlarge	2026-10-08T16:14:23+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r2	ttl=40m	within TTL
+  us-west-2	i-026fc3b32b1e3db4a	running	c8g.12xlarge	2026-10-08T16:14:34+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r6	ttl=40m	within TTL
+  us-west-2	i-0a5267d0387a595bf	running	c8g.12xlarge	2026-10-08T16:14:24+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r1	ttl=40m	within TTL
+  us-west-2	i-0872c6af210cd2712	running	c8g.12xlarge	2026-10-08T16:14:54+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r16	ttl=40m	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261008-161358-a8e9217-721c-n32-r30 are gone (18 regions checked)
+make run: launch failed (rc=1)

@@ -1,0 +1,84 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-09T06:43:47Z] wrapper start
+spawn: [2026-10-09T06:43:47Z] stage-in start
+spawn: [2026-10-09T06:43:47Z] stage-in done rc=0
+spawn: [2026-10-09T06:43:47Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 f99c23c4d439c85787ba884a1c5357c94010fa7dd20283867e4bf53c29df239e); exec
+ak2: log tee up
+ak2-phase	2026-10-09T06:43:47Z	1791528227	preamble	no
+ak2: [2026-10-09T06:43:47Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-09T06:43:47Z] after set +e $-=hBc
+ak2: [2026-10-09T06:43:47Z] gate=g3 run=20261009-064231-4c67532-2a5c-n64-r26
+ak2: [2026-10-09T06:43:47Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-09T06:43:47Z] imds region=us-west-2 az=us-west-2b instance=i-0b8a6d5710c8794aa type=c8gn.4xlarge ami=ami-09325776a00699513
+ak2: [2026-10-09T06:43:47Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-09T06:43:48Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-09T06:43:48Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-09T06:43:48Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-09T06:43:48Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-09T06:43:48Z] region assert passed
+ak2: [2026-10-09T06:43:48Z] drop_caches_ok=true
+ak2: [2026-10-09T06:43:49Z] preamble done; spec body starts
+ak2-phase	2026-10-09T06:43:49Z	1791528229	body	no
+ak2-phase	2026-10-09T06:43:49Z	1791528229	setup	no
+go: downloading github.com/aws/aws-sdk-go-v2 v1.47.1
+go: downloading github.com/aws/aws-sdk-go-v2/credentials v1.20.7
+go: downloading github.com/aws/aws-sdk-go-v2/service/s3 v1.114.1
+go: downloading github.com/aws/aws-sdk-go-v2/config v1.33.7
+go: downloading github.com/klauspost/compress v1.20.0
+go: downloading github.com/aws/smithy-go v1.28.1
+go: downloading github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.1
+go: downloading github.com/aws/aws-sdk-go-v2/service/signin v1.10.2
+go: downloading github.com/aws/aws-sdk-go-v2/service/sso v1.38.2
+go: downloading github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.2
+go: downloading github.com/aws/aws-sdk-go-v2/service/sts v1.51.2
+go: downloading github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20
+go: downloading github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4
+go: downloading github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.19
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.11.5
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.14.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.20.4
+go: downloading github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.4
+ak2: [2026-10-09T06:44:18Z] rank 26 of 64; hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800; stages 1 16 32 64 x 60s
+ak2-phase	2026-10-09T06:44:18Z	1791528258	rendezvous	no
+ak2: [2026-10-09T06:45:43Z] rendezvous: all 64 ready; stages start at 1791528368 (25 s from now)
+ak2-phase	2026-10-09T06:45:43Z	1791528343	stage-n1	no
+ak2: [2026-10-09T06:46:08Z] stage n1: rank 26 waits
+ak2-phase	2026-10-09T06:46:08Z	1791528368	stage-n16	no
+ak2: [2026-10-09T06:47:28Z] stage n16: rank 26 waits
+ak2-phase	2026-10-09T06:47:28Z	1791528448	stage-n32	no
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528533.6117518,"elapsed_s":5.000093692,"bytes":27648851968,"gbps_cum":5.529666776492075,"gbps_interval":5.529666776492075,"requests":476,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528538.611753,"elapsed_s":10.000094971,"bytes":57109643264,"gbps_cum":5.710910089315791,"gbps_interval":5.8921567519863025,"requests":915,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528543.6117444,"elapsed_s":15.000086453,"bytes":87845502976,"gbps_cum":5.856333111895565,"gbps_interval":6.147182414739961,"requests":1373,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528548.6117408,"elapsed_s":20.000082696,"bytes":117104967680,"gbps_cum":5.855224173819086,"gbps_interval":5.85189733791566,"requests":1809,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528553.6117496,"elapsed_s":25.000091557,"bytes":147169738752,"gbps_cum":5.886767991087321,"gbps_interval":6.012943558261426,"requests":2257,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528558.6117404,"elapsed_s":30.000082218,"bytes":178106925056,"gbps_cum":5.936881231249965,"gbps_interval":6.187448817716902,"requests":2718,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528563.6117406,"elapsed_s":35.000082585,"bytes":206829518848,"gbps_cum":5.9094008805750935,"gbps_interval":5.744518336752353,"requests":3146,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528568.6117728,"elapsed_s":40.000114511,"bytes":238370684928,"gbps_cum":5.9592500632079,"gbps_interval":6.308192936926459,"requests":3616,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528573.611739,"elapsed_s":45.000080668,"bytes":267764367360,"gbps_cum":5.950308608011227,"gbps_interval":5.878776277485112,"requests":4054,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528578.6117575,"elapsed_s":50.000099486,"bytes":297963356160,"gbps_cum":5.959255265950612,"gbps_interval":6.039775028702701,"requests":4504,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528583.6117716,"elapsed_s":55.000113562,"bytes":328162344960,"gbps_cum":5.966575770613133,"gbps_interval":6.039780756809213,"requests":4954,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n32-r26","unix_s":1791528588.6117644,"elapsed_s":60.000106368,"bytes":357421809664,"gbps_cum":5.95701960046232,"gbps_interval":5.8519013605156776,"requests":5390,"retries":0,"complete":false}
+probe-cont {"kind":"done","label":"n32-r26","unix_s":1791528588.6119792,"elapsed_s":60.000321074,"bytes":357421809664,"gbps_cum":5.9569982837788835,"gbps_interval":0,"requests":5390,"retries":0,"complete":false,"workers":64,"chunk_mib":64,"object":"https://kraken2-ncbi-refseq-complete-v205.s3.us-west-2.amazonaws.com/Kraken2_RefSeqCompleteV205/hash.k2d","object_bytes":1189091671800,"stopped_by":"seconds"}
+ak2-phase	2026-10-09T06:49:54Z	1791528594	stage-n64	no
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528613.0735347,"elapsed_s":5.000091557,"bytes":27783069696,"gbps_cum":5.556512191682653,"gbps_interval":5.556512191682653,"requests":478,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528618.0735135,"elapsed_s":10.000070347,"bytes":56639881216,"gbps_cum":5.663948277423053,"gbps_interval":5.771386786222747,"requests":908,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528623.0735176,"elapsed_s":15.000074471,"bytes":87644176384,"gbps_cum":5.842916083746422,"gbps_interval":6.200853919135687,"requests":1370,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528628.0735147,"elapsed_s":20.000071735,"bytes":117373403136,"gbps_cum":5.868649107422814,"gbps_interval":5.945848603968356,"requests":1813,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528633.0735145,"elapsed_s":25.000071522,"bytes":146632867840,"gbps_cum":5.865297933686448,"gbps_interval":5.8518931900906495,"requests":2249,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528638.0735228,"elapsed_s":30.00007964,"bytes":177838489600,"gbps_cum":5.927933916644763,"gbps_interval":6.241114218926954,"requests":2714,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528643.073527,"elapsed_s":35.000084084,"bytes":207500607488,"gbps_cum":5.928574542563948,"gbps_interval":5.93241830486661,"requests":3156,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528648.0735106,"elapsed_s":40.000067587,"bytes":237565378560,"gbps_cum":5.939124428809931,"gbps_interval":6.012974053606592,"requests":3604,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528653.0735536,"elapsed_s":45.000110684,"bytes":267697258496,"gbps_cum":5.948813334612108,"gbps_interval":6.0263240439025365,"requests":4053,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528658.0735142,"elapsed_s":50.000071282,"bytes":297225158656,"gbps_cum":5.944494698410578,"gbps_interval":5.905626570699627,"requests":4493,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528663.073543,"elapsed_s":55.000100189,"bytes":325545099264,"gbps_cum":5.918991022658335,"gbps_interval":5.663955376008389,"requests":4915,"retries":0,"complete":false}
+probe-cont {"kind":"progress","label":"n64-r26","unix_s":1791528668.073518,"elapsed_s":60.000074958,"bytes":355609870336,"gbps_cum":5.926823767885733,"gbps_interval":6.012984557122673,"requests":5363,"retries":0,"complete":false}
+probe-cont {"kind":"done","label":"n64-r26","unix_s":1791528668.0738237,"elapsed_s":60.000380555,"bytes":355609870336,"gbps_cum":5.926793581084479,"gbps_interval":0,"requests":5363,"retries":0,"complete":false,"workers":64,"chunk_mib":64,"object":"https://kraken2-ncbi-refseq-complete-v205.s3.us-west-2.amazonaws.com/Kraken2_RefSeqCompleteV205/hash.k2d","object_bytes":1189091671800,"stopped_by":"seconds"}
+ak2-phase	2026-10-09T06:51:13Z	1791528673	push	no
+ak2: [2026-10-09T06:51:13Z] pushed out/cont-26.jsonl
+ak2: [2026-10-09T06:51:13Z] contention probe done FAIL=0
+spawn: [2026-10-09T06:51:14Z] command exit rc=0

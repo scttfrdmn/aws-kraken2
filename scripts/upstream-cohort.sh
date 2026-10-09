@@ -11,6 +11,9 @@
 #       mount is owned by the invoking user, mode 0700) and copy SRC's opts.k2d, taxo.k2d and
 #       hash.k2d onto it; checks the copy's sizes; prints the mount point and the copy seconds.
 #       Refuses a mount point that exists already (a mounted or leftover directory).
+#   scripts/upstream-cohort.sh mount NAME SIZE
+#       the same tmpfs mount at /mnt/ak2-ramdb/NAME, empty (the caller fills it; e.g. U1 stages
+#       RODA straight onto it, and its inputs and scratch on two more).
 #   scripts/upstream-cohort.sh umount NAME
 #       unmount /mnt/ak2-ramdb/NAME and remove the directory (sudo).
 #   scripts/upstream-cohort.sh run KRAKEN2 MANIFEST OUT.jsonl [common arguments...]
@@ -47,9 +50,28 @@ ramdb)
   done
   awk -v a="$t0" -v b="$t1" 'BEGIN{printf "upstream-cohort: ramdb copy %.1f s\n", b-a}' >&2
   ;;
+mount)
+  name=$2 size=$3
+  [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "upstream-cohort: mount NAME must be a plain word" >&2; exit 2; }
+  [[ "$size" =~ ^[0-9]+[kmgKMG]?$ ]] || { echo "upstream-cohort: mount SIZE $size (e.g. 1150g)" >&2; exit 2; }
+  # make rehearse's seam (AK2_REHEARSE_*, which run.sh never passes to an instance): a plain
+  # directory under the given root, without sudo or a mount.
+  if [ -n "${AK2_REHEARSE_RAMDB_ROOT:-}" ]; then
+    dst="$AK2_REHEARSE_RAMDB_ROOT/$name"
+    [ ! -e "$dst" ] && mkdir -p "$dst" || { echo "upstream-cohort: rehearsal $dst exists or cannot be made" >&2; exit 1; }
+    echo "$dst"; exit 0
+  fi
+  dst="/mnt/ak2-ramdb/$name"
+  [ ! -e "$dst" ] || { echo "upstream-cohort: $dst exists (mounted or left over); umount it first" >&2; exit 1; }
+  sudo -n mkdir -p "$dst" &&
+    sudo -n mount -t tmpfs -o "size=$size,huge=always,mode=0700,uid=$(id -u),gid=$(id -g)" tmpfs "$dst" ||
+    { echo "upstream-cohort: tmpfs mount at $dst failed" >&2; sudo -n rmdir "$dst" 2>/dev/null; exit 1; }
+  echo "$dst"
+  ;;
 umount)
   name=$2
   [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "upstream-cohort: umount NAME must be a plain word" >&2; exit 2; }
+  if [ -n "${AK2_REHEARSE_RAMDB_ROOT:-}" ]; then rm -rf "${AK2_REHEARSE_RAMDB_ROOT:?}/$name"; exit 0; fi
   dst="/mnt/ak2-ramdb/$name"
   mountpoint -q "$dst" || { echo "upstream-cohort: $dst is not mounted" >&2; exit 1; }
   sudo -n umount "$dst" && sudo -n rmdir "$dst" || { echo "upstream-cohort: umount $dst failed" >&2; exit 1; }
@@ -97,5 +119,5 @@ run)
   done < "$MANIFEST"
   exit "$BAD"
   ;;
-*) echo "usage: $0 ramdb SRC NAME SIZE | umount NAME | run KRAKEN2 MANIFEST OUT.jsonl [common arguments...]" >&2; exit 2 ;;
+*) echo "usage: $0 ramdb SRC NAME SIZE | mount NAME SIZE | umount NAME | run KRAKEN2 MANIFEST OUT.jsonl [common arguments...]" >&2; exit 2 ;;
 esac

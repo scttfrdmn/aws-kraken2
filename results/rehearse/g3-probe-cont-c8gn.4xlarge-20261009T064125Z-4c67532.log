@@ -1,0 +1,13 @@
+rehearse: record results/rehearse/g3-probe-cont-c8gn.4xlarge-20261009T064125Z-4c67532.log
+rehearse: runs/g3-probe-cont-c8gn.4xlarge.json (cont) at 4c67532, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.gRymfs
+rehearse: stand-in hash.k2d 320 MiB, ETag 7cfda32307e14cfcbbf8ca7ce3f1bc02-3, at http://127.0.0.1:58679/Kraken2_RefSeqCompleteV205/hash.k2d
+rehearse: member 0 exit 0; streamed 3 done lines, want 3
+rehearse: member 1 exit 0; streamed 2 done lines, want 2
+rehearse: member 2 exit 0; streamed 1 done lines, want 1
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.gRymfs/g3/20261009-064128-4c67532-abcd-n3/tables/probe-contention.tsv (3 rows)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.gRymfs/g3/20261009-064128-4c67532-abcd-n3/tables/probe-contention-nodes.tsv (6 rows)
+N	nodes_reported	node_min_gbps	node_median_gbps	node_max_gbps	aggregate_gbps	retries	nodes_with_error	nic_gbps
+1	1	5.575	5.575	5.575	5.575	0	0	50 (c8gn.4xlarge baseline)
+2	2	5.647	6.210	6.772	12.420	0	0	50 (c8gn.4xlarge baseline)
+3	3	4.187	5.052	6.238	15.477	0	0	50 (c8gn.4xlarge baseline)
+rehearse: ok

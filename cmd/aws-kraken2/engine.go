@@ -190,6 +190,7 @@ func (e *engineIndex) report() {
 	// Requests, for the run's accounting (ak2_req): every rendezvous request of the process, and
 	// the S3 requests by client (rendezvous included, the shard load's ranged GETs not: those are
 	// the load line's).
+	fmt.Fprint(os.Stderr, memLine())
 	fmt.Fprintf(os.Stderr, "ak2-engine\trendezvous\tputs\t%d\tgets\t%d\n", engine.RendezvousPuts.Load(), engine.RendezvousGets.Load())
 	fmt.Fprintf(os.Stderr, "ak2-engine\ts3\tclient\tsdk\t%s\n", objstore.SDKCounts.Line())
 	fmt.Fprintf(os.Stderr, "ak2-engine\ts3\tclient\tcli\t%s\n", objstore.CLICounts.Line())

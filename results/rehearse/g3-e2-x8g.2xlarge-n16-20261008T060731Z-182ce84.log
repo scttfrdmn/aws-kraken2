@@ -1,0 +1,18 @@
+rehearse: record results/rehearse/g3-e2-x8g.2xlarge-n16-20261008T060731Z-182ce84.log
+rehearse: runs/g3-e2-x8g.2xlarge-n16.json at 182ce84, N=3, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-rehearse.2P8g30
+rehearse: rank 0 body exit 0
+rehearse: rank 1 body exit 0
+rehearse: rank 2 body exit 0
+rehearse: rank 0 streamed 9 [c3] ak2-sample lines (9 home or emitter)
+rehearse: rank 1 streamed 6 [c3] ak2-sample lines (3 home or emitter)
+rehearse: rank 2 streamed 6 [c3] ak2-sample lines (3 home or emitter)
+rehearse: 15 home/emitter sample lines streamed, manifest has 15
+rehearse: lpt_check: batch 0 (lpt): 3 of 3 samples on the expected rank; weight imbalance max/mean 1.80; differs from j mod N: yes
+rehearse: lpt_check: batch 1 (mod): 3 of 3 samples on the expected rank; weight imbalance max/mean 1.80
+rehearse: lpt_check: batch 2 (lpt): 3 of 3 samples on the expected rank; weight imbalance max/mean 1.80; differs from j mod N: yes
+rehearse: lpt_check: batch 6 (lpt): 1 of 1 samples on the expected rank; weight imbalance max/mean 3.00; differs from j mod N: no
+rehearse: lpt_check: batch 7 (lpt): 1 of 1 samples on the expected rank; weight imbalance max/mean 3.00; differs from j mod N: no
+rehearse: lpt_check: batch 8 (lpt): 1 of 1 samples on the expected rank; weight imbalance max/mean 3.00; differs from j mod N: no
+rehearse: 30 objects under out/ (want 30); requests say 30 (CompleteMultipartUpload 15 + PutObject 54 - Rendezvous-PutObject 39)
+rehearse: 30 of 30 outputs identical to upstream (want 30)
+rehearse: ok

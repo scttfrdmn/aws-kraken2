@@ -1,0 +1,13 @@
+hitorderfuzz MISMATCH
+seed 44
+history random/dense #0 (840 ops)
+op index 6: V
+V: first difference at entry 0 (Go 558:1, container 670:1)
+
+Go:
+V 558:1 234:1 598:1 670:1
+
+container:
+V 13 4 670:1 598:1 234:1 558:1
+
+replay: umap_order < mismatch-ops.txt (the history up to and including the op)

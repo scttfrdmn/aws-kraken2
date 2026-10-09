@@ -18,6 +18,9 @@
 #       mate, bytes, md5, sha256, key, version, at), one row per object version, in cohort order.
 #       STAGE_PARALLEL files at once (default 4), each in STAGE_RANGES ranged streams (default 8).
 #       Downloads go to the shared .cache/cohort/ and are deleted once staged (STAGE_KEEP=1 keeps).
+#       A slice of the first COUNT: STAGE_FROM (default 1) skips ranks below it, and STAGE_STRIDE /
+#       STAGE_OFFSET (default 1 / 0) keep the ranks with (rank - STAGE_FROM) % STRIDE == OFFSET, so
+#       N instances can each stage one slice (runs/stage-cohort.json uses AK2_ENGINE_N/RANK).
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
@@ -28,7 +31,7 @@ cd "$(dirname "$0")/.." || exit 1
 . scripts/lib/tags.sh
 # On an instance launched by make run (AK2_RUN_ID set; runs/stage-cohort.json) the instance role
 # is the credential, not the launch host's profile, and the role cannot tag objects (tag them
-# from the launch host afterwards: make tag-objects PREFIX=aws-kraken2/data/cohort/).
+# from the launch host afterwards: make tag-objects PREFIX=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/).
 ON_INSTANCE=0
 if [ -n "${AK2_RUN_ID:-}" ]; then ON_INSTANCE=1; unset AWS_PROFILE; else export AWS_PROFILE; fi
 echo "stage-cohort: shell flags $- (on instance: $ON_INSTANCE)"
@@ -98,6 +101,11 @@ stage)
   # STAGE_PARALLEL files (default 4) are fetched at once, each as STAGE_RANGES ranged streams
   # (default 8), joined and then checked whole.
   PAR=${STAGE_PARALLEL:-4}; RANGES=${STAGE_RANGES:-8}
+  FROM=${STAGE_FROM:-1}; STRIDE=${STAGE_STRIDE:-1}; OFFSET=${STAGE_OFFSET:-0}
+  [[ "$FROM$STRIDE$OFFSET" =~ ^[0-9]+$ ]] && [ "$FROM" -ge 1 ] && [ "$STRIDE" -ge 1 ] && [ "$OFFSET" -lt "$STRIDE" ] ||
+    { echo "stage-cohort: bad slice FROM=$FROM STRIDE=$STRIDE OFFSET=$OFFSET" >&2; exit 2; }
+  picked() { [ "$1" -ge "$FROM" ] && [ "$1" -le "$COUNT" ] && [ $(( ($1 - FROM) % STRIDE )) = "$OFFSET" ]; }
+  echo "stage-cohort: ranks $FROM..$COUNT, every ${STRIDE}th from offset $OFFSET; $PAR files at once, $RANGES ranges each"
   ROWS="$CACHE/rows.$$"; mkdir -p "$ROWS" || exit 1
   [ -s "$DIR/staged.tsv" ] || printf 'run\tmate\tbytes\tmd5\tsha256\tkey\tversion_id\tat\n' > "$DIR/staged.tsv"
   # stage_one RUN MATE URL BYTES MD5: one file; writes its staged.tsv row to $ROWS/<file>.
@@ -112,21 +120,28 @@ stage)
         "$(echo "$hd" | jq -r .Metadata.sha256)" "$k" "$(echo "$hd" | jq -r '.VersionId // "null"')" "$(date -u +%FT%TZ)" > "$ROWS/$f"
       echo "stage-cohort: $f present (md5 $want)"; return 0
     fi
-    chunk=$(( (b + RANGES - 1) / RANGES ))
-    local pids=()
-    for ((i = 0; i < RANGES; i++)); do
-      lo=$((i * chunk)); hi=$(( lo + chunk - 1 )); [ "$hi" -ge "$b" ] && hi=$((b - 1))
-      [ "$lo" -le "$hi" ] || break
-      curl -fsS --retry 8 --retry-delay 10 --retry-connrefused -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
+    # Up to 3 attempts: a whole download whose size or md5 disagrees with ENA's is fetched again
+    # (the ranks 11..1000 staging at ad4af00 lost every member to one md5 mismatch).
+    local attempt ok=0
+    for attempt in 1 2 3; do
+      chunk=$(( (b + RANGES - 1) / RANGES ))
+      local pids=()
+      for ((i = 0; i < RANGES; i++)); do
+        lo=$((i * chunk)); hi=$(( lo + chunk - 1 )); [ "$hi" -ge "$b" ] && hi=$((b - 1))
+        [ "$lo" -le "$hi" ] || break
+        curl -fsS --retry 8 --retry-delay 10 --retry-connrefused -r "$lo-$hi" "$u" -o "$p.part$i" & pids+=($!)
+      done
+      local bad=0 pid
+      for pid in "${pids[@]}"; do wait "$pid" || bad=1; done
+      if [ "$bad" != 0 ]; then echo "stage-cohort: download of $u failed (attempt $attempt)" >&2; rm -f "$p".part*; continue; fi
+      : > "$p"
+      for ((i = 0; i < ${#pids[@]}; i++)); do cat "$p.part$i" >> "$p" && rm -f "$p.part$i"; done
+      if [ "$(wc -c < "$p" | tr -d ' ')" != "$b" ]; then echo "stage-cohort: $f is $(wc -c < "$p") bytes, ENA says $b (attempt $attempt)" >&2; continue; fi
+      got=$(md5of "$p")
+      if [ "$got" != "$want" ]; then echo "stage-cohort: $f md5 $got, ENA says $want (attempt $attempt)" >&2; continue; fi
+      ok=1; break
     done
-    local bad=0 pid
-    for pid in "${pids[@]}"; do wait "$pid" || bad=1; done
-    [ "$bad" = 0 ] || { echo "stage-cohort: download of $u failed" >&2; rm -f "$p".part*; return 1; }
-    : > "$p"
-    for ((i = 0; i < ${#pids[@]}; i++)); do cat "$p.part$i" >> "$p" && rm -f "$p.part$i"; done
-    [ "$(wc -c < "$p" | tr -d ' ')" = "$b" ] || { echo "stage-cohort: $f is $(wc -c < "$p") bytes, ENA says $b" >&2; return 1; }
-    got=$(md5of "$p")
-    [ "$got" = "$want" ] || { echo "stage-cohort: $f md5 $got, ENA says $want" >&2; return 1; }
+    [ "$ok" = 1 ] || { rm -f "$p"; return 1; }
     h=$(sha "$p")
     aws s3 cp --only-show-errors --region us-west-2 --metadata "sha256=$h,md5=$want" "$p" "s3://$BUCKET/$k" ||
       { echo "stage-cohort: upload of $f failed" >&2; return 1; }
@@ -146,6 +161,7 @@ stage)
   while IFS=$'\t' read -r rank run sample reads bases u1 b1 m1 u2 b2 m2; do
     [ "$rank" = rank ] && continue
     [ "$rank" -le "$COUNT" ] || break
+    picked "$rank" || continue
     for m in 1 2; do
       if [ $m = 1 ]; then u=$u1; b=$b1; want=$m1; else u=$u2; b=$b2; want=$m2; fi
       stage_one "$run" "$m" "$u" "$b" "$want" &
@@ -158,6 +174,7 @@ stage)
   while IFS=$'\t' read -r rank run rest; do
     [ "$rank" = rank ] && continue
     [ "$rank" -le "$COUNT" ] || break
+    picked "$rank" || continue
     for m in 1 2; do
       r="$ROWS/${run}_$m.fastq.gz"
       if [ -s "$r" ]; then

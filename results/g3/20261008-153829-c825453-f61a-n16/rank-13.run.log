@@ -1,0 +1,22 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-153829-c825453-f61a-n16-r13  task ak2-g3-20261008-153829-c825453-f61a-n16-r13  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r13
+make run: user data: 12659 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c9g.12xlarge (0 vCPU, 0 GiB)
+2026/10/08 08:39:12 pricing: c9g.12xlarge in us-west-2 = $2.0866/hr (truffle, live AWS Price List)
+launch task: provision: launch: failed to launch instance: InsufficientInstanceCapacity: operation error EC2: RunInstances, exceeded maximum number of attempts, 3, https response error StatusCode: 500, RequestID: faa1aaa3-bfe6-49c3-83ef-c701bcecafb8, api error InsufficientInstanceCapacity: We currently do not have sufficient c9g.12xlarge capacity in the Availability Zone you requested (us-west-2a). Our system will be working on provisioning additional capacity. You can currently get c9g.12xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2b, us-west-2c, us-west-2d.
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-03553eb14185af603	running	c9g.12xlarge	2026-10-08T15:39:08+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r8	ttl=60m	within TTL
+  us-west-2	i-0ed4df72f58da0533	running	c9g.12xlarge	2026-10-08T15:39:06+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r7	ttl=60m	within TTL
+  us-west-2	i-0ccc2ed08fe2bd9de	running	c9g.12xlarge	2026-10-08T15:39:09+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r9	ttl=60m	within TTL
+  us-west-2	i-02ffd91834721a777	running	c9g.12xlarge	2026-10-08T15:39:01+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r5	ttl=60m	within TTL
+  us-west-2	i-055e7722e36bc9813	running	c9g.12xlarge	2026-10-08T15:39:00+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r4	ttl=60m	within TTL
+  us-west-2	i-01dae692008dea3df	running	c9g.12xlarge	2026-10-08T15:39:03+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r6	ttl=60m	within TTL
+  us-west-2	i-0aa492d566d8c4fd5	running	c9g.12xlarge	2026-10-08T15:38:56+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r2	ttl=60m	within TTL
+  us-west-2	i-0ca26f3a7736bdba4	running	c9g.12xlarge	2026-10-08T15:39:10+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r11	ttl=60m	within TTL
+  us-west-2	i-0b96236a253f2b962	running	c9g.12xlarge	2026-10-08T15:39:09+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r10	ttl=60m	within TTL
+  us-west-2	i-0feac29f83068361a	running	c9g.12xlarge	2026-10-08T15:38:55+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r1	ttl=60m	within TTL
+  us-west-2	i-0e00d0a5711fb1687	running	c9g.12xlarge	2026-10-08T15:38:54+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r0	ttl=60m	within TTL
+  us-west-2	i-0ce1ec04e1036470c	running	c9g.12xlarge	2026-10-08T15:38:59+00:00	ak2-g3-20261008-153829-c825453-f61a-n16-r3	ttl=60m	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261008-153829-c825453-f61a-n16-r13 are gone (18 regions checked)
+make run: launch failed (rc=1)

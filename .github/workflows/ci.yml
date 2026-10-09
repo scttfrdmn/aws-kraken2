@@ -209,3 +209,61 @@ jobs:
           name: sortfuzz-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ steps.newres.outputs.dirs }}
           if-no-files-found: error
+
+  # #44: internal/classify's HitCounts vs std::unordered_map, the iteration order upstream's
+  # ResolveTree walks, under the canonical platform's toolchain (amazonlinux:2023: g++ 11.5.0 and
+  # the system libstdc++). The harness is built and run natively here. It must pass: newHitCounts
+  # is the clean-room implementation (hitcounts.go, 904c2a5).
+  # Runbook: docs/hitorderfuzz.md.
+  hitorderfuzz:
+    runs-on: ubuntu-24.04-arm
+    container: amazonlinux:2023
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Toolchain (Amazon Linux 2023 g++, git, perl and shasum, jq, zlib; tar/gzip for setup-go)
+        run: |
+          set +e; echo "shell flags $-"
+          dnf install -y -q gcc-c++ make git tar gzip zlib-devel perl perl-Digest-SHA jq findutils
+          st=$?
+          g++ --version | head -1; rpm -q libstdc++ libstdc++-devel; head -2 /etc/os-release; uname -sm
+          exit $st
+
+      - uses: actions/checkout@v4
+
+      # The container runs as root on a workspace the runner owns.
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Upstream at the pin (scripts/oracle-build.sh; the harness needs its src)
+        run: scripts/oracle-build.sh
+
+      - name: assert the canonical toolchain (GCC 11.5.0)
+        run: test "$(g++ -dumpfullversion)" = 11.5.0
+
+      - name: make hitorderfuzz HITORDERFUZZ=full
+        run: make hitorderfuzz HITORDERFUZZ=full
+
+      - name: List this run's results
+        if: always()
+        id: newres
+        run: |
+          {
+            echo 'dirs<<EOF'
+            git ls-files --others --exclude-standard -- results/g1 | grep '/hitorderfuzz-' | xargs -r -n1 dirname | sort -u
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload hitorderfuzz results
+        if: always() && steps.newres.outputs.dirs != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: hitorderfuzz-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ steps.newres.outputs.dirs }}
+          if-no-files-found: error

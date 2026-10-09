@@ -1,0 +1,618 @@
+{
+  "cohort_id": "20261008-052413-306f827-5162-n16",
+  "gate": "g3",
+  "spec": "runs/g3-e3-c9g.12xlarge-n16.json",
+  "commit": "306f827679d55c2395743f532e6da71aeae1bc11",
+  "nodes": 16,
+  "instance_type": "c9g.12xlarge",
+  "az": "us-west-2a",
+  "region": "us-west-2",
+  "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-052413-306f827-5162-n16",
+  "network": {
+    "vpc": "vpc-e7e2999f",
+    "security_group": "sg-5059b179",
+    "admits": "itself, 22/tcp, ICMP"
+  },
+  "start": "2026-10-08T05:24:13Z",
+  "stop": "2026-10-08T05:32:52Z",
+  "ended": "members done (fail fast: rank 10 exited 1)",
+  "terminated_early": [
+    {
+      "rank": 0,
+      "instances": "i-0e469128686ad3b89",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 1,
+      "instances": "i-04faced724526316d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0ca12d01d5008dd36",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 3,
+      "instances": "i-00676c0905c8dd20a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0a8366ef3290fa6bb",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 5,
+      "instances": "i-05c18e62f15ba05e5",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 6,
+      "instances": "i-0e9736efb20bd2f0f",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 7,
+      "instances": "i-01a60807237f6f007",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 9,
+      "instances": "i-0b4aeef654774d9ed",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 11,
+      "instances": "i-05dff0c7af497e02a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 12,
+      "instances": "i-028f01396b3c48926",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 0,
+      "instances": "i-0e469128686ad3b89",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0ca12d01d5008dd36",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 3,
+      "instances": "i-00676c0905c8dd20a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0a8366ef3290fa6bb",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 6,
+      "instances": "i-0e9736efb20bd2f0f",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 7,
+      "instances": "i-01a60807237f6f007",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 9,
+      "instances": "i-0b4aeef654774d9ed",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 11,
+      "instances": "i-05dff0c7af497e02a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 12,
+      "instances": "i-028f01396b3c48926",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 0,
+      "instances": "i-0e469128686ad3b89",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0ca12d01d5008dd36",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 3,
+      "instances": "i-00676c0905c8dd20a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0a8366ef3290fa6bb",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 6,
+      "instances": "i-0e9736efb20bd2f0f",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 7,
+      "instances": "i-01a60807237f6f007",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 9,
+      "instances": "i-0b4aeef654774d9ed",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 11,
+      "instances": "i-05dff0c7af497e02a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 0,
+      "instances": "i-0e469128686ad3b89",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0ca12d01d5008dd36",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 3,
+      "instances": "i-00676c0905c8dd20a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 4,
+      "instances": "i-0a8366ef3290fa6bb",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 6,
+      "instances": "i-0e9736efb20bd2f0f",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 7,
+      "instances": "i-01a60807237f6f007",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 9,
+      "instances": "i-0b4aeef654774d9ed",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 0,
+      "instances": "i-0e469128686ad3b89",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0ca12d01d5008dd36",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 3,
+      "instances": "i-00676c0905c8dd20a",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 9,
+      "instances": "i-0b4aeef654774d9ed",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 0,
+      "instances": "i-0e469128686ad3b89",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 2,
+      "instances": "i-0ca12d01d5008dd36",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 9,
+      "instances": "i-0b4aeef654774d9ed",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 8,
+      "instances": "i-0cf88947feb1e23da",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 15,
+      "instances": "i-08261f7de7039bb4d",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 13,
+      "instances": "i-0ff024c6670b3bcef",
+      "why": "fail fast: rank 10 exited 1"
+    },
+    {
+      "rank": 14,
+      "instances": "i-00bdad3ac0958ff05",
+      "why": "fail fast: rank 10 exited 1"
+    }
+  ],
+  "sweep_failures": [],
+  "members": [
+    {
+      "rank": 0,
+      "run_id": "20261008-052413-306f827-5162-n16-r0",
+      "rc": "99",
+      "instance_id": "i-0e469128686ad3b89",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.135626,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 1,
+      "run_id": "20261008-052413-306f827-5162-n16-r1",
+      "rc": "1",
+      "instance_id": "i-04faced724526316d",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.128671,
+      "exit_code": 1,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 2,
+      "run_id": "20261008-052413-306f827-5162-n16-r2",
+      "rc": "99",
+      "instance_id": "i-0ca12d01d5008dd36",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.134467,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 3,
+      "run_id": "20261008-052413-306f827-5162-n16-r3",
+      "rc": "99",
+      "instance_id": "i-00676c0905c8dd20a",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.134467,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 4,
+      "run_id": "20261008-052413-306f827-5162-n16-r4",
+      "rc": "99",
+      "instance_id": "i-0a8366ef3290fa6bb",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.132728,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 5,
+      "run_id": "20261008-052413-306f827-5162-n16-r5",
+      "rc": "99",
+      "instance_id": "i-05c18e62f15ba05e5",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.133308,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 6,
+      "run_id": "20261008-052413-306f827-5162-n16-r6",
+      "rc": "99",
+      "instance_id": "i-0e9736efb20bd2f0f",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.132728,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 7,
+      "run_id": "20261008-052413-306f827-5162-n16-r7",
+      "rc": "99",
+      "instance_id": "i-01a60807237f6f007",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.132728,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 8,
+      "run_id": "20261008-052413-306f827-5162-n16-r8",
+      "rc": "99",
+      "instance_id": "i-0cf88947feb1e23da",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.132149,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 9,
+      "run_id": "20261008-052413-306f827-5162-n16-r9",
+      "rc": "99",
+      "instance_id": "i-0b4aeef654774d9ed",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.131569,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 10,
+      "run_id": "20261008-052413-306f827-5162-n16-r10",
+      "rc": "1",
+      "instance_id": "i-00c081d29c64b6bac",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.093316,
+      "exit_code": 1,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 11,
+      "run_id": "20261008-052413-306f827-5162-n16-r11",
+      "rc": "99",
+      "instance_id": "i-05dff0c7af497e02a",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.13041,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 12,
+      "run_id": "20261008-052413-306f827-5162-n16-r12",
+      "rc": "99",
+      "instance_id": "i-028f01396b3c48926",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.129251,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 13,
+      "run_id": "20261008-052413-306f827-5162-n16-r13",
+      "rc": "99",
+      "instance_id": "i-0ff024c6670b3bcef",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.128671,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 14,
+      "run_id": "20261008-052413-306f827-5162-n16-r14",
+      "rc": "99",
+      "instance_id": "i-00bdad3ac0958ff05",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.128671,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    },
+    {
+      "rank": 15,
+      "run_id": "20261008-052413-306f827-5162-n16-r15",
+      "rc": "99",
+      "instance_id": "i-08261f7de7039bb4d",
+      "type": "c9g.12xlarge",
+      "az": "us-west-2a",
+      "final_state": "terminated",
+      "cost_usd": 0.128671,
+      "exit_code": null,
+      "own_gone": true,
+      "finalised": true
+    }
+  ],
+  "cost_usd": 2.067431,
+  "cost_basis": "sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
+  "prefix_fetched": true,
+  "multipart_aborted": 3,
+  "multipart_abort_failures": 0,
+  "orphans_rc": 1
+}

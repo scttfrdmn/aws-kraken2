@@ -8,6 +8,10 @@
 #   n3-striped  the same 3 processes, every sample block-striped across them (rank 0 emits)
 #   n3-sdk    3 processes, sample-parallel, every output s3:// through the SDK path
 #             (aws-sdk-go-v2) to a local fake S3 (k2probe fakes3)
+#   n3-lpt    3 processes, sample-parallel with LPT placement (parallel:lpt, weight = the
+#             sample's input bytes), 2 in flight; the observed home ranks must equal the LPT
+#             placement recomputed from the manifest (scripts/lib/lpt_check.py), as n3's must
+#             equal j mod N
 # A sample passes when its exit status equals upstream's, its file set equals upstream's, and
 # every file is identical. A control sample (engine side only: --confidence 0.05 added) must
 # come out different, which shows the comparison can see a one-option change (Law 4).
@@ -60,7 +64,7 @@ SAMPLES=(
   "mates-differ|--paired|$VAR/mates_1.fq $VAR/mates_2.fq|orc"
   "control|--paired|${S1}_1.fq ${S1}_2.fq|or"
 )
-MODES=(n1 n3 n3-striped n3-sdk)
+MODES=(n1 n3 n3-striped n3-sdk n3-lpt)
 
 # outfields BASE OUTS PAIRED: the output arguments, one per line.
 outfields() {
@@ -81,6 +85,8 @@ manifest_line() {  # batch inflight mode client name base engine_side
     [[ " $opts " == *" --paired "* ]] && paired=yes
     [ "$engine" = yes ] && [ "$name" = control ] && opts="$opts --confidence 0.05"
     local f=("$batch" "$inflight" "$mode" "$client" "$name")
+    # shellcheck disable=SC2086
+    [ "$mode" = parallel:lpt ] && f+=("weight=$(cat $ins | wc -c | tr -d ' ')")
     # shellcheck disable=SC2206
     f+=($opts)
     mapfile -t oa < <(outfields "$base" "$outs" "$paired")
@@ -127,6 +133,7 @@ run_db() {
         n3) base="$MW/$name"; mkdir -p "$base"; manifest_line 0 2 parallel - "$name" "$base" yes >> "$man" ;;
         n3-striped) base="$MW/$name"; mkdir -p "$base"; manifest_line 0 1 striped - "$name" "$base" yes >> "$man" ;;
         n3-sdk) manifest_line 0 2 parallel sdk "$name" "s3://bkt/$mode/$name" yes >> "$man" ;;
+        n3-lpt) base="$MW/$name"; mkdir -p "$base"; manifest_line 0 2 parallel:lpt - "$name" "$base" yes >> "$man" ;;
       esac
     done
     local fpid="" envs=()
@@ -156,6 +163,18 @@ run_db() {
     [ -n "$fpid" ] && { kill "$fpid"; wait "$fpid" 2>/dev/null; }
     log "$mode: cohort exit $rc in $((t1 - t0)) s (want $want_rc)"
     [ "$rc" = "$want_rc" ] || STATUS=1
+    # Placement: every home rank as the manifest's placement says (j mod N, or LPT).
+    case "$mode" in
+      n3|n3-sdk|n3-lpt)
+        python3 scripts/lib/lpt_check.py 3 "$man" "$MW"/rank*.stderr > "$MW/placement.txt" 2>&1
+        local prc=$?
+        sed "s/^/$mode: /" "$MW/placement.txt" | tee -a "$LOG"
+        [ "$prc" = 0 ] || { log "$mode: FAIL: placement differs from the manifest's"; STATUS=1; }
+        # The LPT check can only see LPT if LPT's placement differs from j mod N here.
+        if [ "$mode" = n3-lpt ] && ! grep -q 'differs from j mod N: yes' "$MW/placement.txt"; then
+          log "$mode: FAIL: the LPT placement equals j mod N for these samples (the check cannot resolve it)"; STATUS=1
+        fi ;;
+    esac
   done
   # Compare.
   local T="$RES/samples.tsv"

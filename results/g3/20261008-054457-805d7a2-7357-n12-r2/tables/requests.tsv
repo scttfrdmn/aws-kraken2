@@ -1,0 +1,10 @@
+phase	op	count	bucket
+preamble	HeadBucket-anon	1	aws-kraken2-942542972736-us-west-2
+preamble	GetBucketRequestPayment	1	aws-kraken2-942542972736-us-west-2
+preamble	GetBucketRequestPayment	1	aws-kraken2-942542972736-us-west-2
+stage	GetObject-ENA	28	
+stage	PutObject	3	aws-kraken2-942542972736-us-west-2
+stage	CreateMultipartUpload	4	aws-kraken2-942542972736-us-west-2
+stage	UploadPart	416	aws-kraken2-942542972736-us-west-2
+stage	CompleteMultipartUpload	4	aws-kraken2-942542972736-us-west-2
+stage	HeadObject	173	aws-kraken2-942542972736-us-west-2

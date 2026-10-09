@@ -1,0 +1,48 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-161358-a8e9217-721c-n32-r10  task ak2-g3-20261008-161358-a8e9217-721c-n32-r10  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-161358-a8e9217-721c-n32-r10
+make run: user data: 12654 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c8g.12xlarge (0 vCPU, 0 GiB)
+make run: launched i-0758080821c62fbb1 (c8g.12xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T16:14:56Z	1791476096	preamble	no
+  | ak2: [2026-10-08T16:14:56Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T16:14:56Z] after set +e $-=hBc
+  | ak2: [2026-10-08T16:14:56Z] gate=g3 run=20261008-161358-a8e9217-721c-n32-r10
+  | ak2: [2026-10-08T16:14:56Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T16:14:56Z] imds region=us-west-2 az=us-west-2a instance=i-0758080821c62fbb1 type=c8g.12xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-08T16:14:56Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T16:14:57Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T16:14:57Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T16:14:57Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-08T16:14:57Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-08T16:14:57Z] region assert passed
+  | ak2: [2026-10-08T16:14:57Z] drop_caches_ok=true
+  | ak2: [2026-10-08T16:14:58Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T16:14:58Z	1791476098	body	no
+  | ak2: [2026-10-08T16:14:58Z] e4 cohort 20261008-161358-a8e9217-721c-n32 rank 10 of 32, commit a8e9217; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+  | ak2-phase	2026-10-08T16:14:58Z	1791476098	setup	no
+  | ak2: [2026-10-08T16:15:35Z] built a8e92175898ee28c86050ac8c4b55d65b21e2986; go version go1.27.1 linux/arm64; ip 172.31.19.144; nproc 48; mem_gib 92; threads 16, inflight 6
+  | ak2-phase	2026-10-08T16:15:35Z	1791476135	manifest	no
+  | ak2: [2026-10-08T16:15:36Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+  | ak2: [2026-10-08T16:15:37Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+  | ak2: [2026-10-08T16:15:37Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+  | ak2: [2026-10-08T16:15:38Z] pushed out/rank10/c100.tsv
+  | ak2: [2026-10-08T16:15:38Z] pushed out/rank10/placement.tsv
+  | ak2: [2026-10-08T16:15:38Z] manifest c100: 306 lines in 9 batches; rank 10 reads 7 samples
+  | ak2-phase	2026-10-08T16:15:38Z	1791476138	fetch	no
+  | ak2: [2026-10-08T16:15:44Z] inputs staged and verified: 14 files, 6.76 GB
+  | ak2: [2026-10-08T16:15:44Z] manifest c100: cohort: 306 samples in 9 batches check
+  | ak2-phase	2026-10-08T16:15:44Z	1791476144	inv-c100	no
+  | [c100] ak2-timing	taxo	0.003105	0.094314	87842	0	0.000000	0.097358
+  | Terminated
+  | ak2: [2026-10-08T16:15:56Z] spec body exit rc=129 (SIGHUP)
+  | ak2-phase	2026-10-08T16:15:56Z	1791476156	end	no
+make run: instance is shutting-down
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-161358-a8e9217-721c-n32-r10/: 6 objects, 5 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261008-161358-a8e9217-721c-n32-r10  (task exit 99, state terminated, cost $0.038817)
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-0fb750dd41bcc3646	shutting-down	c8g.12xlarge	2026-10-08T16:15:18+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r29	ttl=40m	within TTL
+  us-west-2	i-0e631523e5fbbb48e	shutting-down	c8g.12xlarge	2026-10-08T16:15:19+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r27	ttl=40m	within TTL
+  us-west-2	i-0315646a20a55a117	shutting-down	c8g.12xlarge	2026-10-08T16:15:20+00:00	ak2-g3-20261008-161358-a8e9217-721c-n32-r26	ttl=40m	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261008-161358-a8e9217-721c-n32-r10 are gone (18 regions checked)

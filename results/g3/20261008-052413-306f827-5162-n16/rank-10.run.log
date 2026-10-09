@@ -1,0 +1,93 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-052413-306f827-5162-n16-r10  task ak2-g3-20261008-052413-306f827-5162-n16-r10  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-052413-306f827-5162-n16-r10
+make run: user data: 12658 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c9g.12xlarge (0 vCPU, 0 GiB)
+make run: launched i-00c081d29c64b6bac (c9g.12xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T05:24:54Z	1791437094	preamble	no
+  | ak2: [2026-10-08T05:24:54Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T05:24:54Z] after set +e $-=hBc
+  | ak2: [2026-10-08T05:24:54Z] gate=g3 run=20261008-052413-306f827-5162-n16-r10
+  | ak2: [2026-10-08T05:24:54Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T05:24:54Z] imds region=us-west-2 az=us-west-2a instance=i-00c081d29c64b6bac type=c9g.12xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-08T05:24:54Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T05:24:55Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T05:24:55Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T05:24:55Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-08T05:24:55Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-08T05:24:55Z] region assert passed
+  | ak2: [2026-10-08T05:24:56Z] drop_caches_ok=true
+  | ak2: [2026-10-08T05:24:56Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T05:24:56Z	1791437096	body	no
+  | ak2: [2026-10-08T05:24:56Z] e3 cohort 20261008-052413-306f827-5162-n16 rank 10 of 16, commit 306f827; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+  | ak2-phase	2026-10-08T05:24:56Z	1791437096	setup	no
+  | ak2: [2026-10-08T05:25:26Z] built 306f827679d55c2395743f532e6da71aeae1bc11; go version go1.27.1 linux/arm64; ip 172.31.24.117; nproc 48; mem_gib 92; threads 16, inflight 6
+  | ak2-phase	2026-10-08T05:25:26Z	1791437126	manifest	no
+  | ak2: [2026-10-08T05:25:27Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d -> /home/ec2-user/ak2/db/roda/opts.k2d (56 bytes)
+  | ak2: [2026-10-08T05:25:28Z] staged s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d -> /home/ec2-user/ak2/db/roda/taxo.k2d (179150665 bytes)
+  | ak2: [2026-10-08T05:25:28Z] RODA hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800
+  | ak2: [2026-10-08T05:25:28Z] pushed out/rank10/c100.tsv
+  | ak2: [2026-10-08T05:25:29Z] pushed out/rank10/placement.tsv
+  | ak2: [2026-10-08T05:25:29Z] manifest c100: 306 lines in 9 batches; rank 10 reads 13 samples
+  | ak2-phase	2026-10-08T05:25:29Z	1791437129	fetch	no
+  | ak2: [2026-10-08T05:25:37Z] inputs staged and verified: 26 files, 14.42 GB
+  | ak2: [2026-10-08T05:25:37Z] manifest c100: cohort: 306 samples in 9 batches check
+  | ak2-phase	2026-10-08T05:25:37Z	1791437137	inv-c100	no
+  | [c100] ak2-timing	taxo	0.002602	0.090384	87849	0	0.050271	0.053675
+  | [c100] ak2-timing	shard-load-10	0.161021	25.361647	42070	0	34.650147	28.030042
+  | [c100] ak2-timing	rendezvous	25.996244	11.441978	4295	0	0.044384	0.004432
+  | [c100] ak2-timing	total	0.000001	68.217263	193955	0	35.501787	28.389081
+  | ak2: [2026-10-08T05:26:46Z] inv c100 rank 10 exit 1
+  | [c100 stderr] Loading database information...ak2-timing	opts	0.002584	0.000013	0	0	0.000009	0.000003
+  | [c100 stderr] 
+  | [c100 stderr] classify: engine: hello to shard 12 at 172.31.21.169:40503: read tcp 172.31.24.117:40176->172.31.21.169:40503: i/o timeout
+  | ak2: [2026-10-08T05:26:47Z] pushed out/rank10/eng-c100.stderr
+  | ak2: [2026-10-08T05:26:47Z] rank 10 done (rc=1)
+  | ak2: [2026-10-08T05:26:47Z] spec body exit rc=1
+  | ak2-phase	2026-10-08T05:26:47Z	1791437207	end	no
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-052413-306f827-5162-n16-r10/: 10 objects, 9 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261008-052413-306f827-5162-n16-r10  (task exit 1, state terminated, cost $0.093316)
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-0e8ffe47b9c195fc6	running	c8g.large	2026-10-08T04:01:58+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r3	ttl=4h	within TTL
+  us-west-2	i-05c18e62f15ba05e5	running	c9g.12xlarge	2026-10-08T05:24:32+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r5	ttl=60m	within TTL
+  us-west-2	i-05bcd7f31b61c9e98	running	c8g.12xlarge	2026-10-08T05:24:03+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r15	ttl=60m	within TTL
+  us-west-2	i-08261f7de7039bb4d	running	c9g.12xlarge	2026-10-08T05:24:52+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r15	ttl=60m	within TTL
+  us-west-2	i-0ff024c6670b3bcef	running	c9g.12xlarge	2026-10-08T05:24:49+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r13	ttl=60m	within TTL
+  us-west-2	i-0fd6860a28e8c9c16	running	c8g.large	2026-10-08T04:01:59+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r5	ttl=4h	within TTL
+  us-west-2	i-05009407489225ea5	running	c8g.large	2026-10-08T04:01:56+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r2	ttl=4h	within TTL
+  us-west-2	i-0e9736efb20bd2f0f	running	c9g.12xlarge	2026-10-08T05:24:34+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r6	ttl=60m	within TTL
+  us-west-2	i-0b65ce9ae9979fffa	running	c8g.12xlarge	2026-10-08T05:24:00+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r13	ttl=60m	within TTL
+  us-west-2	i-0a902283360ea6b10	running	c8g.12xlarge	2026-10-08T05:24:02+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r14	ttl=60m	within TTL
+  us-west-2	i-03835104819a9de2d	running	c8g.12xlarge	2026-10-08T05:23:48+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r7	ttl=60m	within TTL
+  us-west-2	i-0ca12d01d5008dd36	running	c9g.12xlarge	2026-10-08T05:24:26+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r2	ttl=60m	within TTL
+  us-west-2	i-00bdad3ac0958ff05	running	c9g.12xlarge	2026-10-08T05:24:51+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r14	ttl=60m	within TTL
+  us-west-2	i-01a60807237f6f007	running	c9g.12xlarge	2026-10-08T05:24:36+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r7	ttl=60m	within TTL
+  us-west-2	i-0b4aeef654774d9ed	running	c9g.12xlarge	2026-10-08T05:24:40+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r9	ttl=60m	within TTL
+  us-west-2	i-04faced724526316d	shutting-down	c9g.12xlarge	2026-10-08T05:24:24+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r1	ttl=60m	within TTL
+  us-west-2	i-04582ceb7e8793f9a	running	c8g.12xlarge	2026-10-08T05:23:45+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r6	ttl=60m	within TTL
+  us-west-2	i-05dff0c7af497e02a	running	c9g.12xlarge	2026-10-08T05:24:44+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r11	ttl=60m	within TTL
+  us-west-2	i-08f6b35c4074becce	running	c8g.12xlarge	2026-10-08T05:23:34+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r0	ttl=60m	within TTL
+  us-west-2	i-04bc31c57330539ea	running	x8g.24xlarge	2026-10-08T05:18:43+00:00	ak2-g3-20261008-051833-067c8d1-7e14-n1-r0	ttl=60m	within TTL
+  us-west-2	i-0defe492920629bf8	running	c8g.large	2026-10-08T04:01:54+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r1	ttl=4h	within TTL
+  us-west-2	i-00bb0704d6505b613	running	c8g.large	2026-10-08T04:01:51+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r0	ttl=4h	within TTL
+  us-west-2	i-023c889e48febd7fb	running	c8g.large	2026-10-08T04:02:04+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r7	ttl=4h	within TTL
+  us-west-2	i-02a4f1f0db8694254	running	c8g.large	2026-10-08T04:01:58+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r4	ttl=4h	within TTL
+  us-west-2	i-0e469128686ad3b89	running	c9g.12xlarge	2026-10-08T05:24:22+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r0	ttl=60m	within TTL
+  us-west-2	i-0d403ca5123ba4ef9	running	c8g.12xlarge	2026-10-08T05:23:55+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r11	ttl=60m	within TTL
+  us-west-2	i-0a9fd049d79d3ce90	running	c8g.12xlarge	2026-10-08T05:23:43+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r5	ttl=60m	within TTL
+  us-west-2	i-028f01396b3c48926	running	c9g.12xlarge	2026-10-08T05:24:47+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r12	ttl=60m	within TTL
+  us-west-2	i-0b7815bebdb680885	running	c8g.large	2026-10-08T04:02:00+00:00	ak2-g3-20261008-040133-ad4af00-18db-n8-r6	ttl=4h	within TTL
+  us-west-2	i-0a882b528db76cfe1	running	c8g.12xlarge	2026-10-08T05:23:54+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r10	ttl=60m	within TTL
+  us-west-2	i-018ddb97a55d6394b	running	c8g.12xlarge	2026-10-08T05:23:38+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r2	ttl=60m	within TTL
+  us-west-2	i-091e369b1bef67147	running	r8gd.16xlarge	2026-10-08T05:09:08+00:00	ak2-g3-20261008-050900-9c4a5c7	ttl=120m	within TTL
+  us-west-2	i-0ad60788186f4a32b	running	c8g.12xlarge	2026-10-08T05:23:52+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r9	ttl=60m	within TTL
+  us-west-2	i-03403d6c9bc1c5047	running	c8g.12xlarge	2026-10-08T05:23:40+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r3	ttl=60m	within TTL
+  us-west-2	i-07a9ad3a39b3d618f	running	c8g.12xlarge	2026-10-08T05:23:35+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r1	ttl=60m	within TTL
+  us-west-2	i-0a8366ef3290fa6bb	running	c9g.12xlarge	2026-10-08T05:24:32+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r4	ttl=60m	within TTL
+  us-west-2	i-0cf88947feb1e23da	running	c9g.12xlarge	2026-10-08T05:24:38+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r8	ttl=60m	within TTL
+  us-west-2	i-00676c0905c8dd20a	running	c9g.12xlarge	2026-10-08T05:24:28+00:00	ak2-g3-20261008-052413-306f827-5162-n16-r3	ttl=60m	within TTL
+  us-west-2	i-0e2aff85ae047a24d	running	c8g.12xlarge	2026-10-08T05:23:57+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r12	ttl=60m	within TTL
+  us-west-2	i-0b3b2577890cb04d4	running	c8g.12xlarge	2026-10-08T05:23:50+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r8	ttl=60m	within TTL
+  us-west-2	i-0501e0ed7db132c0c	running	c8g.12xlarge	2026-10-08T05:23:41+00:00	ak2-g3-20261008-052324-306f827-765d-n16-r4	ttl=60m	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261008-052413-306f827-5162-n16-r10 are gone (18 regions checked)

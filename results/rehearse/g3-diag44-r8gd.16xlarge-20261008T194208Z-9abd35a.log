@@ -1,0 +1,37 @@
+rehearse: record results/rehearse/g3-diag44-r8gd.16xlarge-20261008T194208Z-9abd35a.log
+rehearse: runs/g3-diag44-r8gd.16xlarge.json at 9abd35a, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-urehearse.5Eq0M8
+rehearse: stand-in hash.k2d ETag 2b8f5656c223472ddfe05c587a4fcbfe-60
+rehearse: body exit 1
+  body | ak2-phase 2026-10-08T19:42:17Z setup
+  body | ak2: [2026-10-08T19:42:19Z] perf scripts/g2-instance.sh: line 31: perf: command not found; events usable: 
+  body | awk: can't open file /proc/meminfo
+  body |  source line number 1
+  body | ak2: [2026-10-08T19:42:19Z] host: 8 CPUs; ; kernel 27.0.0
+  body | cat: /sys/kernel/mm/transparent_hugepage/enabled: No such file or directory
+  body | cat: /sys/kernel/mm/transparent_hugepage/defrag: No such file or directory
+  body | ak2: [2026-10-08T19:42:19Z] thp enabled=[] defrag=[] shmem_enabled=[]
+  body | scripts/g2-instance.sh: line 34: lscpu: command not found
+  body | ak2: [2026-10-08T19:42:19Z] lscpu: 
+  body | ak2: [2026-10-08T19:42:19Z] numa: 
+  body | ak2: [2026-10-08T19:42:19Z] disks: 
+  body | ak2: [2026-10-08T19:42:19Z] storage: rehearsal directory /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-urehearse.5Eq0M8/nvme
+  body | ak2-phase 2026-10-08T19:42:19Z fetch
+  body | ak2: [2026-10-08T19:42:20Z] inputs staged and verified: 4 files
+  body | ak2: [2026-10-08T19:42:20Z] aws: aws-cli/rehearse-stub; s3 transfer client crt, target_bandwidth 25Gb/s, 64 MB parts
+  body | ak2: [2026-10-08T19:42:20Z] staged opts.k2d bytes=64 in 0.0 s (0.000 GB/s)
+  body | ak2: [2026-10-08T19:42:20Z] etag opts.k2d: {"ok": true, "file": "/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-urehearse.5Eq0M8/nvme/db/RefSeqCompleteV205/opts.k2d", "size": 64, "etag": "eebfd340c759d54c82c7769b40f7a50b", "computed": "eebfd340c759d54c82c7769b40f7a50b", "part_bytes": 64, "parts": 1, "workers": 32, "seconds": 0.0, "read_gb_s": 0.001}
+  body | ak2: [2026-10-08T19:42:20Z] staged taxo.k2d bytes=4818575 in 0.0 s (0.132 GB/s)
+  body | ak2: [2026-10-08T19:42:20Z] etag taxo.k2d: {"ok": true, "file": "/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-urehearse.5Eq0M8/nvme/db/RefSeqCompleteV205/taxo.k2d", "size": 4818575, "etag": "f5697f04a6e072bde8504ebc6c142a22", "computed": "f5697f04a6e072bde8504ebc6c142a22", "part_bytes": 4818575, "parts": 1, "workers": 32, "seconds": 0.005, "read_gb_s": 0.896}
+  body | ak2: [2026-10-08T19:42:22Z] staged hash.k2d bytes=8000000032 in 2.6 s (3.044 GB/s)
+  body | ak2: [2026-10-08T19:42:23Z] etag hash.k2d: {"ok": true, "file": "/var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-urehearse.5Eq0M8/nvme/db/RefSeqCompleteV205/hash.k2d", "size": 8000000032, "etag": "2b8f5656c223472ddfe05c587a4fcbfe-60", "computed": "2b8f5656c223472ddfe05c587a4fcbfe-60", "part_bytes": 134217728, "parts": 60, "workers": 32, "seconds": 0.736, "read_gb_s": 10.869}
+  body | /Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76
+  body | harness-build: /Users/scttfrdmn/src/aws-kraken2/.oracle/src-2731b35f7abb26ec926517274f3d87e78d42fd76 is at 9abd35a, not the pin
+  body | ak2: [2026-10-08T19:42:23Z] ERROR: build failed
+rehearse: streamed 0 d44-summary lines (want 2)
+rehearse: summary lines wrong
+rehearse: SRR5935807 should not differ ()
+rehearse: SRR5935755:  differing; stage ""; scanners equal ;  of  lookups differ; upstream-events replay equals upstream ;  ResolveTree events;  read pair extracted
+rehearse: the tampered sample's diagnosis is wrong
+rehearse: stub served 0 objects and 4 head-objects on aws-kraken2-942542972736-us-west-2; ak2_req GetObject 8 (want 8), HeadObject 4
+rehearse: request counts disagree
+rehearse: FAILED (logs: REHEARSE_KEEP=1 keeps /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-urehearse.5Eq0M8)

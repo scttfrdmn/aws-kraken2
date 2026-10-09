@@ -1,0 +1,500 @@
+{
+  "gate": "g3",
+  "run_id": "20261008-064058-4a8f57c-d64a-n16-r15",
+  "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r15",
+  "spec": "runs/g3-e2-x8g.2xlarge-n16.json",
+  "spec_sha256": "dfa3b4e219a754ddaa35e666a02fd83104707938ce92910c5e06f0a05e7b7c3a",
+  "commit": "4a8f57c3f85688f9af904192e5c28dbcd186b4a3",
+  "tree_dirty": true,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "truffle": "0.57.1"
+  },
+  "region": "us-west-2",
+  "ttl": "60m",
+  "cost_limit_usd": 0.79,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16-r15",
+  "sample_accessions": [
+    "SRR5935740",
+    "SRR5935741",
+    "SRR5935742",
+    "SRR5935743",
+    "SRR5935744",
+    "SRR5935745",
+    "SRR5935746",
+    "SRR5935747",
+    "SRR5935748",
+    "SRR5935749",
+    "SRR5935750",
+    "SRR5935751",
+    "SRR5935752",
+    "SRR5935753",
+    "SRR5935754",
+    "SRR5935755",
+    "SRR5935756",
+    "SRR5935757",
+    "SRR5935758",
+    "SRR5935759",
+    "SRR5935760",
+    "SRR5935761",
+    "SRR5935762",
+    "SRR5935763",
+    "SRR5935764",
+    "SRR5935765",
+    "SRR5935766",
+    "SRR5935767",
+    "SRR5935768",
+    "SRR5935769",
+    "SRR5935770",
+    "SRR5935771",
+    "SRR5935772",
+    "SRR5935773",
+    "SRR5935774",
+    "SRR5935775",
+    "SRR5935776",
+    "SRR5935777",
+    "SRR5935778",
+    "SRR5935779",
+    "SRR5935780",
+    "SRR5935781",
+    "SRR5935782",
+    "SRR5935783",
+    "SRR5935784",
+    "SRR5935785",
+    "SRR5935786",
+    "SRR5935787",
+    "SRR5935788",
+    "SRR5935789",
+    "SRR5935790",
+    "SRR5935791",
+    "SRR5935792",
+    "SRR5935793",
+    "SRR5935794",
+    "SRR5935795",
+    "SRR5935796",
+    "SRR5935797",
+    "SRR5935798",
+    "SRR5935799",
+    "SRR5935800",
+    "SRR5935801",
+    "SRR5935802",
+    "SRR5935803",
+    "SRR5935804",
+    "SRR5935805",
+    "SRR5935806",
+    "SRR5935807",
+    "SRR5935808",
+    "SRR5935809",
+    "SRR5935810",
+    "SRR5935811",
+    "SRR5935812",
+    "SRR5935813",
+    "SRR5935814",
+    "SRR5935815",
+    "SRR5935816",
+    "SRR5935817",
+    "SRR5935818",
+    "SRR5935819",
+    "SRR5935820",
+    "SRR5935821",
+    "SRR5935822",
+    "SRR5935823",
+    "SRR5935824",
+    "SRR5935825",
+    "SRR5935826",
+    "SRR5935827",
+    "SRR5935828",
+    "SRR5935829",
+    "SRR5935830",
+    "SRR5935831",
+    "SRR5935832",
+    "SRR5935833",
+    "SRR5935834",
+    "SRR5935835",
+    "SRR5935836",
+    "SRR5935837",
+    "SRR5935838",
+    "SRR5935839"
+  ],
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2",
+    "kraken2-ncbi-refseq-complete-v205"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16-r15/payload.sh",
+    "sha256": "7480060929da4fdfc651be5e4038870f389d49be975a0f34f1c1f6200411c47c",
+    "bytes": 24437
+  },
+  "user_data": {
+    "base64_bytes": 16880,
+    "bootstrap_bytes": 38903,
+    "gzip_bytes": 12658
+  },
+  "datasets": [
+    {
+      "uri": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/hash.k2d",
+      "kind": "object",
+      "etag": "f80959f9556b50d76b3e744afdd3b22a-8860",
+      "version_id": null,
+      "size": 1189091671800,
+      "last_modified": "2023-08-30T13:49:06+00:00"
+    },
+    {
+      "uri": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d",
+      "kind": "object",
+      "etag": "24fb1753eb45d74643ef13f16562df6b",
+      "version_id": null,
+      "size": 56,
+      "last_modified": "2023-08-30T14:00:49+00:00"
+    },
+    {
+      "uri": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d",
+      "kind": "object",
+      "etag": "9ee988cb814f39881e29623b9c8007cd-22",
+      "version_id": null,
+      "size": 179150665,
+      "last_modified": "2023-08-30T14:01:01+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/",
+      "kind": "prefix"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    },
+    {
+      "bucket": "kraken2-ncbi-refseq-complete-v205",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-08T06:41:33Z",
+  "cohort": {
+    "id": "20261008-064058-4a8f57c-d64a-n16",
+    "rank": 15,
+    "n": 16,
+    "prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16",
+    "rendezvous": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16/rendezvous",
+    "dir": "results/g3/20261008-064058-4a8f57c-d64a-n16"
+  },
+  "launch": {
+    "requested_at": "2026-10-08T06:41:35Z",
+    "instance_id": "i-0f77da2e67ea6bdb2",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "x8g.2xlarge",
+    "count": 1,
+    "ami": "ami-09325776a00699513",
+    "az": "us-west-2a",
+    "launch_time": "2026-10-08T06:41:38+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-08T06:49:24Z"
+  },
+  "truffle_price_usd_per_hour": 0.7816,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16-r15/: 10 objects, 9 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-08T06:41:50Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-08T06:41:52Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-08T06:41:52Z",
+      "seconds": 42,
+      "cold": false
+    },
+    {
+      "phase": "manifest",
+      "start": "2026-10-08T06:42:34Z",
+      "seconds": 3,
+      "cold": false
+    },
+    {
+      "phase": "fetch",
+      "start": "2026-10-08T06:42:37Z",
+      "seconds": 16,
+      "cold": false
+    },
+    {
+      "phase": "inv-c100",
+      "start": "2026-10-08T06:42:53Z",
+      "seconds": 357,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 5931,
+    "unparsed_rows": 0,
+    "by_op": {
+      "CompleteMultipartUpload": 18,
+      "CreateMultipartUpload": 18,
+      "GetBucketRequestPayment": 4,
+      "GetObject": 2112,
+      "GetObject-range": 1127,
+      "HeadBucket-anon": 2,
+      "HeadObject": 27,
+      "PutObject": 31,
+      "Rendezvous-GetObject": 447,
+      "Rendezvous-PutObject": 13,
+      "UploadPart": 2132
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "manifest",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "manifest",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "manifest",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "fetch",
+        "op": "GetObject",
+        "count": 1663,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "fetch",
+        "op": "HeadObject",
+        "count": 26,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "GetObject-range",
+        "count": 1127,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "PutObject",
+        "count": 31,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "GetObject",
+        "count": 447,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "CreateMultipartUpload",
+        "count": 18,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "UploadPart",
+        "count": 2132,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "CompleteMultipartUpload",
+        "count": 18,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "Rendezvous-PutObject",
+        "count": 13,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "inv-c100",
+        "op": "Rendezvous-GetObject",
+        "count": 447,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r15",
+    "run_id": "e256cb77-1208-4b9d-bf97-e50c995b73bc",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-08T06:41:50Z",
+    "ended_at": "2026-10-08T06:48:51Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-064058-4a8f57c-d64a-n16-r15/spawn/ak2-g3-20261008-064058-4a8f57c-d64a-n16-r15/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2a",
+    "instance_id": "i-0f77da2e67ea6bdb2",
+    "instance_type": "x8g.2xlarge",
+    "ami": "ami-09325776a00699513",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      },
+      {
+        "bucket": "kraken2-ncbi-refseq-complete-v205",
+        "region": "us-west-2",
+        "payer": "BucketOwner"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2 kraken2-ncbi-refseq-complete-v205",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-08T06:41:52Z"
+  },
+  "start": "2026-10-08T06:41:38+00:00",
+  "stop": "2026-10-08T06:49:24Z",
+  "billed_seconds": 466,
+  "cost_usd": 0.101174,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-08T06:50:16Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r15",
+    "rc": 0,
+    "own_gone": true,
+    "others": [
+      {
+        "region": "us-west-2",
+        "id": "i-03167fb0812c62ce0",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r1",
+        "state": "shutting-down",
+        "launch": "2026-10-08T06:41:10+00:00",
+        "ttl_deadline": "2026-10-08T07:41:09Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0a75d4795b05aaf7d",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r0",
+        "state": "shutting-down",
+        "launch": "2026-10-08T06:41:08+00:00",
+        "ttl_deadline": "2026-10-08T07:41:07Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0343461648903a3be",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r3",
+        "state": "shutting-down",
+        "launch": "2026-10-08T06:41:14+00:00",
+        "ttl_deadline": "2026-10-08T07:41:13Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-0e373dc9f8becdecf",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r4",
+        "state": "shutting-down",
+        "launch": "2026-10-08T06:41:16+00:00",
+        "ttl_deadline": "2026-10-08T07:41:15Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-043c5c9570b963b35",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r2",
+        "state": "shutting-down",
+        "launch": "2026-10-08T06:41:12+00:00",
+        "ttl_deadline": "2026-10-08T07:41:11Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-006350a5f723fc4d4",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r6",
+        "state": "running",
+        "launch": "2026-10-08T06:41:20+00:00",
+        "ttl_deadline": "2026-10-08T07:41:19Z",
+        "flag": "within_ttl"
+      },
+      {
+        "region": "us-west-2",
+        "id": "i-04779e881a8b0e5e0",
+        "task_id": "ak2-g3-20261008-064058-4a8f57c-d64a-n16-r5",
+        "state": "shutting-down",
+        "launch": "2026-10-08T06:41:18+00:00",
+        "ttl_deadline": "2026-10-08T07:41:17Z",
+        "flag": "within_ttl"
+      }
+    ],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-08T06:50:18Z"
+  }
+}

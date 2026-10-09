@@ -1,0 +1,32 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261008-153829-c825453-f61a-n16-r1  task ak2-g3-20261008-153829-c825453-f61a-n16-r1  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r1
+make run: user data: 12654 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c9g.12xlarge (0 vCPU, 0 GiB)
+make run: launched i-0feac29f83068361a (c9g.12xlarge) in us-west-2
+make run: launch describe 1/24: i-0feac29f83068361a not visible yet ( aws: [ERROR]: An error occurred (InvalidInstanceID.NotFound) when calling the DescribeInstances operation: The instance ID 'i-0feac29f83068361a' does not exist )
+  | ak2: log tee up
+  | ak2-phase	2026-10-08T15:39:08Z	1791473948	preamble	no
+  | ak2: [2026-10-08T15:39:08Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-08T15:39:08Z] after set +e $-=hBc
+  | ak2: [2026-10-08T15:39:08Z] gate=g3 run=20261008-153829-c825453-f61a-n16-r1
+  | ak2: [2026-10-08T15:39:08Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-08T15:39:08Z] imds region=us-west-2 az=us-west-2a instance=i-0feac29f83068361a type=c9g.12xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-08T15:39:08Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-08T15:39:08Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-08T15:39:08Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-08T15:39:08Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-08T15:39:09Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-08T15:39:09Z] region assert passed
+  | ak2: [2026-10-08T15:39:09Z] drop_caches_ok=true
+  | ak2: [2026-10-08T15:39:09Z] preamble done; spec body starts
+  | ak2-phase	2026-10-08T15:39:09Z	1791473949	body	no
+  | ak2: [2026-10-08T15:39:09Z] e3 cohort 20261008-153829-c825453-f61a-n16 rank 1 of 16, commit c825453; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort; cohort 100
+  | ak2-phase	2026-10-08T15:39:09Z	1791473949	setup	no
+  | Hangup
+  | ak2: [2026-10-08T15:39:36Z] spec body exit rc=129 (SIGHUP)
+  | ak2-phase	2026-10-08T15:39:36Z	1791473976	end	no
+make run: instance is shutting-down
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261008-153829-c825453-f61a-n16-r1/: 4 objects, 3 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261008-153829-c825453-f61a-n16-r1  (task exit 99, state terminated, cost $0.034776)
+orphans: this run's instance(s) and task ak2-g3-20261008-153829-c825453-f61a-n16-r1 are gone (18 regions checked)

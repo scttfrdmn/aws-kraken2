@@ -1,0 +1,13 @@
+=== RUN   TestHitOrderFuzz
+    hitorderfuzz_test.go:1100: probe: bucket counts [1 13 29 59 127 257 541 1109 2357 5087 10273 20753 42043 85229 172933] at sizes [1 14 30 60 128 258 542 1110 2358 5088 10274 20754 42044 85230]
+    hitorderfuzz_test.go:1224: MISMATCH: V: first difference at entry 0 (Go 1650134:3, container 2057758:0)
+    hitorderfuzz_test.go:1224: partial run (HITORDERFUZZ_ONLY=lookup): never a pass
+    hitorderfuzz_test.go:1227: history lookup/taxid #0, op 6 (V); see /Users/scttfrdmn/src/aws-kraken2/.claude/worktrees/agent-a47b8fa274eceaa01/results/g1/hitorderfuzz-20261009T012730Z-8afbc66/mismatch.txt
+    hitorderfuzz_test.go:1229: around entry 0:
+         Go        entries [0:2] of 2: 1650134:3 2057758:0
+         container entries [0:2] of 2: 2057758:0 1650134:3
+    hitorderfuzz_test.go:1234: hitorderfuzz quick seed 44: 0 histories, 7 ops, 1 prints, 2 entries, 1 lookups, 1 clears, 0.7s
+--- FAIL: TestHitOrderFuzz (0.67s)
+FAIL
+FAIL	github.com/scttfrdmn/aws-kraken2/internal/classify	0.761s
+FAIL

@@ -1,0 +1,48 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261009-063433-ca143e7-7f1c-n64-r19  task ak2-g3-20261009-063433-ca143e7-7f1c-n64-r19  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-063433-ca143e7-7f1c-n64-r19
+make run: user data: 12347 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c8gn.4xlarge (0 vCPU, 0 GiB)
+make run: launched i-0a911c2474d5b2e06 (c8gn.4xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-09T06:35:34Z	1791527734	preamble	no
+  | ak2: [2026-10-09T06:35:34Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-09T06:35:34Z] after set +e $-=hBc
+  | ak2: [2026-10-09T06:35:34Z] gate=g3 run=20261009-063433-ca143e7-7f1c-n64-r19
+  | ak2: [2026-10-09T06:35:34Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-09T06:35:34Z] imds region=us-west-2 az=us-west-2b instance=i-0a911c2474d5b2e06 type=c8gn.4xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-09T06:35:34Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-09T06:35:34Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-09T06:35:34Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-09T06:35:34Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-09T06:35:35Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-09T06:35:35Z] region assert passed
+  | ak2: [2026-10-09T06:35:35Z] drop_caches_ok=true
+  | ak2: [2026-10-09T06:35:36Z] preamble done; spec body starts
+  | ak2-phase	2026-10-09T06:35:36Z	1791527736	body	no
+  | ak2-phase	2026-10-09T06:35:36Z	1791527736	setup	no
+  | go: downloading github.com/aws/aws-sdk-go-v2/config v1.33.7
+  | go: downloading github.com/aws/aws-sdk-go-v2 v1.47.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/credentials v1.20.7
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/s3 v1.114.1
+  | go: downloading github.com/klauspost/compress v1.20.0
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/sso v1.38.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/sts v1.51.2
+  | go: downloading github.com/aws/smithy-go v1.28.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/signin v1.10.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.19
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.11.5
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.14.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.20.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.4
+  | ak2: [2026-10-09T06:36:06Z] rank 19 of 64; hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800; stages 1 16 32 64 x 60s
+  | ak2-phase	2026-10-09T06:36:06Z	1791527766	rendezvous	no
+make run: instance is shutting-down
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-063433-ca143e7-7f1c-n64-r19/: 4 objects, 3 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261009-063433-ca143e7-7f1c-n64-r19  (task exit 99, state terminated, cost $0.027913)
+orphans: this run's instance(s) and task ak2-g3-20261009-063433-ca143e7-7f1c-n64-r19 are gone (18 regions checked)
