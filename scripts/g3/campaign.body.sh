@@ -63,6 +63,13 @@ ak2_say "RODA hash.k2d etag=$ETAG size=$SIZE"
 RUNS="$W/repo/results/cohort/PRJNA398089/runs.tsv"
 mapfile -t SAMPLES < <(awk -F'\t' -v c="$COHORT" 'NR>1 && $1<=c {print $2}' "$RUNS")
 mapfile -t WEIGHTS < <(awk -F'\t' -v c="$COHORT" 'NR>1 && $1<=c {print $4}' "$RUNS")
+# env.AK2_ACCESSIONS (a reference, @PRJNA398089:1-<COHORT>, or an older spec's literal list),
+# resolved from this checkout at the run's commit: it must name exactly these samples.
+if [ -n "${AK2_ACCESSIONS:-}" ]; then
+  ACC=$("$W/repo/scripts/lib/accessions.sh" -r "$W/repo" "$AK2_ACCESSIONS") || fail "env.AK2_ACCESSIONS '$AK2_ACCESSIONS' does not resolve on the node"
+  [ "$ACC" = "${SAMPLES[*]}" ] || fail "env.AK2_ACCESSIONS '$AK2_ACCESSIONS' does not name the first $COHORT runs of $RUNS"
+  ak2_say "accessions: ${AK2_ACCESSIONS:0:40} -> $(wc -w <<< "$ACC") runs, as runs.tsv ranks 1-$COHORT"
+fi
 if [ -n "${AK2_REHEARSE_SAMPLES:-}" ]; then
   read -r -a SAMPLES <<< "$AK2_REHEARSE_SAMPLES"; read -r -a WEIGHTS <<< "$AK2_REHEARSE_WEIGHTS"
   COHORT=${#SAMPLES[@]}

@@ -56,6 +56,22 @@ awk -v c="$COST" -v n="$NODES" -v m="$AK2_MAX_COST_USD" 'BEGIN{exit !(c*n <= m+0
   die "$NODES x cost_limit \$$COST exceeds AK2_MAX_COST_USD=\$$AK2_MAX_COST_USD"
 RB_VAR="AK2_RESULTS_BUCKET_${REGION//-/_}"; RESULTS_BUCKET=${!RB_VAR:-}
 [ -n "$RESULTS_BUCKET" ] || die "no results bucket for $REGION ($RB_VAR in scripts/ak2.env)"
+# env.AK2_ACCESSIONS: a literal list or a recorded cohort range, @<project>:<a>-<b> (docs/run.md,
+# "Sample accessions"). Resolved here only to fail fast; each member's run.sh expands it into its
+# manifest.sample_accessions and checks that the runs.tsv it names is committed.
+ACC_REF=$(q '.env.AK2_ACCESSIONS // ""')
+ACC=$(scripts/lib/accessions.sh "$ACC_REF") || die "env.AK2_ACCESSIONS '$ACC_REF' does not resolve"
+[[ "$ACC_REF" == @* ]] && say "accessions: $ACC_REF -> $(echo "$ACC" | wc -w | tr -d ' ') runs"
+
+# The on-demand vCPU quota (scripts/lib/quota_check.sh): all NODES members plus every on-demand
+# instance of the same quota family already alive in the region, before anything launches. In
+# DRY_RUN too.
+QUOTA_JSON=$(scripts/lib/quota_check.sh "$REGION" "$ITYPE" "$NODES")
+case $? in
+  0) ;;
+  1) die "refused before launch: $NODES x $ITYPE would exceed the region's on-demand vCPU quota (above)" ;;
+  *) die "refused before launch: the vCPU quota check could not judge $NODES x $ITYPE in $REGION (above)" ;;
+esac
 
 # The network precondition. spawn task run attaches the default VPC's default security group (an
 # account-wide group: every task run instance in the region shares it) and adds no rules, so the
@@ -233,8 +249,10 @@ finish() {
     --argjson n "$NODES" --arg type "$ITYPE" --arg az "$AZ" --arg region "$REGION" --arg prefix "$CPREFIX" \
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
-    --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" '{
+    --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
+    --argjson quota "$QUOTA_JSON" --arg accref "$ACC_REF" '{
       cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, nodes:$n, instance_type:$type, az:$az, region:$region,
+      quota_check:$quota, sample_accessions_ref:(if ($accref | startswith("@")) then $accref else null end),
       prefix:$prefix, network:{vpc:$vpc, security_group:$sg, admits:"itself, 22/tcp, ICMP"}, start:$start, stop:$stop,
       ended:$ended, terminated_early:$early, sweep_failures:$sweepfail, members:$members,
       cost_usd:(if ($members | all(.cost_usd != null)) then ($members | map(.cost_usd) | add * 1e6 | round / 1e6) else null end),

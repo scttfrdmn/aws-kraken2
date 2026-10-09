@@ -68,6 +68,7 @@ WEIGHTS=(5 1 9 3 7 2); WEIGHTS=("${WEIGHTS[@]:0:$NS}")
 # The spec: its body, its datasets (RODA's bucket and key, the cohort prefix).
 jq -r '.command[2]' "$SPEC" > "$T/body.sh"
 DATASETS=$(jq -r '.env.AK2_DATASETS' "$SPEC")
+ACCESSIONS=$(jq -r '.env.AK2_ACCESSIONS // ""' "$SPEC")  # resolved on the node, as on AWS (docs/run.md, "Sample accessions")
 set -- $DATASETS
 U=${1#s3://}; RB=${U%%/*}; HK=${U#*/}
 U=${4#s3://}; B=${U%%/*}; CK=${U#*/}; CK=${CK%/}
@@ -150,7 +151,7 @@ for ((k = 0; k < N; k++)); do
     AK2T_FAKE="$FAKE" AK2T_OUT="$T/out-r$k" AK2T_LOG="$T/aws-r$k.log" AK2T_DB="$DB" AK2T_COH="$COH" \
     AK2T_RB="$RB" AK2T_B="$B" AK2T_CK="$CK" AK2T_HASH_BUCKET="$RB" AK2T_HASH_KEY="$HK" AK2T_HASH_FILE="$DB/hash.k2d" \
     AK2T_HASH_ETAG="$HASH_ETAG" AK2T_ROLE=instance \
-    AK2_REGION=us-west-2 AK2_DATASETS="$DATASETS" AK2_ALLOWED_BUCKETS="$RB $B" AK2_RUN_ID="$COHORT-r$k" \
+    AK2_REGION=us-west-2 AK2_DATASETS="$DATASETS" AK2_ACCESSIONS="$ACCESSIONS" AK2_ALLOWED_BUCKETS="$RB $B" AK2_RUN_ID="$COHORT-r$k" \
     AK2_COHORT_ID="$COHORT" AK2_COHORT_PREFIX="$PREFIX" AK2_ENGINE_N="$N" AK2_ENGINE_RANK="$k" \
     AK2_ENGINE_RENDEZVOUS="$PREFIX/rendezvous" AK2_S3_ENDPOINT="$(cat "$T/fakes3.url")" \
     AK2_REHEARSE_N="$N" AK2_REHEARSE_HASH_URL="$(cat "$T/hash.url")" AK2_REHEARSE_SAMPLES="${NAMES[*]}" \

@@ -42,7 +42,11 @@ PARAMS="EXP=$EXP; WANT_N=$N; COHORT=$COHORT; THREADS=$THREADS; INFLIGHT=$INFLIGH
 BODY=$(awk -v p="$PARAMS" '$0 == "@PARAMS@" {print "# Parameters (scripts/g3/mkspec.sh):"; print p; next} {print}' scripts/g3/campaign.body.sh)
 R=s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205
 D=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data
-ACC=$(awk -F'\t' -v c="$COHORT" 'NR>1 && $1<=c {printf "%s%s", (NR>2?" ":""), $2}' "$RUNS")
+# The accessions by reference (docs/run.md, "Sample accessions"): ranks 1..COHORT of runs.tsv.
+# run.sh expands it into manifest.sample_accessions; the body resolves it on the node and checks
+# it against the samples it reads. c1000's 1000 accessions inline would not fit in user data.
+ACC="@PRJNA398089:1-$COHORT"
+scripts/lib/accessions.sh "$ACC" > /dev/null || { echo "mkspec: $ACC does not resolve against $RUNS" >&2; exit 1; }
 jq -n --arg body "$BODY" --arg task "g3-$EXP-$TYPE-n$N" --arg type "$TYPE" --argjson disk "$DISK" --arg az "$AZ" \
   --arg ttl "${TTL}m" --argjson cost "$COST" --arg ds "$R/hash.k2d $R/opts.k2d $R/taxo.k2d $D/cohort/" --arg acc "$ACC" '{
   task_id: $task,

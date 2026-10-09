@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Accession ranges by reference and a pre-launch vCPU quota check (#47, step 3 of #25):
+  - `env.AK2_ACCESSIONS` may be `@<project>:<a>-<b>`, ranks a..b of
+    `results/cohort/<project>/runs.tsv`, resolved by `scripts/lib/accessions.sh`. `run.sh`
+    expands it into `manifest.sample_accessions` and records `sample_accessions_ref` (reference,
+    file, git blob). It refuses a runs.tsv that is uncommitted or locally modified. Only the
+    reference goes into the spec env and user data. `run-multi.sh` resolves it before any launch.
+    `scripts/g3/mkspec.sh` now writes `@PRJNA398089:1-<COHORT>`.
+  - `scripts/g3/campaign.body.sh` resolves the value on the node from its checkout at the run's
+    commit and fails unless it names the samples it reads. `make rehearse` passes the spec's
+    `AK2_ACCESSIONS` to the rehearsal nodes.
+  - `scripts/lib/quota_check.sh REGION TYPE COUNT` maps the type to its on-demand quota family
+    (Standard `L-1216C47A`, X `L-7295265B`, and the other EC2 on-demand families) and sums COUNT
+    × vCPUs plus the vCPUs of the family's on-demand instances already alive in the region. It
+    compares the sum with Service Quotas and refuses if it is over, or if it cannot judge.
+    Read-only calls only. `run-multi.sh` checks all NODES before any launch, and `run.sh` checks
+    the planned type. Both do this under `DRY_RUN=1` too, and record it as `quota_check`.
+  - `make test` runs `scripts/lib/quota_check_test.sh`, a stubbed `aws` in which 1 × x8g.24xlarge
+    is allowed and 2 are refused against the 128 vCPU X quota.
+    `scripts/lib/run_multi_test.sh` gains the same refusal through run-multi.sh (before any
+    launch, under `DRY_RUN` too), plus a bad reference.
+  - `make dryrun-userdata [GEN=…]` (`scripts/dryrun-userdata.sh`): `DRY_RUN=1` of every
+    `runs/*.json`, plus campaign specs generated in a scratch worktree. It writes user data and
+    quota per spec to `results/rehearse/dryrun-userdata-<ts>-<sha>.tsv`.
+
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's
