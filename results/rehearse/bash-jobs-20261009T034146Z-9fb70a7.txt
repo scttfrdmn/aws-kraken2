@@ -1,0 +1,7 @@
+bash-jobs-test at 9fb70a7 (clean); container exit 0
+bash-jobs: bash 5.2.15(1)-release; started as bash -c: yes; N=600; limit 30s per pattern
+bash-jobs: 1 bare wait -n (8a6dbe6): fail (error=1 hung=1 left=6 items=600)
+bash-jobs: 2 wait -n -p pool (1a4dbfe): fail (error=1 hung=1 left=8 items=547 no-such-job=3591)
+bash-jobs: 3 scripts/g3/fetch.sh (current): pass (rc=0 hung=0 verified=600 of 600)
+bash-jobs: 4 in-shell lanes waited by PID (U1's u1_pass): pass (error=0 hung=0 items=600)
+bash-jobs: verdict: pass (the check resolves both defects: patterns 1 and 2 must fail; the current fetch and PID lanes must pass)
