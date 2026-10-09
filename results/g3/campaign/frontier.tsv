@@ -1,108 +1,104 @@
-cohort	regime	side	point	time_s	usd_per_sample	usd_per_sample_whole_run	engine_pre_fix	modelled	basis
-1	from-scratch	ours	c8g.12xlarge N=32	100.49	1.709849	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	c9g.12xlarge N=16	101.07	0.937301	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	r8g.4xlarge N=16	119.47	0.500500	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	c8g.12xlarge N=16	123.33	1.049237	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	x8g.2xlarge N=16	145.09	0.504010	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	x8g.4xlarge N=8	170.78	0.593252	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	x8g.8xlarge N=4	272.62	0.947021	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	x8g.12xlarge N=2	342.99	0.893603	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	ours	x8g.24xlarge N=1	464.65	1.210568	-	yes	no	boot+setup+manifest+fetch (the point's whole fetch)+load+c1
-1	from-scratch	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	749.75	1.953349	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-1	from-scratch	upstream	U1 A-c1-fq-t96 (n=3) (+fq prep)	749.81	1.953505	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-1	from-scratch	upstream	U1 A-c1-fq-t192 (n=3) (+fq prep)	750.22	1.954573	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-1	from-scratch	upstream	U1 A-c1-gz-t48 (n=3)	759.52	1.978803	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-1	from-scratch	upstream	U1 A-c1-gz-t96 (n=3)	759.57	1.978933	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-1	from-scratch	upstream	U1 A-c1-gz-t192 (n=3)	759.65	1.979141	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-1	from-scratch	upstream	U2 cold T=768	957.57	1.250881	-	-	no	U2 boot+setup+RODA onto NVMe+the cold -M wall (its reads fetch excluded)
-1	from-scratch	upstream	U2 cold T=512	957.58	1.250896	-	-	no	U2 boot+setup+RODA onto NVMe+the cold -M wall (its reads fetch excluded)
-1	resident	ours	c9g.12xlarge N=16	5.17	0.047945	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	r8g.4xlarge N=16	6.17	0.025848	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	x8g.4xlarge N=8	6.18	0.021468	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	x8g.2xlarge N=16	6.19	0.021503	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	c8g.12xlarge N=32	6.19	0.105324	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	x8g.8xlarge N=4	6.22	0.021607	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	c8g.12xlarge N=16	6.23	0.053002	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	x8g.24xlarge N=1	6.25	0.016283	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	ours	x8g.12xlarge N=2	6.29	0.016388	-	yes	no	the sample on its home node or striped, table loaded
-1	resident	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	10.75	0.028007	-	-	no	U1 pass on the tmpfs-resident table
-1	resident	upstream	U1 A-c1-fq-t96 (n=3) (+fq prep)	10.81	0.028164	-	-	no	U1 pass on the tmpfs-resident table
-1	resident	upstream	U1 A-c1-fq-t192 (n=3) (+fq prep)	11.22	0.029232	-	-	no	U1 pass on the tmpfs-resident table
-1	resident	upstream	U1 A-c1-gz-t48 (n=3)	20.52	0.053461	-	-	no	U1 pass on the tmpfs-resident table
-1	resident	upstream	U1 A-c1-gz-t96 (n=3)	20.57	0.053592	-	-	no	U1 pass on the tmpfs-resident table
-1	resident	upstream	U1 A-c1-gz-t192 (n=3)	20.65	0.053800	-	-	no	U1 pass on the tmpfs-resident table
-1	resident	upstream	U2 warm T=512	55.48	0.072475	-	-	no	U2 warm -M wall (page cache partly warm)
-10	from-scratch	ours	E1 x8g.4xlarge N=8	210.09	0.072980	-	yes	no	rank 0's boot+setup+fetch (all 10 samples)+the c10 load+the batch wall
-10	from-scratch	upstream	U1 B-c10-gz-p10-t8	775.88	0.202143	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-10	from-scratch	upstream	U1 B-c10-fq-t48 (+fq prep)	852.65	0.222144	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-10	from-scratch	upstream	U1 B-c10-fq-t96 (+fq prep)	853.45	0.222352	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-10	from-scratch	upstream	U1 B-c10-fq-t192 (+fq prep)	856.76	0.223215	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-10	from-scratch	upstream	U1 B-c10-gz-t48	955.71	0.248994	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-10	resident	ours	E1 x8g.4xlarge N=8	17.60	0.006114	-	yes	no	E1 c10 batch 0 or 1 wall (parallel j mod N, SDK), table loaded
-10	resident	upstream	U1 B-c10-gz-p10-t8	36.88	0.009608	-	-	no	U1 pass on the tmpfs-resident table
-10	resident	upstream	U1 B-c10-fq-t48 (+fq prep)	113.65	0.029610	-	-	no	U1 pass on the tmpfs-resident table
-10	resident	upstream	U1 B-c10-fq-t96 (+fq prep)	114.45	0.029818	-	-	no	U1 pass on the tmpfs-resident table
-10	resident	upstream	U1 B-c10-fq-t192 (+fq prep)	117.76	0.030680	-	-	no	U1 pass on the tmpfs-resident table
-10	resident	upstream	U1 B-c10-gz-t48	216.71	0.056460	-	-	no	U1 pass on the tmpfs-resident table
-100	from-scratch	ours	c9g.12xlarge N=16	152.00	0.014096	0.02823	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	c8g.12xlarge N=32	157.00	0.026714	0.04295	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	c8g.12xlarge N=16	173.00	0.014718	0.02979	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	r8g.4xlarge N=16	180.00	0.007541	0.01449	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	x8g.2xlarge N=16	239.00	0.008302	0.01722	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	x8g.4xlarge N=8	251.00	0.008719	0.01645	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	x8g.8xlarge N=4	349.00	0.012123	0.02044	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	x8g.12xlarge N=2	453.00	0.011802	0.02004	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	ours	x8g.24xlarge N=1	585.00	0.015241	0.02017	yes	no	observed critical path (first launch to the last rank's end of batch 0) + body tail
-100	from-scratch	upstream	U1 C-c100-gz-p48-t2	854.75	0.022269	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	from-scratch	upstream	U1 C-c100-gz-p24-t4	855.21	0.022281	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	from-scratch	upstream	U1 C-c100-gz-p12-t8	925.47	0.024112	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	from-scratch	upstream	U1 C-c100-fq-t48 (+fq prep)	1900.07	0.049503	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	from-scratch	upstream	U1 C-c100-fq-t96 (+fq prep)	1909.14	0.049739	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	from-scratch	upstream	U1 C-c100-fq-t192 (+fq prep)	1946.59	0.050715	-	-	no	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	from-scratch	upstream	U1 C-c100-gz-t96-one-process MODELLED	2925.63	0.076222	-	-	yes	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
-100	resident	ours	c8g.12xlarge N=32	13.53	0.002302	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	c9g.12xlarge N=16	36.45	0.003380	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	r8g.4xlarge N=16	40.05	0.001678	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	c8g.12xlarge N=16	43.17	0.003673	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	x8g.4xlarge N=8	75.13	0.002610	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	x8g.8xlarge N=4	78.38	0.002723	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	x8g.2xlarge N=16	79.00	0.002744	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	x8g.12xlarge N=2	112.19	0.002923	-	yes	no	the LPT batch wall, table loaded
-100	resident	ours	x8g.24xlarge N=1	123.60	0.003220	-	yes	no	the LPT batch wall, table loaded
-100	resident	upstream	U1 C-c100-gz-p48-t2	115.75	0.003016	-	-	no	U1 pass on the tmpfs-resident table
-100	resident	upstream	U1 C-c100-gz-p24-t4	116.21	0.003028	-	-	no	U1 pass on the tmpfs-resident table
-100	resident	upstream	U1 C-c100-gz-p12-t8	186.47	0.004858	-	-	no	U1 pass on the tmpfs-resident table
-100	resident	upstream	U1 C-c100-fq-t48 (+fq prep)	1161.07	0.030250	-	-	no	U1 pass on the tmpfs-resident table
-100	resident	upstream	U1 C-c100-fq-t96 (+fq prep)	1170.14	0.030486	-	-	no	U1 pass on the tmpfs-resident table
-100	resident	upstream	U1 C-c100-fq-t192 (+fq prep)	1207.59	0.031462	-	-	no	U1 pass on the tmpfs-resident table
-100	resident	upstream	U1 C-c100-gz-t96-one-process MODELLED	2186.63	0.056969	-	-	yes	U1 pass on the tmpfs-resident table
-1000	from-scratch	ours	c8g.12xlarge N=32	348.10	0.005923	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	c9g.12xlarge N=16	590.93	0.005480	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	r8g.4xlarge N=16	650.88	0.002727	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	c8g.12xlarge N=16	715.95	0.006091	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	x8g.2xlarge N=16	1082.24	0.003759	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	x8g.4xlarge N=8	1104.27	0.003836	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	x8g.8xlarge N=4	1390.88	0.004832	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	x8g.12xlarge N=2	1972.51	0.005139	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	ours	x8g.24xlarge N=1	2321.18	0.006047	-	yes	yes	cohort-100 T_engine with the LPT wall and the fetch scaled by 9.88
-1000	from-scratch	upstream	U1 C-c100-gz-p48-t2	2192.83	0.005713	-	-	yes	cohort-100 from-scratch with the pass and the input fetch scaled by 9.88
-1000	from-scratch	upstream	U1 C-c100-gz-p24-t4	2197.37	0.005725	-	-	yes	cohort-100 from-scratch with the pass and the input fetch scaled by 9.88
-1000	from-scratch	upstream	U1 C-c100-gz-p12-t8	2891.27	0.007533	-	-	yes	cohort-100 from-scratch with the pass and the input fetch scaled by 9.88
-1000	from-scratch	upstream	U1 C-c100-fq-t48 (+fq prep)	12516.58	0.032610	-	-	yes	cohort-100 from-scratch with the pass and the input fetch scaled by 9.88
-1000	from-scratch	upstream	U1 C-c100-fq-t96 (+fq prep)	12606.16	0.032843	-	-	yes	cohort-100 from-scratch with the pass and the input fetch scaled by 9.88
-1000	from-scratch	upstream	U1 C-c100-fq-t192 (+fq prep)	12976.02	0.033807	-	-	yes	cohort-100 from-scratch with the pass and the input fetch scaled by 9.88
-1000	resident	ours	c8g.12xlarge N=32	133.62	0.002274	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	c9g.12xlarge N=16	359.99	0.003338	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	r8g.4xlarge N=16	395.54	0.001657	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	c8g.12xlarge N=16	426.35	0.003627	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	x8g.4xlarge N=8	742.00	0.002578	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	x8g.8xlarge N=4	774.09	0.002689	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	x8g.2xlarge N=16	780.22	0.002710	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	x8g.12xlarge N=2	1108.01	0.002887	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	ours	x8g.24xlarge N=1	1220.69	0.003180	-	yes	yes	cohort-100 LPT wall x pairs ratio 9.88
-1000	resident	upstream	U1 C-c100-gz-p48-t2	1143.17	0.002978	-	-	yes	cohort-100 pass x pairs ratio 9.88
-1000	resident	upstream	U1 C-c100-gz-p24-t4	1147.71	0.002990	-	-	yes	cohort-100 pass x pairs ratio 9.88
-1000	resident	upstream	U1 C-c100-gz-p12-t8	1841.61	0.004798	-	-	yes	cohort-100 pass x pairs ratio 9.88
-1000	resident	upstream	U1 C-c100-fq-t48 (+fq prep)	11466.92	0.029875	-	-	yes	cohort-100 pass x pairs ratio 9.88
-1000	resident	upstream	U1 C-c100-fq-t96 (+fq prep)	11556.49	0.030109	-	-	yes	cohort-100 pass x pairs ratio 9.88
-1000	resident	upstream	U1 C-c100-fq-t192 (+fq prep)	11926.36	0.031072	-	-	yes	cohort-100 pass x pairs ratio 9.88
+cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_h	mpairs_per_s_per_vcpu	staging_s	staging_GBps	billed_over_derived	engine_pre_fix	kind	basis
+1	from-scratch	ours	c9g.12xlarge N=16	120.72	1.119530	768	0.0435	0.0001	31	38.5	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	c8g.12xlarge N=16	136.06	1.157538	768	0.0399	0.0001	32	37.0	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	r8g.4xlarge N=16	146.12	0.612145	256	0.0589	0.0003	42	28.1	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	c8g.12xlarge N=32	148.66	2.529466	1536	0.0399	0.0000	23	51.0	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	x8g.2xlarge N=16	166.19	0.577307	128	0.0977	0.0005	59	20.2	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	x8g.4xlarge N=8	182.05	0.632401	128	0.0977	0.0005	85	14.1	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	x8g.8xlarge N=4	276.84	0.961681	128	0.0977	0.0003	166	7.1	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	x8g.12xlarge N=2	347.10	0.904311	96	0.0977	0.0003	219	5.4	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	ours	x8g.24xlarge N=1	467.65	1.218384	96	0.0977	0.0002	324	3.7	-	yes	measured	observed path to batch start (incl. rendezvous and skew) + c1 + body tail
+1	from-scratch	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	749.75	1.953349	96	0.0977	0.0001	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+1	from-scratch	upstream	U1 A-c1-fq-t96 (n=3) (+fq prep)	749.81	1.953505	96	0.0977	0.0001	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+1	from-scratch	upstream	U1 A-c1-fq-t192 (n=3) (+fq prep)	750.22	1.954573	96	0.0977	0.0001	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+1	from-scratch	upstream	U1 A-c1-gz-t48 (n=3)	759.52	1.978803	96	0.0977	0.0001	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+1	from-scratch	upstream	U1 A-c1-gz-t96 (n=3)	759.57	1.978933	96	0.0977	0.0001	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+1	from-scratch	upstream	U1 A-c1-gz-t192 (n=3)	759.65	1.979141	96	0.0977	0.0001	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+1	from-scratch	upstream	U2 cold T=768	957.57	1.250881	64	0.0735	0.0002	810	1.5	-	-	measured	U2 boot+setup+RODA onto NVMe+the cold -M wall (its reads fetch excluded)
+1	from-scratch	upstream	U2 cold T=512	957.58	1.250896	64	0.0735	0.0002	810	1.5	-	-	measured	U2 boot+setup+RODA onto NVMe+the cold -M wall (its reads fetch excluded)
+1	resident	ours	c9g.12xlarge N=16	5.17	0.047945	768	0.0435	0.0027	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	r8g.4xlarge N=16	6.17	0.025848	256	0.0589	0.0067	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	x8g.4xlarge N=8	6.18	0.021468	128	0.0977	0.0133	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	x8g.2xlarge N=16	6.19	0.021503	128	0.0977	0.0133	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	c8g.12xlarge N=32	6.19	0.105324	1536	0.0399	0.0011	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	x8g.8xlarge N=4	6.22	0.021607	128	0.0977	0.0132	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	c8g.12xlarge N=16	6.23	0.053002	768	0.0399	0.0022	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	x8g.24xlarge N=1	6.25	0.016283	96	0.0977	0.0176	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	ours	x8g.12xlarge N=2	6.29	0.016388	96	0.0977	0.0174	-	-	-	yes	measured	sample 1 on its home node or striped, table loaded
+1	resident	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	10.75	0.028007	96	0.0977	0.0102	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+1	resident	upstream	U1 A-c1-fq-t96 (n=3) (+fq prep)	10.81	0.028164	96	0.0977	0.0101	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+1	resident	upstream	U1 A-c1-fq-t192 (n=3) (+fq prep)	11.22	0.029232	96	0.0977	0.0098	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+1	resident	upstream	U1 A-c1-gz-t48 (n=3)	20.52	0.053461	96	0.0977	0.0053	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+1	resident	upstream	U1 A-c1-gz-t96 (n=3)	20.57	0.053592	96	0.0977	0.0053	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+1	resident	upstream	U1 A-c1-gz-t192 (n=3)	20.65	0.053800	96	0.0977	0.0053	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+1	resident	upstream	U2 warm T=512	55.48	0.072475	64	0.0735	0.0030	-	-	-	-	measured	U2 warm -M wall (page cache partly warm)
+10	from-scratch	ours	E1 x8g.4xlarge N=8 c10 batch 0	516.57	0.179444	128	0.0977	0.0017	86	13.7	-	yes	measured	first launch to the last rank's end of the batch; E1's c10 invocation followed its three c1 invocations, whose time is in this path
+10	from-scratch	ours	E1 x8g.4xlarge N=8 c10 batch 1	534.41	0.185642	128	0.0977	0.0016	86	13.7	-	yes	measured	first launch to the last rank's end of the batch; E1's c10 invocation followed its three c1 invocations, whose time is in this path
+10	from-scratch	upstream	U1 B-c10-gz-p10-t8	775.88	0.202143	96	0.0977	0.0015	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+10	from-scratch	upstream	U1 B-c10-fq-t48 (+fq prep)	852.65	0.222144	96	0.0977	0.0013	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+10	from-scratch	upstream	U1 B-c10-fq-t96 (+fq prep)	853.45	0.222352	96	0.0977	0.0013	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+10	from-scratch	upstream	U1 B-c10-fq-t192 (+fq prep)	856.76	0.223215	96	0.0977	0.0013	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+10	from-scratch	upstream	U1 B-c10-gz-t48	955.71	0.248994	96	0.0977	0.0012	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+10	resident	ours	E1 x8g.4xlarge N=8 c10 batch 1	17.60	0.006112	128	0.0977	0.0489	-	-	-	yes	measured	E1 c10 batch wall (parallel j mod N, SDK)
+10	resident	ours	E1 x8g.4xlarge N=8 c10 batch 0	21.05	0.007312	128	0.0977	0.0409	-	-	-	yes	measured	E1 c10 batch wall (parallel j mod N, SDK)
+10	resident	upstream	U1 B-c10-gz-p10-t8	36.88	0.009608	96	0.0977	0.0311	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+10	resident	upstream	U1 B-c10-fq-t48 (+fq prep)	113.65	0.029610	96	0.0977	0.0101	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+10	resident	upstream	U1 B-c10-fq-t96 (+fq prep)	114.45	0.029818	96	0.0977	0.0100	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+10	resident	upstream	U1 B-c10-fq-t192 (+fq prep)	117.76	0.030680	96	0.0977	0.0097	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+10	resident	upstream	U1 B-c10-gz-t48	216.71	0.056460	96	0.0977	0.0053	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	from-scratch	ours	c9g.12xlarge N=16	152.00	0.014096	768	0.0435	0.0096	31	38.5	2.00	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	c8g.12xlarge N=32	156.00	0.026544	1536	0.0399	0.0047	23	51.0	1.62	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	c8g.12xlarge N=16	173.00	0.014718	768	0.0399	0.0084	32	37.0	2.02	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	r8g.4xlarge N=16	180.00	0.007541	256	0.0589	0.0243	42	28.1	1.92	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	x8g.2xlarge N=16	239.00	0.008302	128	0.0977	0.0366	59	20.2	2.07	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	x8g.4xlarge N=8	251.00	0.008719	128	0.0977	0.0348	85	14.1	1.89	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	x8g.8xlarge N=4	349.00	0.012123	128	0.0977	0.0251	166	7.1	1.69	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	x8g.12xlarge N=2	453.00	0.011802	96	0.0977	0.0257	219	5.4	1.70	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	ours	x8g.24xlarge N=1	585.00	0.015241	96	0.0977	0.0199	324	3.7	1.32	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	upstream	U1 C-c100-gz-p48-t2	854.75	0.022269	96	0.0977	0.0136	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	U1 C-c100-gz-p24-t4	855.21	0.022281	96	0.0977	0.0136	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	U1 C-c100-gz-p12-t8	925.47	0.024112	96	0.0977	0.0126	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	U1 C-c100-fq-t48 (+fq prep)	1900.07	0.049503	96	0.0977	0.0061	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	U1 C-c100-fq-t96 (+fq prep)	1909.14	0.049739	96	0.0977	0.0061	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	U1 C-c100-fq-t192 (+fq prep)	1946.59	0.050715	96	0.0977	0.0060	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	U1 C-c100-gz-t96-one-process MODELLED	2925.63	0.076222	96	0.0977	0.0040	647	1.8	-	-	modelled	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	resident	ours	c8g.12xlarge N=32	13.53	0.002302	1536	0.0399	0.0539	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	c9g.12xlarge N=16	36.45	0.003380	768	0.0435	0.0400	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	r8g.4xlarge N=16	40.05	0.001678	256	0.0589	0.1092	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	c8g.12xlarge N=16	43.17	0.003673	768	0.0399	0.0338	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	x8g.4xlarge N=8	75.13	0.002610	128	0.0977	0.1164	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	x8g.8xlarge N=4	78.38	0.002723	128	0.0977	0.1116	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	x8g.2xlarge N=16	79.00	0.002744	128	0.0977	0.1107	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	x8g.12xlarge N=2	112.19	0.002923	96	0.0977	0.1040	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	ours	x8g.24xlarge N=1	123.60	0.003220	96	0.0977	0.0944	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	upstream	U1 C-c100-gz-p48-t2	115.75	0.003016	96	0.0977	0.1008	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	resident	upstream	U1 C-c100-gz-p24-t4	116.21	0.003028	96	0.0977	0.1004	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	resident	upstream	U1 C-c100-gz-p12-t8	186.47	0.004858	96	0.0977	0.0625	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	resident	upstream	U1 C-c100-fq-t48 (+fq prep)	1161.07	0.030250	96	0.0977	0.0100	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	resident	upstream	U1 C-c100-fq-t96 (+fq prep)	1170.14	0.030486	96	0.0977	0.0100	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	resident	upstream	U1 C-c100-fq-t192 (+fq prep)	1207.59	0.031462	96	0.0977	0.0097	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+100	resident	upstream	U1 C-c100-gz-t96-one-process MODELLED	2186.63	0.056969	96	0.0977	0.0053	-	-	-	-	modelled	U1 pass on the tmpfs-resident table
+1000	from-scratch	ours	c8g.12xlarge N=32	347.10	0.005906	1536	0.0399	0.0207	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	c9g.12xlarge N=16	590.93	0.005480	768	0.0435	0.0244	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	r8g.4xlarge N=16	650.88	0.002727	256	0.0589	0.0664	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	c8g.12xlarge N=16	715.95	0.006091	768	0.0399	0.0201	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	x8g.2xlarge N=16	1082.24	0.003759	128	0.0977	0.0798	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	x8g.4xlarge N=8	1104.27	0.003836	128	0.0977	0.0782	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	x8g.8xlarge N=4	1390.88	0.004832	128	0.0977	0.0621	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	x8g.12xlarge N=2	1972.51	0.005139	96	0.0977	0.0584	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	from-scratch	ours	x8g.24xlarge N=1	2321.18	0.006047	96	0.0977	0.0496	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
+1000	resident	ours	c8g.12xlarge N=32	133.62	0.002274	1536	0.0399	0.0539	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	c9g.12xlarge N=16	359.99	0.003338	768	0.0435	0.0400	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	r8g.4xlarge N=16	395.54	0.001657	256	0.0589	0.1092	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	c8g.12xlarge N=16	426.35	0.003627	768	0.0399	0.0338	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	x8g.4xlarge N=8	742.00	0.002578	128	0.0977	0.1164	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	x8g.8xlarge N=4	774.09	0.002689	128	0.0977	0.1116	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	x8g.2xlarge N=16	780.22	0.002710	128	0.0977	0.1107	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	x8g.12xlarge N=2	1108.01	0.002887	96	0.0977	0.1040	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	ours	x8g.24xlarge N=1	1220.69	0.003180	96	0.0977	0.0944	-	-	-	yes	placeholder	cohort-100 LPT wall x pairs ratio 9.88
+1000	resident	upstream	U1 C-c100-gz-p48-t2	1143.17	0.002978	96	0.0977	0.1008	-	-	-	-	modelled-infeasible	cohort-100 pass x 9.88; infeasible as specified (input plus table exceed the node's tmpfs)
+1000	resident	upstream	U1 C-c100-gz-p24-t4	1147.71	0.002990	96	0.0977	0.1004	-	-	-	-	modelled-infeasible	cohort-100 pass x 9.88; infeasible as specified (input plus table exceed the node's tmpfs)
+1000	resident	upstream	U1 C-c100-gz-p12-t8	1841.61	0.004798	96	0.0977	0.0625	-	-	-	-	modelled-infeasible	cohort-100 pass x 9.88; infeasible as specified (input plus table exceed the node's tmpfs)
+1000	resident	upstream	U1 C-c100-fq-t48 (+fq prep)	11466.92	0.029875	96	0.0977	0.0100	-	-	-	-	modelled-infeasible	cohort-100 pass x 9.88; infeasible as specified (input plus table exceed the node's tmpfs)
+1000	resident	upstream	U1 C-c100-fq-t96 (+fq prep)	11556.49	0.030109	96	0.0977	0.0100	-	-	-	-	modelled-infeasible	cohort-100 pass x 9.88; infeasible as specified (input plus table exceed the node's tmpfs)
+1000	resident	upstream	U1 C-c100-fq-t192 (+fq prep)	11926.36	0.031072	96	0.0977	0.0097	-	-	-	-	modelled-infeasible	cohort-100 pass x 9.88; infeasible as specified (input plus table exceed the node's tmpfs)
