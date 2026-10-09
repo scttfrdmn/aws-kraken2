@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -15,6 +15,7 @@ test:
 	$(GO) test $(PKGS)
 	python3 scripts/lib/errexit_check.py --self-test
 	python3 scripts/lib/util_test.py
+	python3 scripts/lib/fit26_test.py
 	bash scripts/lib/harness_poll_test.sh
 	bash scripts/lib/run_multi_test.sh
 
@@ -84,6 +85,12 @@ g3-tables:
 # registered references and the kill condition (results/g3/campaign/frontier.{tsv,md}).
 g3-frontier: g3-tables
 	python3 scripts/lib/g3_frontier.py
+
+# The #26 fit (WP-10 of the #25 ladder): the registered T(N) and cost model, then each addition as
+# a separate fit; residuals, held-out checks, predicted time- and cost-optimal N per cohort and
+# family (results/g3/fit26/; docs/cohort.md, "make g3-fit"). Reads the committed campaign tables.
+g3-fit:
+	python3 scripts/lib/fit26.py
 
 # Real-S3 check of ak2etag.py (multipart and single-part) and Law 1 of the engine's sample 1
 # against U2's upstream sha256s (scripts/lib/law1_u2.sh; downloads about 1 GB).
