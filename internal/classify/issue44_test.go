@@ -15,17 +15,14 @@ import (
 // and parent 0, so a score tie's LowestCommonAncestor is 0, LCA(0, x) = x, and ResolveTree's
 // call depends on the iteration order of upstream's per-thread std::unordered_map hit_counts.
 //
-// The case rebuilds each read's events from upstream's own --output hit list (one lookup per
-// k-mer of each "taxid:count" run, the internal IDs from RODA v205's taxonomy, the 5-count
-// external-ID-0 run as the orphan, "|:|" as the mate border), classifies them through the
-// package's public API, and requires upstream's line byte for byte. Of the 16 reads, the 3 with
-// two 5-count zero runs (which run is the orphan, and whether the two are one orphan or two,
-// cannot be told from the hit list) are left to the RODA end-to-end recheck (make run
-// SPEC=runs/g3-diag44-r8gd.16xlarge.json). The orphan's internal ID here is 2158313, one of the
-// 246; which one each read hit is not in the hit list.
-//
-// It fails on purpose until the clean-room HitCounts (hitorder.go, TODO(#44 clean-room))
-// lands: with first-hit order, as at 0a5105c, every case gives our old line instead.
+// Each case replays one of the 16 reads exactly as classify.cc consumes it: upstream's own
+// minimizer events with ambiguity flags (upstream/mm_dump) and upstream's own value for each
+// lookup (upstream/chash_dump -m on RODA v205's hash.k2d), recorded by the #44 diagnostic
+// (results/g3/20261009-015708-210e1b5, k2probe diag-reads; testdata/issue44_events.jsonl), through
+// the package's public API,
+// with RODA v205's lineages for the taxa hit (testdata/roda_v205_lineages.tsv; the orphan the
+// reads hit is internal 2158558). It requires upstream's --output line byte for byte. Before the
+// fix (first-hit order, as at 0a5105c) every case gave our old line, also recorded.
 
 type mapTree map[uint64][2]uint64 // internal -> (parent, external)
 
@@ -60,7 +57,7 @@ func (m mapTree) Parent(id uint64) uint64     { return m[id][0] }
 func (m mapTree) ExternalID(id uint64) uint64 { return m[id][1] }
 func (m mapTree) Name(id uint64) string       { return "" }
 
-func loadRodaLineages(t *testing.T) (mapTree, map[uint64]uint64) {
+func loadRodaLineages(t *testing.T) (mapTree, map[uint64]uint64) { //nolint:unparam
 	f, err := os.Open(filepath.Join("testdata", "roda_v205_lineages.tsv"))
 	if err != nil {
 		t.Fatal(err)
@@ -86,70 +83,83 @@ func loadRodaLineages(t *testing.T) (mapTree, map[uint64]uint64) {
 	return tree, ext
 }
 
+// issue44Orphan is the orphan taxon testdata/issue44_reads.jsonl's hit-list reconstructions use
+// (the clean-room fuzz's real histories, hitorderfuzz_test.go); 2158558 is the one the reads
+// actually hit.
 const issue44Orphan = 2158313
 
 func TestIssue44OrphanTies(t *testing.T) {
-	tree, ext := loadRodaLineages(t)
+	tree, _ := loadRodaLineages(t)
 	c, err := New(tree, IndexInfo{DNA: true}, Options{Paired: true, MinimumHitGroups: 2}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	f, err := os.Open(filepath.Join("testdata", "issue44_reads.jsonl"))
+	f, err := os.Open(filepath.Join("testdata", "issue44_events.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer f.Close()
 	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1<<20), 1<<22)
 	n := 0
 	for sc.Scan() {
 		var r struct {
 			ID           string `json:"id"`
 			UpstreamLine string `json:"upstream_line"`
 			Before       string `json:"our_line_before_fix"`
+			Mates        []struct {
+				Len    uint32   `json:"len"`
+				Events []string `json:"events"`
+				Values []uint32 `json:"values"`
+			} `json:"mates"`
 		}
 		if err := json.Unmarshal(sc.Bytes(), &r); err != nil {
 			t.Fatal(err)
 		}
-		f := strings.Split(r.UpstreamLine, "\t")
-		lens := strings.Split(f[3], "|")
-		l1, _ := strconv.ParseUint(lens[0], 10, 32)
-		l2, _ := strconv.ParseUint(lens[1], 10, 32)
+		if len(r.Mates) != 2 {
+			t.Fatalf("%s: %d mates", r.ID, len(r.Mates))
+		}
+		// Upstream's own events (upstream/mm_dump) and values (upstream/chash_dump -m on RODA's
+		// hash.k2d), mate 1, the border, mate 2: what classify.cc's replay consumes.
 		toks := c.NewTokens()
 		toks.Reset()
-		var m uint64 = 1
-		for _, run := range strings.Fields(f[4]) {
-			if run == "|:|" {
+		val := map[uint64]uint32{}
+		for mi, m := range r.Mates {
+			if mi == 1 {
 				toks.MateBorder()
-				continue
 			}
-			p := strings.Split(run, ":")
-			cnt, _ := strconv.Atoi(p[1])
-			e, _ := strconv.ParseUint(p[0], 10, 64)
-			var v uint64
-			switch {
-			case e != 0:
-				v = ext[e]
-				if v == 0 {
-					t.Fatalf("%s: external %d not in the lineage table", r.ID, e)
+			for j, e := range m.Events {
+				amb := strings.HasSuffix(e, ":A")
+				k, err := strconv.ParseUint(strings.TrimSuffix(e, ":A"), 16, 64)
+				if err != nil {
+					t.Fatalf("%s: event %q", r.ID, e)
 				}
-			case cnt == 5:
-				v = issue44Orphan
-			}
-			for k := 0; k < cnt; k++ {
-				toks.Add(m, false) // distinct minimizers: every k-mer is a lookup
-				toks.Vals = append(toks.Vals, uint32(v))
-				m++
+				toks.Add(k, amb)
+				if !amb {
+					val[k] = m.Values[j]
+				}
 			}
 		}
+		for _, k := range toks.Keys {
+			if v := val[k]; v != 0 {
+				if _, ok := tree[uint64(v)]; !ok {
+					t.Fatalf("%s: value %d not in the lineage table", r.ID, v)
+				}
+			}
+			toks.Vals = append(toks.Vals, val[k])
+		}
 		w := &Worker{}
-		c.Classify(toks, []byte(r.ID), uint32(l1), uint32(l2), w)
+		c.Classify(toks, []byte(r.ID), r.Mates[0].Len, r.Mates[1].Len, w)
 		got := strings.TrimRight(string(w.Out), "\n")
 		if got != r.UpstreamLine {
 			t.Errorf("%s:\n got      %q\n upstream %q\n (before the fix: %q)", r.ID, got, r.UpstreamLine, r.Before)
 		}
+		if r.Before == r.UpstreamLine {
+			t.Errorf("%s: the case does not distinguish the fix (its pre-fix line equals upstream's)", r.ID)
+		}
 		n++
 	}
-	if n != 13 {
-		t.Fatalf("%d cases, want 13", n)
+	if n != 16 {
+		t.Fatalf("%d cases, want 16", n)
 	}
 }
