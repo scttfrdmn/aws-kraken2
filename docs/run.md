@@ -231,8 +231,12 @@ the run can cost, by `scripts/lib/cost_check.sh REGION TYPE TTL COST_LIMIT [NODE
 - The price is truffle's on-demand price for the type in the region. No price means the check
   cannot judge, and the launch is refused.
 - ε is `AK2_COST_EPSILON`, default 0.10.
-- The cent per node covers a `cost_limit` rounded up to the cent: `scripts/g3/mkspec.sh` sets
-  TTL × price + $0.005, rounded to the cent.
+- **The $0.01 per node is a rounding allowance**, and it is kept on purpose.
+  - A `cost_limit` is written to the cent, and `scripts/g3/mkspec.sh` sets TTL × price + $0.005,
+    rounded to the cent. So the limit can sit up to a cent above TTL × price.
+  - On a small or short box (e.g. 25m of c8g.4xlarge: $0.2659 → $0.27), that cent is more than
+    ε would cover. The allowance stops it being taken for a typo.
+  - It is per node, so a cohort's allowance is NODES × $0.01.
 - Anything above the bound is taken for a typo and refused before launch, in `DRY_RUN=1` too.
   A `cost_limit` below the bound is allowed; it only makes the backstop tighter.
 - `run-multi.sh` checks the NODES total before any launch, and `cohort.json` records it as
@@ -246,6 +250,21 @@ the run can cost, by `scripts/lib/cost_check.sh REGION TYPE TTL COST_LIMIT [NODE
 - c1000 on 32 × c8g.12xlarge (60m, $1.92 per member, $61.44 in total) is allowed;
 - a typo of $19.20 per member is refused;
 - the override and a missing price both refuse.
+
+**Recorded specs this check refuses.** These 11 hand-written specs have a `cost_limit` of 1.3× to
+24× TTL × price, so the check refuses them
+(`results/rehearse/dryrun-userdata-20261009T213251Z-9094d51.tsv`):
+
+- `runs/g0a.json`, `runs/g0c-probes.json`, `runs/g0c-runs.json`, `runs/g1-oracle.json`;
+- `runs/g2-c8gd.json`, `runs/g2-c9gd.json`, `runs/g2-smoke.json`;
+- `runs/g3-std8.json`, `runs/stage-cohort.json`;
+- `runs/loadbench.json`, `runs/loadbench-g4.json`.
+
+They are left as they are, because they are the specs of recorded runs and editing them would
+change the `spec_sha256` their manifests cite. They stay refused until someone re-runs one.
+**The rule:** whoever re-runs one regenerates the spec with `cost_limit` = TTL × the type's
+on-demand price, rounded up to the cent, as part of that re-run. The recorded runs keep citing the
+spec sha256 they ran with.
 
 ## DRY_RUN of every spec
 
