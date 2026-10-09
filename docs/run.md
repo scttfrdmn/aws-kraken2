@@ -212,7 +212,7 @@ object) goes into `manifest.quota_check` (run.sh) and `cohort.json`'s `quota_che
   stops. For a cohort member that counts the members already up, so it still holds if a
   member is relaunched by hand.
 
-For example, us-west-2's X quota is 128 vCPU: one x8g.24xlarge (96) is allowed, two (192) are
+For example, with us-west-2's X quota at 128 vCPU (its applied value early on 2026-10-09; 256 by 20:45Z the same day, the stub test keeps 128): one x8g.24xlarge (96) is allowed, two (192) are
 refused, and one is refused while another X instance of 48 vCPU or more is running.
 `scripts/lib/quota_check_test.sh` (in `make test`) checks this against a stubbed `aws`;
 `scripts/lib/run_multi_test.sh` checks that run-multi.sh refuses 2 × x8g.24xlarge before any
