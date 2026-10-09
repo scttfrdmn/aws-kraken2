@@ -14,8 +14,9 @@ The selection rule is the one registered in the spec's header (applied per regim
   the qualifying set with the lowest median total wins, else none.
 Resolution, per regime: the smallest gain the rule can accept is 2 x range(none) (no set's
 threshold is lower). The load ceiling is median load_s(none) - the load floor (object bytes /
-the slower network-ceiling rate): the most a set could gain on the load side. If the ceiling is
-below the resolution, a none verdict is "not evidence". Exits 1 if a table cannot be made or if
+the faster network-ceiling rate): an upper bound on what a set could gain on the load side. If
+the ceiling is below the resolution, a none verdict is "not evidence". The classify resolution,
+2 x crange(none), is printed beside it (the classify side has no ceiling of its own here). Exits 1 if a table cannot be made or if
 the valid trials' outputs are not all identical across both regimes (a Law 1 defect).
 """
 import csv, json, os, statistics, sys
@@ -65,6 +66,7 @@ def select(trials, floor_s=None):
     mn, rn, cmn, crn = med(none["tot"]), rng(none["tot"]), med(none["cls"]), rng(none["cls"])
     sel["resolution_s"] = 2 * rn
     sel["resolution_pct"] = 100 * 2 * rn / mn if mn else None
+    sel["classify_resolution_s"] = 2 * crn
     if floor_s is not None:
         sel["ceiling_s"] = med(none["load"]) - floor_s
     for s, c in cells.items():
@@ -114,7 +116,7 @@ def tables(d):
     modal = modal_sha(trials)
     for t in trials:
         t["valid"] = valid(t, modal)
-    floor = max(x["load_floor_s"] for x in nets) if nets else None  # the slower ceiling read
+    floor = min(x["load_floor_s"] for x in nets) if nets else None  # the faster read: the larger (upper-bound) ceiling
     td = os.path.join(d, "tables")
     vd = lambda t, k: (t.get("vmstat_delta") or {}).get(k)
     write(os.path.join(td, "probe-tune-trials.tsv"),
@@ -143,7 +145,7 @@ def tables(d):
                               f(max(c["tot"]) if c["tot"] else None), f(rng(c["tot"])), f(med(c["load"])), f(rng(c["load"])),
                               f(med(c["cls"])), f(rng(c["cls"])), f(med(c["pre"])), f(c.get("gain")), f(c.get("threshold")),
                               c.get("qualifies", "-"), f(stall, 0), f(fb, 0)])
-        sel_rows.append([reg, sel["chosen"], f(sel["resolution_s"]), f(sel.get("resolution_pct"), 2), f(floor),
+        sel_rows.append([reg, sel["chosen"], f(sel["resolution_s"]), f(sel.get("resolution_pct"), 2), f(sel.get("classify_resolution_s")), f(floor),
                          f(sel["ceiling_s"]), sel["evidence"], sel["reason"]])
         for t in sorted(R, key=lambda t: t["pos"]):
             drift.append([reg, t["pos"], t["set"], f(t.get("pre_free_huge_frac"), 4), f(t.get("load_s")), f(t.get("classify_s")),
@@ -152,12 +154,12 @@ def tables(d):
           ["regime", "set", "n", "n_trials", "total_s", "min_s", "max_s", "range_s", "load_s", "load_range_s", "classify_s",
            "classify_range_s", "precompact_s", "gain_s", "threshold_s", "qualifies", "compact_stall", "thp_fallbacks"], cell_rows)
     write(os.path.join(td, "probe-tune-selection.tsv"),
-          ["regime", "chosen", "resolution_s", "resolution_pct", "load_floor_s", "load_ceiling_s", "evidence", "reason"], sel_rows)
+          ["regime", "chosen", "resolution_s", "resolution_pct", "classify_resolution_s", "load_floor_s", "load_ceiling_s", "evidence", "reason"], sel_rows)
     write(os.path.join(td, "probe-tune-drift.tsv"),
           ["regime", "pos", "set", "pre_free_huge_frac", "load_s", "classify_s", "compact_stall", "valid"], drift)
     shas = {t.get("output_sha256") for t in trials if t.get("load_exit") == 0 and t.get("classify_exit") == 0}
     for row in sel_rows:
-        print("tune_tables: regime %s -> %s (resolution %s s, ceiling %s s; evidence: %s)" % (row[0], row[1], row[2], row[5], row[6]))
+        print("tune_tables: regime %s -> %s (resolution %s s, ceiling %s s; evidence: %s)" % (row[0], row[1], row[2], row[6], row[7]))
     if len(shas) > 1:
         print(f"tune_tables: DEFECT: completed trials wrote {len(shas)} different outputs (Law 1)", file=sys.stderr)
         return 1

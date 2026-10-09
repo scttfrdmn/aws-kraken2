@@ -17,7 +17,7 @@
 # trials: trial position is recorded, so the state after successive loads is in the record.
 # Fixed sample: SRR5935740 (rank 1 of results/cohort/PRJNA398089/runs.tsv, U1's drift reference),
 # gunzipped once onto a tmpfs before any trial (not timed), so classify is table-bound.
-# Network ceiling: a 30 s ranged-GET discard read at 48 workers, before the trials and after;
+# Network ceiling: a 30 s ranged-GET discard read at 64 workers (probe (a)'s fastest), before and after;
 # hash bytes / that rate is the load floor, so median(load none) - floor bounds a load-side gain.
 #
 # SELECTION RULE (registered here before any run; scripts/lib/tune_tables.py applies it):
@@ -48,7 +48,7 @@ S1=SRR5935740
 SETS=(none precompact proactive defer defermadv always)
 REPS=${AK2_REHEARSE_REPS:-3}
 NET_S=${AK2_REHEARSE_NET_S:-30}
-RW=48
+RW=48; NW=64
 S5V=2.3.0
 fail() { ak2_say "ERROR: $*"; exit 1; }
 now() { perl -MTime::HiRes=time -e 'printf "%.3f\n", time'; }
@@ -115,14 +115,14 @@ FQ1="$IN/${S1}_1.fq"; FQ2="$IN/${S1}_2.fq"
 emit "$(jq -nc --arg s "$S1" --arg t0 "$t0" --arg t1 "$t1" --argjson b "$(( $(stat -c%s "$FQ1") + $(stat -c%s "$FQ2") ))" \
   '{kind:"prep", sample:$s, tool:"pigz -dc -p 16", seconds:(($t1|tonumber)-($t0|tonumber)), fq_bytes:$b}')"
 
-# net LABEL: the network ceiling, a NET_S-second ranged-GET discard read at RW workers.
+# net LABEL: the network ceiling, a NET_S-second ranged-GET discard read at NW workers.
 net() {
-  "$K2P" rget -url "$URL" -etag "$ET" -size "$SZ" -out "" -seconds "$NET_S" -workers "$RW" -chunk-mib 64 -every 5 -label "$1" \
+  "$K2P" rget -url "$URL" -etag "$ET" -size "$SZ" -out "" -seconds "$NET_S" -workers "$NW" -chunk-mib 64 -every 5 -label "$1" \
     > "$W/net.out" 2> "$W/net.err"
   local rc=$? d
   d=$(grep '"kind":"done"' "$W/net.out" | tail -1)
   [ -n "$d" ] || d='{}'
-  emit "$(jq -nc --arg l "$1" --argjson rc "$rc" --argjson d "$d" --argjson sz "$SZ" --argjson w "$RW" \
+  emit "$(jq -nc --arg l "$1" --argjson rc "$rc" --argjson d "$d" --argjson sz "$SZ" --argjson w "$NW" \
     '{kind:"net", label:$l, exit:$rc, workers:$w, gbps:$d.gbps_cum, requests:$d.requests, object_bytes:$sz,
       load_floor_s:(if ($d.gbps_cum // 0) > 0 then $sz / ($d.gbps_cum * 1e9) else null end)}')"
   ak2_req GetObject "$(jq -r '.requests // 0' <<< "$d")" "$RB"

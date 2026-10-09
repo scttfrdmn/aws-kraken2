@@ -142,7 +142,7 @@ ht_apply() {
         after=$(ht__read "$k")
         if [ "$after" != "$want" ]; then st=failed rc=1
         elif [ "$before" = "$want" ]; then st=already
-        else st=set
+        else st="set"
         fi
       fi
     else
@@ -157,7 +157,7 @@ ht_apply() {
     ht__write "$p" 1; st=$?
     t1=$(ht__now)
     HT_PRECOMPACT_S=$(awk -v a="$t0" -v b="$t1" 'BEGIN{printf "%.3f", b - a}')
-    [ "$st" = 0 ] && st=done || { st=failed; rc=1; }
+    if [ "$st" = 0 ]; then st="done"; else st=failed rc=1; fi
     ht__line "$set" precompact - 1 "${HT_PRECOMPACT_S}s" "$st"
   fi
   [ "$rc" = 0 ] && HT_APPLIED=true

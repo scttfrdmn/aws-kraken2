@@ -10,6 +10,7 @@ validation run.
 | (a) staging | `runs/g3-probe-stage-x8g.24xlarge.json` (`scripts/g3/probe-stage.body.sh`) | 1 × x8g.24xlarge | RODA hash.k2d onto tmpfs: rget sweep, whole-object rget and s5cmd writes, each ETag check timed separately, an aws s3 cp (CRT) rate sample |
 | (b) contention | `runs/g3-probe-cont-c8gn.4xlarge.json` (`scripts/g3/probe-cont.body.sh`) | 64 × c8gn.4xlarge, one cohort | concurrent ranged GETs of hash.k2d to /dev/null at N = 1, 16, 32, 64, 60 s each |
 | (d) #44 fix speed | `scripts/g3/hitbench.sh [PRE] [POST]` | local | our classifier before the fix (3201a75) and after, SRR062634 8M pairs against Standard-8, warm, alternating |
+| (e) host tunes (#41) | `runs/g3-probe-tune-x8g.24xlarge.json` (`scripts/g3/probe-tune.body.sh`, `scripts/g3/hosttune.sh`) | 1 × x8g.24xlarge | load and classify time under each candidate host-tune set, upstream `-M` on tmpfs and ours' engine N = 1, with fragmentation counters; fixes S3's set ("Host tunes" below) |
 
 ## Running them
 
@@ -58,3 +59,161 @@ upstream variants. The measured single-node and single-rate points stay alongsid
 - Neither (c) nor (a) reads from storage: (c)'s inputs sit on /dev/shm and (a) writes to tmpfs,
   so `drop_caches` does not apply.
 - (b) synchronises its stages from the members' clocks via rendezvous records in the cohort prefix.
+
+## Host tunes and the tune-selection probe (#41)
+
+Ladder 1's S3 rung applies host tunes to upstream's S2b context (a huge=always tmpfs with `-M`).
+Which set it uses is fixed by this probe. G2 saw upstream's resident load drift from about 37 s
+to 240-300 s within one run, with about 27% of the load in direct THP compaction (#41).
+
+### `scripts/g3/hosttune.sh`
+
+A spec body sources it after the clone. Each function returns a status and never exits the body.
+
+| function | what it does |
+|---|---|
+| `ht_init` | records the boot value of every knob, once, in `$HT_DIR/base.tsv` |
+| `ht_apply SET [DEV...]` | applies a named or inline set (`key=value,...`), then its timed pre-compaction step |
+| `ht_restore` | writes back the boot value of every knob that differs from it |
+| `ht_record LABEL` | appends `/proc/buddyinfo`, the `compact_*` and `thp_*` lines of `/proc/vmstat`, meminfo's huge-page lines and the THP settings to `hosttune.txt`, and a JSON summary to `hosttune.jsonl`; both are pushed at once |
+
+**Knobs:**
+- `enabled` and `defrag`: `/sys/kernel/mm/transparent_hugepage/`.
+- `proactiveness`: `vm.compaction_proactiveness`.
+- `ra`: `read_ahead_kb` of each given block device (`HT_BLOCKDEVS`).
+- `precompact`: a step, not a setting. It runs `echo 1 > /proc/sys/vm/compact_memory`, and the
+  time it takes is `HT_PRECOMPACT_S`.
+
+**How it records and fails:**
+- `ht_apply` writes one row per knob to `hosttune-apply.tsv`: the value before, the wanted value,
+  the value after, and a status. The rows are echoed as `ht-apply ...` and pushed.
+- A set that does not read back as wanted returns non-zero with `HT_APPLIED=false`. It is loud,
+  not silent.
+- `none` never writes. It returns non-zero only if the host is not at its boot values. Call
+  `ht_restore` first.
+- `HT_ROOT` prefixes every path, so a test or a rehearsal can point it at a fake tree.
+
+`make hosttune-test` (`scripts/lib/hosttune_test.sh`) runs it on an AL2023 container (podman,
+rootful). The container uses the kernel's own `/proc` and `/sys`, and the test runs under
+`bash -e -c` with `set +e`, as a body does. It checks:
+- `ht_apply none` makes no write and no sudo or tee call, and leaves every knob unchanged;
+- `ht_record` pushes on every call, and each upload is longer than the one before;
+- a set that cannot be written (here `/sys` is read-only) fails loudly and changes nothing;
+- on a fake tree, `none` leaves every file's content and mtime unchanged, and a set and its
+  restore are written and recorded.
+
+### Candidate sets
+
+AL2023 on x8g boots kernel 6.18 with `enabled=madvise` and `defrag=madvise`. Under those settings:
+- regime (b)'s `MADV_HUGEPAGE` faults compact directly when no free 2 MiB block is left;
+- regime (a)'s tmpfs writes have no VMA, so they take a huge page only if one is free, and
+  otherwise fall back to base pages without compacting.
+
+| set | knobs | rationale |
+|---|---|---|
+| `none` | nothing | the baseline (S2b as it is) |
+| `precompact` | `compact_memory` once, just before the load (its seconds count in the total) | defragments free memory once, ahead of 1.1 TiB of huge-page allocations, instead of stalling in direct compaction during them |
+| `proactive` | `compaction_proactiveness=100` (boot 20) | kcompactd keeps fragmentation low in the background, so faults find free 2 MiB blocks |
+| `defer` | `defrag=defer` | no direct compaction, even for `MADV_HUGEPAGE`. This removes G2's compaction stall from (b)'s load, at the risk of fewer huge pages (the classify guard catches that). For (a), a failed huge allocation wakes kswapd and kcompactd |
+| `defermadv` | `defrag=defer+madvise` (named in #41) | (b) keeps direct compaction; (a) behaves as under `defer`. It is measured rather than assumed equal to either |
+| `always` | `defrag=always` | the only setting under which (a)'s tmpfs writes compact directly, which maximises (a)'s huge-page coverage at the cost of staging time |
+
+Out of scope:
+- **`read_ahead_kb`:** neither regime reads a block device (the table comes over the network,
+  the inputs sit on tmpfs), so no candidate sets it. `ht_apply` supports it for the NVMe rungs.
+- **`enabled`:** it stays at `madvise`. Both regimes ask for huge pages explicitly
+  (huge=always, `MADV_HUGEPAGE`).
+
+### The probe: `runs/g3-probe-tune-x8g.24xlarge.json`
+
+The probe is one x8g.24xlarge in us-west-2b. Its body is `scripts/g3/probe-tune.body.sh`, and
+its spec comes from `scripts/g3/mkspec-u.sh probe-tune x8g.24xlarge 300 ... us-west-2b`. The
+spec header registers the plan, the selection rule and the resolution check.
+
+**Regimes:**
+- **(a)** upstream at the pin. RODA's `hash.k2d` is staged by s5cmd onto a huge=always tmpfs,
+  then classified with `-M`.
+- **(b)** ours, engine N = 1. The table is loaded by 48 ranged GETs into `MADV_HUGEPAGE` memory.
+
+**Plan:**
+- Each regime classifies the same fixed sample, SRR5935740 as fq, at `--threads $(nproc)`.
+- 6 sets × 2 regimes × 3 repetitions = 36 cold trials.
+- The sets rotate by one place per repetition, and the regime order alternates. The first
+  trial is `none` on (a) at fresh boot.
+
+**Each trial:**
+1. `ht_restore`.
+2. `drop_caches`.
+3. `ht_apply SET`.
+4. `ht_record pre-…`.
+5. Load and classify. During them, a 2 s sampler records `AnonHugePages` and `ShmemPmdMapped`.
+   In (a), an `ht_record` also runs between the load and the classify.
+6. `ht_record post-…`.
+7. One `probe-tune {"kind":"trial",...}` line, which carries:
+   - `load_s`, `classify_s`, `precompact_s` and `total_s`;
+   - the output's sha256;
+   - the free fraction in 2 MiB blocks before the trial;
+   - the vmstat deltas: compaction stalls and successes, and THP allocations and fallbacks.
+
+Fragmentation is not reset between trials. The trial position is recorded, so
+`probe-tune-drift.tsv` shows the state after successive loads.
+
+**Network ceiling:** a 30 s ranged-GET discard read at 64 workers runs before the trials and
+again after them. The object's bytes divided by the faster of the two rates is the load floor.
+
+**Selection rule** (as registered; `scripts/lib/tune_tables.py`), applied per regime:
+- **Valid trial:** load and classify exit 0, the set applied, and the output sha256 is the
+  run's modal one.
+- **Cell:** a cell (regime, set) needs at least 3 valid trials.
+- **Qualifying:** a set qualifies if both of these hold:
+  - its median total beats `none`'s by more than 2 × the larger of the two cells' ranges;
+  - its median classify is no worse than `none`'s plus 2 × the larger classify range.
+- **Pick:** the qualifying set with the lowest median total wins; otherwise `none`.
+
+S3 takes regime (a)'s pick. Regime (b)'s pick is recorded for ours (O0b).
+
+**Resolution, before any null:**
+- The smallest gain the rule can accept is 2 × range(none).
+- The load ceiling is the median load of `none` minus the floor, an upper bound on any
+  load-side gain.
+- If the ceiling is below the resolution, the selection table says that a `none` verdict is not
+  evidence.
+
+**Law 1:** every completed trial must write the same output, so upstream `-M` and ours' engine
+agree. If they do not, the post exits 1.
+
+**Tables** (post: `scripts/post/g3-probe-tune-x8g.24xlarge.sh`):
+- `tables/probe-tune-trials.tsv`
+- `probe-tune.tsv` (per regime and set)
+- `probe-tune-selection.tsv`
+- `probe-tune-drift.tsv`
+
+```bash
+make hosttune-test
+make rehearse SPEC=runs/g3-probe-tune-x8g.24xlarge.json
+make run GATE=g3 SPEC=runs/g3-probe-tune-x8g.24xlarge.json
+make orphans
+```
+
+**Rehearsal** (`scripts/lib/probe_rehearse.sh`, kind `tune`) runs the body unmodified, with
+these stand-ins:
+- the viral DB for RODA, its `hash.k2d` served with a real multipart ETag and copied by the
+  s5cmd stub;
+- SRR062634's 200k pairs for the sample;
+- a fake `/sys` and `/proc` tree for the knobs.
+
+It runs the full plan, and passes on observed output:
+- 36 valid trial lines, streamed and pushed, 3 per cell;
+- one output sha256 across both regimes;
+- 92 `ht-record` lines, streamed and pushed;
+- `none` trials wrote nothing, and every other trial wrote;
+- the host is back at its boot values at the end;
+- `tune_tables.py` makes the tables. `make test` runs its `--self-test` on synthetic cells.
+
+**Runtime estimate:**
+- (a) is about 280 s a trial: s5cmd at about 4.75 GB/s from probe (a), about 2 s of classify
+  (U1), and the unmount.
+- (b) is about 345 s a trial: E2's N = 1 load of 324 s, then classify and exit.
+- 18 of each, plus about 15 min of setup and ceilings, comes to about 3.3 h, about $31 at the
+  on-demand price.
+- The TTL is 5 h, with a cost_limit of $46.90 (a runaway backstop under `AK2_MAX_COST_USD`).
