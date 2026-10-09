@@ -68,7 +68,7 @@ mapfile -t WEIGHTS < <(awk -F'\t' -v c="$COHORT" 'NR>1 && $1<=c {print $4}' "$RU
 if [ -n "${AK2_ACCESSIONS:-}" ]; then
   ACC=$("$W/repo/scripts/lib/accessions.sh" -r "$W/repo" "$AK2_ACCESSIONS") || fail "env.AK2_ACCESSIONS '$AK2_ACCESSIONS' does not resolve on the node"
   [ "$ACC" = "${SAMPLES[*]}" ] || fail "env.AK2_ACCESSIONS '$AK2_ACCESSIONS' does not name the first $COHORT runs of $RUNS"
-  ak2_say "accessions: ${AK2_ACCESSIONS:0:40} -> $(wc -w <<< "$ACC") runs, as runs.tsv ranks 1-$COHORT"
+  ak2_say "accessions: ${AK2_ACCESSIONS:0:40} -> ${#SAMPLES[@]} runs, as runs.tsv ranks 1-$COHORT"
 fi
 if [ -n "${AK2_REHEARSE_SAMPLES:-}" ]; then
   read -r -a SAMPLES <<< "$AK2_REHEARSE_SAMPLES"; read -r -a WEIGHTS <<< "$AK2_REHEARSE_WEIGHTS"
