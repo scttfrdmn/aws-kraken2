@@ -66,8 +66,9 @@ What the wrapper does with compressed input (`scripts/kraken2` at the pin, lines
 What the matrix shows that this means (variants `trunc`, `garbage`, `mixgz`, `missing`):
 - a truncated `.gz` is classified up to where the tool stopped (exit 0, or 65 if the last record
   is cut);
-- a garbage tail is ignored by GNU gzip and pigz. rapidgzip 0.14.5 drops the tail of the last
-  member's output, so upstream under that shim classifies fewer reads and can exit 65;
+- a garbage tail is ignored by GNU gzip and pigz. rapidgzip 0.14.5 drops the end of the
+  member's output before trailing garbage or zero padding. Under that shim, upstream classifies
+  196,638 of ERR478965's 200,000 reads and exits 65;
 - a plain mate 2 behind a gzip mate 1 reads as empty (65, mates differ);
 - `--gzip-compressed` on a missing or plain file is no input (exit 0, no `--output`).
 

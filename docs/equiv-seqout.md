@@ -46,9 +46,11 @@ gzip and bzip2 versions used.
 `seqio.OpenPipe`, which runs the `gzip -dc` / `bzip2 -dc` on `PATH` as the wrapper does, in place
 of the in-process path. The manifest records `ak2_decompress` and the gzip path. With a shim from
 `scripts/decomp-shim.sh` in `DECOMP_BIN` (see [oracle.md](oracle.md), "Decompressor shims"),
-upstream's exit on a damaged input can change. Under rapidgzip 0.14.5, `se_fq_gz_garbage` exits 65,
-not the 0 the case expects, because rapidgzip drops the end of the member's output before the
-garbage. That is a fact about the tool, and the run reports it as a failed expectation.
+upstream's exit on a damaged input can change. Under rapidgzip 0.14.5, `se_fq_gz_garbage` and
+`se_fq_gz_zeropad` both exit 65, not the 0 the cases expect. On both inputs rapidgzip drops the
+last 703,060 bytes of the member's output (51,192,514 of 51,895,574), so the last record is cut.
+That is a fact about the tool, and the run reports it as a failed expectation and a short case
+count. `TestOracleDecompress` still passes, because OpenPipe hands on rapidgzip's own bytes.
 
 **Outputs:** upstream outputs under `.cache/equiv-seqout/<UTC timestamp>/` (and the symlink
 `.cache/equiv-seqout/latest` to it, which `go test` uses when `K2_SEQOUT_ORACLE` /
