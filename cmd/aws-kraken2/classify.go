@@ -41,6 +41,7 @@ type classifyArgs struct {
 	reportKmerData               bool
 	files                        []string
 	gzipFlag, bzip2Flag          bool
+	decomp                       seqio.Decompressor // AK2_DECOMPRESS
 	// nil = option not given. kraken2Output "" or nil is standard output; "-" silences it.
 	kraken2Output, classifiedOut, unclassifiedOut, reportFile *string
 	// env looks up the engine's AK2_ENGINE_* settings (nil: the process environment). Tests run
@@ -363,12 +364,22 @@ type runner struct {
 // openInput opens one input as classify sees it. Without compression classify opens the file
 // itself (EX_NOINPUT if it cannot). With compression the wrapper has already piped it through
 // `gzip -dc` / `bzip2 -dc`, which report a missing file on stderr and leave classify an empty
-// stream.
+// stream. With AK2_DECOMPRESS=pipe that is literally what happens (seqio.OpenPipe): the tool
+// itself reports, and only a tool missing from PATH (the wrapper's shell would say "not found")
+// is reported here.
 func (r *runner) openInput(name string) (*seqio.Reader, int) {
 	if r.comp == seqio.CompressionNone {
 		rd, err := seqio.Open(name, r.comp)
 		if err != nil {
 			return nil, classifyErr(exNoInput, "unable to open %s", name)
+		}
+		return rd, 0
+	}
+	if r.c.decomp == seqio.DecompressPipe {
+		rd, err := seqio.OpenPipe(name, r.comp)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "%s: %s -dc %s: %v\n", prog, r.comp, name, err)
+			return seqio.NewReader(bytes.NewReader(nil)), 0
 		}
 		return rd, 0
 	}

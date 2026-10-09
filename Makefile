@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: decomp-shim util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -148,6 +148,11 @@ stage-reads:
 # seqio/seqout oracle (docs/equiv-seqout.md).
 equiv-seqout:
 	scripts/equiv-seqout.sh
+
+# #48: a gzip shim directory for DECOMP_BIN (docs/oracle.md, "Decompressor shims"):
+# TOOL=gnu|pigz|rapidgzip DIR=<dir>; PIGZ_BIN, RAPIDGZIP_PYTHON and GNU_GZIP pass through the env.
+decomp-shim:
+	scripts/decomp-shim.sh "$(TOOL)" "$(DIR)"
 
 # Byte-identity of internal/classify's --output against upstream (issues #13, #14).
 CLASSIFY_ORACLE ?= .cache/classify

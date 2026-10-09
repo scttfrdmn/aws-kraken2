@@ -47,6 +47,10 @@ LOG="$RES/run.log"
 log() { echo "$*" | tee -a "$LOG"; }
 log "shell flags: $-"
 log "pin $UPSTREAM_SHA ($UPSTREAM_DESCRIBE)  db $DB  reads $STEM  threads $THREADS  work $WORK"
+# AK2_DECOMPRESS=pipe: the Go tests read compressed inputs through seqio.OpenPipe (the gzip /
+# bzip2 on PATH, as the wrapper); unset: in process.
+case "${AK2_DECOMPRESS:-}" in ""|pipe) ;; *) log "FAIL: AK2_DECOMPRESS=$AK2_DECOMPRESS: want pipe or unset"; exit 1 ;; esac
+log "decompression: ${AK2_DECOMPRESS:-inprocess}; gzip $(command -v gzip): $(gzip --version 2>&1 | head -1)"
 FAILED=0
 
 # Inputs derived from the real reads (reformatted, recompressed or damaged with standard tools).
@@ -195,6 +199,8 @@ log "result: $RESULT"
   echo "  \"classify_sha256\": \"$(shasum -a 256 "$K2DIR/classify" | cut -d' ' -f1)\","
   echo "  \"go_version\": \"$(go version)\","
   echo "  \"gzip_version\": \"$(gzip --version 2>&1 | head -1 | sed 's/"/\\"/g')\","
+  echo "  \"gzip_path\": \"$(command -v gzip)\","
+  echo "  \"ak2_decompress\": \"${AK2_DECOMPRESS:-}\","
   echo "  \"bzip2_version\": \"$(bzip2 --help 2>&1 | head -1 | sed 's/"/\\"/g')\","
   echo "  \"host\": \"$(uname -srm)\","
   echo "  \"canonical_platform\": \"Linux aarch64; this host is $( [ "$(uname -s)/$(uname -m)" = Linux/aarch64 ] && echo canonical || echo development-only )\","

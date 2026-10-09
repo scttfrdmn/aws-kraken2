@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 
 	"github.com/klauspost/compress/gzip"
 )
@@ -106,8 +107,105 @@ func Open(path string, c Compression) (*Reader, error) {
 	return &Reader{src: f, closer: f}, nil
 }
 
+// Decompressor is how compressed input is decompressed: in process (the default) or, as
+// upstream's wrapper does, by a `gzip -dc` / `bzip2 -dc` child found on PATH (AK2_DECOMPRESS=pipe).
+type Decompressor uint8
+
+// Decompressors.
+const (
+	DecompressInProcess Decompressor = iota
+	DecompressPipe
+)
+
+func (d Decompressor) String() string {
+	if d == DecompressPipe {
+		return "pipe"
+	}
+	return "inprocess"
+}
+
+// ParseDecompressor parses AK2_DECOMPRESS: "" (unset) is in process, "pipe" the PATH tool.
+func ParseDecompressor(s string) (Decompressor, error) {
+	switch s {
+	case "":
+		return DecompressInProcess, nil
+	case "pipe":
+		return DecompressPipe, nil
+	}
+	return DecompressInProcess, fmt.Errorf("AK2_DECOMPRESS=%q: want pipe, or unset for in-process decompression", s)
+}
+
+// OpenWith opens path with compression c, decompressed by d: Open, or OpenPipe.
+func OpenWith(path string, c Compression, d Decompressor) (*Reader, error) {
+	if d == DecompressPipe {
+		return OpenPipe(path, c)
+	}
+	return Open(path, c)
+}
+
+// OpenPipe is the wrapper's own decompression (scripts/kraken2, the `$compressed` block): it
+// runs `gzip -dc PATH` or `bzip2 -dc PATH`, the program found on PATH, and reads its standard
+// output to its end. As there:
+//   - the child's exit status is never looked at, so classify sees every byte the tool wrote
+//     (after a truncated member, trailing garbage, a missing file or a file that is not
+//     compressed at all, that may be nothing) followed by a clean end of input;
+//   - the child's standard error is the run's (DecompressLog), so its messages are the tool's;
+//   - the child shares the run's standard input (`gzip -dc -` reads it);
+//   - each input file has its own child, so the two files of a pair decompress in parallel.
+//
+// The wrapper starts the child through /bin/sh (its quotemeta'd command line has shell
+// metacharacters), so a program missing from PATH is the shell's "not found" on stderr and an
+// empty stream. OpenPipe execs the program directly with the same argv; a program missing from
+// PATH is returned as an error, which the caller reports and treats as that empty stream. The
+// wrapper also puts its own install directory first on PATH; OpenPipe uses PATH as it is.
+// The wrapper starts every input's child before classify runs; the caller starts each when it
+// opens that input. Neither difference reaches classify's input bytes.
+//
+// Without compression, OpenPipe is Open: the wrapper hands classify the file itself.
+func OpenPipe(path string, c Compression) (*Reader, error) {
+	if c == CompressionNone {
+		return Open(path, c)
+	}
+	cmd := exec.Command(c.String(), "-dc", path)
+	if errors.Is(cmd.Err, exec.ErrDot) {
+		cmd.Err = nil // sh runs a program found through a relative PATH entry; so do we
+	}
+	if cmd.Err != nil {
+		return nil, cmd.Err
+	}
+	pr, pw, err := os.Pipe()
+	if err != nil {
+		return nil, err
+	}
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = pw
+	cmd.Stderr = DecompressLog
+	if err := cmd.Start(); err != nil {
+		pr.Close()
+		pw.Close()
+		return nil, err
+	}
+	pw.Close() // the child holds the write end; its exit is our end of input
+	return &Reader{src: pr, closer: &pipeReader{f: pr, cmd: cmd}}, nil
+}
+
+// pipeReader is OpenPipe's child and the read end of its standard output.
+type pipeReader struct {
+	f   *os.File
+	cmd *exec.Cmd
+}
+
+// Close closes the read end first, so a child still writing gets SIGPIPE (as the wrapper's
+// children do when classify exits), then reaps it. Its exit status is ignored, as the wrapper
+// ignores it.
+func (p *pipeReader) Close() error {
+	err := p.f.Close()
+	_ = p.cmd.Wait()
+	return err
+}
+
 // DecompressLog receives decompression errors, which (as with the wrapper's gzip -dc) end the
-// input rather than failing the run.
+// input rather than failing the run. Under OpenPipe it is the child's standard error.
 var DecompressLog io.Writer = os.Stderr
 
 const (

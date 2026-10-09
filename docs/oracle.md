@@ -25,8 +25,63 @@ make oracle DB=all          # both, one results directory each
 |---|---|
 | `ORACLE_THREADS` | the multi-thread count. The default is 8; the single-thread cases always use 1. |
 | `ORACLE_CASES` | a regex that limits the run to matching case names. For development only: the manifest and summary both say the matrix was filtered, and failed coverage checks do not fail a filtered run. |
-| `DECOMP_BIN` | a directory to put first on `PATH` for the wrapper's `gzip -dc`. The default is `/tmp/gnugzip/inst/bin` if present, else the system gzip. The canonical platform's is GNU gzip. |
+| `DECOMP_BIN` | a directory to put first on `PATH` for the wrapper's `gzip -dc` (and, under `AK2_DECOMPRESS=pipe`, ours). The default is `/tmp/gnugzip/inst/bin` if present, else the system gzip. The canonical platform's is GNU gzip. `scripts/decomp-shim.sh` writes pigz and rapidgzip shims for it ("Decompressor shims" below). |
+| `AK2_DECOMPRESS` | passed to ours as is. `pipe`: ours reads compressed input from `gzip -dc` / `bzip2 -dc` on `PATH`, as the wrapper does (#48). Unset: in process (klauspost), the default. The manifest records it under `decompress`. |
 | `ORACLE_KEEP=1` | keep every case's outputs. By default only failing cases keep theirs. |
+
+`DECOMP_BIN` and `AK2_DECOMPRESS` work the same way for `make oracle-engine`, `make oracle-cohort`
+and `make equiv-seqout`, and each of their manifests records the gzip on `PATH` and
+`AK2_DECOMPRESS`.
+
+### Decompressor shims (#48)
+
+`AK2_DECOMPRESS=pipe` is ours' counterpart to upstream's ladder lever S5: a faster gzip put on
+`PATH` as `gzip`. Law 1 for it runs the oracles with both sides under the same shim:
+
+```bash
+make decomp-shim TOOL=gnu DIR=/tmp/shim-gnu                          # GNU gzip itself
+PIGZ_BIN=/path/to/pigz make decomp-shim TOOL=pigz DIR=/tmp/shim-pigz
+RAPIDGZIP_PYTHON=/path/to/venv/bin/python make decomp-shim TOOL=rapidgzip DIR=/tmp/shim-rapidgzip
+DECOMP_BIN=/tmp/shim-pigz AK2_DECOMPRESS=pipe make oracle DB=all
+```
+
+The shim runs the tool only for the wrapper's exact call, `gzip -dc FILE`. Anything else goes to
+GNU gzip, so the variants the oracle compresses are the same under every shim. `gzip --version`
+names both, and the manifest records that line. For rapidgzip, install `rapidgzip==0.14.5` with
+pip into a venv under a fresh empty directory. The shim runs that venv's python with `-I`.
+The variable is `PIGZ_BIN`, not `PIGZ`, because pigz reads `PIGZ` as options and refuses file
+names in it.
+
+What the wrapper does with compressed input (`scripts/kraken2` at the pin, lines 99-174 and
+`auto_detect_file_format`), all of which ours matches:
+- **Detection:** `--gzip-compressed` or `--bzip2-compressed` applies to every file. Without a
+  flag, the first file alone decides for all of them, by its first two bytes (`1f 8b`, `BZ`), and
+  only if it is a regular file.
+- **Pipes:** each file, including each mate, gets its own `gzip -dc FILE` / `bzip2 -dc FILE` child,
+  found on `PATH` (with the wrapper's own directory first). Classify reads `/dev/fd/N`.
+- **Exit status:** never examined. Classify sees every byte the tool wrote, then end of input.
+- **stderr:** inherited, so the tool's messages are in the run's stderr.
+- **Missing tool:** `/bin/sh` reports "not found", and classify sees an empty stream.
+
+What the matrix shows that this means (variants `trunc`, `garbage`, `mixgz`, `missing`):
+- a truncated `.gz` is classified up to where the tool stopped (exit 0, or 65 if the last record
+  is cut);
+- a garbage tail is ignored by GNU gzip and pigz. rapidgzip 0.14.5 drops the tail of the last
+  member's output, so upstream under that shim classifies fewer reads and can exit 65;
+- a plain mate 2 behind a gzip mate 1 reads as empty (65, mates differ);
+- `--gzip-compressed` on a missing or plain file is no input (exit 0, no `--output`).
+
+The in-process path reproduces GNU gzip's bytes on these inputs. It does not reproduce other
+tools': on the truncated input, upstream under pigz or rapidgzip classifies fewer reads than
+in process. Under a shim, Law 1 therefore holds only with `AK2_DECOMPRESS=pipe`.
+
+Where ours still differs from the wrapper (stderr only, never the outputs):
+- The wrapper starts every child before classify loads the database. Ours starts each child when
+  it opens that input, so a tool's messages come later in stderr.
+- A missing tool is reported by ours (`aws-kraken2: gzip -dc FILE: exec: ... not found`) rather
+  than by `sh`.
+- Ours does not put its own directory first on `PATH`. Under a shim that lives elsewhere on
+  `PATH`, that is the fair choice.
 
 ## What it does
 
@@ -66,6 +121,10 @@ never reach:
 | `fasta` | S1 | FASTA, one line per sequence | FASTA input; FASTA sequence outputs |
 | `fastaw` | S3 | FASTA wrapped at 60 columns | multi-line FASTA records |
 | `bz` | S2 | bzip2-compressed | bzip2 input, auto-detected and with `--bzip2-compressed` |
+| `trunc` | S1 | mate 1's `.gz` cut at half its bytes; mate 2's `.gz` with a garbage line appended | a truncated member (single-end), and with a garbage-tailed mate (paired: 65) |
+| `garbage` | S2 | mate 1's `.gz` with a garbage line appended | trailing garbage after the member |
+| `mixgz` | S3 | mate 1's `.gz`; mate 2 plain under a `.gz` name | auto-detection looks at the first file only, so mate 2 goes through `gzip -dc` as well and reads as empty (65) |
+| `missing` | none | no files | `--gzip-compressed` on a missing file: the tool reports it, and classify sees no input |
 
 **Databases:**
 - **Viral** has `minimum_acceptable_hash_value` 0.
@@ -98,6 +157,7 @@ least one sample, and the main options on more than one sample, layout or compre
 | `--threads` 1 and 8 | single-thread cases on S1 paired, S3 single-end gzip, S3 with mmap; 8 elsewhere |
 | several inputs in one run | `S1,S2` single-end and `S2,S3` paired gzip (outputs, stats and report span the files) |
 | empty input | an empty file alone (no output file is created), with `--report-zero-counts` (percentages `nan`), and an empty pair before S1 (outputs open at the first input with data) |
+| damaged and mixed gzip (#48) | `trunc` single-end (exit 0 or 65, by where the tool stops) and paired (65); `garbage` single-end (0, or 65 under rapidgzip); `mixgz` paired (65); `--gzip-compressed` on `missing` and on plain S1 (0, no `--output`) |
 | exit statuses | mates differ (65); paired `--classified-out` without `#` (65); `--confidence 1.5` (255); `--use-mpa-style` without `--report` (64); `--threads 0` (64) |
 | controls | cases that add one option on our side only (`--confidence 0.05`, `--minimum-hit-groups 3`). Each must exit alike on both sides with at least one output file different, which shows the comparison is not blind. |
 
@@ -110,14 +170,22 @@ upstream's own outputs and written to `checks.tsv`. A failed check fails the run
 - `-Q 20` masked bases to `x` and changed `--output`;
 - one thread on plain input gives the same `--output` as 8 threads on gzip input;
 - `--memory-mapping` gives the same `--output` as loading into RAM;
-- `--quick` changes `--output`.
+- `--quick` changes `--output`;
+- `se-trunc-gz` classified some reads but fewer than the 200,000, and `se-garbage-gz` some;
+- which decompressor ours used, since under GNU gzip both give the same outputs. The check
+  counts ours' in-process `seqio: ... (input ends here)` lines for `se-trunc-gz`. There must be
+  one per run by default, and none under `AK2_DECOMPRESS=pipe`.
 
 `minimum_acceptable_hash_value` is recorded as well.
+
+A case's expected exit can list alternatives (`0,65`) where the damaged input's last record
+depends on the tool on `PATH`. Ours must still exit exactly as upstream did. The existence
+checks apply when upstream exits 0.
 
 **Matrix integrity** (each fails the run):
 - a case filter that matches no case;
 - on an unfiltered run, fewer rows in `cases.tsv` than cases defined;
-- when a case expects exit 0: a requested output missing on either side (standard output: empty),
+- when a case expects exit 0 and upstream exits 0: a requested output missing on either side (standard output: empty),
   or an output the case expects to be absent (empty input, unwritable path) present on either side;
 - any file in a case's directory that the case did not ask for, on either side;
 - the manifest's `failed` flag, which is computed from all of the above and decides the exit

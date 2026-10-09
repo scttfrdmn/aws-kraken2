@@ -9,7 +9,10 @@
 #        ORACLE_CASES    a regex; only cases whose name matches run (development only: the
 #                        manifest records it and the summary says the matrix was filtered)
 #        DECOMP_BIN      a directory holding the gzip/bzip2 to put first on PATH (else
-#                        /tmp/gnugzip/inst/bin when present, else the system's)
+#                        /tmp/gnugzip/inst/bin when present, else the system's); both sides
+#                        use it (scripts/decomp-shim.sh writes pigz and rapidgzip shims)
+#        AK2_DECOMPRESS  passed to ours as is (pipe: gzip -dc / bzip2 -dc from PATH, as the
+#                        wrapper; unset: in process); the manifest records it
 #        ORACLE_KEEP     1 = keep every case's outputs (default: only those of failing cases)
 #        ORACLE_ENGINE   a list of shard counts, e.g. "1 2 3 4 8" (make oracle-engine): upstream
 #                        runs once per case and ours runs once per N through the sharded engine
@@ -127,9 +130,25 @@ head -n $((4 * (N - 10))) "$K2_READS/ERR478965_${N}_2.fq" > "$VAR/mates_2.fq"
 for v in slash short mates empty; do
   for m in 1 2; do gzip -nc "$VAR/${v}_$m.fq" > "$VAR/${v}_$m.fq.gz"; done
 done
+# Damaged and mixed gzip (#48): whatever the wrapper's `gzip -dc` (the gzip on PATH) makes of
+# these, exit status ignored, is upstream's input.
+#   trunc:   SRR062634's mate 1 .gz cut at half its bytes; its mate 2 .gz with a garbage line
+#            appended after the member.
+#   garbage: ERR478965's mate 1 .gz with a garbage line appended.
+#   mixgz:   SRR28305653's mate 1 .gz, and its plain mate 2 under a .gz name (auto-detection
+#            looks at the first file only, so mate 2 goes through gzip -dc as well).
+#   missing: no such files (with --gzip-compressed, gzip -dc reports it; classify sees no input).
+G1="$K2_READS/SRR062634_${N}_1.fq.gz"
+head -c $(( $(wc -c < "$G1") / 2 )) "$G1" > "$VAR/trunc_1.fq.gz"
+{ cat "$K2_READS/SRR062634_${N}_2.fq.gz"; printf 'trailing garbage\n'; } > "$VAR/trunc_2.fq.gz"
+{ cat "$K2_READS/ERR478965_${N}_1.fq.gz"; printf 'trailing garbage\n'; } > "$VAR/garbage_1.fq.gz"
+cp "$K2_READS/SRR28305653_${N}_1.fq.gz" "$VAR/mixgz_1.fq.gz"
+cp "$K2_READS/SRR28305653_${N}_2.fq" "$VAR/mixgz_2.fq.gz"
 
 # ---- the matrix ---------------------------------------------------------------------------------
 # name|sample|layout|form|expected upstream exit|outputs|extra arguments[|control arguments]
+#   expected upstream exit: a status, or alternatives "0,65" where the damaged input's last
+#           record depends on the decompressor on PATH (ours must exit as upstream did)
 #   sample: S1 SRR062634 (human WGS, 100 bp), S2 ERR478965 (trimmed, 45-94 bp),
 #           S3 SRR28305653 (150 bp), or a variant above; "A,B" = several inputs in one run
 #   layout: se | pe (--paired, two files)
@@ -137,7 +156,7 @@ done
 #   outputs: o --output, r --report, c --classified-out/--unclassified-out (with # when paired),
 #            n --classified-out without # (an error when paired), s no --output at all (the
 #            per-read output goes to standard output). Without o or s, --output - .
-#            Lower case: the file must exist on both sides when the expected exit is 0. Upper
+#            Lower case: the file must exist on both sides when upstream exits 0 as expected. Upper
 #            case: requested, but must be absent on both sides (e.g. empty input). Letters after
 #            "!": requested at a path in a directory that does not exist (unwritable); the file
 #            must be absent on both sides.
@@ -195,6 +214,12 @@ CASES=(
   "se-fasta-wrap|fastaw|se|fa|0|orc|"
   "pe-bz2-auto|bz|pe|bz2|0|orc|"
   "se-bz2-flag|bz|se|bz2|0|or|--bzip2-compressed"
+  "se-trunc-gz|trunc|se|gz|0,65|orc|"
+  "pe-trunc-garbage-gz|trunc|pe|gz|65|orc|"
+  "se-garbage-gz|garbage|se|gz|0,65|orc|"
+  "pe-gz-then-plain|mixgz|pe|gz|65|orc|"
+  "se-gzflag-missing|missing|se|gz|0|OrC|--gzip-compressed"
+  "se-gzflag-plain|S1|se|fq|0|OrC|--gzip-compressed"
   "pe-db-by-name|S1|pe|fq|0|or|ENV:KRAKEN2_DB_PATH=/nonexistent::@DBPARENT --db @DBNAME"
   "se-env-threads|S3|se|fq|0|or|ENV:KRAKEN2_NUM_THREADS=3 NOTHREADS"
   "se-report-unwritable|S1|se|fq|0|o!r|"
@@ -385,6 +410,13 @@ run_db() {
       env "${envs[@]}" "${eenv[@]}" "${ou[@]}" > "$O_std" 2> "$od/ours.stderr"; oe=$?
     fi
     t2=$(now)
+    # Which decompressor ours used (Law 4: under GNU gzip both give the same bytes, so the outputs
+    # alone cannot show it): in process, seqio logs "(input ends here)" for the truncated member;
+    # under AK2_DECOMPRESS=pipe the message is the PATH tool's own.
+    if [ "$cname" = se-trunc-gz-trunc ]; then
+      EVID["$db|trunc_runs"]=$(( ${EVID[$db|trunc_runs]:-0} + 1 ))
+      EVID["$db|trunc_inproc"]=$(( ${EVID[$db|trunc_inproc]:-0} + $(grep -c '^seqio: .*(input ends here)$' "$od/ours.stderr") ))
+    fi
 
     local ident=yes nfiles=0 ndiff=0 reqok=yes row k us os
     row=$(printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' "$lab" "$sample" "$layout" "$form" \
@@ -405,9 +437,10 @@ run_db() {
           log "${ctl:+(control, expected) }DIFF $db $lab $k:"; firstdiff "${!uv}" "${!ov}" | tee -a "$LOG"
         fi
       fi
-      # Existence (only when the case expects success): a requested output must be there on
-      # both sides (standard output: non-empty), an expected-absent one on neither.
-      if [ "$expect" = 0 ]; then
+      # Existence (only when the case expects success and upstream succeeded): a requested
+      # output must be there on both sides (standard output: non-empty), an expected-absent one
+      # on neither.
+      if [[ ,$expect, == *,0,* ]] && [ "$ue" = 0 ]; then
         case "${!rv}" in
           must)
             if [ "$k" = stdout ]; then [ -s "${!uv}" ] && [ -s "${!ov}" ] || { reqok=no; log "MISSING $db $lab: $k empty"; }
@@ -427,7 +460,7 @@ run_db() {
       while read -r f; do printf '%s\n' "$known" | grep -qxF -- "$f" || echo "${f#"$d"/}"; done | tr '\n' ' ')
     extra_files=${extra_files% }
     [ -z "$extra_files" ] || log "UNEXPECTED FILES $db $lab: $extra_files"
-    local upok=yes; [ "$ue" = "$expect" ] || { upok=no; log "UNEXPECTED $db $lab: upstream exit $ue, case expects $expect"; }
+    local upok=yes; [[ ,$expect, == *,"$ue",* ]] || { upok=no; log "UNEXPECTED $db $lab: upstream exit $ue, case expects $expect"; }
     local errsame=yes
     cmp -s <(normerr "$d/upstream.stderr") <(normerr "$od/ours.stderr") || errsame=no
     local isctl=no pass=no
@@ -490,6 +523,8 @@ coverage() {
       EVID["$db|$c|seqout_ids_with_mate_suffix"]=$(cat "$c1" "$u1" | awk 'NR%4==1 && $1 ~ /\/1$/' | wc -l | tr -d ' ') ;;
     se-slash-slash)
       EVID["$db|$c|output_ids_with_mate_suffix"]=$(awk -F'\t' '$2 ~ /\/[12]$/' "$out" | wc -l | tr -d ' ') ;;
+    se-trunc-gz-trunc|se-garbage-gz-garbage)
+      EVID["$db|$c|records"]=$(wc -l < "$out" | tr -d ' ') ;;
     se-q20-S1)
       EVID["$db|$c|masked_bases_in_seqout"]=$(cat "$c1" "$u1" | awk 'NR%4==2{n+=gsub(/x/,"")} END{print n+0}') ;;
   esac
@@ -503,6 +538,7 @@ checks() {
     local ok=no
     case "$3" in
       gt) [ "$2" != "" ] && [ "$2" -gt "$4" ] 2>/dev/null && ok=yes ;;
+      lt) [ "$2" != "" ] && [ "$2" -lt "$4" ] 2>/dev/null && ok=yes ;;
       eq) [ "$2" = "$4" ] && ok=yes ;;
       ne) [ -n "$2" ] && [ "$2" != "$4" ] && ok=yes ;;
     esac
@@ -515,6 +551,14 @@ checks() {
   ck "pe-slash: --output IDs still ending in /1 or /2 (trimmed in paired mode)" "${EVID[$db|pe-slash-slash|output_ids_with_mate_suffix]:-}" eq 0
   ck "pe-slash: sequence-output IDs ending in /1 (kept as read)" "${EVID[$db|pe-slash-slash|seqout_ids_with_mate_suffix]:-}" gt 0
   ck "se-slash: --output IDs ending in /1 (not trimmed single-end)" "${EVID[$db|se-slash-slash|output_ids_with_mate_suffix]:-}" gt 0
+  ck "se-trunc-gz: --output records from the half-length .gz (some reached classify)" "${EVID[$db|se-trunc-gz-trunc|records]:-}" gt 0
+  ck "se-trunc-gz: --output records from the half-length .gz (fewer than the $N reads)" "${EVID[$db|se-trunc-gz-trunc|records]:-}" lt "$N"
+  if [ "${AK2_DECOMPRESS:-}" = pipe ]; then
+    ck "se-trunc-gz: runs of ours that logged in-process decompression (AK2_DECOMPRESS=pipe: none)" "${EVID[$db|trunc_inproc]:-}" eq 0
+  else
+    ck "se-trunc-gz: runs of ours that logged in-process decompression (default: every run)" "${EVID[$db|trunc_inproc]:-}" eq "${EVID[$db|trunc_runs]:-x}"
+  fi
+  ck "se-garbage-gz: --output records before the garbage tail (some reached classify)" "${EVID[$db|se-garbage-gz-garbage|records]:-}" gt 0
   ck "se-q20: bases masked to x in the sequence outputs" "${EVID[$db|se-q20-S1|masked_bases_in_seqout]:-}" gt 0
   ck "se-q20 vs se-default (S1): -Q 20 changes --output" "${EVID[$db|se-q20-S1|output_sha]:-}" ne "${EVID[$db|se-default-S1|output_sha]:-x}"
   ck "pe-t1 (1 thread, plain) vs pe-default-gz (${TH} threads, gzip), S1: same --output" "${EVID[$db|pe-t1-S1|output_sha]:-a}" eq "${EVID[$db|pe-default-gz-S1|output_sha]:-b}"
@@ -559,7 +603,8 @@ manifest() {
   done
   local variants='[]' v m
   for v in slash_1.fq slash_2.fq short_1.fq short_2.fq mates_1.fq mates_2.fq fasta_1.fa fasta_2.fa \
-           fastaw_1.fa fastaw_2.fa bz_1.fq.bz2 bz_2.fq.bz2; do
+           fastaw_1.fa fastaw_2.fa bz_1.fq.bz2 bz_2.fq.bz2 trunc_1.fq.gz trunc_2.fq.gz \
+           garbage_1.fq.gz mixgz_1.fq.gz mixgz_2.fq.gz; do
     variants=$(jq --arg f "$v" --arg h "$(sha "$VAR/$v")" '. + [{file: $f, sha256: $h}]' <<< "$variants")
   done
   local total ident upbad ckbad failed=false
@@ -584,6 +629,8 @@ manifest() {
     --arg model "$(sysctl -n hw.model 2>/dev/null || cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null || echo unknown)" \
     --argjson canonical "$canon" \
     --arg gzip "$(gzip --version 2>&1 | head -1)" --arg gzip_path "$(command -v gzip)" \
+    --arg bzip2 "$(bzip2 --help 2>&1 | head -1)" --arg bzip2_path "$(command -v bzip2)" \
+    --arg ak2_decompress "${AK2_DECOMPRESS:-}" \
     --argjson reads "$reads" --argjson variants "$variants" \
     --arg start "$start" --arg stop "$stop" \
     --argjson cases "$total" --argjson identical "$ident" --argjson upstream_unexpected "$upbad" \
@@ -596,7 +643,9 @@ manifest() {
       host:{os:$os, arch:$arch, kernel:$kernel, model:$model, canonical_platform:$canonical,
             note:(if $canonical then "Linux aarch64: the canonical oracle platform"
                   else "NOT the canonical platform (Linux aarch64): development evidence only" end)},
-      gzip:{version:$gzip, path:$gzip_path},
+      gzip:{version:$gzip, path:$gzip_path}, bzip2:{version:$bzip2, path:$bzip2_path},
+      decompress:{ak2_decompress:$ak2_decompress,
+                  ours:(if $ak2_decompress == "pipe" then "gzip -dc / bzip2 -dc from PATH (as the wrapper)" else "in process" end)},
       db:{name:$db, dir:$dbname, source:$dbsource, etag:$etag, opts:$opts[0]},
       reads:$reads, variants:$variants,
       start:$start, stop:$stop,
@@ -623,6 +672,7 @@ summarize() {
   echo "Upstream \`kraken2\` at \`$UPSTREAM_SHA\` (\`$UPSTREAM_DESCRIBE\`) vs \`bin/aws-kraken2\` at \`$(jq -r .commit "$man")\`" \
        "(dirty: $(jq -r .dirty "$man")), on $(jq -r '.host.os + " " + .host.arch' "$man")."
   echo "$(jq -r .host.note "$man")."
+  echo "Decompression: ours $(jq -r .decompress.ours "$man") (AK2_DECOMPRESS='$(jq -r .decompress.ak2_decompress "$man")'); gzip on PATH: $(jq -r '.gzip.version + " (" + .gzip.path + ")"' "$man")."
   [ -n "$FILTER" ] && echo && echo "**Filtered run (ORACLE_CASES='$FILTER'): not the full matrix.**"
   echo
   awk -F'\t' '

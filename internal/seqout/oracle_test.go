@@ -122,9 +122,14 @@ func runOracleCase(t *testing.T, c oracleCase, summary *bytes.Buffer) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// AK2_DECOMPRESS=pipe: read through seqio.OpenPipe (make equiv-seqout under pipe mode).
+	dec, err := seqio.ParseDecompressor(os.Getenv("AK2_DECOMPRESS"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	var readers []*seqio.Reader
 	for _, in := range c.inputs {
-		r, err := seqio.Open(in, comp)
+		r, err := seqio.OpenWith(in, comp, dec)
 		if err != nil {
 			t.Fatal(err)
 		}

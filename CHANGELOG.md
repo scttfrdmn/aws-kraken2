@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `AK2_DECOMPRESS=pipe` (#48), ours' counterpart to upstream's ladder lever S5. With it, ours
+  reads compressed input from `gzip -dc FILE` / `bzip2 -dc FILE` found on `PATH`, as upstream's
+  `scripts/kraken2` wrapper does (`seqio.OpenPipe`). There is one child per input file, including
+  each mate. Its exit status is ignored, its stderr is the run's, and it shares standard input.
+  The in-process klauspost path stays the default. Any other value exits 64.
+  - `make decomp-shim TOOL=gnu|pigz|rapidgzip DIR=…` (`scripts/decomp-shim.sh`) writes a `gzip`
+    shim for `DECOMP_BIN`. It runs the tool for `gzip -dc FILE` and GNU gzip for everything else.
+  - `make oracle` adds variants and cases for a truncated `.gz`, a garbage tail, a plain mate 2
+    behind a gzip mate 1, and `--gzip-compressed` on a missing file and on a plain one. It also
+    adds coverage checks, including one showing which decompressor ours used. An expected exit
+    may list alternatives (`0,65`).
+  - `make oracle`, `oracle-engine`, `oracle-cohort` and `equiv-seqout` record `AK2_DECOMPRESS`
+    and the gzip on `PATH` in their manifests. `oracle-cohort` takes `DECOMP_BIN`, and the
+    equiv-seqout Go tests read through `OpenPipe` under pipe mode.
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

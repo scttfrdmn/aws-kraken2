@@ -38,8 +38,13 @@ func TestOracleDecompress(t *testing.T) {
 	}
 	DecompressLog = io.Discard
 	defer func() { DecompressLog = os.Stderr }()
+	// AK2_DECOMPRESS=pipe: the bytes OpenPipe hands on (make equiv-seqout under pipe mode).
+	d, err := ParseDecompressor(os.Getenv("AK2_DECOMPRESS"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	var summary bytes.Buffer
-	summary.WriteString("tool\tinput\tbytes_tool\tbytes_go\tsha256_tool\tsha256_go\tidentical\n")
+	summary.WriteString("tool\tinput\tbytes_tool\tbytes_go\tsha256_tool\tsha256_go\tidentical\tdecompressor\n")
 	for _, line := range lines {
 		f := strings.Split(line, "\t")
 		if len(f) != 3 {
@@ -53,7 +58,7 @@ func TestOracleDecompress(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		r, err := Open(f[1], c)
+		r, err := OpenWith(f[1], c, d)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -71,8 +76,8 @@ func TestOracleDecompress(t *testing.T) {
 			t.Errorf("%s %s: %d bytes, tool gave %d; first difference at %d", f[0], filepath.Base(f[1]), len(got), len(want), n)
 		}
 		hw, hg := sha256.Sum256(want), sha256.Sum256(got)
-		fmt.Fprintf(&summary, "%s\t%s\t%d\t%d\t%s\t%s\t%v\n", f[0], filepath.Base(f[1]), len(want), len(got),
-			hex.EncodeToString(hw[:]), hex.EncodeToString(hg[:]), same)
+		fmt.Fprintf(&summary, "%s\t%s\t%d\t%d\t%s\t%s\t%v\t%s\n", f[0], filepath.Base(f[1]), len(want), len(got),
+			hex.EncodeToString(hw[:]), hex.EncodeToString(hg[:]), same, d)
 	}
 	if out := os.Getenv("K2_DECOMP_SUMMARY"); out != "" {
 		if err := os.WriteFile(out, summary.Bytes(), 0o644); err != nil {
