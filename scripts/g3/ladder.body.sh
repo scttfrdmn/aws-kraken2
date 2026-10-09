@@ -331,7 +331,7 @@ lad_finish() {
 }
 # lad_line J RC T0 T1 LANE SRC ENGINE_JSON OUTPUTS SHA_S UPLOAD_S SHA_SOURCE: the line itself.
 lad_line() {
-  local j=$1 s=${SAMPLES[$1]} cs="" st=n/a k=0 fb=""
+  local j=$1 s=${SAMPLES[$1]} cs="" st=n/a k=0 fb=none
   [ "$6" = per-sample ] && cs=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$SD/err/$j" 2> /dev/null | tail -1)
   if [ "$GZMODE" != gzip ]; then st=identical; k=$GZK; [ -n "${S5BAD[$s]:-}" ] && { st=differs; fb=gzip; NFB=$((NFB + 1)); }; fi
   emit_sample "$(jq -nc --arg rung "$RUNG" --arg arm "$ARM" --argjson cohort "$COHORT" --arg s "$s" --argjson pairs "${PAIRS[$j]}" \
@@ -349,7 +349,7 @@ lad_line() {
          + (if $cs == "" then {} else {"classify-process":n($cs)} end)
          + (if $e == null then {} else ({"engine-setup":n($e.setup_s), "engine-classify":n($e.classify_s), "engine-close":n($e.close_s),
              "engine-report":n($e.report_s)} | with_entries(select(.value != null))) end)) | map_values(ms)),
-       outputs:$outs, s5:({status:$st, P:$k, nproc:$nproc} + (if $fb == "" then {} else {fallback:$fb} end)),
+       outputs:$outs, s5:{status:$st, fallback:$fb, P:$k, nproc:$nproc},
        rank:$rank, idx:$idx, t_start:n($t0), t_end:n($t1), input_bytes:$inb, threads:$t,
        replica:$group, lane:$lane, classifier:$cl, out_upload:$upm, sha256_source:$shsrc,
        s5_verdict:(if $st == "differs" then "S5 not output-preserving on this input" else null end), engine:$e}')"

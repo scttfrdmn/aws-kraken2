@@ -179,7 +179,7 @@ check "F: B's mates went to GNU gzip, nothing else did" "[ \"\$(grep '^real-gzip
 check "F: A's and C's mates went to the shim" "[ \$(grep -c '^shim-gzip [AC]_[12].fastq.gz' '$C/gz.log') = 4 ] && ! grep -q '^shim-gzip B' '$C/gz.log'"
 check "F: the fallback calls are logged" "[ \$(grep -c gzip-fallback '$C/s5fb/calls') = 2 ]"
 check "F: B's lad-sample says differs, fallback gzip; A's identical at P 2" "samples | jq -se '(map(select(.accession == \"B\"))[0].s5 | .status == \"differs\" and .fallback == \"gzip\" and .P == 2)
-  and (map(select(.accession == \"A\"))[0].s5 | .status == \"identical\" and .fallback == null)' > /dev/null"
+  and (map(select(.accession == \"A\"))[0].s5 | .status == \"identical\" and .fallback == \"none\")' > /dev/null"
 check "F: phase seconds have at most 3 decimals" "samples | jq -se '[.[].phases[] | tostring | split(\".\") | (.[1] // \"\") | length <= 3] | all' > /dev/null"
 
 # ---- N: negative control ----

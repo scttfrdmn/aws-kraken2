@@ -16,11 +16,12 @@ coupled_keys(), spec_params(), GROUP, KEYS.
 The one-lever rule (check): a rung's PARAMs and instance type are compared with its predecessor's.
 The changed keys, less the keys its `coupled` column names (each with its reason), must all fall in
 one key-group, the rung's `group`. Every coupled key must really change (no stale coupling) and lie
-outside that group. The instance type is the key-group HOST. A predecessor of @Sstar (the S*
-endpoint ladder 2 starts from, chosen from the record) is checked as S9: every S* candidate (S9,
-Sstar-r8g, Sstar-r8gd) has S9's PARAMs and differs only in host. `lever` is what #52's tables
-report: the group, or `stock` on S0-T1 and S0-Tv. Every rung names a counterpart rung on the other
-ladder that exists, or says "none: <reason>". ETAG_CHECK is on in every row.
+outside that group. The instance type is the key-group HOST. Every S* candidate and endpoint rung
+(S9, Sstar-r8g, Sstar-r8gd, Sstar-time, Sstar-cost) has S9's PARAMs and differs only in host.
+`lever` is what #52's tables report: the group, except stock (S0-T1), threads (S0-Tv) and
+rapidgzip (S5). Every rung names a counterpart rung on the other ladder that exists, or says
+"none: <reason>". ETAG_CHECK is on in every row. Each (cohort, endpoint) for cohorts 1, 10, 100
+and 1000 is declared on exactly one rung of its arm (the `endpoint` column).
 """
 import collections
 import json
@@ -42,7 +43,7 @@ GROUP = {k: g for g in GROUPS for k in g.split("+")}
 GROUP["instance"] = "HOST"
 COLS = ["rung", "arm", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
         "pred_wall_s", "pred_usd", "pred_phase_s", "instance", "az", "ttl_min_c1"] + KEYS + ["note"]
-LABELS = {"S0-T1": "stock", "S0-Tv": "threads"}   # lever labels #52's tables read; others: the group
+LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
 ENDPOINTS = {"S": ("S*-time", "S*-cost"), "O": ("O*-time", "O*-cost")}
 COHORTS = (1, 10, 100, 1000)
 SAFE = re.compile(r"^[A-Za-z0-9._-]+$")
