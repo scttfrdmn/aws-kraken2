@@ -231,7 +231,13 @@ def emit(scope, run, nodes, spec, typ):
 
 def main():
     g3 = os.path.join(ROOT, "results", "g3")
-    runs = sorted(d for d in glob.glob(os.path.join(g3, "*")) if os.path.exists(os.path.join(d, "manifest.json")))
+    def is_run(d):  # a run.sh run dir (not this script's own output dir)
+        try:
+            with open(os.path.join(d, "manifest.json")) as f:
+                return "run_id" in json.load(f)
+        except (OSError, ValueError):
+            return False
+    runs = sorted(d for d in glob.glob(os.path.join(g3, "*")) if is_run(d))
     cohorts = sorted(d for d in glob.glob(os.path.join(g3, "*")) if os.path.exists(os.path.join(d, "cohort.json")))
     member_of = {}
     for c in cohorts:
