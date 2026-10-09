@@ -13,11 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   both arms and sourced by a body after the preamble. Its header is the function contract, and
   `docs/ladder.md` is the runbook.
   - `lv_nvme single|raid`.
-  - `lv_stage_db awscp-classic|s5cmd`, with the classic client forced in a private
-    `AWS_CONFIG_FILE`. `lv_db_etag` reads back a recorded ETag.
+  - `lv_stage_db awscp-default|awscp-classic|s5cmd`. Stock (`awscp-default`) is the AMI's aws
+    CLI as shipped, with no config override. `awscp-classic` forces the classic client in a
+    private `AWS_CONFIG_FILE`. Each aws client is recorded: CLI version, `configure get`
+    value, and the client it resolves to, using the CLI v2 auto rule
+    (`awscrt.s3.is_optimized_for_system()`) evaluated with the CLI's python, or `unknown`.
+    `lv_db_etag` reads back a recorded ETag.
   - `lv_etag`, as its own phase.
-  - `lv_fetch_inputs serial|lanes<K>`, sha256-checked through `scripts/g3/fetch.sh`.
-  - `lv_upload_start awscp-serial|s5cmd-overlap`, `lv_upload_enqueue` and `lv_upload_drain`.
+  - `lv_fetch_inputs serial|lanes<K> default|classic|crt`, sha256-checked through
+    `scripts/g3/fetch.sh`. The client is an argument, so S6 varies only the lane count.
+  - `lv_upload_start awscp-default|awscp-classic|s5cmd-overlap` (`awscp-serial` is accepted as
+    `awscp-classic`), `lv_upload_enqueue` and `lv_upload_drain`.
     The sha256 is taken on the node at enqueue, before the upload. The overlap lane is waited
     on by PID.
   - `lv_gunzip_shim gzip|rapidgzip-P<k>`: rapidgzip 0.14.5 behind a `gzip` on PATH, for

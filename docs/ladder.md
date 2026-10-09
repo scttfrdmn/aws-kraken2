@@ -16,10 +16,10 @@ make lever-test        # AL2023 in podman, under the preamble; record in results
 cd "$W/repo" && . scripts/g3/lever.sh || exit 1   # after the preamble and the clone
 lv_nvme raid /mnt/nvme
 ak2_phase fetch-db
-lv_stage_db awscp-classic s3://<bucket>/<prefix>/ "$LV_NVME/db"
+lv_stage_db awscp-default s3://<bucket>/<prefix>/ "$LV_NVME/db"
 lv_etag "$LV_NVME/db/hash.k2d" "$(lv_db_etag "$LV_NVME/db" hash.k2d)"   # its own phase
 ak2_phase fetch-inputs
-lv_fetch_inputs lanes16 "$LV_NVME/in" "$W/inputs.txt"
+lv_fetch_inputs lanes16 default "$LV_NVME/in" "$W/inputs.txt"   # S0's client, 16 lanes
 lv_gunzip_shim rapidgzip-P16
 lv_upload_start s5cmd-overlap
 #   ... per sample: classify, then lv_upload_enqueue OUT s3://<results bucket>/<key>
@@ -32,10 +32,10 @@ header of `scripts/g3/lever.sh`. Changing it means changing #51 too.
 | function | modes | stock (S0) | best |
 |---|---|---|---|
 | `lv_nvme MODE MOUNT` | `single`, `raid` | | |
-| `lv_stage_db MODE SRC_URL DEST_DIR [FILE...]` | `awscp-classic`, `s5cmd` | `awscp-classic` | `s5cmd` (S1) |
+| `lv_stage_db MODE SRC_URL DEST_DIR [FILE...]` | `awscp-default`, `awscp-classic`, `s5cmd` | `awscp-default` | `s5cmd` (S1) |
 | `lv_etag FILE EXPECTED` | (its own phase) | | |
-| `lv_fetch_inputs MODE DEST MANIFEST` | `serial`, `lanes<K>` | `serial` | `lanes16` (S6) |
-| `lv_upload_start MODE` / `_enqueue LOCAL S3URL` / `_drain` | `awscp-serial`, `s5cmd-overlap` | `awscp-serial` | `s5cmd-overlap` (S7) |
+| `lv_fetch_inputs MODE CLIENT DEST MANIFEST` | `serial`, `lanes<K>`; client `default`, `classic`, `crt` | `serial default` | `lanes16`, with S0's client (S6) |
+| `lv_upload_start MODE` / `_enqueue LOCAL S3URL` / `_drain` | `awscp-default`, `awscp-classic` (alias `awscp-serial`), `s5cmd-overlap` | `awscp-default` | `s5cmd-overlap` (S7) |
 | `lv_gunzip_shim MODE` | `gzip`, `rapidgzip-P<k>` | `gzip` | `rapidgzip-P<k>` (S5) |
 | `lv_s5 ARGS...` | the only way s5cmd is called | | |
 
@@ -60,15 +60,27 @@ header of `scripts/g3/lever.sh`. Changing it means changing #51 too.
     (as probe (a)).
   - rapidgzip 0.14.5: a binary wheel (as probe (c)).
   - Both versions are checked after install and recorded.
-  - The classic transfer client is forced by a private `AWS_CONFIG_FILE`, passed to each
-    command that uses it and never exported. Its content is recorded.
+- **Stock is the AMI's aws CLI as shipped.** The `default` client (`awscp-default`) runs `aws s3
+  cp` with no config override; an `AWS_CONFIG_FILE` the body exported is removed for the call
+  (`env -u`). `classic` and `crt` force that transfer client in a private `AWS_CONFIG_FILE`,
+  passed to the one command and never exported. `classic` is available but not used by S0.
+  - The first use of each client records a line of kind `aws-client`: the CLI version, the config
+    and its content (`none` for default), `aws configure get default.s3.preferred_transfer_client`
+    (empty when nothing is configured; v2 then uses `auto`), the instance type, and `resolved`
+    with `how`.
+  - `resolved` is the configured client if one is named; `classic` for CLI v1; for v2 on `auto`,
+    the CLI's own rule evaluated on the node. That rule is `awscrt.s3.is_optimized_for_system()`
+    in `awscli/customizations/s3/factory.py`. lever.sh checks that the source has it, then calls
+    it with the CLI's own python. This needs the CLI to be a python script, as AL2023's rpm is
+    (`#! /usr/bin/python3 -s`). Otherwise `resolved` is `unknown`, with the reason.
 - **Requests** are derived from sizes, as the rest of the repo counts them. The basis is in the
-  header: the classic CLI's 8 MiB parts, and s5cmd's `--part-size`.
+  header: the aws CLI's 8 MiB parts (classic's default, assumed for CRT too), and s5cmd's
+  `--part-size`.
 
 ## The test (`make lever-test`)
 
 `scripts/tests/lever_test.sh` builds `localhost/ak2-lever-test` (AL2023 with gzip, tar, perl,
-diffutils and the rapidgzip 0.14.5 wheel; the tag is the Containerfile's hash). It then runs
+diffutils, the `awscli-2` rpm and the rapidgzip 0.14.5 wheel; the tag is the Containerfile's hash). It then runs
 `scripts/preamble.sh` followed by `scripts/tests/lever_body.sh` as `bash -e -c`, the way spawn
 starts a body.
 
@@ -82,7 +94,11 @@ starts a body.
 
 **Cases:**
 - **main** must exit 0 with no helper errors. It checks:
-  - the classic config is in effect, and s5cmd's flags;
+  - `awscp-default` reaches the CLI with no config, even with a body-exported crt config;
+    `awscp-classic` runs under the classic config; s5cmd gets its flags; each client is recorded;
+  - the auto rule, evaluated against the image's real AL2023 `awscli-2` rpm, resolves to
+    `classic` in a container;
+  - fetch: the `default` client for serial and lanes, `crt` under its config;
   - the anonymous fallback;
   - the staged files are identical, and the request counts;
   - a real multipart ETag in its own phase;

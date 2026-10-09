@@ -7,12 +7,14 @@
 # edges: curl answers IMDS and the bucket-region HEAD; aws and s5cmd are stubs over a shared
 # directory (/work/bucket) that log every call with its start and end time (uploads under up/
 # take 2 s, input gets 0.4 s, so overlap and lane concurrency are visible); sudo runs the command;
-# rapidgzip is the real 0.14.5 wheel, baked into the image (localhost/ak2-lever-test).
+# rapidgzip is the real 0.14.5 wheel, baked into the image (localhost/ak2-lever-test), with
+# AL2023's real awscli-2 rpm for the auto-rule check.
 # Three cases, each its own container:
-#   main    must exit 0 with no helper errors: lv_nvme (rehearsal seam), lv_stage_db both tools
-#           (the classic config in effect, s5cmd's flags, anonymous fallback, files identical,
+#   main    must exit 0 with no helper errors: lv_nvme (rehearsal seam), lv_stage_db with the
+#           stock CLI as shipped (no config, even with one exported), classic and s5cmd (the
+#           classic config in effect, each client recorded, the auto rule on the real CLI, s5cmd's flags, anonymous fallback, files identical,
 #           request counts), lv_etag in its own phase (a real multipart ETag), lv_fetch_inputs
-#           serial and lanes3 (both sha256-verified; serial never overlaps, lanes do), the
+#           serial and lanes3 with the default client and lanes2 crt (all sha256-verified; serial never overlaps, lanes do), the
 #           gunzip shim byte-identical to gzip -dc (plain and multi-member gz, directly and
 #           through perl's open as upstream's wrapper does), uploads serial (blocks: the
 #           contrast) and overlapped (by timestamps: enqueue returns at once, upload 1 inside
@@ -47,7 +49,7 @@ cleanup() { [ "${KEEP:-0}" = 1 ] && echo "lever-test: kept $T" || rm -rf "$T"; }
 trap cleanup EXIT
 cat > "$T/Containerfile" << 'EOF'
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023
-RUN dnf install -y -q gzip tar perl-interpreter python3-pip diffutils findutils util-linux-core && dnf clean all
+RUN dnf install -y -q gzip tar perl-interpreter python3-pip diffutils findutils util-linux-core awscli-2 && dnf clean all
 RUN python3 -m venv /opt/rg && /opt/rg/bin/pip install -q --only-binary=:all: rapidgzip==0.14.5
 EOF
 IMG=localhost/ak2-lever-test:$(shasum -a 256 "$T/Containerfile" | cut -c1-12)
@@ -212,7 +214,7 @@ PY
       [ -s "$D/out/lever-uploads.tsv" ] && [ -s "$D/out/lever-db-db-s5-SOURCE" ]; need $? "main: uploads.tsv and the db SOURCE pushed"
       grep -E '^(stage|fetch|upload|s5)' "$D/out/requests.tsv" | awk -F'\t' '{printf "lever-test: requests %s %s %s %s\n", $1, $2, $3, $4}' ;;
     refuse) n=$(grep -c REFUSED "$D/out/helper-errors.tsv" 2> /dev/null); [ "$n" = 5 ]; need $? "refuse: helper-errors.tsv has the 5 refusals ($n)" ;;
-    fail) for m in 'does not match ETag' 'lv_fetch_inputs: 2 of 3 verified' 'upload of /tmp/x.bin to s3://ak2-results-test/lvt/fail/up/FAILME-2 failed' 'lv_upload_drain: s5cmd-overlap: 3 of 3 uploaded, 1 failed' "mode 'awscp-crt'" "mode 'rapidgzip-P0'" 'no session'; do
+    fail) for m in 'does not match ETag' 'lv_fetch_inputs: 2 of 3 verified' 'upload of /tmp/x.bin to s3://ak2-results-test/lvt/fail/up/FAILME-2 failed' 'lv_upload_drain: s5cmd-overlap: 3 of 3 uploaded, 1 failed' "mode 'awscp-crt'" "mode 'rapidgzip-P0'" 'no session' "aws client 'bogus'"; do
         grep -qF "$m" "$D/out/helper-errors.tsv" 2> /dev/null; need $? "fail: helper-errors.tsv: $m"
       done ;;
   esac

@@ -24,13 +24,15 @@
 #       Installs mdadm/xfsprogs if missing. Records devices, read_ahead_kb and scheduler (the
 #       AMI defaults: lv_nvme changes neither). Fails if the type has no instance store (x8g).
 #       Sets LV_NVME=MOUNT.
-#   lv_stage_db awscp-classic|s5cmd SRC_URL DEST_DIR [FILE...]
+#   lv_stage_db awscp-default|awscp-classic|s5cmd SRC_URL DEST_DIR [FILE...]
 #       A database into DEST_DIR. SRC_URL is s3://BUCKET/PREFIX/ (ending in /); FILE defaults to
 #       opts.k2d taxo.k2d hash.k2d, staged one after another. Each object is head-object'ed
 #       first (signed, then anonymous: the same signing is used for the copy), its ETag and size
 #       recorded in DEST_DIR/SOURCE (TSV: file, etag, bytes, url, mode; pushed), the copy's size
-#       checked. awscp-classic: `aws s3 cp` with preferred_transfer_client = classic forced in a
-#       private AWS_CONFIG_FILE ($LV_DIR/aws-classic.config, content recorded). s5cmd: lv_s5
+#       checked. awscp-default (stock, S0): `aws s3 cp` exactly as the AMI ships it, with any
+#       AWS_CONFIG_FILE the body set removed for the call. awscp-classic (available, not S0):
+#       `aws s3 cp` with preferred_transfer_client = classic forced in a private AWS_CONFIG_FILE
+#       ($LV_DIR/aws-classic.config). The aws client is recorded (see "aws clients"). s5cmd: lv_s5
 #       --numworkers 256 cp --concurrency 128 --part-size 64 (probe (a)'s flags). No ETag check:
 #       that is lv_etag's own phase.
 #   lv_db_etag DEST_DIR FILE
@@ -38,19 +40,22 @@
 #   lv_etag FILE EXPECTED
 #       Opens phase etag-<basename FILE> (the caller opens its next phase afterwards) and runs
 #       scripts/lib/etagcheck.py FILE EXPECTED; records its JSON and seconds; fails on mismatch.
-#   lv_fetch_inputs serial|lanes<K> DEST MANIFEST
+#   lv_fetch_inputs serial|lanes<K> default|classic|crt DEST MANIFEST
 #       The inputs MANIFEST lists (one s3://BUCKET/PREFIX/FILE per line; # comments and blank
 #       lines skipped; one bucket and one prefix; basenames unique) into DEST (NVMe or tmpfs: its
 #       fs type is recorded), through scripts/g3/fetch.sh: K lanes (serial = 1), each file checked
-#       against its Metadata.sha256. The copy client is the classic one (same config as
-#       awscp-classic) in both modes, so only the lane count varies. Under `timeout
+#       against its Metadata.sha256. The second argument is the aws client (see "aws clients"),
+#       so a lanes rung can keep the client the stock rung used and vary the lane count only.
+#       Under `timeout
 #       $LV_FETCH_LIMIT` (seconds, default 3600). Fails unless every file verified.
-#   lv_upload_start awscp-serial|s5cmd-overlap
+#   lv_upload_start awscp-default|awscp-classic|s5cmd-overlap   (awscp-serial = awscp-classic)
 #   lv_upload_enqueue LOCAL S3URL
 #   lv_upload_drain
 #       One upload session. enqueue computes LOCAL's sha256 on the node and records it (lever
-#       line kind upload-enqueue) BEFORE the upload starts. awscp-serial: enqueue uploads at once
-#       (`aws s3 cp`, classic config) and returns when it is done. s5cmd-overlap: start launches
+#       line kind upload-enqueue) BEFORE the upload starts. awscp-default (stock) and
+#       awscp-classic: enqueue uploads at once (`aws s3 cp` with that client) and returns when it
+#       is done. awscp-serial, the name in the first contract, is accepted and recorded as
+#       awscp-classic. s5cmd-overlap: start launches
 #       one background lane (a subshell, waited on by PID) that uploads the queue in enqueue
 #       order with lv_s5 --numworkers 256 cp --concurrency 16 --part-size 64; enqueue returns at
 #       once (it fails if the lane has died). drain waits for the lane by PID and fails if the
@@ -79,13 +84,26 @@
 #       CompleteMultipartUpload 1 (part = --part-size MiB, default 50); anything else (or a
 #       failed call) = op s5cmd-<sub>[-failed] 1, a lower bound. Records each call.
 #
+# aws clients (lv_stage_db awscp-*, lv_fetch_inputs, lv_upload_start awscp-*):
+#   default  `aws` as shipped: no config override (env -u AWS_CONFIG_FILE for the call).
+#   classic  AWS_CONFIG_FILE=$LV_DIR/aws-classic.config: preferred_transfer_client = classic.
+#   crt      AWS_CONFIG_FILE=$LV_DIR/aws-crt.config: preferred_transfer_client = crt.
+#   The first use of each records a line kind aws-client: the CLI version, the config (none for
+#   default) and its content, `aws configure get default.s3.preferred_transfer_client` under it
+#   (may be empty: the CLI then uses its built-in default, auto on v2), the instance type, and
+#   resolved = classic|crt|unknown with how it was found: the configured value if it names a
+#   client; classic for CLI v1 (no CRT); for v2 with auto/empty, the CLI's auto rule
+#   (awscrt.s3.is_optimized_for_system()) evaluated with the CLI's own python when the CLI is a
+#   python script (AL2023's rpm); otherwise unknown ("could not determine", with the reason).
+#
 # State: LV_DIR (work dir; default ${W:-$HOME/ak2}/lever; set it before sourcing to move it),
 # LV_REC ($LV_DIR/lever.jsonl), LV_NVME, LV_S5 (the s5cmd binary once installed), LV_RG
 # (rapidgzip), LV_GZIP_MODE, LV_UP_MODE / LV_UP_PID (the upload session).
 # make rehearse seams (AK2_REHEARSE_*, which run.sh refuses in a spec's env, so on AWS they are
 # unset): AK2_REHEARSE_NVME=DIR (lv_nvme uses DIR, no device), AK2_REHEARSE_S5CMD=PATH,
 # AK2_REHEARSE_RAPIDGZIP=PATH (the binaries are not downloaded; their versions are still checked).
-# Request-count basis for the aws CLI (classic client defaults): 8 MiB multipart threshold and
+# Request-count basis for the aws CLI (every client: classic's default of 8 MiB parts, assumed for
+# CRT too): 8 MiB multipart threshold and
 # chunk size: download = HeadObject 1 + GetObject max(1, ceil(bytes/8 MiB)); upload = PutObject 1
 # (< 8 MiB) or CreateMultipartUpload 1 + UploadPart ceil(bytes/8 MiB) + CompleteMultipartUpload 1.
 # Tested by make lever-test (scripts/tests/lever_test.sh, AL2023 in podman).
@@ -100,6 +118,8 @@ LV_DIR=${LV_DIR:-${W:-$HOME/ak2}/lever}
 mkdir -p "$LV_DIR" || { ak2_err 1 "lever: cannot create $LV_DIR"; return 1; }
 LV_REC=$LV_DIR/lever.jsonl
 LV_CLASSIC_CFG=$LV_DIR/aws-classic.config
+LV_CRT_CFG=$LV_DIR/aws-crt.config
+declare -A LV_CLIENT_DONE=()
 LV_S5_VERSION=2.3.0
 LV_RG_VERSION=0.14.5
 LV_S5_STAGE_ARGS=(--numworkers 256 cp --concurrency 128 --part-size 64)
@@ -155,14 +175,57 @@ lv__req_classic() {
     ak2_req CreateMultipartUpload 1 "$b"; ak2_req UploadPart "$(lv__ceil "$n" "$c")" "$b"; ak2_req CompleteMultipartUpload 1 "$b"
   fi
 }
-# The private AWS CLI config forcing the classic transfer client (stock: the CLI as shipped).
-lv__classic_cfg() {
-  [ -s "$LV_CLASSIC_CFG" ] && return 0
-  printf '[default]\ns3 =\n  preferred_transfer_client = classic\n' > "$LV_CLASSIC_CFG" || { lv__fail "cannot write $LV_CLASSIC_CFG"; return 1; }
-  local got
-  got=$(AWS_CONFIG_FILE="$LV_CLASSIC_CFG" aws configure get default.s3.preferred_transfer_client 2>/dev/null)
-  lv__rec aws-config file="$LV_CLASSIC_CFG" content="$(cat "$LV_CLASSIC_CFG")" sha256="$(lv__sha "$LV_CLASSIC_CFG")" \
-    configure_get="$got" aws_version="$(aws --version 2>&1 | head -1)"
+# lv__client CLIENT: prepare an aws client (default|classic|crt) and record it once. Sets
+# LV_AWS, the command prefix that runs `aws` with that client: "${LV_AWS[@]}" s3 cp ...
+lv__client() {
+  local c=$1 cfg="" got ver res="unknown" how="" py
+  case $c in
+    default) LV_AWS=(env -u AWS_CONFIG_FILE aws) ;;
+    classic) cfg=$LV_CLASSIC_CFG ;;
+    crt) cfg=$LV_CRT_CFG ;;
+    *) lv__fail "aws client '$c' (default|classic|crt)"; return 1 ;;
+  esac
+  if [ -n "$cfg" ]; then
+    LV_AWS=(env "AWS_CONFIG_FILE=$cfg" aws)
+    [ -s "$cfg" ] || printf '[default]\ns3 =\n  preferred_transfer_client = %s\n' "$c" > "$cfg" || { lv__fail "cannot write $cfg"; return 1; }
+  fi
+  [ -n "${LV_CLIENT_DONE[$c]:-}" ] && return 0
+  ver=$("${LV_AWS[@]}" --version 2>&1 | head -1)
+  got=$("${LV_AWS[@]}" configure get default.s3.preferred_transfer_client 2>/dev/null)
+  case $got in
+    classic|crt) res=$got; how="configured" ;;
+    *)
+      if [[ $ver == aws-cli/1.* ]]; then
+        res=classic; how="CLI v1 has no CRT client"
+      else
+        # $(...), not < <(...): no process substitution in the body's shell (a bare wait waits for it).
+        how=$(lv__auto_rule "$AK2_REAL_AWS"); res=${how%%$'\t'*}; how="${how#*$'\t'}; host ${AK2_INSTANCE_TYPE:-?}"
+      fi ;;
+  esac
+  LV_CLIENT_DONE[$c]=1
+  lv__rec aws-client client="$c" cli_version="$ver" config="${cfg:-none}" content="$([ -n "$cfg" ] && cat "$cfg")" \
+    caller_config="${AWS_CONFIG_FILE:-}" configure_get="$got" instance_type="${AK2_INSTANCE_TYPE:-}" resolved="$res" how="$how"
+}
+# lv__auto_rule AWS: what AWS CLI v2's `auto` transfer client resolves to on this host, as
+# "<classic|crt|unknown><TAB><how>". The CLI must be a python script (AL2023's rpm starts
+# "#! /usr/bin/python3 -s") whose awscli/customizations/s3/factory.py resolves auto by
+# awscrt.s3.is_optimized_for_system() (checked in the source, so a CLI with another rule gives
+# unknown); that call is then made with the CLI's own python.
+lv__auto_rule() {
+  local aws=$1 py f r
+  py=$(head -1 "$aws" 2>/dev/null | sed -n 's/^#! *\([^ ]*python[^ ]*\).*/\1/p')
+  if [ -z "$py" ] || [ ! -x "$py" ]; then
+    printf 'unknown\tcould not determine: the CLI (%s) is not a python script (a frozen build), so its auto rule cannot be evaluated\n' "$aws"; return 0
+  fi
+  f=$("$py" -s -c 'import awscli.customizations.s3.factory as m; print(m.__file__)' 2>/dev/null)
+  if [ -z "$f" ] || ! grep -q '_resolve_transfer_client_type_for_system' "$f" || ! grep -q 'awscrt.s3.is_optimized_for_system()' "$f"; then
+    printf 'unknown\tcould not determine: %s does not resolve auto by awscrt.s3.is_optimized_for_system()\n' "${f:-the CLI factory}"; return 0
+  fi
+  r=$("$py" -s -c 'import awscrt.s3; print("crt" if awscrt.s3.is_optimized_for_system() else "classic")' 2>/dev/null)
+  case $r in
+    crt|classic) printf '%s\tauto: awscrt.s3.is_optimized_for_system() (the rule in %s) with the CLI python %s\n' "$r" "$f" "$py" ;;
+    *) printf 'unknown\tcould not determine: awscrt.s3 is not importable by %s\n' "$py" ;;
+  esac
 }
 lv__s5_ensure() {
   [ -n "$LV_S5" ] && return 0
@@ -346,19 +409,19 @@ lv_nvme() {
 lv_stage_db() {
   local mode=$1 src=$2 dst=$3 b pfx f t0 t1 n ok=0
   shift 3
-  case $mode in awscp-classic|s5cmd) ;; *) lv__fail "lv_stage_db: mode '$mode' (awscp-classic|s5cmd)"; return 1 ;; esac
+  case $mode in awscp-default|awscp-classic|s5cmd) ;; *) lv__fail "lv_stage_db: mode '$mode' (awscp-default|awscp-classic|s5cmd)"; return 1 ;; esac
   [[ $src =~ ^s3://([a-z0-9][a-z0-9.-]{1,61}[a-z0-9])/(.+/)$ ]] || { lv__fail "lv_stage_db: SRC_URL must be s3://BUCKET/PREFIX/ ('$src')"; return 1; }
   b=${BASH_REMATCH[1]}; pfx=${BASH_REMATCH[2]}
   lv__allowed "$b" || { lv__fail "lv_stage_db: bucket $b is not in AK2_ALLOWED_BUCKETS"; return 1; }
   [ -n "$dst" ] && mkdir -p "$dst" || { lv__fail "lv_stage_db: cannot create '$dst'"; return 1; }
   [ $# -gt 0 ] || set -- opts.k2d taxo.k2d hash.k2d
-  if [ "$mode" = awscp-classic ]; then lv__classic_cfg || return 1; else lv__s5_ensure || return 1; fi
+  if [ "$mode" = s5cmd ]; then lv__s5_ensure || return 1; else lv__client "${mode#awscp-}" || return 1; fi
   for f in "$@"; do
     lv__head "$b" "$pfx$f" || { lv__fail "lv_stage_db: head-object s3://$b/$pfx$f failed (signed and anonymous)"; return 1; }
     t0=$(lv__now)
-    if [ "$mode" = awscp-classic ]; then
+    if [ "$mode" != s5cmd ]; then
       # shellcheck disable=SC2086
-      AWS_CONFIG_FILE="$LV_CLASSIC_CFG" aws s3 cp --only-show-errors $LV_H_SIGN "s3://$b/$pfx$f" "$dst/$f"
+      "${LV_AWS[@]}" s3 cp --only-show-errors $LV_H_SIGN "s3://$b/$pfx$f" "$dst/$f"
       ok=$?
       [ "$ok" = 0 ] && lv__req_classic download "$LV_H_SIZE" "$b"
     else
@@ -371,7 +434,7 @@ lv_stage_db() {
     lv__rec stage-db mode="$mode" file="$f" url="s3://$b/$pfx$f" dest="$dst/$f" etag="$LV_H_ETAG" object_bytes:n="$LV_H_SIZE" \
       bytes:n="$n" anonymous:b="$([ -n "$LV_H_SIGN" ] && echo true)" rc:n="$ok" seconds:n="$(lv__secs "$t0" "$t1")" \
       gbps:n="$(lv__gbps "$t0" "$t1" "${n:-0}")" fstype="$(stat -f -c %T "$dst")" \
-      client="$([ "$mode" = awscp-classic ] && echo "aws s3 cp, AWS_CONFIG_FILE=$LV_CLASSIC_CFG (classic)" || echo "s5cmd ${LV_S5_STAGE_ARGS[*]}")"
+      client="$([ "$mode" = s5cmd ] && echo "s5cmd ${LV_S5_STAGE_ARGS[*]}" || echo "${LV_AWS[*]} s3 cp (client ${mode#awscp-})")"
     [ "$ok" = 0 ] || { lv__fail "lv_stage_db: $mode copy of s3://$b/$pfx$f failed (rc $ok)"; lv__push; return 1; }
     [ "$n" = "$LV_H_SIZE" ] || { lv__fail "lv_stage_db: $dst/$f has $n bytes, the object $LV_H_SIZE"; lv__push; return 1; }
     printf '%s\t%s\t%s\t%s\t%s\n' "$f" "$LV_H_ETAG" "$n" "s3://$b/$pfx$f" "$mode" >> "$dst/SOURCE"
@@ -398,7 +461,7 @@ lv_etag() {
 # ---- lv_fetch_inputs ----
 LV_FETCH_LIMIT=${LV_FETCH_LIMIT:-3600}
 lv_fetch_inputs() {
-  local mode=$1 dest=$2 man=$3 k u b="" pfx="" ub up t0 t1 rc out ok bytes gets
+  local mode=$1 cl=$2 dest=$3 man=$4 k u b="" pfx="" ub up t0 t1 rc out ok bytes gets
   local -a files=()
   case $mode in
     serial) k=1 ;;
@@ -419,10 +482,10 @@ lv_fetch_inputs() {
   [ "$(printf '%s\n' "${files[@]}" | sort | uniq -d | wc -l)" = 0 ] || { lv__fail "lv_fetch_inputs: duplicate basenames in $man"; return 1; }
   lv__allowed "$b" || { lv__fail "lv_fetch_inputs: bucket $b is not in AK2_ALLOWED_BUCKETS"; return 1; }
   mkdir -p "$dest" || { lv__fail "lv_fetch_inputs: cannot create $dest"; return 1; }
-  lv__classic_cfg || return 1
+  lv__client "$cl" || return 1
   out=$LV_DIR/fetch-$(date +%s%N).txt
   t0=$(lv__now)
-  AWS_CONFIG_FILE="$LV_CLASSIC_CFG" timeout -s TERM "$LV_FETCH_LIMIT" "$LV_ROOT/scripts/g3/fetch.sh" "$b" "$pfx" "$dest" "$k" "${files[@]}" > "$out" 2>&1 < /dev/null
+  "${LV_AWS[@]:0:${#LV_AWS[@]}-1}" timeout -s TERM "$LV_FETCH_LIMIT" "$LV_ROOT/scripts/g3/fetch.sh" "$b" "$pfx" "$dest" "$k" "${files[@]}" > "$out" 2>&1 < /dev/null
   rc=$?
   t1=$(lv__now)
   # fetch.sh prints "<file> <bytes>" per verified file (and the CLI's own error text, if any, as is).
@@ -435,7 +498,7 @@ lv_fetch_inputs() {
   lv__rec fetch-inputs mode="$mode" lanes:n="$k" dest="$dest" fstype="$(stat -f -c %T "$dest")" manifest="$man" prefix="s3://$b/$pfx/" \
     files:n="${#files[@]}" verified:n="$ok" bytes:n="$bytes" rc:n="$rc" seconds:n="$(lv__secs "$t0" "$t1")" \
     gbps:n="$(lv__gbps "$t0" "$t1" "$bytes")" check="sha256 against Metadata.sha256 (scripts/g3/fetch.sh)" \
-    client="aws s3 cp, AWS_CONFIG_FILE=$LV_CLASSIC_CFG (classic)" limit_s:n="$LV_FETCH_LIMIT"
+    client="$cl" client_env="${LV_AWS[*]:0:${#LV_AWS[@]}-1}" limit_s:n="$LV_FETCH_LIMIT"
   lv__push
   [ "$rc" = 0 ] && [ "$ok" = "${#files[@]}" ] ||
     { lv__fail "lv_fetch_inputs: $ok of ${#files[@]} verified (fetch rc $rc$([ "$rc" = 124 ] && echo ", stopped at ${LV_FETCH_LIMIT} s"))"; return 1; }
@@ -446,13 +509,15 @@ LV_UP_TSV=$LV_DIR/uploads.tsv
 LV_UP_Q=$LV_DIR/upq
 lv_upload_start() {
   local mode=$1
-  case $mode in awscp-serial|s5cmd-overlap) ;; *) lv__fail "lv_upload_start: mode '$mode' (awscp-serial|s5cmd-overlap)"; return 1 ;; esac
+  [ "$mode" = awscp-serial ] && mode=awscp-classic   # the first contract's name
+  case $mode in awscp-default|awscp-classic|s5cmd-overlap) ;; *) lv__fail "lv_upload_start: mode '$mode' (awscp-default|awscp-classic|s5cmd-overlap)"; return 1 ;; esac
   [ -z "$LV_UP_MODE" ] || { lv__fail "lv_upload_start: a $LV_UP_MODE session is open (lv_upload_drain first)"; return 1; }
   rm -rf "$LV_UP_Q"; mkdir -p "$LV_UP_Q" || { lv__fail "lv_upload_start: cannot create $LV_UP_Q"; return 1; }
   [ -s "$LV_UP_TSV" ] || printf 'seq\tmode\tlocal\turl\tbytes\tsha256\tt_enqueue\tt_start\tt_end\trc\n' > "$LV_UP_TSV"
   LV_UP_N=0 LV_UP_PID="" LV_UP_T0=$(lv__now) LV_UP_SESSION=$(date +%s%N)
-  if [ "$mode" = awscp-serial ]; then
-    lv__classic_cfg || return 1
+  if [ "$mode" != s5cmd-overlap ]; then
+    lv__client "${mode#awscp-}" || return 1
+    LV_UP_AWS=("${LV_AWS[@]}")   # the session's client, whatever later calls set LV_AWS to
   else
     lv__s5_ensure || return 1
   fi
@@ -462,15 +527,15 @@ lv_upload_start() {
     LV_UP_PID=$!
   fi
   lv__rec upload-start mode="$mode" session="$LV_UP_SESSION" lane_pid="$LV_UP_PID" \
-    client="$([ "$mode" = awscp-serial ] && echo "aws s3 cp, AWS_CONFIG_FILE=$LV_CLASSIC_CFG (classic), in the caller" || echo "s5cmd ${LV_S5_UP_ARGS[*]}, one background lane")"
+    client="$([ "$mode" = s5cmd-overlap ] && echo "s5cmd ${LV_S5_UP_ARGS[*]}, one background lane" || echo "${LV_AWS[*]} s3 cp (client ${mode#awscp-}), in the caller")"
 }
 # One upload: lv__up_one SEQ LOCAL URL BYTES SHA TENQ. Appends its row to uploads.tsv.
 lv__up_one() {
   local seq=$1 l=$2 url=$3 n=$4 sha=$5 te=$6 b t0 t1 rc
   b=${url#s3://}; b=${b%%/*}
   t0=$(lv__now)
-  if [ "$LV_UP_MODE" = awscp-serial ]; then
-    AWS_CONFIG_FILE="$LV_CLASSIC_CFG" aws s3 cp --only-show-errors "$l" "$url"
+  if [ "$LV_UP_MODE" != s5cmd-overlap ]; then
+    "${LV_UP_AWS[@]}" s3 cp --only-show-errors "$l" "$url"
     rc=$?
     [ "$rc" = 0 ] && lv__req_classic upload "$n" "$b"
   else
@@ -520,7 +585,7 @@ lv_upload_enqueue() {
   LV_UP_N=$((LV_UP_N + 1))
   lv__rec upload-enqueue seq:n="$LV_UP_N" mode="$LV_UP_MODE" local="$l" url="$url" bytes:n="$n" sha256="$sha" \
     sha256_seconds:n="$(lv__secs "$te" "$(lv__now)")" session="$LV_UP_SESSION"
-  if [ "$LV_UP_MODE" = awscp-serial ]; then
+  if [ "$LV_UP_MODE" != s5cmd-overlap ]; then
     lv__up_one "$LV_UP_N" "$l" "$url" "$n" "$sha" "$te"
     return
   fi
@@ -601,7 +666,7 @@ LVSHIM
 }
 
 LV_LOADED=1
-readonly LV_LOADED LV_ROOT LV_REC LV_CLASSIC_CFG LV_S5_VERSION LV_RG_VERSION LV_MIB LV_UP_TSV LV_UP_Q
+readonly LV_LOADED LV_ROOT LV_REC LV_CLASSIC_CFG LV_CRT_CFG LV_S5_VERSION LV_RG_VERSION LV_MIB LV_UP_TSV LV_UP_Q
 readonly -a LV_S5_STAGE_ARGS LV_S5_UP_ARGS
 # The guard and its counting cannot be redefined by the body.
 readonly -f lv_s5 lv__s5_count lv__allowed lv__s5_ensure

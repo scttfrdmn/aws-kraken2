@@ -34,14 +34,31 @@ main)
   lv_nvme raid /mnt/nvme; want_rc nvme 0 $? "LV_NVME=$LV_NVME"
   [ "$LV_NVME" = "$AK2_REHEARSE_NVME" ]; chk nvme-seam $? "LV_NVME=$LV_NVME"
 
-  # ---- the database, both tools; ETag each as its own phase ----
+  # ---- the database: the stock aws CLI as shipped, the classic client, s5cmd; ETag each as its own phase ----
+  ak2_phase stage-default
+  # A config the body happens to have exported must not reach the stock rung's CLI.
+  printf '[default]\ns3 =\n  preferred_transfer_client = crt\n' > /tmp/body.config; export AWS_CONFIG_FILE=/tmp/body.config
+  lv_stage_db awscp-default s3://ak2-roda-test/db/ "$LV_NVME/db-default"; want_rc stage-default 0 $?
+  unset AWS_CONFIG_FILE
+  n=$(awk -F'\t' '$2 == "get" && $3 ~ /db\/hash.k2d$/ && $4 ~ /db-default/ && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
+  [ "$n" = 1 ]; chk stage-default-no-override $? "$n hash.k2d get(s) by aws s3 cp with no AWS_CONFIG_FILE (the body's crt config removed for the call)"
+  grep -q '"kind":"aws-client","t":[0-9.]*,"client":"default","cli_version":"aws-cli/stub","config":"none","content":"","caller_config":"/tmp/body.config","configure_get":"","instance_type":"t.test","resolved":"unknown","how":"could not determine: ' "$LV_DIR/lever.jsonl"
+  chk stage-default-client-recorded $? "$(grep '"client":"default"' "$LV_DIR/lever.jsonl" | head -1)"
+  g=$(reqs stage-default GetObject); h=$(reqs stage-default HeadObject)
+  [ "$g" = 5 ] && [ "$h" = 9 ]; chk stage-default-requests $? "GetObject $g (want 5), HeadObject $h (want 9)"
+  lv_etag "$LV_NVME/db-default/hash.k2d" "$(lv_db_etag "$LV_NVME/db-default" hash.k2d)"; want_rc etag-default 0 $?
+  # The auto rule against AL2023's real aws CLI rpm (in the image; the stub stands in for it above).
+  how=$(lv__auto_rule /usr/bin/aws); r=${how%%$'\t'*}; how=${how#*$'\t'}
+  [ "$r" = classic ] && [[ $how == auto:\ awscrt.s3.is_optimized_for_system* ]]
+  chk auto-rule-real-cli $? "$(/usr/bin/aws --version 2>&1 | cut -d' ' -f1): $r ($how; a container is not a CRT-optimised type)"
   ak2_phase stage-classic
   lv_stage_db awscp-classic s3://ak2-roda-test/db/ "$LV_NVME/db-classic"; want_rc stage-classic 0 $?
   ET=$(lv_db_etag "$LV_NVME/db-classic" hash.k2d)
   [[ $ET == *-3 ]]; chk stage-classic-etag-recorded $? "hash.k2d etag $ET (multipart, 3 parts)"
   n=$(awk -F'\t' '$2 == "get" && $3 ~ /db\/hash.k2d$/ && $5 == "preferred_transfer_client=classic"' "$BK/.aws-calls.$LVT_CASE" | wc -l)
   [ "$n" = 1 ]; chk stage-classic-config $? "$n hash.k2d get(s) by aws s3 cp under a config with preferred_transfer_client=classic"
-  grep -q '"kind":"aws-config".*preferred_transfer_client = classic' "$LV_DIR/lever.jsonl"; chk stage-classic-config-recorded $?
+  grep -q '"kind":"aws-client","t":[0-9.]*,"client":"classic",.*"content":"\[default\]\\ns3 =\\n  preferred_transfer_client = classic".*"configure_get":"classic",.*"resolved":"classic","how":"configured"' "$LV_DIR/lever.jsonl"
+  chk stage-classic-client-recorded $? "$(grep '"client":"classic"' "$LV_DIR/lever.jsonl" | head -1)"
   lv_etag "$LV_NVME/db-classic/hash.k2d" "$ET"; want_rc etag-classic 0 $?
   [ "$(cat /tmp/ak2-state/phase)" = etag-hash.k2d ]; chk etag-own-phase $? "phase $(cat /tmp/ak2-state/phase)"
   ak2_phase stage-s5cmd
@@ -51,7 +68,7 @@ main)
   chk stage-s5cmd-flags $? "s5cmd called with probe (a)'s flags, anonymous after the signed head-object was refused"
   lv_etag /tmp/tmpfs/db-s5/hash.k2d "$(lv_db_etag /tmp/tmpfs/db-s5 hash.k2d)"; want_rc etag-s5cmd 0 $?
   for f in opts.k2d taxo.k2d hash.k2d; do
-    cmp -s "$BK/ak2-roda-test/db/$f" "$LV_NVME/db-classic/$f" && cmp -s "$BK/ak2-roda-test/db/$f" "/tmp/tmpfs/db-s5/$f"
+    cmp -s "$BK/ak2-roda-test/db/$f" "$LV_NVME/db-default/$f" && cmp -s "$BK/ak2-roda-test/db/$f" "$LV_NVME/db-classic/$f" && cmp -s "$BK/ak2-roda-test/db/$f" "/tmp/tmpfs/db-s5/$f"
     chk "stage-identical-$f" $?
   done
   HS=$(stat -c%s /tmp/tmpfs/db-s5/hash.k2d)
@@ -62,17 +79,23 @@ main)
   g=$(reqs stage-s5cmd GetObject); h=$(reqs stage-s5cmd HeadObject)
   [ "$g" = 3 ] && [ "$h" = 9 ]; chk stage-s5cmd-requests $? "GetObject $g (want 3: one 64 MiB part per file), HeadObject $h (want 9)"
 
-  # ---- inputs: serial and lanes, both sha256-checked ----
+  # ---- inputs: serial and lanes with the stock client (S6 varies the lanes only), and crt; all sha256-checked ----
   ak2_phase fetch-serial
-  lv_fetch_inputs serial /tmp/in-serial /work/manifest.txt; want_rc fetch-serial 0 $?
+  lv_fetch_inputs serial default /tmp/in-serial /work/manifest.txt; want_rc fetch-serial 0 $?
   ak2_phase fetch-lanes
-  lv_fetch_inputs lanes3 "$LV_NVME/in-lanes" /work/manifest.txt; want_rc fetch-lanes3 0 $?
+  lv_fetch_inputs lanes3 default "$LV_NVME/in-lanes" /work/manifest.txt; want_rc fetch-lanes3 0 $?
+  ak2_phase fetch-crt
+  lv_fetch_inputs lanes2 crt /tmp/in-crt /work/manifest.txt; want_rc fetch-lanes2-crt 0 $?
+  n0=$(awk -F'\t' '$2 == "get" && $4 ~ /in-(serial|lanes)\// && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
+  n1=$(awk -F'\t' '$2 == "get" && $4 ~ /in-crt\// && $5 == "preferred_transfer_client=crt"' "$BK/.aws-calls.$LVT_CASE" | wc -l)
+  [ "$n0" = 12 ] && [ "$n1" = 6 ]; chk fetch-client $? "$n0 of 12 serial/lanes gets with no config (default), $n1 of 6 under the crt config"
+  grep -q '"kind":"aws-client","t":[0-9.]*,"client":"crt",.*"configure_get":"crt",.*"resolved":"crt","how":"configured"' "$LV_DIR/lever.jsonl"; chk fetch-crt-recorded $?
   bad=0
   while read -r u; do
     case $u in '#'*|'') continue ;; esac
     f=${u##*/}
     [ "$(sha "/tmp/in-serial/$f")" = "$(cat "$BK/.meta/ak2-data-test/cohort/$f.sha256")" ] &&
-      cmp -s "/tmp/in-serial/$f" "$LV_NVME/in-lanes/$f" || bad=$((bad + 1))
+      cmp -s "/tmp/in-serial/$f" "$LV_NVME/in-lanes/$f" && cmp -s "/tmp/in-serial/$f" "/tmp/in-crt/$f" || bad=$((bad + 1))
   done < /work/manifest.txt
   chk fetch-identical "$bad" "$bad files differ from their sha256 or between serial and lanes"
   # Lane concurrency, from the stub's get intervals: serial never overlaps, lanes3 does.
@@ -88,7 +111,7 @@ s=$(ov /tmp/in-serial/); l=$(ov "$LV_NVME/in-lanes/")
   [ "$s" = 1 ] && [ "$l" -ge 2 ]; chk fetch-lane-concurrency $? "max concurrent gets: serial $s (want 1), lanes3 $l (want >= 2)"
   g=$(reqs fetch-serial GetObject); h=$(reqs fetch-serial HeadObject)
   [ "$g" = 6 ] && [ "$h" = 12 ]; chk fetch-requests $? "serial GetObject $g (want 6), HeadObject $h (want 12)"
-  grep -q '"kind":"fetch-inputs","t":[0-9.]*,"mode":"lanes3","lanes":3,"dest":"/tmp/nvme/in-lanes"' "$LV_DIR/lever.jsonl"
+  grep -q '"kind":"fetch-inputs","t":[0-9.]*,"mode":"lanes3","lanes":3,"dest":"/tmp/nvme/in-lanes",.*"client":"default","client_env":"env -u AWS_CONFIG_FILE"' "$LV_DIR/lever.jsonl"
   chk fetch-recorded $?
 
   # ---- the gunzip shim ----
@@ -131,13 +154,21 @@ PY
 
   # ---- uploads: serial, then overlapped ----
   head -c 3145728 /dev/urandom > /tmp/up1; head -c 10485760 /dev/urandom > /tmp/up2
+  ak2_phase upload-default
+  lv_upload_start awscp-default; want_rc upload-start-default 0 $?
+  lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/default-1; want_rc upload-enqueue-default 0 $?
+  lv_upload_drain; want_rc upload-drain-default 0 $?
+  n=$(awk -F'\t' '$2 == "put" && $4 ~ /up\/default-1$/ && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
+  [ "$n" = 1 ] && [ -n "$(row 1 9 awscp-default)" ]; chk upload-default-no-override $? "$n put(s) with no AWS_CONFIG_FILE"
   ak2_phase upload-serial
-  lv_upload_start awscp-serial; want_rc upload-start-serial 0 $?
+  lv_upload_start awscp-serial; want_rc upload-start-serial 0 $? "(the first contract's name for awscp-classic)"
   ta=$(now); lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/serial-1; r=$?; tb=$(now)
   want_rc upload-enqueue-serial 0 "$r"
   lv_upload_enqueue /tmp/up2 s3://ak2-results-test/lvt/$LVT_CASE/up/serial-2; want_rc upload-enqueue-serial-2 0 $?
   lv_upload_drain; want_rc upload-drain-serial 0 $?
-  e1=$(row 1 9 awscp-serial)
+  n=$(awk -F'\t' '$2 == "put" && $4 ~ /up\/serial-[12]$/ && $5 == "preferred_transfer_client=classic"' "$BK/.aws-calls.$LVT_CASE" | wc -l)
+  [ "$n" = 2 ]; chk upload-classic-config $? "$n of 2 puts under the classic config, recorded as awscp-classic"
+  e1=$(row 1 9 awscp-classic)
   le "$e1" "$tb"; chk upload-serial-blocks $? "serial enqueue returned at $tb, after its upload ended at $e1 (the contrast: the probe resolves blocking)"
   [ "$(reqs upload-serial PutObject)" = 1 ] && [ "$(reqs upload-serial UploadPart)" = 2 ] && [ "$(reqs upload-serial CreateMultipartUpload)" = 1 ]
   chk upload-serial-requests $? "PutObject $(reqs upload-serial PutObject) UploadPart $(reqs upload-serial UploadPart) (want 1 and 2: 3 MiB single, 10 MiB in 8 MiB parts)"
@@ -161,7 +192,7 @@ PY
   [ "$(reqs upload-overlap PutObject)" = 2 ]; chk upload-overlap-requests $? "PutObject $(reqs upload-overlap PutObject) (want 2: both below s5cmd's 64 MiB part)"
   # The sha256: recorded at enqueue (before the upload started), equal to the file's and the object's.
   bad=0
-  for m in awscp-serial s5cmd-overlap; do
+  for m in awscp-classic s5cmd-overlap; do
     for q in 1 2; do
       l=$(row "$q" 3 "$m"); u=$(row "$q" 4 "$m"); h=$(row "$q" 6 "$m"); st=$(row "$q" 8 "$m")
       te=$(grep '"kind":"upload-enqueue"' "$LV_DIR/lever.jsonl" | grep "\"mode\":\"$m\"" | grep "\"url\":\"$u\"" | sed -E 's/.*"sha256":"([0-9a-f]+)".*/\1/' | tail -1)
@@ -196,7 +227,8 @@ fail)
   ak2_phase fail
   head -c 1000 /dev/urandom > /tmp/x.bin
   lv_etag /tmp/x.bin 0123456789abcdef0123456789abcdef; want_rc fail-etag 1 $?
-  lv_fetch_inputs lanes2 /tmp/in-bad /work/manifest-bad.txt; want_rc fail-fetch 1 $?
+  lv_fetch_inputs lanes2 default /tmp/in-bad /work/manifest-bad.txt; want_rc fail-fetch 1 $?
+  lv_fetch_inputs lanes2 bogus /tmp/in-bad2 /work/manifest.txt; want_rc fail-fetch-client 1 $?
   grep -q '"kind":"fetch-inputs".*"files":3,"verified":2' "$LV_DIR/lever.jsonl"; chk fail-fetch-recorded $?
   lv_upload_start s5cmd-overlap
   lv_upload_enqueue /tmp/x.bin s3://ak2-results-test/lvt/$LVT_CASE/up/ok-1; want_rc fail-enqueue-ok 0 $?
