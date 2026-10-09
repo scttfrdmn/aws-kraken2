@@ -1,0 +1,13 @@
+hitorderfuzz MISMATCH
+seed 44
+history real/lifetime #0 (280 ops)
+op index 19: V
+V: first difference at entry 0 (Go 1730567:5, container 2158313:5)
+
+Go:
+V 1730567:5 1924416:2 1844350:5 2158313:5
+
+container:
+V 13 4 2158313:5 1844350:5 1924416:2 1730567:5
+
+replay: umap_order < mismatch-ops.txt (the history up to and including the op)

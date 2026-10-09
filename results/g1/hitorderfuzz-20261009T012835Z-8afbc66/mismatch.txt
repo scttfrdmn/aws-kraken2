@@ -1,0 +1,13 @@
+hitorderfuzz MISMATCH
+seed 44
+history clear-random/huge #0 (89839 ops)
+op index 16: V
+V: first difference at entry 0 (Go 18446725087867877368:3, container 18446676312224485273:1)
+
+Go:
+V 18446725087867877368:3 18446702959964008071:1 18446676312224485273:1
+
+container:
+V 13 3 18446676312224485273:1 18446702959964008071:1 18446725087867877368:3
+
+replay: umap_order < mismatch-ops.txt (the history up to and including the op)

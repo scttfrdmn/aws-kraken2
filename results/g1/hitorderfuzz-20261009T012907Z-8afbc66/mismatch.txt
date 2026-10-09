@@ -1,0 +1,13 @@
+hitorderfuzz MISMATCH
+seed 44
+history clear-beyond/bc13/taxid #2 (125 ops)
+op index 14: V
+V: first difference at entry 0 (Go 64101:1, container 2009319:1)
+
+Go:
+V 64101:1 107293:1 192511:1 2158406:1 1680706:1 1730653:1 505670:1 2158396:1 2158545:1 2009319:1 2158414:1 2158498:1 2158341:1
+
+container:
+V 13 13 2009319:1 2158545:1 2158396:1 505670:1 1730653:1 1680706:1 2158341:1 2158406:1 192511:1 2158498:1 107293:1 2158414:1 64101:1
+
+replay: umap_order < mismatch-ops.txt (the history up to and including the op)

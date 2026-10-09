@@ -1,0 +1,13 @@
+hitorderfuzz MISMATCH
+seed 44
+history lookup/taxid #0 (1561 ops)
+op index 6: V
+V: first difference at entry 0 (Go 1650134:3, container 2057758:0)
+
+Go:
+V 1650134:3 2057758:0
+
+container:
+V 13 2 2057758:0 1650134:3
+
+replay: umap_order < mismatch-ops.txt (the history up to and including the op)

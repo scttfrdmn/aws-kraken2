@@ -1,0 +1,120 @@
+{
+  "gate": "g1",
+  "what": "make hitorderfuzz: internal/classify HitCounts vs std::unordered_map under AL2023 g++ 11.5.0, order and counts at every print (#44)",
+  "invocation": "scripts/hitorderfuzz.sh quick",
+  "commit": "8afbc66265c360c9d9a1fec99cac541ca7476b25",
+  "dirty": false,
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+  "upstream_describe": "2.17.2-20-g2731b35",
+  "compiler": {
+    "gxx": "g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)",
+    "version": "11.5.0",
+    "cxxflags": "-std=c++11 -O3",
+    "toolchain": [
+      "gcc-c++-11.5.0-5.amzn2023.0.5.aarch64",
+      "libstdc++-devel-11.5.0-5.amzn2023.0.5.aarch64",
+      "libstdc++-14.2.1-7.amzn2023.0.2.aarch64",
+      "glibc-2.34-231.amzn2023.0.5.aarch64",
+      "Amazon Linux 2023.12.20260930",
+      "aarch64"
+    ],
+    "runtime_libstdcxx": "libstdc++-14.2.1-7.amzn2023.0.2.aarch64",
+    "native": false,
+    "container_image": "public.ecr.aws/amazonlinux/amazonlinux:2023",
+    "container_digest": "sha256:bdaba6be6ef19640b0a8149f845972d8b2b5189c44cd5ed9b3402cc4269ff71d",
+    "umap_order_sha256": "cc3e772e7b623eab25f327c33d0aaed6d2d0aa1b7ae1bbca24b5cfa918da33a2",
+    "umap_order_cc_sha256": "cc6074283ff4ae00c9ec7220efc81d456d97f9fe3a34132db3d902f83ad36bba"
+  },
+  "go": "go version go1.27.1 darwin/arm64",
+  "host": {
+    "name": "juno.local",
+    "os": "Darwin",
+    "arch": "arm64"
+  },
+  "corpus": {
+    "mode": "quick",
+    "seed": 44,
+    "only": "lookup",
+    "sizes": {
+      "random_histories": 100000,
+      "lookup_histories": 20000,
+      "clear_random_histories": 120,
+      "clear_random_cycles_each": 250,
+      "growth_max_elements": 100000,
+      "growth_variants": 6,
+      "real_repeat_rounds": 100,
+      "min_clear_cycles": 100000,
+      "min_absent_lookups_interleaved": 10000
+    },
+    "probe_bucket_counts": [
+      1,
+      13,
+      29,
+      59,
+      127,
+      257,
+      541,
+      1109,
+      2357,
+      5087,
+      10273,
+      20753,
+      42043,
+      85229,
+      172933
+    ],
+    "probe_boundaries": [
+      1,
+      14,
+      30,
+      60,
+      128,
+      258,
+      542,
+      1110,
+      2358,
+      5088,
+      10274,
+      20754,
+      42044,
+      85230
+    ]
+  },
+  "results": {
+    "pass": false,
+    "failures": [
+      "MISMATCH: V: first difference at entry 0 (Go 1650134:3, container 2057758:0)",
+      "partial run (HITORDERFUZZ_ONLY=lookup): never a pass"
+    ],
+    "stats": {
+      "histories": {},
+      "histories_by_category": {},
+      "ops": 7,
+      "prints_compared": 1,
+      "entries_compared": 2,
+      "lookup_values_compared": 1,
+      "clear_cycles": 1,
+      "absent_lookups_interleaved": 1,
+      "absent_lookups": 1,
+      "clear_bucket_observations": 0,
+      "clear_bucket_count_unchanged": 0,
+      "refill_beyond_by_retained_bucket_count": {},
+      "boundary_crossed_by_increment": {},
+      "boundary_crossed_by_lookup": {},
+      "max_size": 0,
+      "real_histories": 0
+    },
+    "mismatch": {
+      "category": "lookup/taxid",
+      "detail": "V: first difference at entry 0 (Go 1650134:3, container 2057758:0)",
+      "history": 0,
+      "op": "V",
+      "op_index": 6
+    },
+    "seconds": 0.673306625
+  },
+  "start": "2026-10-09T01:27:30Z",
+  "stop": "2026-10-09T01:27:31Z",
+  "go_test_status": 1,
+  "failed": true
+}
