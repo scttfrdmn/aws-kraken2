@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `make g3-fit` (`scripts/lib/fit26.py`; #26, WP-10 of the #25 ladder). It fits the registered
+  T(N) and cost model to the nine cohort-100 campaign points, from the record only, and writes
+  `results/g3/fit26/`:
+  - the registered form exactly as registered, end to end and per term;
+  - then each addition as a separate fit: t_input, t_emit, t_net, t_fetch, t_sync, c_used and
+    B_nic;
+  - then every addition together, per term.
+
+  For each fit it gives parameters with standard errors, residuals per point, leave-one-out
+  refits, a designated held-out point (E4 N=32) and a cohort-size check of the classify term. It
+  also gives the predicted time-optimal and cost-optimal N per cohort size (1, 10, 100, 1000) and
+  family, with draw-based ranges and extrapolation flags. Every point is marked pre-fix (#44).
+  `manifest.json` lists every input with its sha256 and the commit. Stdlib only. `make test`
+  runs `scripts/lib/fit26_test.py`, which tests the fitting code on synthetic data with known
+  parameters. The runbook is in docs/cohort.md, "make g3-fit".
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

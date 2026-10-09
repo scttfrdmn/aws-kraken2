@@ -178,6 +178,8 @@ make g3-tables                                            # results/g3/campaign/
   - Ours at cohort 1000 is a placeholder only; upstream's model there is infeasible as
     specified.
   - frontier.md's definitions are generated from the script's docstring.
+- **`make g3-fit`** (`scripts/lib/fit26.py`, #26; WP-10 of the #25 ladder, which O3 uses to
+  choose N) fits the registered model and writes `results/g3/fit26/`. See "make g3-fit" below.
 - **Defect attempts** are named in `scripts/lib/g3_defects.tsv` and carried into `spend.tsv` and
   `summary.md`, in three classes:
   - `defect`, our own;
@@ -236,6 +238,65 @@ make g3-tables                                            # results/g3/campaign/
     - placement: lpt_check, and that LPT differs from j mod N when N > 1;
     - requests: the objects under out/ equal both the manifest's outputs and the request counts;
     - Law 1: every output is identical to upstream's.
+
+## make g3-fit: the #26 fit (registered T(N) and cost, then each addition)
+
+```bash
+make g3-fit      # results/g3/fit26/{fit26.md, manifest.json, points, params, residuals, heldout, predictions, optimal}.tsv
+make test        # includes scripts/lib/fit26_test.py (the fitting code on synthetic data with known parameters)
+```
+
+- **Inputs.** The script reads the record only, and launches nothing:
+  - `results/g3/campaign/points.tsv`;
+  - each point's cohort `tables/{point,batches,rates}.tsv` and `cohort.json`;
+  - E1's `tables/batches.tsv`;
+  - `results/cohort/PRJNA398089/runs.tsv`;
+  - `results/instance-types/us-west-2.json`;
+  - hash.k2d's HEAD (`results/g0a/20261006-005556-fe849b2/out/head-hash.k2d.json`);
+  - `results/util-backfill/util-backfill.tsv`.
+
+  It does not rerun `make g3-tables`. Every file it reads is listed in `manifest.json` with its
+  sha256, beside the commit and the script's own sha256. Regenerate the campaign tables first if
+  they are stale.
+- **Observable.** T = `T_with_harness_s`, from the first launch to the last member's
+  termination, end to end (#25 ruling, 2026-10-09). Its phases (boot + setup + manifest, fetch,
+  load, LPT wall, skew, body tail, harness tail max) sum to it; the script asserts this to
+  within the 1 s rounding.
+- **Fits** (`params.tsv`; the fit column names each one):
+  - `R`: the registered form, exactly as registered, fitted end to end on T. Only
+    K = t_boot + t_probe + t_gather + t_tail is identifiable.
+  - `R+<addition>`: one fit per addition, each refitted from scratch on the same points:
+    - t_input (E1's r_input);
+    - t_emit (samples per lane);
+    - t_net (routed lookup bytes at the NIC's peak rate);
+    - t_fetch (input GB/N; not identifiable at a single cohort size);
+    - t_sync (log2 N);
+    - c_used (threads in use instead of vCPUs);
+    - B_nic (B proportional to the NIC).
+  - `P-reg`: the registered terms, each fitted to its own phase, so t_boot and t_tail separate.
+  - `P-full`: every addition, per term. Its classify term is also fitted on the cohort-1 walls,
+    which identifies r_input.
+- **Checks** (`residuals.tsv`, `heldout.tsv`):
+  - residuals per point;
+  - leave-one-out refits for every point;
+  - the designated held-out point, E4 c8g.12xlarge N=32, fitted on the other 8;
+  - a cohort-size check of the classify term against every point's cohort-1 wall and E1's
+    cohort-10 batches (E1 placed j mod N, so its rank imbalance is shown).
+  - An added parameter counts as resolved only if |value| / se >= 2. Negative values of
+    parameters that must be non-negative are flagged as unphysical.
+- **Predictions** (`predictions.tsv`, `optimal.tsv`):
+  - N ranges over 1..64, for every measured type at its truffle price, and the cohort over 1,
+    10, 100 and 1000.
+  - Memory feasibility follows `mkspec.sh`'s rule. In flight is vCPUs / 8, reduced to what
+    memory holds.
+  - Cost = N × p × T. The registered cost formula is shown beside it for R and P-reg.
+  - Per family, the time-optimal and cost-optimal type and N are reported, with the 16–84% range
+    of the optimal N over 200 parametric draws.
+  - A cell is **extrapolated** if any of its fit's regressors lies outside the range the fit's
+    observations span, if its cohort is not 100, or if its optimum sits at the grid edge.
+- **Pre-fix.** Every point is marked `engine_pre_fix` (the #44 fix, 904c2a5), and `fit26.md`
+  says so. Regenerate the points with the fixed engine and rerun `make g3-fit` before quoting a
+  parameter as post-fix.
 
 ## Rehearsal: make rehearse SPEC=runs/g3-e1.json [N=3]
 
