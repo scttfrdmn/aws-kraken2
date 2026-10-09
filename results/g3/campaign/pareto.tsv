@@ -1,21 +1,26 @@
-cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_h	mpairs_per_s_per_vcpu	engine_pre_fix
-1	resident	ours	r8g.4xlarge N=16	6.17	0.025848	256	0.0589	0.0067	yes
-1	resident	ours	x8g.24xlarge N=1	6.25	0.016283	96	0.0977	0.0176	yes
-1	resident	ours	x8g.4xlarge N=8	6.18	0.021468	128	0.0977	0.0133	yes
-1	resident	ours	c9g.12xlarge N=16	5.17	0.047945	768	0.0435	0.0027	yes
-1	resident	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	10.75	0.028007	96	0.0977	0.0102	-
-1	from-scratch	ours	r8g.4xlarge N=16	146.12	0.612145	256	0.0589	0.0003	yes
-1	from-scratch	ours	x8g.2xlarge N=16	166.19	0.577307	128	0.0977	0.0005	yes
-1	from-scratch	ours	c9g.12xlarge N=16	120.72	1.119530	768	0.0435	0.0001	yes
-1	from-scratch	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	749.75	1.953349	96	0.0977	0.0001	-
-1	from-scratch	upstream	U2 cold T=768	957.57	1.250881	64	0.0735	0.0002	-
-10	resident	ours	E1 x8g.4xlarge N=8 c10 batch 1	17.60	0.006112	128	0.0977	0.0489	yes
-10	resident	upstream	U1 B-c10-gz-p10-t8	36.88	0.009608	96	0.0977	0.0311	-
-10	from-scratch	ours	E1 x8g.4xlarge N=8 c10 batch 0	516.57	0.179444	128	0.0977	0.0017	yes
-10	from-scratch	upstream	U1 B-c10-gz-p10-t8	775.88	0.202143	96	0.0977	0.0015	-
-100	resident	ours	r8g.4xlarge N=16	40.05	0.001678	256	0.0589	0.1092	yes
-100	resident	ours	c8g.12xlarge N=32	13.53	0.002302	1536	0.0399	0.0539	yes
-100	resident	upstream	U1 C-c100-gz-p48-t2	115.75	0.003016	96	0.0977	0.1008	-
-100	from-scratch	ours	r8g.4xlarge N=16	180.00	0.007541	256	0.0589	0.0243	yes
-100	from-scratch	ours	c9g.12xlarge N=16	152.00	0.014096	768	0.0435	0.0096	yes
-100	from-scratch	upstream	U1 C-c100-gz-p48-t2	854.75	0.022269	96	0.0977	0.0136	-
+cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_h	mpairs_per_s_per_vcpu	engine_pre_fix	kind
+1	resident	ours	r8g.4xlarge N=16	6.17	0.025848	256	0.0589	0.0067	yes	measured
+1	resident	ours	x8g.24xlarge N=1	6.25	0.016283	96	0.0977	0.0176	yes	measured
+1	resident	ours	x8g.4xlarge N=8	6.18	0.021468	128	0.0977	0.0133	yes	measured
+1	resident	ours	c9g.12xlarge N=16	5.17	0.047945	768	0.0435	0.0027	yes	measured
+1	resident	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	10.75	0.028007	96	0.0977	0.0102	-	measured
+1	from-scratch	ours	r8g.4xlarge N=16	146.12	0.612145	256	0.0589	0.0003	yes	measured
+1	from-scratch	ours	x8g.2xlarge N=16	166.19	0.577307	128	0.0977	0.0005	yes	measured
+1	from-scratch	ours	c9g.12xlarge N=16	120.72	1.119530	768	0.0435	0.0001	yes	measured
+1	from-scratch	upstream	U1 A-c1-fq-t48 (n=3) (+fq prep)	749.75	1.953349	96	0.0977	0.0001	-	measured
+1	from-scratch	upstream	U2 cold T=768	957.57	1.250881	64	0.0735	0.0002	-	measured
+10	resident	ours	E1 x8g.4xlarge N=8 c10 batch 1	17.60	0.006112	128	0.0977	0.0489	yes	measured
+10	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time)	18.77	0.039118	768	0.0977	0.0076	-	derived
+10	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $)	36.84	0.009599	96	0.0977	0.0312	-	derived
+10	from-scratch	ours	E1 x8g.4xlarge N=8 c10 batch 0	516.57	0.179444	128	0.0977	0.0017	yes	measured
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $)	1512.67	0.197601	64	0.0735	0.0011	-	derived
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time)	757.77	1.579391	768	0.0977	0.0002	-	derived
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $)	775.84	0.202133	96	0.0977	0.0015	-	derived
+100	resident	ours	r8g.4xlarge N=16	40.05	0.001678	256	0.0589	0.1092	yes	measured
+100	resident	ours	c8g.12xlarge N=32	13.53	0.002302	1536	0.0399	0.0539	yes	measured
+100	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time)	21.59	0.036001	6144	0.0977	0.0084	-	derived
+100	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $)	110.63	0.002882	96	0.0977	0.1054	-	derived
+100	from-scratch	ours	r8g.4xlarge N=16	180.00	0.007541	256	0.0589	0.0243	yes	measured
+100	from-scratch	ours	c9g.12xlarge N=16	152.00	0.014096	768	0.0435	0.0096	yes	measured
+100	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time)	760.59	1.268220	6144	0.0977	0.0002	-	derived
+100	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $)	849.63	0.022136	96	0.0977	0.0137	-	derived

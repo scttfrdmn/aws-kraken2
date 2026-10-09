@@ -2,7 +2,7 @@
 
 **Every engine point here is pre-fix (#44) until regenerated.**
 
-Generated at 6d3effd875bf4220005bf1ae7e53512e484552a8. Do not edit: rerun `make g3-frontier`. Every point is in frontier.tsv; the Pareto sets are in pareto.tsv.
+Generated at dc2385d047e541c2433aeb477bf2d3a7547cbbfa. Do not edit: rerun `make g3-frontier`. Every point is in frontier.tsv; the Pareto sets are in pareto.tsv.
 
 - Every engine point here is pre-fix (its engine predates the #44 fix, 904c2a5) until the
   points are regenerated; the engine_pre_fix column says so per point (unknown where the commit
@@ -27,9 +27,24 @@ Generated at 6d3effd875bf4220005bf1ae7e53512e484552a8. Do not edit: rerun `make 
   points' fleet vCPUs V, price per vCPU-hour p and per-vCPU rate e = pairs / (V x wall):
   time ratio = (V_ours / V_up) x (e_ours / e_up); $ ratio = (p_up / p_ours) x (e_ours / e_up).
   From scratch, e includes staging; the staging seconds and bandwidth are shown beside it.
+- Upstream at its best (Scott's ruling 1, #25; an addition to the registration): the best of single-node
+  upstream (U1, U2 as measured) and upstream sample-parallel, N independent upstream nodes each holding
+  the table and running its share of the cohort. The sample-parallel arm is derived from the
+  single-node measurements, not measured: per node, the fixed costs (boot, setup, the table's staging
+  and, on U1, the input fetch) plus the per-sample walls of a measured rung (U1: each rung's per-sample
+  walls at its P x T, fq with its preparation; U2: the SRR5935740 warm wall per pair, the first sample
+  on each node at the cold wall), scheduled by LPT over N x P slots, for N = 1..cohort; the N that
+  minimises time and the N that minimises $/sample are picked separately per regime and node type
+  (the whole sweep is upstream_sp_sweep.tsv). From scratch, every node stages the table itself: in
+  parallel (once in time) and paid N times in $. Biases: U1's per-sample walls were measured at the
+  rung's full concurrency P, so a lightly loaded node is modelled slower than it would run (against
+  upstream); N parallel table stagings are modelled at the single-node rate with no S3 contention, and
+  U2 excludes its input fetch (both for upstream). It is not extended to cohort 1000 (no measured
+  walls beyond cohort 100) nor shown at cohort 1 (one sample is the single node). The re-plan carries a measured sample-parallel run to validate it.
 - Registered reference points (#25 H-main): ~20x lower $/sample at cohort >= 100; ~6x (Tier A)
   to 20x faster for a single sample. Kill condition: under 5x on both axes at every cohort size,
-  evaluated per regime on the measured cohort sizes (1, 10, 100).
+  evaluated per regime (Scott's ruling 2, #25; an addition to the registration) on the measured
+  cohort sizes (1, 10, 100), against the best of single-node and sample-parallel upstream.
 - Cohort 1000: ours is a placeholder only (Scott's decision: the engine side uses real
   samples), extrapolated from cohort 100 by the pairs ratio and never a best. Upstream's
   cohort-1000 model is infeasible as specified: about 1.4 TB of fq input plus RODA's 1.19 TB
@@ -39,16 +54,16 @@ Generated at 6d3effd875bf4220005bf1ae7e53512e484552a8. Do not edit: rerun `make 
 
 | regime | cohort | best time (each side) | time ratio = width x per-vCPU efficiency | best $/sample, derived (each side) | $ ratio = price per vCPU-hour x per-vCPU efficiency | registered reference | kill check | provenance |
 |---|---|---|---|---|---|---|---|---|
-| resident | 1 | time: ours c9g.12xlarge N=16 5.2 s, upstream U1 A-c1-fq-t48 (n=3) (+fq prep) 10.8 s | 2.08 = width 8.00 (V 768 vs 96) x per-vCPU 0.26 (2.65 vs 10.21 kpairs/s/vCPU) | $: ours x8g.24xlarge N=1 $0.01628, upstream U1 A-c1-fq-t48 (n=3) (+fq prep) $0.02801 | 1.72 = price/vCPU-h 1.00 ($0.0977 vs $0.0977) x per-vCPU 1.72 (17.55 vs 10.21 kpairs/s/vCPU) | time vs ~6-20x: below 6x | under 5x on both: yes | engine pre-fix: yes |
-| resident | 10 | time: ours E1 x8g.4xlarge N=8 c10 batch 1 17.6 s, upstream U1 B-c10-gz-p10-t8 36.9 s | 2.10 = width 1.33 (V 128 vs 96) x per-vCPU 1.57 (48.92 vs 31.12 kpairs/s/vCPU) | $: ours E1 x8g.4xlarge N=8 c10 batch 1 $0.00611, upstream U1 B-c10-gz-p10-t8 $0.00961 | 1.57 = price/vCPU-h 1.00 ($0.0977 vs $0.0977) x per-vCPU 1.57 (48.92 vs 31.12 kpairs/s/vCPU) | - | under 5x on both: yes | engine pre-fix: yes |
-| resident | 100 | time: ours c8g.12xlarge N=32 13.5 s, upstream U1 C-c100-gz-p48-t2 115.8 s | 8.56 = width 16.00 (V 1536 vs 96) x per-vCPU 0.53 (53.87 vs 100.75 kpairs/s/vCPU) | $: ours r8g.4xlarge N=16 $0.00168, upstream U1 C-c100-gz-p48-t2 $0.00302 | 1.80 = price/vCPU-h 1.66 ($0.0977 vs $0.0589) x per-vCPU 1.08 (109.20 vs 100.75 kpairs/s/vCPU) | $ vs ~20x: below | under 5x on both: no | engine pre-fix: yes |
+| resident | 1 | time: ours c9g.12xlarge N=16 5.2 s, upstream [measured] U1 A-c1-fq-t48 (n=3) (+fq prep) 10.8 s | 2.079 = width 8.00 (V 768 vs 96) x per-vCPU 0.26 (2.65 vs 10.21 kpairs/s/vCPU) | $: ours x8g.24xlarge N=1 $0.01628, upstream [measured] U1 A-c1-fq-t48 (n=3) (+fq prep) $0.02801 | 1.720 = price/vCPU-h 1.00 ($0.0977 vs $0.0977) x per-vCPU 1.72 (17.55 vs 10.21 kpairs/s/vCPU) | time vs ~6-20x: below 6x | under 5x on both: yes | engine pre-fix: yes |
+| resident | 10 | time: ours E1 x8g.4xlarge N=8 c10 batch 1 17.6 s, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time) 18.8 s | 1.067 = width 0.17 (V 128 vs 768) x per-vCPU 6.40 (48.92 vs 7.64 kpairs/s/vCPU) | $: ours E1 x8g.4xlarge N=8 c10 batch 1 $0.00611, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $) $0.00960 | 1.570 = price/vCPU-h 1.00 ($0.0977 vs $0.0977) x per-vCPU 1.57 (48.92 vs 31.15 kpairs/s/vCPU) | - | under 5x on both: yes | engine pre-fix: yes |
+| resident | 100 | time: ours c8g.12xlarge N=32 13.5 s, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time) 21.6 s | 1.596 = width 0.25 (V 1536 vs 6144) x per-vCPU 6.38 (53.87 vs 8.44 kpairs/s/vCPU) | $: ours r8g.4xlarge N=16 $0.00168, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $) $0.00288 | 1.718 = price/vCPU-h 1.66 ($0.0977 vs $0.0589) x per-vCPU 1.04 (109.20 vs 105.42 kpairs/s/vCPU) | $ vs ~20x: below | under 5x on both: yes | engine pre-fix: yes |
 | resident | 1000 | placeholder only (ours); upstream modelled and infeasible as specified | - | - | - | - | - | - |
-| from-scratch | 1 | time: ours c9g.12xlarge N=16 120.7 s, upstream U1 A-c1-fq-t48 (n=3) (+fq prep) 749.8 s | 6.21 = width 8.00 (V 768 vs 96) x per-vCPU 0.78 (0.11 vs 0.15 kpairs/s/vCPU); staging ours 31 s at 38.5 GB/s, upstream 647 s at 1.8 GB/s | $: ours x8g.2xlarge N=16 $0.57731, upstream U2 cold T=768 $1.25088 | 2.17 = price/vCPU-h 0.75 ($0.0735 vs $0.0977) x per-vCPU 2.88 (0.50 vs 0.17 kpairs/s/vCPU) | time vs ~6-20x: 6-20x | under 5x on both: no | engine pre-fix: yes |
-| from-scratch | 10 | time: ours E1 x8g.4xlarge N=8 c10 batch 0 516.6 s, upstream U1 B-c10-gz-p10-t8 775.9 s | 1.50 = width 1.33 (V 128 vs 96) x per-vCPU 1.13 (1.67 vs 1.48 kpairs/s/vCPU); staging ours 86 s at 13.7 GB/s, upstream 647 s at 1.8 GB/s | $: ours E1 x8g.4xlarge N=8 c10 batch 0 $0.17944, upstream U1 B-c10-gz-p10-t8 $0.20214 | 1.13 = price/vCPU-h 1.00 ($0.0977 vs $0.0977) x per-vCPU 1.13 (1.67 vs 1.48 kpairs/s/vCPU) | - | under 5x on both: yes | engine pre-fix: yes |
-| from-scratch | 100 | time: ours c9g.12xlarge N=16 152.0 s, upstream U1 C-c100-gz-p48-t2 854.8 s | 5.62 = width 8.00 (V 768 vs 96) x per-vCPU 0.70 (9.59 vs 13.64 kpairs/s/vCPU); staging ours 31 s at 38.5 GB/s, upstream 647 s at 1.8 GB/s | $: ours r8g.4xlarge N=16 $0.00754, upstream U1 C-c100-gz-p48-t2 $0.02227 | 2.95 = price/vCPU-h 1.66 ($0.0977 vs $0.0589) x per-vCPU 1.78 (24.30 vs 13.64 kpairs/s/vCPU) | $ vs ~20x: below | under 5x on both: no | engine pre-fix: yes |
+| from-scratch | 1 | time: ours c9g.12xlarge N=16 120.7 s, upstream [measured] U1 A-c1-fq-t48 (n=3) (+fq prep) 749.8 s | 6.211 = width 8.00 (V 768 vs 96) x per-vCPU 0.78 (0.11 vs 0.15 kpairs/s/vCPU); staging ours 31 s at 38.5 GB/s, upstream 647 s at 1.8 GB/s | $: ours x8g.2xlarge N=16 $0.57731, upstream [measured] U2 cold T=768 $1.25088 | 2.167 = price/vCPU-h 0.75 ($0.0735 vs $0.0977) x per-vCPU 2.88 (0.50 vs 0.17 kpairs/s/vCPU) | time vs ~6-20x: 6-20x | under 5x on both: no | engine pre-fix: yes |
+| from-scratch | 10 | time: ours E1 x8g.4xlarge N=8 c10 batch 0 516.6 s, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time) 757.8 s | 1.467 = width 0.17 (V 128 vs 768) x per-vCPU 8.80 (1.67 vs 0.19 kpairs/s/vCPU); staging ours 86 s at 13.7 GB/s, upstream 647 s at 1.8 GB/s | $: ours E1 x8g.4xlarge N=8 c10 batch 0 $0.17944, upstream [derived] upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $) $0.19760 | 1.101 = price/vCPU-h 0.75 ($0.0735 vs $0.0977) x per-vCPU 1.46 (1.67 vs 1.14 kpairs/s/vCPU) | - | under 5x on both: yes | engine pre-fix: yes |
+| from-scratch | 100 | time: ours c9g.12xlarge N=16 152.0 s, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time) 760.6 s | 5.004 = width 0.12 (V 768 vs 6144) x per-vCPU 40.03 (9.59 vs 0.24 kpairs/s/vCPU); staging ours 31 s at 38.5 GB/s, upstream 647 s at 1.8 GB/s | $: ours r8g.4xlarge N=16 $0.00754, upstream [derived] upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $) $0.02214 | 2.935 = price/vCPU-h 1.66 ($0.0977 vs $0.0589) x per-vCPU 1.77 (24.30 vs 13.73 kpairs/s/vCPU) | $ vs ~20x: below | under 5x on both: no | engine pre-fix: yes |
 | from-scratch | 1000 | placeholder only (ours); upstream modelled and infeasible as specified | - | - | - | - | - | - |
 
-Kill condition, resident (under 5x on both axes at every measured cohort size 1, 10, 100): not met.
+Kill condition, resident (under 5x on both axes at every measured cohort size 1, 10, 100): MET.
 
 Kill condition, from-scratch (under 5x on both axes at every measured cohort size 1, 10, 100): not met.
 
@@ -70,27 +85,32 @@ E1's cohort-10 from-scratch path includes its three earlier cohort-1 invocations
 
 Upstream's runs (U1, U2) each ran many rungs, so their bills are not separable per rung: not known.
 
-## Pareto sets (non-dominated in time and derived $/sample, per side)
+## Pareto sets (non-dominated in time and derived $/sample, per side; measured and derived points, the kind column says which)
 
-| cohort | regime | side | point | time_s | usd_per_sample_derived | fleet_vcpus | usd_per_vcpu_h | mpairs_per_s_per_vcpu | engine_pre_fix |
-|---|---|---|---|---|---|---|---|---|---|
-| 1 | resident | ours | r8g.4xlarge N=16 | 6.17 | 0.025848 | 256 | 0.0589 | 0.0067 | yes |
-| 1 | resident | ours | x8g.24xlarge N=1 | 6.25 | 0.016283 | 96 | 0.0977 | 0.0176 | yes |
-| 1 | resident | ours | x8g.4xlarge N=8 | 6.18 | 0.021468 | 128 | 0.0977 | 0.0133 | yes |
-| 1 | resident | ours | c9g.12xlarge N=16 | 5.17 | 0.047945 | 768 | 0.0435 | 0.0027 | yes |
-| 1 | resident | upstream | U1 A-c1-fq-t48 (n=3) (+fq prep) | 10.75 | 0.028007 | 96 | 0.0977 | 0.0102 | - |
-| 1 | from-scratch | ours | r8g.4xlarge N=16 | 146.12 | 0.612145 | 256 | 0.0589 | 0.0003 | yes |
-| 1 | from-scratch | ours | x8g.2xlarge N=16 | 166.19 | 0.577307 | 128 | 0.0977 | 0.0005 | yes |
-| 1 | from-scratch | ours | c9g.12xlarge N=16 | 120.72 | 1.119530 | 768 | 0.0435 | 0.0001 | yes |
-| 1 | from-scratch | upstream | U1 A-c1-fq-t48 (n=3) (+fq prep) | 749.75 | 1.953349 | 96 | 0.0977 | 0.0001 | - |
-| 1 | from-scratch | upstream | U2 cold T=768 | 957.57 | 1.250881 | 64 | 0.0735 | 0.0002 | - |
-| 10 | resident | ours | E1 x8g.4xlarge N=8 c10 batch 1 | 17.60 | 0.006112 | 128 | 0.0977 | 0.0489 | yes |
-| 10 | resident | upstream | U1 B-c10-gz-p10-t8 | 36.88 | 0.009608 | 96 | 0.0977 | 0.0311 | - |
-| 10 | from-scratch | ours | E1 x8g.4xlarge N=8 c10 batch 0 | 516.57 | 0.179444 | 128 | 0.0977 | 0.0017 | yes |
-| 10 | from-scratch | upstream | U1 B-c10-gz-p10-t8 | 775.88 | 0.202143 | 96 | 0.0977 | 0.0015 | - |
-| 100 | resident | ours | r8g.4xlarge N=16 | 40.05 | 0.001678 | 256 | 0.0589 | 0.1092 | yes |
-| 100 | resident | ours | c8g.12xlarge N=32 | 13.53 | 0.002302 | 1536 | 0.0399 | 0.0539 | yes |
-| 100 | resident | upstream | U1 C-c100-gz-p48-t2 | 115.75 | 0.003016 | 96 | 0.0977 | 0.1008 | - |
-| 100 | from-scratch | ours | r8g.4xlarge N=16 | 180.00 | 0.007541 | 256 | 0.0589 | 0.0243 | yes |
-| 100 | from-scratch | ours | c9g.12xlarge N=16 | 152.00 | 0.014096 | 768 | 0.0435 | 0.0096 | yes |
-| 100 | from-scratch | upstream | U1 C-c100-gz-p48-t2 | 854.75 | 0.022269 | 96 | 0.0977 | 0.0136 | - |
+| cohort | regime | side | point | time_s | usd_per_sample_derived | fleet_vcpus | usd_per_vcpu_h | mpairs_per_s_per_vcpu | engine_pre_fix | kind |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | resident | ours | r8g.4xlarge N=16 | 6.17 | 0.025848 | 256 | 0.0589 | 0.0067 | yes | measured |
+| 1 | resident | ours | x8g.24xlarge N=1 | 6.25 | 0.016283 | 96 | 0.0977 | 0.0176 | yes | measured |
+| 1 | resident | ours | x8g.4xlarge N=8 | 6.18 | 0.021468 | 128 | 0.0977 | 0.0133 | yes | measured |
+| 1 | resident | ours | c9g.12xlarge N=16 | 5.17 | 0.047945 | 768 | 0.0435 | 0.0027 | yes | measured |
+| 1 | resident | upstream | U1 A-c1-fq-t48 (n=3) (+fq prep) | 10.75 | 0.028007 | 96 | 0.0977 | 0.0102 | - | measured |
+| 1 | from-scratch | ours | r8g.4xlarge N=16 | 146.12 | 0.612145 | 256 | 0.0589 | 0.0003 | yes | measured |
+| 1 | from-scratch | ours | x8g.2xlarge N=16 | 166.19 | 0.577307 | 128 | 0.0977 | 0.0005 | yes | measured |
+| 1 | from-scratch | ours | c9g.12xlarge N=16 | 120.72 | 1.119530 | 768 | 0.0435 | 0.0001 | yes | measured |
+| 1 | from-scratch | upstream | U1 A-c1-fq-t48 (n=3) (+fq prep) | 749.75 | 1.953349 | 96 | 0.0977 | 0.0001 | - | measured |
+| 1 | from-scratch | upstream | U2 cold T=768 | 957.57 | 1.250881 | 64 | 0.0735 | 0.0002 | - | measured |
+| 10 | resident | ours | E1 x8g.4xlarge N=8 c10 batch 1 | 17.60 | 0.006112 | 128 | 0.0977 | 0.0489 | yes | measured |
+| 10 | resident | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time) | 18.77 | 0.039118 | 768 | 0.0977 | 0.0076 | - | derived |
+| 10 | resident | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $) | 36.84 | 0.009599 | 96 | 0.0977 | 0.0312 | - | derived |
+| 10 | from-scratch | ours | E1 x8g.4xlarge N=8 c10 batch 0 | 516.57 | 0.179444 | 128 | 0.0977 | 0.0017 | yes | measured |
+| 10 | from-scratch | upstream | upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $) | 1512.67 | 0.197601 | 64 | 0.0735 | 0.0011 | - | derived |
+| 10 | from-scratch | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time) | 757.77 | 1.579391 | 768 | 0.0977 | 0.0002 | - | derived |
+| 10 | from-scratch | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $) | 775.84 | 0.202133 | 96 | 0.0977 | 0.0015 | - | derived |
+| 100 | resident | ours | r8g.4xlarge N=16 | 40.05 | 0.001678 | 256 | 0.0589 | 0.1092 | yes | measured |
+| 100 | resident | ours | c8g.12xlarge N=32 | 13.53 | 0.002302 | 1536 | 0.0399 | 0.0539 | yes | measured |
+| 100 | resident | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time) | 21.59 | 0.036001 | 6144 | 0.0977 | 0.0084 | - | derived |
+| 100 | resident | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $) | 110.63 | 0.002882 | 96 | 0.0977 | 0.1054 | - | derived |
+| 100 | from-scratch | ours | r8g.4xlarge N=16 | 180.00 | 0.007541 | 256 | 0.0589 | 0.0243 | yes | measured |
+| 100 | from-scratch | ours | c9g.12xlarge N=16 | 152.00 | 0.014096 | 768 | 0.0435 | 0.0096 | yes | measured |
+| 100 | from-scratch | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time) | 760.59 | 1.268220 | 6144 | 0.0977 | 0.0002 | - | derived |
+| 100 | from-scratch | upstream | upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $) | 849.63 | 0.022136 | 96 | 0.0977 | 0.0137 | - | derived |

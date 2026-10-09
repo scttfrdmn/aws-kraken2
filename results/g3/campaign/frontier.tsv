@@ -34,18 +34,26 @@ cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_
 1	resident	upstream	U2 warm T=512	55.48	0.072475	64	0.0735	0.0030	-	-	-	-	measured	U2 warm -M wall (page cache partly warm)
 10	from-scratch	ours	E1 x8g.4xlarge N=8 c10 batch 0	516.57	0.179444	128	0.0977	0.0017	86	13.7	-	yes	measured	first launch to the last rank's end of the batch; E1's c10 invocation followed its three c1 invocations, whose time is in this path
 10	from-scratch	ours	E1 x8g.4xlarge N=8 c10 batch 1	534.41	0.185642	128	0.0977	0.0016	86	13.7	-	yes	measured	first launch to the last rank's end of the batch; E1's c10 invocation followed its three c1 invocations, whose time is in this path
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time)	757.77	1.579391	768	0.0977	0.0002	647	1.8	-	-	derived	LPT of measured per-sample walls over N x 1 slots; per-node staging paid N times ($), once in time
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $)	775.84	0.202133	96	0.0977	0.0015	647	1.8	-	-	derived	LPT of measured per-sample walls over N x 12 slots; per-node staging paid N times ($), once in time
 10	from-scratch	upstream	U1 B-c10-gz-p10-t8	775.88	0.202143	96	0.0977	0.0015	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 10	from-scratch	upstream	U1 B-c10-fq-t48 (+fq prep)	852.65	0.222144	96	0.0977	0.0013	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 10	from-scratch	upstream	U1 B-c10-fq-t96 (+fq prep)	853.45	0.222352	96	0.0977	0.0013	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 10	from-scratch	upstream	U1 B-c10-fq-t192 (+fq prep)	856.76	0.223215	96	0.0977	0.0013	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 10	from-scratch	upstream	U1 B-c10-gz-t48	955.71	0.248994	96	0.0977	0.0012	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=6, warm T=512, first sample per node cold T=768 (min time)	1031.72	0.808646	384	0.0735	0.0003	810	1.5	-	-	derived	LPT of measured per-sample walls over N x 1 slots; per-node staging paid N times ($), once in time
+10	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $)	1512.67	0.197601	64	0.0735	0.0011	810	1.5	-	-	derived	LPT of measured per-sample walls over N x 1 slots; per-node staging paid N times ($), once in time
 10	resident	ours	E1 x8g.4xlarge N=8 c10 batch 1	17.60	0.006112	128	0.0977	0.0489	-	-	-	yes	measured	E1 c10 batch wall (parallel j mod N, SDK)
 10	resident	ours	E1 x8g.4xlarge N=8 c10 batch 0	21.05	0.007312	128	0.0977	0.0409	-	-	-	yes	measured	E1 c10 batch wall (parallel j mod N, SDK)
+10	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=8, C-c100-fq-t48 (min time)	18.77	0.039118	768	0.0977	0.0076	-	-	-	-	derived	LPT of measured per-sample walls over N x 1 slots; table already resident on each node
+10	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p12-t8 (min $)	36.84	0.009599	96	0.0977	0.0312	-	-	-	-	derived	LPT of measured per-sample walls over N x 12 slots; table already resident on each node
 10	resident	upstream	U1 B-c10-gz-p10-t8	36.88	0.009608	96	0.0977	0.0311	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+10	resident	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=8, warm T=512, first sample per node cold T=768 (min time)	99.45	0.103927	512	0.0735	0.0022	-	-	-	-	derived	LPT of measured per-sample walls over N x 1 slots; table already resident on each node
 10	resident	upstream	U1 B-c10-fq-t48 (+fq prep)	113.65	0.029610	96	0.0977	0.0101	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 10	resident	upstream	U1 B-c10-fq-t96 (+fq prep)	114.45	0.029818	96	0.0977	0.0100	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 10	resident	upstream	U1 B-c10-fq-t192 (+fq prep)	117.76	0.030680	96	0.0977	0.0097	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 10	resident	upstream	U1 B-c10-gz-t48	216.71	0.056460	96	0.0977	0.0053	-	-	-	-	measured	U1 pass on the tmpfs-resident table
+10	resident	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $)	580.40	0.075818	64	0.0735	0.0030	-	-	-	-	derived	LPT of measured per-sample walls over N x 1 slots; table already resident on each node
 100	from-scratch	ours	c9g.12xlarge N=16	152.00	0.014096	768	0.0435	0.0096	31	38.5	2.00	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
 100	from-scratch	ours	c8g.12xlarge N=32	156.00	0.026544	1536	0.0399	0.0047	23	51.0	1.62	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
 100	from-scratch	ours	c8g.12xlarge N=16	173.00	0.014718	768	0.0399	0.0084	32	37.0	2.02	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
@@ -55,13 +63,17 @@ cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_
 100	from-scratch	ours	x8g.8xlarge N=4	349.00	0.012123	128	0.0977	0.0251	166	7.1	1.69	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
 100	from-scratch	ours	x8g.12xlarge N=2	453.00	0.011802	96	0.0977	0.0257	219	5.4	1.70	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
 100	from-scratch	ours	x8g.24xlarge N=1	585.00	0.015241	96	0.0977	0.0199	324	3.7	1.32	yes	measured	observed path (first launch to the last rank's end of batch 0) + body tail
+100	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time)	760.59	1.268220	6144	0.0977	0.0002	647	1.8	-	-	derived	LPT of measured per-sample walls over N x 1 slots; per-node staging paid N times ($), once in time
+100	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $)	849.63	0.022136	96	0.0977	0.0137	647	1.8	-	-	derived	LPT of measured per-sample walls over N x 48 slots; per-node staging paid N times ($), once in time
 100	from-scratch	upstream	U1 C-c100-gz-p48-t2	854.75	0.022269	96	0.0977	0.0136	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 100	from-scratch	upstream	U1 C-c100-gz-p24-t4	855.21	0.022281	96	0.0977	0.0136	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 100	from-scratch	upstream	U1 C-c100-gz-p12-t8	925.47	0.024112	96	0.0977	0.0126	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=48, warm T=512, first sample per node cold T=768 (min time)	1048.52	0.657451	3072	0.0735	0.0003	810	1.5	-	-	derived	LPT of measured per-sample walls over N x 1 slots; per-node staging paid N times ($), once in time
 100	from-scratch	upstream	U1 C-c100-fq-t48 (+fq prep)	1900.07	0.049503	96	0.0977	0.0061	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 100	from-scratch	upstream	U1 C-c100-fq-t96 (+fq prep)	1909.14	0.049739	96	0.0977	0.0061	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 100	from-scratch	upstream	U1 C-c100-fq-t192 (+fq prep)	1946.59	0.050715	96	0.0977	0.0060	647	1.8	-	-	measured	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
 100	from-scratch	upstream	U1 C-c100-gz-t96-one-process MODELLED	2925.63	0.076222	96	0.0977	0.0040	647	1.8	-	-	modelled	U1 boot+setup+RODA onto tmpfs+the input fetch+the pass
+100	from-scratch	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $)	6836.30	0.089303	64	0.0735	0.0026	810	1.5	-	-	derived	LPT of measured per-sample walls over N x 1 slots; per-node staging paid N times ($), once in time
 100	resident	ours	c8g.12xlarge N=32	13.53	0.002302	1536	0.0399	0.0539	-	-	-	yes	measured	the LPT batch wall, table loaded
 100	resident	ours	c9g.12xlarge N=16	36.45	0.003380	768	0.0435	0.0400	-	-	-	yes	measured	the LPT batch wall, table loaded
 100	resident	ours	r8g.4xlarge N=16	40.05	0.001678	256	0.0589	0.1092	-	-	-	yes	measured	the LPT batch wall, table loaded
@@ -71,6 +83,9 @@ cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_
 100	resident	ours	x8g.2xlarge N=16	79.00	0.002744	128	0.0977	0.1107	-	-	-	yes	measured	the LPT batch wall, table loaded
 100	resident	ours	x8g.12xlarge N=2	112.19	0.002923	96	0.0977	0.1040	-	-	-	yes	measured	the LPT batch wall, table loaded
 100	resident	ours	x8g.24xlarge N=1	123.60	0.003220	96	0.0977	0.0944	-	-	-	yes	measured	the LPT batch wall, table loaded
+100	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=64, C-c100-fq-t48 (min time)	21.59	0.036001	6144	0.0977	0.0084	-	-	-	-	derived	LPT of measured per-sample walls over N x 1 slots; table already resident on each node
+100	resident	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=63, warm T=512, first sample per node cold T=768 (min time)	109.41	0.090040	4032	0.0735	0.0025	-	-	-	-	derived	LPT of measured per-sample walls over N x 1 slots; table already resident on each node
+100	resident	upstream	upstream sample-parallel (derived from single-node measurements): x8g.24xlarge (U1, tmpfs) N=1, C-c100-gz-p48-t2 (min $)	110.63	0.002882	96	0.0977	0.1054	-	-	-	-	derived	LPT of measured per-sample walls over N x 48 slots; table already resident on each node
 100	resident	upstream	U1 C-c100-gz-p48-t2	115.75	0.003016	96	0.0977	0.1008	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 100	resident	upstream	U1 C-c100-gz-p24-t4	116.21	0.003028	96	0.0977	0.1004	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 100	resident	upstream	U1 C-c100-gz-p12-t8	186.47	0.004858	96	0.0977	0.0625	-	-	-	-	measured	U1 pass on the tmpfs-resident table
@@ -78,6 +93,7 @@ cohort	regime	side	point	time_s	usd_per_sample_derived	fleet_vcpus	usd_per_vcpu_
 100	resident	upstream	U1 C-c100-fq-t96 (+fq prep)	1170.14	0.030486	96	0.0977	0.0100	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 100	resident	upstream	U1 C-c100-fq-t192 (+fq prep)	1207.59	0.031462	96	0.0977	0.0097	-	-	-	-	measured	U1 pass on the tmpfs-resident table
 100	resident	upstream	U1 C-c100-gz-t96-one-process MODELLED	2186.63	0.056969	96	0.0977	0.0053	-	-	-	-	modelled	U1 pass on the tmpfs-resident table
+100	resident	upstream	upstream sample-parallel (derived from single-node measurements): r8gd.16xlarge (U2, NVMe) N=1, warm T=512, first sample per node cold T=768 (min $)	5897.19	0.077036	64	0.0735	0.0030	-	-	-	-	derived	LPT of measured per-sample walls over N x 1 slots; table already resident on each node
 1000	from-scratch	ours	c8g.12xlarge N=32	347.10	0.005906	1536	0.0399	0.0207	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
 1000	from-scratch	ours	c9g.12xlarge N=16	590.93	0.005480	768	0.0435	0.0244	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
 1000	from-scratch	ours	r8g.4xlarge N=16	650.88	0.002727	256	0.0589	0.0664	-	-	-	yes	placeholder	cohort-100 path with the LPT wall and fetch scaled by 9.88
