@@ -251,6 +251,13 @@ tune)
   python3 scripts/lib/tune_tables.py "$T/run" || RC=1
   ns=$(awk 'END{print NR - 1}' "$T/run/tables/probe-tune-selection.tsv" 2>/dev/null); nc=$(awk 'END{print NR - 1}' "$T/run/tables/probe-tune.tsv" 2>/dev/null)
   [ "$ns" = 2 ] && [ "$nc" = 12 ] || { echo "rehearse: tune tables have $ns selection and $nc cell rows, want 2 and 12" >&2; RC=1; }
+  # Carry-over in the record: every trial but the first names its predecessor, and the trial
+  # order the body ran is the registered one (warm-up, then SCHED).
+  np=$(awk -F'\t' 'NR == 1 {for (i = 1; i <= NF; i++) if ($i == "prev_regime") c = i} NR > 1 && $c != "-"' "$T/run/tables/probe-tune-trials.tsv" | grep -c .)
+  ran=$(jq -r 'select(.kind == "trial") | "\(.set):\(.regime)"' "$J" | tr '\n' ' ')
+  want="none:a none:b $(awk '/^SCHED=\(/{f=1; next} f && /^\)/{f=0} f' scripts/g3/probe-tune.body.sh | tr -d '"' | tr -s ' \n' ' ' | sed 's/^ //')"
+  echo "rehearse: $np trials with a predecessor (want 37); trial order $([ "$ran" = "$want" ] && echo "is" || echo "is NOT") warm-up + SCHED"
+  [ "$np" = 37 ] && [ "$ran" = "$want" ] || { echo "rehearse: prev_regime column or trial order wrong" >&2; RC=1; }
   cat "$T/run/tables/probe-tune-selection.tsv"
   ;;
 *) echo "rehearse: unknown probe kind $KIND" >&2; exit 2 ;;

@@ -25,15 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       (upstream `-M` on a huge=always tmpfs staged by s5cmd; ours' engine N = 1 ranged-GET load)
       × 3 repetitions, every trial cold, after a discarded `none` warm-up pair;
     - each repetition complete before the next, in a registered order (`SCHED`): every set's
-      regime order flips per repetition, every cell's predecessors differ, and mean positions
-      are balanced;
+      regime order flips per repetition, every cell's predecessors differ, every cell has
+      2 of its 3 trials right after the other regime, and mean positions are balanced;
     - load, classify, teardown and fragmentation counters per trial, streamed;
     - a network ceiling before and after;
     - the selection rule and the resolution check registered in the spec header.
   - `scripts/lib/tune_tables.py` (the post) writes `tables/probe-tune{,-trials,-selection,-drift}.tsv`.
     - It counts only complete repetitions, and it prints the resolution and the load ceiling
       before any null.
-    - It exits 1 if the trials' outputs or reports differ.
+    - It exits 1 if the trials' outputs or reports differ, and 3, with a loud UNDETERMINED line,
+      if a regime has no selection (for example after a TTL kill in rep 3).
+    - `probe-tune-trials.tsv` records each trial's `prev_regime` and `prev_set`.
     - `make test` runs its `--self-test`, which includes the schedule's properties, read from
       the body.
   - `scripts/g3/mkspec-u.sh` takes an optional ACCESSIONS argument for `env.AK2_ACCESSIONS`.

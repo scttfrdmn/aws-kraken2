@@ -63,8 +63,11 @@ def complete_reps(trials):
 def schedule_check(sched, warmup=(("none", "a"), ("none", "b"))):
     """sched: one list of (set, regime) per rep. Returns the violated properties (empty = ok):
     every rep runs all 12 cells once; every set's a-before-b order flips from rep to rep; every
-    cell's trials follow distinct predecessors, of both regimes; the sets' mean positions differ
-    by at most 1 trial and the cells' by at most 3; no regime runs 3 times in a row."""
+    cell's trials follow distinct predecessors, of both regimes; within each regime, every cell
+    has the same number of trials that follow a trial of the other regime (so a cross-regime
+    carry-over, e.g. a 1.1 TB anonymous free before a tmpfs staging, weighs on every set alike);
+    the sets' mean positions differ by at most 1 trial and the cells' by at most 3; no regime
+    runs 3 times in a row."""
     bad = []
     cells = {(s, g) for s in SETS for g in "ab"}
     for r, rep in enumerate(sched):
@@ -88,7 +91,11 @@ def schedule_check(sched, warmup=(("none", "a"), ("none", "b"))):
             bad.append(f"{c}: repeated predecessor {p}")
         if len({x[1] for x in p}) < 2:
             bad.append(f"{c}: predecessors all of regime {p[0][1]}")
-    sm = [statistics.mean(pos[s]) for s in SETS]
+    for g in "ab":
+        cross = {c: sum(x[1] != g for x in p) for c, p in pred.items() if c[1] == g}
+        if len(set(cross.values())) > 1:
+            bad.append(f"regime {g}: cross-regime predecessor counts differ across cells {sorted(cross.items())}")
+    sm =[statistics.mean(pos[s]) for s in SETS]
     cm = [statistics.mean(pos[c]) for c in cells]
     if max(sm) - min(sm) > 1.0:
         bad.append(f"set mean positions spread {max(sm) - min(sm):.2f} > 1")
@@ -182,12 +189,19 @@ def tables(d):
     floor = min(x["load_floor_s"] for x in nets) if nets else None  # the faster read: the larger (upper-bound) ceiling
     td = os.path.join(d, "tables")
     vd = lambda t, k: (t.get("vmstat_delta") or {}).get(k)
+    # The trial that ran just before each one (by position; the first has none): carry-over is
+    # read from prev_regime and prev_set.
+    bypos = {t["pos"]: t for t in trials}
+    for t in trials:
+        p = bypos.get(t["pos"] - 1)
+        t["prev_regime"], t["prev_set"] = (p["regime"], p["set"]) if p else ("-", "-")
     write(os.path.join(td, "probe-tune-trials.tsv"),
-          ["pos", "rep", "warmup", "regime", "set", "valid", "counted", "applied", "precompact_s", "load_s", "classify_s", "total_s", "wall_s",
+          ["pos", "rep", "warmup", "regime", "set", "prev_regime", "prev_set", "valid", "counted", "applied", "precompact_s", "load_s", "classify_s", "total_s", "wall_s",
            "teardown_s", "pre_free_huge_frac", "compact_stall", "compact_success", "compact_fail", "thp_fault_alloc",
            "thp_fault_fallback", "thp_file_alloc", "thp_file_fallback", "shmem_huge_kb_after_load", "anon_huge_kb_peak",
            "shmem_pmd_mapped_kb_peak", "output_sha256"],
-          [[t["pos"], t["rep"], "yes" if t.get("warmup") else "no", t["regime"], t["set"], "yes" if t["valid"] else "no",
+          [[t["pos"], t["rep"], "yes" if t.get("warmup") else "no", t["regime"], t["set"], t["prev_regime"], t["prev_set"],
+            "yes" if t["valid"] else "no",
             "yes" if t["counted"] else "no", t.get("applied"),
             f(t.get("precompact_s")), f(t.get("load_s")), f(t.get("classify_s")), f(t.get("total_s")), f(t.get("wall_s")),
             f(t.get("teardown_s")), f(t.get("pre_free_huge_frac"), 4), vd(t, "compact_stall"), vd(t, "compact_success"),
@@ -232,6 +246,12 @@ def tables(d):
         print(f"tune_tables: DEFECT: completed trials wrote {len(shas)} different outputs and {len(rshas)} different reports (Law 1)",
               file=sys.stderr)
         return 1
+    und = [r for r in ("a", "b") if r not in {row[0] for row in sel_rows if row[1] != "undetermined"}]
+    if und:
+        print(f"tune_tables: UNDETERMINED: regime(s) {', '.join(und)} have no selection (complete reps {sorted(reps)}; "
+              f"a TTL kill anywhere in rep 3 leaves fewer than {MIN_N} counted trials per cell). S3's set is NOT chosen by this run.",
+              file=sys.stderr)
+        return 3
     return 0
 
 
@@ -286,6 +306,32 @@ def self_test():
     rb = schedule_check(rot)
     assert any("flip" in b for b in rb) and any("predecessor" in b for b in rb), rb
     assert any("spread" in b or "flip" in b for b in schedule_check([sched[0]] * 3)), "a repeated rep must fail"
+    # The SCHED at ddbd4a7 (#41 re-review): always on (a) had 1 trial after a (b) trial, the others 2. It must fail.
+    old = ["defer:b precompact:a always:a precompact:b none:a defermadv:a defermadv:b none:b proactive:a proactive:b always:b defer:a",
+           "always:b proactive:b defer:a always:a defermadv:b precompact:b proactive:a precompact:a none:b defermadv:a none:a defer:b",
+           "none:a proactive:a defer:b defermadv:a none:b defermadv:b precompact:a defer:a proactive:b always:a always:b precompact:b"]
+    ob = schedule_check([[tuple(c.split(":")) for c in r.split()] for r in old])
+    assert any("cross-regime" in b and "'always', 'a'), 1)" in b for b in ob), ob
+    # A run whose rep 3 is cut short is undetermined: the post says so loudly and exits 3.
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        os.makedirs(os.path.join(d, "out"))
+        pos, L = 0, []
+        for rep, rows in ((0, [("none", "a"), ("none", "b")]), (1, sched[0]), (2, sched[1]), (3, sched[2][:5])):
+            for s, g in rows:
+                pos += 1
+                L.append({"kind": "trial", "pos": pos, "rep": rep, "warmup": rep == 0, "set": s, "regime": g, "applied": True,
+                          "load_exit": 0, "classify_exit": 0, "load_s": 100.0 + pos % 3, "classify_s": 2.0, "precompact_s": None,
+                          "total_s": 102.0 + pos % 3, "output_sha256": "x", "report_sha256": "y"})
+        with open(os.path.join(d, "out", "tune.jsonl"), "w") as fh:
+            fh.write("".join(json.dumps(x) + "\n" for x in L))
+        import contextlib, io
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
+            rc = tables(d)
+        assert rc == 3 and "UNDETERMINED" in err.getvalue(), (rc, err.getvalue())
+        tr = list(csv.reader(open(os.path.join(d, "tables", "probe-tune-trials.tsv")), delimiter="\t"))
+        h = tr[0]
+        assert tr[1][h.index("prev_regime")] == "-" and tr[3][h.index("prev_regime")] == "b" and tr[3][h.index("prev_set")] == "none", tr[3]
     print("tune_tables: self-test ok")
 
 

@@ -151,6 +151,12 @@ spec header registers the plan, the selection rule and the resolution check.
   the body registers. That order is a searched design, not a rotation:
   - every set's a-before-b order flips from one repetition to the next;
   - each cell's 3 trials follow 3 different predecessors, of both regimes;
+  - every cell, in both regimes, has exactly 2 of its 3 trials right after a trial of the
+    other regime. So a cross-regime carry-over, such as (a)'s staging right after (b) freed
+    1.1 TB of anonymous memory, weighs on every set alike. The previous `SCHED` gave `always`
+    on (a) only 1 such trial against 2 for the others, which with n = 3 decides its median;
+  - `probe-tune-trials.tsv` records `prev_regime` and `prev_set` for every trial, so any
+    carry-over can be read from the record;
   - the sets' mean positions differ by at most 1 trial, and the cells' by at most 3;
   - no regime runs 3 times in a row.
 - `tune_tables.py --self-test` (`make test`) reads `SCHED` from the body and asserts these
@@ -186,6 +192,11 @@ again after them. The object's bytes divided by the faster of the two rates is t
   record all 12 of its trials, so a TTL kill leaves whole repetitions only and cannot favour the
   sets that ran early in the last one.
 - **Cell:** a cell (regime, set) needs at least 3 valid trials.
+- **Undetermined:** with 3 repetitions, a cell reaches 3 counted trials only if all three
+  repetitions are complete. A TTL kill (or any lost trial) anywhere in repetition 3 therefore
+  makes the probe undetermined, and so does an invalid `none` trial. The post then prints a
+  `tune_tables: UNDETERMINED ...` line and exits 3. `run.sh` marks the run failed, and S3's set
+  is not chosen by that run.
 - **Qualifying:** a set qualifies if both of these hold:
   - its median total beats `none`'s by more than 2 × the larger of the two cells' ranges;
   - its median classify is no worse than `none`'s plus 2 × the larger classify range.

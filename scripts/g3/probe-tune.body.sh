@@ -15,8 +15,10 @@
 # cell carries the fresh-boot trial alone. Then 3 reps, each complete (all 12 cells) before the
 # next starts; within a rep the 12 cells run in the fixed order SCHED[rep] below (a searched
 # design, not a rotation): every set's a-before-b order flips from rep to rep; every cell's 3
-# trials follow 3 different predecessors, of both regimes; the sets' mean positions differ by at
-# most 1 trial and the cells' by at most 3; no regime runs 3 times in a row. 38 trials. Before
+# trials follow 3 different predecessors, of both regimes; every cell, in both regimes, has
+# exactly 2 of its 3 trials right after a trial of the other regime (equal cross-regime
+# carry-over for every set); the sets' mean positions differ by at most 1 trial (0.83) and the
+# cells' by at most 3; no regime runs 3 times in a row. 38 trials. Before
 # every trial: ht_restore (the boot values), drop_caches (Law 4; a cold rung), ht_apply SET (its
 # knobs, then its timed pre-compaction step), ht_record. After: an ht_record. Between load and
 # classify (a), an ht_record; during both, a 2 s sampler of meminfo's AnonHugePages and
@@ -57,9 +59,9 @@ B=aws-kraken2-942542972736-us-west-2; CK=aws-kraken2/data/cohort
 S1=SRR5935740
 SETS=(none precompact proactive defer defermadv always)
 SCHED=(
-  "defer:b precompact:a always:a precompact:b none:a defermadv:a defermadv:b none:b proactive:a proactive:b always:b defer:a"
-  "always:b proactive:b defer:a always:a defermadv:b precompact:b proactive:a precompact:a none:b defermadv:a none:a defer:b"
-  "none:a proactive:a defer:b defermadv:a none:b defermadv:b precompact:a defer:a proactive:b always:a always:b precompact:b"
+  "defermadv:a always:a precompact:b defermadv:b defer:a proactive:b always:b none:a none:b defer:b precompact:a proactive:a"
+  "none:b proactive:a defer:b none:a precompact:a defermadv:b defermadv:a proactive:b precompact:b defer:a always:b always:a"
+  "defer:a precompact:b proactive:b always:a always:b precompact:a none:a defer:b proactive:a defermadv:a defermadv:b none:b"
 )
 NET_S=${AK2_REHEARSE_NET_S:-30}
 RW=48; NW=64
