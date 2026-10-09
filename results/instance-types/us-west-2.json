@@ -1,0 +1,176 @@
+{
+  "region": "us-west-2",
+  "queried_at": "2026-10-09T16:44:29Z",
+  "source": "aws ec2 describe-instance-types",
+  "aws_cli": "aws-cli/2.37.9",
+  "types": {
+    "c7g.large": {
+      "vcpus": 2,
+      "memory_mib": 4096,
+      "network_performance": "Up to 12.5 Gigabit",
+      "baseline_gbps": 0.937,
+      "peak_gbps": 12.5
+    },
+    "c8g.12xlarge": {
+      "vcpus": 48,
+      "memory_mib": 98304,
+      "network_performance": "22.5 Gigabit",
+      "baseline_gbps": 22.5,
+      "peak_gbps": 22.5
+    },
+    "c8g.16xlarge": {
+      "vcpus": 64,
+      "memory_mib": 131072,
+      "network_performance": "30 Gigabit",
+      "baseline_gbps": 30.0,
+      "peak_gbps": 30.0
+    },
+    "c8g.2xlarge": {
+      "vcpus": 8,
+      "memory_mib": 16384,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 3.75,
+      "peak_gbps": 15.0
+    },
+    "c8g.4xlarge": {
+      "vcpus": 16,
+      "memory_mib": 32768,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 7.5,
+      "peak_gbps": 15.0
+    },
+    "c8g.large": {
+      "vcpus": 2,
+      "memory_mib": 4096,
+      "network_performance": "Up to 12.5 Gigabit",
+      "baseline_gbps": 0.937,
+      "peak_gbps": 12.5
+    },
+    "c8gd.8xlarge": {
+      "vcpus": 32,
+      "memory_mib": 65536,
+      "network_performance": "15 Gigabit",
+      "baseline_gbps": 15.0,
+      "peak_gbps": 15.0
+    },
+    "c8gn.2xlarge": {
+      "vcpus": 8,
+      "memory_mib": 16384,
+      "network_performance": "Up to 50 Gigabit",
+      "baseline_gbps": 25.0,
+      "peak_gbps": 50.0
+    },
+    "c8gn.4xlarge": {
+      "vcpus": 16,
+      "memory_mib": 32768,
+      "network_performance": "50 Gigabit",
+      "baseline_gbps": 50.0,
+      "peak_gbps": 50.0
+    },
+    "c9g.12xlarge": {
+      "vcpus": 48,
+      "memory_mib": 98304,
+      "network_performance": "25 Gigabit",
+      "baseline_gbps": 25.0,
+      "peak_gbps": 25.0
+    },
+    "c9gd.8xlarge": {
+      "vcpus": 32,
+      "memory_mib": 65536,
+      "network_performance": "17 Gigabit",
+      "baseline_gbps": 17.0,
+      "peak_gbps": 17.0
+    },
+    "m7g.2xlarge": {
+      "vcpus": 8,
+      "memory_mib": 32768,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 3.75,
+      "peak_gbps": 15.0
+    },
+    "r8g.2xlarge": {
+      "vcpus": 8,
+      "memory_mib": 65536,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 3.75,
+      "peak_gbps": 15.0
+    },
+    "r8g.4xlarge": {
+      "vcpus": 16,
+      "memory_mib": 131072,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 7.5,
+      "peak_gbps": 15.0
+    },
+    "r8gd.16xlarge": {
+      "vcpus": 64,
+      "memory_mib": 524288,
+      "network_performance": "30 Gigabit",
+      "baseline_gbps": 30.0,
+      "peak_gbps": 30.0
+    },
+    "r8gd.2xlarge": {
+      "vcpus": 8,
+      "memory_mib": 65536,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 3.75,
+      "peak_gbps": 15.0
+    },
+    "r8gd.48xlarge": {
+      "vcpus": 192,
+      "memory_mib": 1572864,
+      "network_performance": "50 Gigabit",
+      "baseline_gbps": 50.0,
+      "peak_gbps": 50.0
+    },
+    "r8gd.xlarge": {
+      "vcpus": 4,
+      "memory_mib": 32768,
+      "network_performance": "Up to 12.5 Gigabit",
+      "baseline_gbps": 1.875,
+      "peak_gbps": 12.5
+    },
+    "t4g.micro": {
+      "vcpus": 2,
+      "memory_mib": 1024,
+      "network_performance": "Up to 5 Gigabit",
+      "baseline_gbps": 0.064,
+      "peak_gbps": 5.0
+    },
+    "x8g.12xlarge": {
+      "vcpus": 48,
+      "memory_mib": 786432,
+      "network_performance": "22.5 Gigabit",
+      "baseline_gbps": 22.5,
+      "peak_gbps": 22.5
+    },
+    "x8g.24xlarge": {
+      "vcpus": 96,
+      "memory_mib": 1572864,
+      "network_performance": "40 Gigabit",
+      "baseline_gbps": 40.0,
+      "peak_gbps": 40.0
+    },
+    "x8g.2xlarge": {
+      "vcpus": 8,
+      "memory_mib": 131072,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 3.75,
+      "peak_gbps": 15.0
+    },
+    "x8g.4xlarge": {
+      "vcpus": 16,
+      "memory_mib": 262144,
+      "network_performance": "Up to 15 Gigabit",
+      "baseline_gbps": 7.5,
+      "peak_gbps": 15.0
+    },
+    "x8g.8xlarge": {
+      "vcpus": 32,
+      "memory_mib": 524288,
+      "network_performance": "15 Gigabit",
+      "baseline_gbps": 15.0,
+      "peak_gbps": 15.0
+    }
+  }
+}

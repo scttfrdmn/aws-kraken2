@@ -241,6 +241,10 @@ finish() {
       cost_basis:"sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
       prefix_fetched:($fetched == "yes"), multipart_aborted:$aborted, multipart_abort_failures:$abort_fail,
       orphans_rc:$orc}' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
+  # Fleet utilisation from the members' manifests and log/util.tsv (docs/run.md, "Utilisation").
+  mkdir -p "$CDIR/tables"
+  python3 scripts/lib/util.py "$CDIR" > "$CDIR/tables/util.log" 2>&1 ||
+    say "WARNING: scripts/lib/util.py failed on $CDIR (tables/util.log)"
   # A cohort-level post script, scripts/post/<spec>.cohort.sh, gets the cohort dir (after
   # cohort.json, so it can find the members).
   local CPOST="scripts/post/$(basename "$SPEC" .json).cohort.sh" POSTRC=0

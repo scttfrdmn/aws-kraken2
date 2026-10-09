@@ -148,7 +148,8 @@ preamble and the spec body overran it: g1 measured 17781 bytes and failed at Run
 g0a measured 15211 bytes and passed. Precompressing the inline text does not help, because spawn
 gzips it again; it measured 1–1.5 KB *worse*.
 
-So `command[2]` is `scripts/stub.sh`, about 1.9 KB, and the **payload** (`scripts/preamble.sh` +
+So `command[2]` is `scripts/stub.sh` with the utilisation sampler spliced in
+(`scripts/lib/mkstub.sh`; kept as the run dir's `stub.sh`), and the **payload** (`scripts/preamble.sh` +
 `\n` + the spec body, byte for byte what used to be inlined) goes to `<run prefix>/payload.sh`.
 - `run.sh` uploads the payload before launch and checks the uploaded sha256.
 - It passes the stub `AK2_PAYLOAD_URI`, `AK2_PAYLOAD_SHA256`, and `AK2_PAYLOAD_URL`, a presigned
@@ -180,6 +181,81 @@ from the spawn version pinned in `scripts/udsize/go.mod` (bump it there and `go 
 refuses if the result exceeds
 16384 − `AK2_USERDATA_MARGIN` (1024, in `ak2.env`). The manifest records `user_data` and
 `payload` (URI, sha256, bytes).
+
+## Utilisation
+
+Every run on both arms records how much of the machine it used over the **billed window**,
+which is `launch_time` → `terminated_at` per node; a fleet sums node-seconds. This is Scott's
+definition on #25 (2026-10-09). The three utilisations are reported separately and never
+combined. Each gets its own effective cost, billed $ ÷ U_r.
+
+- **U_cpu** = busy vCPU-s ÷ (vCPUs × billed s).
+  - busy = user + nice + system + irq + softirq + steal, from `/proc/stat`. guest is already
+    inside user; idle and iowait count as idle. Sys time counts as used.
+  - `/proc/stat` integrates from boot, so CPU between `btime` and the first tick is counted.
+- **U_mem** = time-mean (MemTotal − MemAvailable) ÷ installed memory (`MemoryInfo.SizeInMiB`).
+  - The peak (the largest 1 Hz sample) is reported beside it.
+  - Shmem/tmpfs counts as used.
+- **U_net** = Δ(rx + tx bytes) of the default-route (ENA) interface ÷ (line rate × billed s).
+  - It is computed against both line rates: NetworkCards[0]'s baseline and its peak.
+  - A burst can exceed the baseline rate, so U_net at baseline can exceed 1.
+- **Unobservable windows** count as 0%, and their durations are columns:
+  - `launch_time` → `btime`;
+  - `btime` → the first tick, for memory and network only (CPU is integrated, as above);
+  - the last tick → `terminated_at`.
+
+**The sampler** is `scripts/util-sampler.sh`: dependency-free bash, at 1 Hz.
+- **Start.** `scripts/lib/mkstub.sh` splices it into the stub. The stub's first act after
+  `set +e` is to write it to `/tmp/ak2-util.sh` and start it, double-forked with no inherited
+  stdio. It reads only `/proc` and `/sys`, and runs `ethtool -S` once, so it starts ahead of
+  the region assert.
+- **Record.** One record per tick goes to `/tmp/ak2-util.tsv`. Its tab-separated record types:
+  - `H key value`: the header. It holds btime, clk_tck, ncpu, the interface and the cgroup.
+  - `S t phase tag …`: raw counters, tagged with the phase in `$AK2_STATE/phase` (`stub` before
+    the preamble). The counters are `/proc/stat`'s aggregate line, MemTotal, MemAvailable,
+    Shmem, rx/tx bytes, pgfault, pgmajfault, and the task cgroup's `cpu.stat`.
+  - `E t start|end name value`: the `ethtool -S` `*_allowance_exceeded` counters.
+- **Cost.** No fork per tick: builtins only, and the wait is `read -t` on a private FIFO. That
+  is about 1 ms of CPU per tick.
+- **Streaming.** The preamble's 5 s pusher sends the record to `log/util.tsv`.
+- **Phase boundaries.** `ak2_phase` takes one tick at each phase start (`once phase`). The
+  interval before it belongs to the previous phase, so the boundaries are exact.
+- **End.** `ak2_finish` stops the loop, takes a `final` tick together with the end-of-run
+  `ethtool` counters, and pushes the record once more.
+- **Fallback.** If the stub could not start the sampler, the preamble starts it and logs a
+  WARN. Utilisation is then measured from its first tick.
+
+**At launch**, `run.sh` adds `instance.type_info` to the manifest, from
+`describe-instance-types`: vcpus, memory_mib, network_performance, baseline_gbps and
+peak_gbps. `launch_time` and `terminated_at` were already recorded.
+
+**After the run**, `scripts/lib/util.py` writes `tables/util.tsv`, and `run-multi.sh` writes the
+cohort's. Its rows:
+- `node`: one per instance;
+- `fleet`: the sums;
+- `node-phase`: per phase, plus the three unobservable windows, shown in brackets;
+- `fleet-phase`: the phases summed across nodes.
+
+Its columns:
+- the utilisations: U_cpu, U_mem_mean and U_mem_peak, U_net_baseline and U_net_peak;
+- the effective cost and the multiplier (1/U) of each;
+- the unobservable durations;
+- the task cgroup's CPU (spored's service cgroup: the workload plus the harness, without the
+  rest of the system);
+- pgfault and pgmajfault, so page-fault time can be seen per phase;
+- the allowance-counter deltas, tick count and largest gap, the capacity source, and coverage.
+
+**Useful-work CPU.** The definition asks for the workload's CPU in a named cgroup scope
+(`systemd-run --scope`). That is not in place. The bodies do not start the workload in a scope
+of its own, and the scope could not be verified here without AWS (the test containers have no
+systemd). In its place:
+- per-phase CPU from the phase-tagged ticks;
+- the task cgroup's `cpu.stat`;
+- the engine's own getrusage where `AK2_TIMINGS=1` (`ak2-timing total`);
+- upstream's per-run getrusage in the G2 runner.
+
+[util.md](util.md) has the streaming test that `make rehearse` runs first, and the backfill of
+the runs that predate the sampler.
 
 ## What it does
 
@@ -234,14 +310,17 @@ On the instance, `preamble.sh` runs first:
    instance role cannot read our own buckets' Payer and the launch host already verified it.
 4. A `drop_caches` probe (`sudo -n` plus a writable `/proc/sys/vm/drop_caches`), recorded as
    `drop_caches_ok`, then `preflight.json`.
-5. The log and `requests.tsv` push every 5 s (fixed), plus a final push on exit.
+5. The log, `requests.tsv` and the utilisation record (`log/util.tsv`) push every 5 s (fixed),
+   plus a final push on exit, after the sampler's `final` tick.
 
 ## Outputs
 
 `results/<gate>/<run-id>/`: `manifest.json`, `spec.json`, `spec.resolved.json`,
 `spawn-plan.txt`, `launch.json`, `launch.err`, `preflight.json`, `log/run.log`, `out/` (what the
 spec pushed, plus `requests.tsv`), `spawn/<task_id>/{completion.json,command.log,.exitcode}`,
-`completion.json`, `orphans.txt` (the post-run orphan check), `tables/phases.tsv`, `tables/requests.tsv`, plus `decoded/` and `tables/` from
+`completion.json`, `orphans.txt` (the post-run orphan check), `stub.sh` (command[2] as launched),
+`log/util.tsv` (the sampler's record), `tables/phases.tsv`, `tables/requests.tsv`,
+`tables/util.tsv` (utilisation; `tables/util.log` is util.py's output), plus `decoded/` and `tables/` from
 a post script. In S3, the same tree is under
 `s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/<gate>/<run-id>/`.
 
@@ -365,6 +444,8 @@ asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
     finalised), `cost_usd` (the sum of the members' costs), `ended`, `terminated_early`,
     `sweep_failures` (every describe, terminate or wait that failed) and the multipart abort
     counts;
+  - it writes the fleet's `tables/util.tsv` from the members' manifests and `log/util.tsv`
+    ("Utilisation" above);
   - it runs the **global** `make orphans`.
 
   Each member's driver output is in `rank-<k>.run.log`.

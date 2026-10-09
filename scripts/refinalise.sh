@@ -113,5 +113,7 @@ if [ "$(jq -r '.orphan_check // empty' "$M")" = "" ]; then
     { echo "refinalise: could not record the orphan check" >&2; rm -f "$TMP"; }
   [ "$ORC" = 0 ] || echo "refinalise: orphan check rc $ORC (see $D/orphans.txt)" >&2
 fi
+# 6. utilisation, as run.sh derives it (docs/run.md, "Utilisation")
+python3 scripts/lib/util.py "$D" > "$D/tables/util.log" 2>&1 || echo "refinalise: util.py failed (see $D/tables/util.log)" >&2
 jq -c '{instance, start, stop, stop_basis, billed_seconds, cost_usd, cost_basis, task_exit:.task.exit_code, orphan_check:(.orphan_check | {rc, own_gone}?),
         repair:((.manifest_repairs // [])[-1] // .manifest_repair | {at, forced, gaps, stop_basis})}' "$M"

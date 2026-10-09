@@ -218,6 +218,10 @@ write_resolved() {
 }
 PAYLOAD="$RUN_DIR/payload.sh"
 { cat scripts/preamble.sh; printf '\n'; q '.command[2]'; } > "$PAYLOAD" || die "could not write $PAYLOAD"
+# command[2]: the stub with the utilisation sampler spliced in (scripts/lib/mkstub.sh), kept as
+# the run dir's stub.sh (docs/run.md, "Utilisation").
+STUB="$RUN_DIR/stub.sh"
+scripts/lib/mkstub.sh > "$STUB" || { rm -rf "$RUN_DIR"; die "could not build the stub (scripts/lib/mkstub.sh)"; }
 PAYLOAD_BYTES=$(wc -c < "$PAYLOAD" | tr -d ' ')
 # The stub execs it as one `bash -c` argument; Linux caps a single argument at 128 KiB.
 [ "$PAYLOAD_BYTES" -lt 122880 ] || { rm -rf "$RUN_DIR"; die "payload is $PAYLOAD_BYTES bytes; the limit is 120 KiB (one bash -c argument)"; }
@@ -227,7 +231,7 @@ PAYLOAD_URI="$PREFIX/payload.sh"
 # results bucket. Signing is local; the object is uploaded just before launch.
 PAYLOAD_URL=$(aws s3 presign "$PAYLOAD_URI" --region "$REGION" --expires-in $((TTL_S + 3600))) ||
   die "could not presign $PAYLOAD_URI"
-jq --rawfile stub scripts/stub.sh --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
+jq --rawfile stub "$STUB" --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
    --arg expect "$EXPECT" --arg buckets "$BUCKETS" --arg allowed "$ALLOWED_BUCKETS" \
    --arg run "$RUN_ID" --arg gate "$GATE" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
    --arg purl "$PAYLOAD_URL" --arg cid "$COHORT_ID" --arg crank "$COHORT_RANK" --arg cn "$COHORT_N" \
@@ -424,14 +428,24 @@ for i in $(seq 1 24); do
   sleep 5
 done
 [ -n "$DESC" ] || say "WARNING: DescribeInstances never found $IID; instance fields stay null (scripts/refinalise.sh fills them after the run)"
+# The installed capacity utilisation is measured against (docs/run.md, "Utilisation"): vCPUs,
+# memory and the first network card's baseline and peak line rate, from describe-instance-types.
+TYPEINFO=null
+if aws_try TI ec2 describe-instance-types --region "$LREGION" --instance-types "$ITYPE" --query 'InstanceTypes[0]' --output json &&
+   TYPEINFO=$(echo "$TI" | jq -c --arg at "$(now)" '{vcpus:.VCpuInfo.DefaultVCpus, memory_mib:.MemoryInfo.SizeInMiB,
+     network_performance:.NetworkInfo.NetworkPerformance, baseline_gbps:.NetworkInfo.NetworkCards[0].BaselineBandwidthInGbps,
+     peak_gbps:.NetworkInfo.NetworkCards[0].PeakBandwidthInGbps, source:"ec2 describe-instance-types", queried_at:$at}'); then :
+else
+  TYPEINFO=null; say "WARNING: describe-instance-types $ITYPE failed; instance.type_info stays null (util.py falls back to results/instance-types/)"
+fi
 PRICE_ERR=$(mktemp)
 PRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2> "$PRICE_ERR" | jq '.[0].on_demand_price // null')
 mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg type "$ITYPE" --arg lr "$LREGION" \
-  --argjson price "${PRICE:-null}" --arg perr "$(cat "$PRICE_ERR")" --argjson d "${DESC:-null}" '
+  --argjson price "${PRICE:-null}" --arg perr "$(cat "$PRICE_ERR")" --argjson d "${DESC:-null}" --argjson ti "${TYPEINFO:-null}" '
   .launch = {requested_at:$t, instance_id:$iid, region:$lr}
   | .instance = {type:$type, count:1, ami:$d.ImageId, az:$d.Placement.AvailabilityZone,
                  launch_time:$d.LaunchTime, architecture:$d.Architecture,
-                 lifecycle:($d.InstanceLifecycle // "on-demand")}
+                 lifecycle:($d.InstanceLifecycle // "on-demand"), type_info:$ti}
   | .truffle_price_usd_per_hour = $price | .truffle_price_note = $perr'
 rm -f "$PRICE_ERR"
 
@@ -542,6 +556,9 @@ mset --arg state "$STATE" --arg basis "$FINAL_BASIS" --arg end "$END_ISO" --argj
   | .cost_basis = "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests"
   | .manifest_finalised_at = $fin'
 EXIT=$(jq -r '.task.exit_code // 99' "$M" 2>/dev/null || echo 99)
+# Utilisation (docs/run.md, "Utilisation"): tables/util.tsv from log/util.tsv and the manifest.
+python3 scripts/lib/util.py "$RUN_DIR" > "$RUN_DIR/tables/util.log" 2>&1 ||
+  say "WARNING: scripts/lib/util.py failed on $RUN_DIR (tables/util.log)"
 [ "$REQS" = null ] && say "WARNING: the spec recorded no request counts (ak2_req)"
 
 # ---- spec-specific local post-processing: scripts/post/<spec name>.sh, if it exists ----

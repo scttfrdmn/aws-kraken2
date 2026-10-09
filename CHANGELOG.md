@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
+  - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
+    records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's
+    `cpu.stat` and the current phase, plus `ethtool -S` `*_allowance_exceeded` at start and end.
+  - `scripts/lib/mkstub.sh` splices the sampler into the user-data stub, which starts it before
+    anything else.
+  - The preamble streams the record to `log/util.tsv` on the 5 s pusher. `ak2_phase` takes a
+    boundary tick, and `ak2_finish` takes a `final` tick before the last push.
+  - `run.sh` records `instance.type_info` at launch: vCPUs, MiB, and the baseline and peak Gbit/s
+    from describe-instance-types. It keeps the launched stub as `stub.sh`.
+  - `scripts/lib/util.py` writes `tables/util.tsv`: per-node, fleet and per-phase U_cpu,
+    U_mem (mean and peak) and U_net (at the baseline and the peak rate), each with its own
+    effective cost and multiplier, plus the unobservable-window durations. `run.sh`,
+    `run-multi.sh`, `refinalise.sh` and `make report` call it. `make test` runs its unit test
+    (`scripts/lib/util_test.py`).
+  - `make util-stream-test`: on N AL2023 containers running the real stub and preamble, checks
+    that the record streams on every node and resolves known CPU, tmpfs and network effects.
+    `make rehearse` runs it first. `BREAK=nopush|nostub` are negative controls.
+  - `make util-backfill`: lower-bound utilisation of the existing `results/g3` runs, from the
+    engine's getrusage and memory samples, U2's per-run getrusage and the logged byte counts,
+    with explicit coverage columns. Written to `results/g3/util-backfill/`.
+  - `make instance-types`: `results/instance-types/us-west-2.json`.
+  - Runbook `docs/util.md`.
+
 - Repository bootstrap: license, changelog, CLAUDE.md with the experiment's laws, make targets.
 - Run harness: `make run` (`scripts/run.sh`, on-instance hygiene preamble `scripts/preamble.sh`,
   settings `scripts/ak2.env`), `make orphans`, `make report`, with runbooks `docs/run.md`,
