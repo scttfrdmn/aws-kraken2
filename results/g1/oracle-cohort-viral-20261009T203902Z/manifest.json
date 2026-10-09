@@ -1,0 +1,36 @@
+{
+  "gate": "g1",
+  "what": "make oracle-cohort: upstream kraken2 per sample vs the engine cohort mode, byte-identity per sample (Law 1, #25)",
+  "db": "viral",
+  "db_dir": "k2_viral_20260626",
+  "commit": "7bb930d4fcc77a4355aab8303fd31ea2e1527c68",
+  "dirty": false,
+  "upstream_pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+  "upstream_describe": "2.17.2-20-g2731b35",
+  "host": {
+    "os": "Darwin",
+    "arch": "arm64",
+    "canonical_platform": false
+  },
+  "gzip": {
+    "version": "shim gzip -dc: rapidgzip version 0.14.5; otherwise: gzip 1.12",
+    "path": "/tmp/ak2-48-tools/shim-rapidgzip/gzip"
+  },
+  "decompress": {
+    "ak2_decompress": "pipe",
+    "ours": "gzip -dc / bzip2 -dc from PATH (as the wrapper)"
+  },
+  "modes": [
+    "n1",
+    "n3",
+    "n3-striped",
+    "n3-sdk",
+    "n3-lpt"
+  ],
+  "samples": 11,
+  "rows": 55,
+  "rows_passed": 55,
+  "start": "2026-10-09T20:39:02Z",
+  "stop": "2026-10-09T20:39:26Z",
+  "failed": false
+}

@@ -1,0 +1,17 @@
+check	value	want	ok
+se-short: single-end reads with an empty hit list (0:0)	n/a	gt 0	no
+pe-short: pairs whose hit list ends at the mate border (|:|)	n/a	gt 0	no
+pe-short: pairs with no minimizers at all (hit list |:|)	n/a	gt 0	no
+pe-slash: --output IDs still ending in /1 or /2 (trimmed in paired mode)	n/a	eq 0	no
+pe-slash: sequence-output IDs ending in /1 (kept as read)	n/a	gt 0	no
+se-slash: --output IDs ending in /1 (not trimmed single-end)	n/a	gt 0	no
+se-trunc-gz: --output records from the half-length .gz (some reached classify)	98645	gt 0	yes
+se-trunc-gz: --output records from the half-length .gz (fewer than the 200000 reads)	98645	lt 200000	yes
+se-trunc-gz: runs of ours that logged in-process decompression (default: every run)	1	eq 1	yes
+se-garbage-gz: --output records before the garbage tail (some reached classify)	200000	gt 0	yes
+se-q20: bases masked to x in the sequence outputs	n/a	gt 0	no
+se-q20 vs se-default (S1): -Q 20 changes --output	n/a	ne x	no
+pe-t1 (1 thread, plain) vs pe-default-gz (8 threads, gzip), S1: same --output	a	eq b	no
+pe-mmap vs pe-default-gz, S1: same --output	a	eq b	no
+pe-quick vs pe-default-gz, S1: --quick changes --output	n/a	ne x	no
+minimum_acceptable_hash_value (nonzero: the subthreshold skip path runs)	0	info	-
