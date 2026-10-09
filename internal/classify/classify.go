@@ -276,9 +276,12 @@ type Classifier struct {
 	idx   IndexInfo
 	tag   uint64
 	taxa  []uint64
-	hits  []hit
 	toks  *Tokens
 	hashF func(uint64) uint64
+
+	// hc is this worker's hit_counts (hitorder.go): one per worker, cleared per read, as
+	// upstream's per-thread map (classify.cc:608, :971).
+	hc HitCounts
 
 	// Trace, when set, receives ResolveTree's arithmetic for every read (diagnostics only:
 	// k2probe diag-reads, #44): the hit counts, each taxon's root-to-leaf score, the call after
@@ -294,7 +297,7 @@ func New(tree Tree, idx IndexInfo, opts Options, hashFn func(uint64) uint64) (*C
 	if hashFn == nil {
 		hashFn = chash.MurmurHash3
 	}
-	c := &Classifier{tree: tree, opts: opts, idx: idx, hashF: hashFn}
+	c := &Classifier{tree: tree, opts: opts, idx: idx, hashF: hashFn, hc: newHitCounts()}
 	if opts.FlagUniqueMinimizers {
 		c.tag = uniqueMinimizerTag
 	}
@@ -325,20 +328,10 @@ func (c *Classifier) ClassifySequence(s Scanner, r Resolver, id, seq1, seq2 []by
 	return c.Classify(t, id, uint32(len(seq1)), len2, w)
 }
 
-func (c *Classifier) addHit(taxon uint64) {
-	for i := len(c.hits) - 1; i >= 0; i-- {
-		if c.hits[i].taxon == taxon {
-			c.hits[i].count++
-			return
-		}
-	}
-	c.hits = append(c.hits, hit{taxon, 1})
-}
-
 // replay is classify.cc phase 3, through the --quick early exit.
 func (c *Classifier) replay(t *Tokens, w *Worker) (hitGroups int64) {
 	c.taxa = c.taxa[:0]
-	c.hits = c.hits[:0]
+	c.hc.Clear() // classify.cc:971
 	var lastTaxon, tag uint64
 	li := 0
 	for _, k := range t.kinds {
@@ -382,7 +375,7 @@ func (c *Classifier) replay(t *Tokens, w *Worker) (hitGroups int64) {
 		c.taxa = append(c.taxa, tag|taxon)
 		tag = 0
 		if taxon != 0 {
-			c.addHit(taxon)
+			c.hc.Increment(taxon) // classify.cc:1085
 			if c.opts.Quick && hitGroups >= int64(c.opts.MinimumHitGroups) {
 				return hitGroups
 			}
@@ -391,8 +384,9 @@ func (c *Classifier) replay(t *Tokens, w *Worker) (hitGroups int64) {
 	return hitGroups
 }
 
-// resolveTree is classify.cc ResolveTree, with its types: uint32 scores, a uint32 required
-// score of ceil(confidence * total_minimizers) computed in double.
+// resolveTree is classify.cc ResolveTree (:897-949), with its types: uint32 scores, a uint32
+// required score of ceil(confidence * total_minimizers) computed in double. It walks c.hc in
+// the container's order (hitorder.go): when a score tie's LCA is 0 the call depends on it (#44).
 func (c *Classifier) resolveTree(totalMinimizers uint64) uint64 {
 	var maxTaxon uint64
 	var maxScore uint32
@@ -400,52 +394,43 @@ func (c *Classifier) resolveTree(totalMinimizers uint64) uint64 {
 	if c.Trace != nil {
 		c.Trace("total_minimizers", 0, totalMinimizers)
 		c.Trace("required", 0, uint64(required))
-		for _, h := range c.hits {
-			c.Trace("hit", h.taxon, h.count)
-		}
+		c.hc.Range(func(t, n uint64) bool { c.Trace("hit", t, n); return true })
 	}
-
-	// Sum each taxon's root-to-leaf path; ties resolve to the LCA. hit_counts is an
-	// unordered_map upstream; the result does not depend on its order (the call is the LCA
-	// of every taxon with the maximum score), so a slice serves.
-	for _, h := range c.hits {
+	// Sum each taxon's root-to-leaf path; ties resolve to the LCA (:905-924).
+	c.hc.Range(func(taxon, _ uint64) bool {
 		var score uint32
-		for _, h2 := range c.hits {
-			if c.tree.IsAAncestorOfB(h2.taxon, h.taxon) {
-				score += uint32(h2.count)
+		c.hc.Range(func(taxon2, count2 uint64) bool {
+			if c.tree.IsAAncestorOfB(taxon2, taxon) {
+				score += uint32(count2)
 			}
-		}
+			return true
+		})
 		if score > maxScore {
 			maxScore = score
-			maxTaxon = h.taxon
+			maxTaxon = taxon
 		} else if score == maxScore {
-			maxTaxon = c.tree.LowestCommonAncestor(maxTaxon, h.taxon)
+			maxTaxon = c.tree.LowestCommonAncestor(maxTaxon, taxon)
 		}
 		if c.Trace != nil {
-			c.Trace("score", h.taxon, uint64(score))
+			c.Trace("score", taxon, uint64(score))
 			c.Trace("max_taxon", maxTaxon, uint64(maxScore))
 		}
-	}
-
-	// Reset max score to only the hits at the called taxon.
-	maxScore = 0
-	for _, h := range c.hits {
-		if h.taxon == maxTaxon {
-			maxScore = uint32(h.count)
-			break
-		}
-	}
-	// Climb until the clade has the required support, or run off the tree.
+		return true
+	})
+	// Reset max score to only the hits at the called taxon (:927; inserts it when absent).
+	maxScore = uint32(c.hc.Lookup(maxTaxon))
 	if c.Trace != nil {
 		c.Trace("called_after_scoring", maxTaxon, uint64(maxScore))
 	}
+	// Climb until the clade has the required support, or run off the tree (:929-946).
 	for maxTaxon != 0 && maxScore < required {
 		maxScore = 0
-		for _, h := range c.hits {
-			if c.tree.IsAAncestorOfB(maxTaxon, h.taxon) {
-				maxScore += uint32(h.count)
+		c.hc.Range(func(taxon, count uint64) bool {
+			if c.tree.IsAAncestorOfB(maxTaxon, taxon) {
+				maxScore += uint32(count)
 			}
-		}
+			return true
+		})
 		if c.Trace != nil {
 			c.Trace("climb", maxTaxon, uint64(maxScore))
 		}

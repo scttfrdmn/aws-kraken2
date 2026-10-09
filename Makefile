@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-law1-u2 bash-jobs-test stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-law1-u2 bash-jobs-test hitorder-golden stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -88,6 +88,11 @@ g3-law1-u2:
 # there and the current fetch and lanes must pass (scripts/tests/bash_jobs.sh).
 bash-jobs-test:
 	scripts/bash-jobs-test.sh
+
+# #44: regenerate the HitCounts golden data (upstream/umap_order.cc under AL2023's g++, podman;
+# docs/hitorder.md).
+hitorder-golden:
+	scripts/hitorder-golden.sh
 
 # Rehearse a cohort spec locally before any launch (docs/cohort.md, "Rehearsal"): the spec's own
 # body as N nodes (default 3) under the harness's env, every output against upstream.
