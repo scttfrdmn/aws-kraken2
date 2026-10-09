@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The ladder lever library, `scripts/g3/lever.sh` (#50; the #25 ladder build, WP-6), shared by
+  both arms and sourced by a body after the preamble. Its header is the function contract, and
+  `docs/ladder.md` is the runbook.
+  - `lv_nvme single|raid`.
+  - `lv_stage_db awscp-classic|s5cmd`, with the classic client forced in a private
+    `AWS_CONFIG_FILE`. `lv_db_etag` reads back a recorded ETag.
+  - `lv_etag`, as its own phase.
+  - `lv_fetch_inputs serial|lanes<K>`, sha256-checked through `scripts/g3/fetch.sh`.
+  - `lv_upload_start awscp-serial|s5cmd-overlap`, `lv_upload_enqueue` and `lv_upload_drain`.
+    The sha256 is taken on the node at enqueue, before the upload. The overlap lane is waited
+    on by PID.
+  - `lv_gunzip_shim gzip|rapidgzip-P<k>`: rapidgzip 0.14.5 behind a `gzip` on PATH, for
+    upstream's `gzip -dc`.
+  - `lv_s5`, the only s5cmd entry point: s5cmd 2.3.0, checksummed. It allow-lists buckets and
+    refuses `run`.
+  - Every call writes a JSON record (streamed as `lever {json}`, pushed to `out/lever.jsonl`)
+    and counts its requests with `ak2_req`. Every failure also goes through `ak2_err`.
+  - `make lever-test` runs `scripts/tests/lever_test.sh` in AL2023 under podman, with the real
+    preamble under `bash -e -c` and stub aws and s5cmd. It checks the upload overlap by
+    timestamps against the serial contrast, and that the shim is byte-identical to `gzip -dc`.
+    It checks that s5cmd is refused undeclared buckets, that the sha256 is recorded before each
+    upload, that serial and lane fetches both verify, and that failures are surfaced. It is not
+    part of `make test`, because it needs podman.
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's

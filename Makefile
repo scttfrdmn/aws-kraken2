@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: lever-test util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -94,6 +94,12 @@ g3-law1-u2:
 # there and the current fetch and lanes must pass (scripts/tests/bash_jobs.sh).
 bash-jobs-test:
 	scripts/bash-jobs-test.sh
+
+# #50: the ladder lever library (scripts/g3/lever.sh) under the preamble in AL2023 (podman; not in
+# make test): upload overlap by timestamps, the gunzip shim against gzip -dc, the s5cmd guard,
+# sha256 records, serial and lane fetches (docs/ladder.md).
+lever-test:
+	scripts/tests/lever_test.sh
 
 # #44: regenerate the HitCounts golden data (upstream/umap_order.cc under AL2023's g++, podman;
 # docs/hitorder.md).
