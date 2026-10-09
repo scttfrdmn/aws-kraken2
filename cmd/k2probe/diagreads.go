@@ -155,6 +155,7 @@ func diagReads(args []string) error {
 		ScannerEqual   bool     `json:"scanner_equal"`
 		FirstScanDiff  int      `json:"first_scanner_diff"`
 		UpEvents       []string `json:"upstream_events"`
+		UpValues       []uint32 `json:"upstream_values_internal"`
 		OurEventsAtDif []string `json:"our_events_from_first_diff,omitempty"`
 	}
 	type lookDiff struct {
@@ -167,9 +168,10 @@ func diagReads(args []string) error {
 		Home      uint64 `json:"home_cell"`
 	}
 	type traceEv struct {
-		Event string `json:"event"`
-		Taxid uint64 `json:"taxid_external"`
-		Value uint64 `json:"value"`
+		Event    string `json:"event"`
+		Taxid    uint64 `json:"taxid_external"`
+		Internal uint64 `json:"taxid_internal"`
+		Value    uint64 `json:"value"`
 	}
 	type readDiag struct {
 		ID              string     `json:"id"`
@@ -223,6 +225,14 @@ func diagReads(args []string) error {
 			}
 			md := mateDiag{Len: len(rec.Seq), Events: len(rec.Minimizers), ScannerEqual: true, FirstScanDiff: -1,
 				UpEvents: evs(rec.Minimizers, rec.Ambiguous)}
+			// Upstream's value for each event (internal taxid; 0 for an ambiguous event or a miss).
+			for j, k := range rec.Minimizers {
+				var v uint32
+				if !rec.Ambiguous[j] {
+					v = upv[k].Value
+				}
+				md.UpValues = append(md.UpValues, v)
+			}
 			n := len(rec.Minimizers)
 			if len(ourMates[m]) != n {
 				md.ScannerEqual = false
@@ -260,7 +270,7 @@ func diagReads(args []string) error {
 		// Replays.
 		replay := func(m0, m1 []uint64, a0, a1 []bool, get func(uint64) uint32) (string, []traceEv) {
 			var tr []traceEv
-			cl.Trace = func(e string, t, v uint64) { tr = append(tr, traceEv{e, tax.ExternalID(t), v}) }
+			cl.Trace = func(e string, t, v uint64) { tr = append(tr, traceEv{e, tax.ExternalID(t), t, v}) }
 			defer func() { cl.Trace = nil }()
 			t := cl.NewTokens()
 			t.Reset()

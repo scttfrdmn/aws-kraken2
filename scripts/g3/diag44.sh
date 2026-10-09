@@ -38,14 +38,18 @@ if [ "${AK2_REHEARSE_TAMPER:-}" = "$S" ]; then
   awk 'NR == 5 { $1 = ($1 == "C" ? "U" : "C") } { print }' OFS='\t' "$W/$S.ours.out" > "$W/$S.ours.t" && mv "$W/$S.ours.t" "$W/$S.ours.out"
 fi
 step "ours exit $oe in $(awk -v a="$t1" -v b="$t2" 'BEGIN{printf "%.0f", b-a}') s; extracting the differences"
-python3 scripts/lib/diag_extract.py "$W/$S.up.out" "$W/$S.ours.out" "$RD/${S}_1.fastq.gz" "$RD/${S}_2.fastq.gz" "$O" > "$W/$S.extract.log" 2>&1
+# scripts/g3/diag44.ids: reads diagnosed whether or not they differ (#44's 16, so their upstream
+# values and internal hit IDs are recorded after the fix too).
+grep "^$S\." scripts/g3/diag44.ids > "$W/$S.ids" 2>/dev/null
+python3 scripts/lib/diag_extract.py "$W/$S.up.out" "$W/$S.ours.out" "$RD/${S}_1.fastq.gz" "$RD/${S}_2.fastq.gz" "$O" "$W/$S.ids" > "$W/$S.extract.log" 2>&1
 xe=$?
 diff "$W/$S.up.rep" "$W/$S.ours.rep" > "$O/report.diff"
 nd=$(awk 'END{print NR - 1}' "$O/diff.tsv" 2>/dev/null)
+ns=$(grep -c . "$O/up_sel.txt" 2>/dev/null)
 de=0
 step "$(cat "$W/$S.extract.log")"
-if [ "${nd:-0}" -gt 0 ]; then
-  step "diag-reads on $nd read pairs"
+if [ "${ns:-0}" -gt 0 ]; then
+  step "diag-reads on $ns read pairs ($nd differing)"
   bin/k2probe diag-reads -db "$DB" -mmdump "$H/mm_dump" -chashdump "$H/chash_dump" -up "$O/up_sel.txt" -ours "$O/ours_sel.txt" \
     "$O/sel_1.fq" "$O/sel_2.fq" > "$O/diag.jsonl" 2> "$O/diag.err"
   de=$?
