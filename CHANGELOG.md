@@ -53,6 +53,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     and garbage cases accept exit `0,65`.
   - rapidgzip 0.14.5's loss on padded and garbage-tailed members varies with `-P`
     (`results/g1/rapidgzip-tail-loss-20261009T210618Z/`).
+- `AK2_ENGINE_VERIFY_ETAG=1` (#49): the engine checks the S3 ETag of hash.k2d
+  (`AK2_ENGINE_HASH_ETAG`) against the bytes its shards loaded, before the first sample. The part
+  size is inferred as `scripts/lib/etagcheck.py` does (RODA v205: 8860 parts of 128 MiB), or
+  given by `AK2_ENGINE_ETAG_PART_BYTES`. Single-part ETags are the plain md5.
+  - **Guarantee:** every byte any node holds in memory, and every header a node parsed, is
+    covered. Each is one of the bytes the ETag was recomputed from, or md5-equal to a copy of
+    them. No byte is counted twice.
+  - **Parts:** each node hashes the parts that start in its byte range, by file offset. It
+    fetches the rest of its last part with one extra ranged GET.
+  - **Cross-checks:** with no GET, the holder and the user of every overlap publish digests of
+    their copies, which must be equal. An overlap is where a node's cells meet bytes another node
+    used for the ETag: a straddling part's head, the overlap tails, and the last shard's wrapped
+    tail. Each node also publishes the md5 of its header.
+  - **Records and combine:** each node publishes all of this in its rendezvous record
+    (`etag_parts`). Every node, rank 0 included, combines all the records and compares.
+  - **Failures:** a mismatch (`ErrETagMismatch`) fails the run (exit 1) before any output is
+    opened. So does an unverifiable ETag (`ErrETagFormat`: not an md5, as for SSE-KMS, or no
+    part size). Setting it without `AK2_ENGINE_N` is a usage error.
+  - **Timing:** it is timed as the `etag` phase, with an `ak2-engine etag` counter line that
+    carries the extra GET. The `load` line excludes it.
+
+  The in-process engine verifies too. Code:
+  `internal/engine/etag.go`, `cmd/aws-kraken2/etag.go`. `rangeread.FileHandler` is now
+  `k2probe serve-file`'s handler, shared with the tests. Shard bytes are unchanged.
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It
     records raw `/proc/stat`, meminfo, vmstat and interface counters, the task cgroup's
