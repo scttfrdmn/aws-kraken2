@@ -35,7 +35,7 @@ echo "rehearse: record $LOGF"
 REAL_GIT=$(command -v git); REAL_TAR=$(command -v tar)
 T=$(mktemp -d "${TMPDIR:-/tmp}/ak2-prehearse.XXXXXX")
 SRV=
-cleanup() { [ -n "$SRV" ] && kill "$SRV" 2>/dev/null; [ "${REHEARSE_KEEP:-0}" = 1 ] || rm -rf "$T"; }
+cleanup() { [ -n "$SRV" ] && kill "$SRV" 2>/dev/null; [ "${REHEARSE_KEEP:-0}" = 1 ] || { chmod -R u+w "$T" 2>/dev/null; rm -rf "$T"; }; }
 trap cleanup EXIT
 echo "rehearse: $SPEC ($KIND) at $SHA, work $T"
 DATASETS=$(jq -r '.env.AK2_DATASETS' "$SPEC")
@@ -112,7 +112,7 @@ fi
 ENVV=(PATH="$BIN:$PATH" TMPDIR="${TMPDIR:-/tmp}" K2_SHARED_ROOT="$K2_SHARED_ROOT"
   AK2T_FAKE="$FAKE" AK2T_LOG="$T/aws.log" AK2T_ROLE=instance
   AK2T_HASH_BUCKET="$RB" AK2T_HASH_KEY="$HK" AK2T_HASH_FILE="$T/hash.k2d" AK2T_HASH_ETAG="$HASH_ETAG"
-  AK2_REGION=us-west-2 AK2_DATASETS="$DATASETS" AK2_REHEARSE_GO=1)
+  AK2_REGION=us-west-2 AK2_DATASETS="$DATASETS" AK2_REHEARSE_GO=1 GOMODCACHE="$(go env GOMODCACHE)" GOCACHE="$(go env GOCACHE)")
 RC=0
 case "$KIND" in
 decomp)
