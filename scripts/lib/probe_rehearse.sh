@@ -20,6 +20,7 @@ set +e
 set -uo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$ROOT" || exit 1
+. scripts/pin.env
 . scripts/paths.sh
 echo "rehearse: shell flags $-"
 SPEC=${1:?SPEC}
