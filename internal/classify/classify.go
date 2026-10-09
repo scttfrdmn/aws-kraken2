@@ -263,11 +263,6 @@ func (t *Tokens) Resolve(r Resolver) {
 	}
 }
 
-type hit struct {
-	taxon uint64
-	count uint64
-}
-
 // Classifier is one worker's classification scratch. It is not safe for concurrent use;
 // give each worker its own.
 type Classifier struct {
