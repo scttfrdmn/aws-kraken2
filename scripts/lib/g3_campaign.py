@@ -55,7 +55,7 @@ for d in sorted(glob.glob(os.path.join(G, "2026*"))):
         # The cohort's cost: the sum of its members' manifests (refinalised members of an
         # interrupted cohort included; cohort.json's own total is null there).
         mc = 0.0
-        for m in j.get("members", []):
+        for m in [m for m in j.get("members", []) if m.get("run_id")]:  # a member that never launched has no run
             mp = os.path.join(G, m["run_id"], "manifest.json")
             if os.path.exists(mp):
                 mc += float(json.load(open(mp)).get("cost_usd") or 0)
