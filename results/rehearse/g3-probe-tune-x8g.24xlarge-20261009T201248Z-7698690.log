@@ -1,0 +1,17 @@
+rehearse: record results/rehearse/g3-probe-tune-x8g.24xlarge-20261009T201248Z-7698690.log
+rehearse: runs/g3-probe-tune-x8g.24xlarge.json (tune) at 7698690, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.NKc5Hx
+rehearse: stand-in hash.k2d 648733288 bytes, ETag efa030d6b7b3e26244a0c49f1639bbde-5, at http://127.0.0.1:52226/Kraken2_RefSeqCompleteV205/hash.k2d
+rehearse: body exit 0
+rehearse: streamed 36 trial lines, tune.jsonl has 36 (want 36); 0 invalid; 12 cells of 3 (want 12); 1 distinct outputs (want 1); 2 net lines (want 2)
+rehearse: streamed 92 ht-record lines, hosttune.jsonl has 92 (want 92)
+rehearse: none trials that wrote: 0 (want 0); other trials that did not: 0 (want 0); none apply rows 18, not kept 0 (want 0); end state madvise madvise 20 (want madvise madvise 20)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.NKc5Hx/run/tables/probe-tune-trials.tsv (36 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.NKc5Hx/run/tables/probe-tune.tsv (12 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.NKc5Hx/run/tables/probe-tune-selection.tsv (2 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.NKc5Hx/run/tables/probe-tune-drift.tsv (36 rows)
+tune_tables: regime a -> none (resolution 0.414 s, ceiling 0.124 s; evidence: no: the load ceiling is below the resolution, so this null is not evidence)
+tune_tables: regime b -> none (resolution 0.128 s, ceiling 0.006 s; evidence: no: the load ceiling is below the resolution, so this null is not evidence)
+regime	chosen	resolution_s	resolution_pct	load_floor_s	load_ceiling_s	evidence	reason
+a	none	0.414	28.14	0.099	0.124	no: the load ceiling is below the resolution, so this null is not evidence	no set's gain exceeds its threshold (resolution 0.414 s)
+b	none	0.128	32.73	0.099	0.006	no: the load ceiling is below the resolution, so this null is not evidence	no set's gain exceeds its threshold (resolution 0.128 s)
+rehearse: ok

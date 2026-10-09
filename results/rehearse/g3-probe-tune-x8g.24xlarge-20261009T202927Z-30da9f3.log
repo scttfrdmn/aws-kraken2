@@ -1,0 +1,44 @@
+rehearse: record results/rehearse/g3-probe-tune-x8g.24xlarge-20261009T202927Z-30da9f3.log
+rehearse: runs/g3-probe-tune-x8g.24xlarge.json (tune) at 30da9f3, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw
+rehearse: stand-in hash.k2d 648733288 bytes, ETag efa030d6b7b3e26244a0c49f1639bbde-5, at http://127.0.0.1:52609/Kraken2_RefSeqCompleteV205/hash.k2d
+rehearse: body exit 1
+  body | [t35-b-precompact] ak2-engine	worker	scan_s	0.738832	lookup_s	0.358302	classify_s	0.125914
+  body | [t35-b-precompact] ak2-timing	unmap	0.345479	0.004925	0	0	0.000012	0.004921
+  body | [t35-b-precompact] ak2-timing	total	0.000002	0.350413	115125	0	1.307570	0.364339
+  body | ht-record {"kind":"ht","label":"post-t35-b-precompact","t":1791577857.065245000,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":16384,"huge_order":7,"free_bytes":1158301171712,"free_huge_bytes":1149555965952,"free_huge_frac":0.992450,"buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"vmstat":{"compact_stall":0,"compact_success":0,"compact_fail":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":618601,"thp_file_fallback":0},"meminfo_kb":{"MemFree":1500000000,"AnonHugePages":0,"ShmemHugePages":1200000000,"ShmemPmdMapped":0}}
+  body | probe-tune {"kind":"trial","pos":35,"rep":3,"set":"precompact","regime":"b","applied":true,"ht_apply_rc":0,"ht_writes":1,"precompact_s":0.004,"load_s":0.116129,"classify_s":0.225,"load_exit":0,"classify_exit":0,"classify_wall_s":null,"teardown_s":null,"wall_s":1.3929998874664307,"total_s":0.345129,"output_sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","report_sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","pre_free_huge_frac":0.992450,"pre_free_bytes":1158301171712,"pre_buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"thp":{"enabled":"madvise","defrag":"madvise","proactiveness":"20"},"vmstat_delta":{"compact_stall":0,"compact_success":0,"compact_fail":0,"compact_migrate_scanned":null,"compact_free_scanned":null,"compact_daemon_wake":null,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":0,"thp_file_fallback":0},"shmem_huge_kb_after_load":null,"anon_huge_kb_peak":0,"shmem_pmd_mapped_kb_peak":0,"stderr_tail":"ak2-timing\tunmap\t0.345479\t0.004925\t0\t0\t0.000012\t0.004921 ak2-timing\ttotal\t0.000002\t0.350413\t115125\t0\t1.307570\t0.364339 "}
+  body | ak2-phase 2026-10-09T20:30:57Z t36-a-precompact
+  body | ak2: drop_caches (rehearsal: nothing)
+  body | ht-apply 72 2026-10-09T20:30:57Z precompact enabled madvise - madvise kept
+  body | ht-apply 72 2026-10-09T20:30:57Z precompact defrag madvise - madvise kept
+  body | ht-apply 72 2026-10-09T20:30:57Z precompact proactiveness 20 - 20 kept
+  body | ht-apply 72 2026-10-09T20:30:57Z precompact precompact - 1 0.003s done
+  body | ht-record {"kind":"ht","label":"pre-t36-a-precompact","t":1791577857.243774000,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":16384,"huge_order":7,"free_bytes":1158301171712,"free_huge_bytes":1149555965952,"free_huge_frac":0.992450,"buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"vmstat":{"compact_stall":0,"compact_success":0,"compact_fail":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":618601,"thp_file_fallback":0},"meminfo_kb":{"MemFree":1500000000,"AnonHugePages":0,"ShmemHugePages":1200000000,"ShmemPmdMapped":0}}
+  body | upstream-cohort: shell flags huB
+  body | cp: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw/ramdb/roda/hash.k2d: fcopyfile failed: No space left on device
+  body | ht-record {"kind":"ht","label":"load-t36-a-precompact","t":1791577858.522407000,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":16384,"huge_order":7,"free_bytes":1158301171712,"free_huge_bytes":1149555965952,"free_huge_frac":0.992450,"buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"vmstat":{"compact_stall":0,"compact_success":0,"compact_fail":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":618601,"thp_file_fallback":0},"meminfo_kb":{"MemFree":1500000000,"AnonHugePages":0,"ShmemHugePages":1200000000,"ShmemPmdMapped":0}}
+  body | upstream-cohort: shell flags huB
+  body | ht-record {"kind":"ht","label":"post-t36-a-precompact","t":1791577859.121754000,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":16384,"huge_order":7,"free_bytes":1158301171712,"free_huge_bytes":1149555965952,"free_huge_frac":0.992450,"buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"vmstat":{"compact_stall":0,"compact_success":0,"compact_fail":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":618601,"thp_file_fallback":0},"meminfo_kb":{"MemFree":1500000000,"AnonHugePages":0,"ShmemHugePages":1200000000,"ShmemPmdMapped":0}}
+  body | probe-tune {"kind":"trial","pos":36,"rep":3,"set":"precompact","regime":"a","applied":true,"ht_apply_rc":0,"ht_writes":1,"precompact_s":0.003,"load_s":1.201,"classify_s":null,"load_exit":1,"classify_exit":1,"classify_wall_s":null,"teardown_s":0.4720001220703125,"wall_s":1.821000099182129,"total_s":null,"output_sha256":"-","report_sha256":"-","pre_free_huge_frac":0.992450,"pre_free_bytes":1158301171712,"pre_buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"thp":{"enabled":"madvise","defrag":"madvise","proactiveness":"20"},"vmstat_delta":{"compact_stall":0,"compact_success":0,"compact_fail":0,"compact_migrate_scanned":null,"compact_free_scanned":null,"compact_daemon_wake":null,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":0,"thp_file_fallback":0},"shmem_huge_kb_after_load":1200000000,"anon_huge_kb_peak":0,"shmem_pmd_mapped_kb_peak":0,"stderr_tail":""}
+  body | ak2: [2026-10-09T20:30:59Z] trial 36 (a, precompact) failed
+  body | ak2-phase 2026-10-09T20:30:59Z net-1
+  body | probe-tune {"kind":"net","label":"net-1","exit":0,"workers":64,"gbps":5.993936982331673,"requests":10,"object_bytes":648733288,"load_floor_s":0.108231583}
+  body | ak2-phase 2026-10-09T20:30:59Z push
+  body | ht-record {"kind":"ht","label":"end","t":1791577859.364753000,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":16384,"huge_order":7,"free_bytes":1158301171712,"free_huge_bytes":1149555965952,"free_huge_frac":0.992450,"buddy":[28669,38810,26487,13975,5436,2456,690,427,344,7,68376],"vmstat":{"compact_stall":0,"compact_success":0,"compact_fail":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_file_alloc":618601,"thp_file_fallback":0},"meminfo_kb":{"MemFree":1500000000,"AnonHugePages":0,"ShmemHugePages":1200000000,"ShmemPmdMapped":0}}
+  body | upstream-cohort: shell flags huB
+  body | ak2: [2026-10-09T20:30:59Z] tune probe done: 36 trials, FAIL=1
+rehearse: streamed 36 trial lines, tune.jsonl has 36 (want 36); 3 invalid; 12 cells of 3 (want 12); 1 distinct outputs (want 1); 2 net lines (want 2)
+rehearse: tune trials wrong
+rehearse: streamed 91 ht-record lines, hosttune.jsonl has 92 (want 92)
+rehearse: ht_record streaming wrong
+rehearse: none trials that wrote: 0 (want 0); other trials that did not: 0 (want 0); none apply rows 18, not kept 0 (want 0); end state madvise madvise 20 (want madvise madvise 20)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw/run/tables/probe-tune-trials.tsv (36 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw/run/tables/probe-tune.tsv (12 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw/run/tables/probe-tune-selection.tsv (2 rows)
+tune_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw/run/tables/probe-tune-drift.tsv (36 rows)
+tune_tables: regime a -> undetermined (resolution - s, ceiling - s; evidence: -)
+tune_tables: regime b -> undetermined (resolution - s, ceiling - s; evidence: -)
+regime	chosen	resolution_s	resolution_pct	classify_resolution_s	load_floor_s	load_ceiling_s	evidence	reason
+a	undetermined	-	-	-	0.108	-	-	none has 2 valid trials (< 3): no selection possible
+b	undetermined	-	-	-	0.108	-	-	none has 2 valid trials (< 3): no selection possible
+rehearse: FAILED (logs: REHEARSE_KEEP=1 keeps /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.Wnq5aw)
