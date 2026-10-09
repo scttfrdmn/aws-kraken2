@@ -1,0 +1,44 @@
+{
+  "task_id": "ak2-g3-20261009-064231-4c67532-2a5c-n64-r28",
+  "command": [
+    "bash",
+    "-c",
+    "# aws-kraken2 user-data stub (scripts/run.sh puts this, not the preamble, in command[2]).\n# EC2 caps user data at 16384 bytes after base64 decoding, and spawn's own bootstrap uses about\n# 10.4 KB of that, already gzipped, so precompressing the payload gains nothing. The full payload\n# (scripts/preamble.sh + the spec body) therefore travels via the run's in-region results\n# prefix, uploaded by run.sh before launch and fetched here with a presigned URL for that one\n# object (no IAM grant needed). This stub keeps Law 4's order: $- first, set +e, the region\n# assert before any I/O, then one GET, a sha256 check, and exec.\nAK2_STUB_FLAGS=\"$-\"\nset +e\necho \"ak2-stub: inherited \\$-=$AK2_STUB_FLAGS\"\nAK2_T=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 300')\nAK2_R=$(curl -sf -m 5 -H \"X-aws-ec2-metadata-token: $AK2_T\" http://169.254.169.254/latest/meta-data/placement/region)\nAK2_PB=${AK2_PAYLOAD_URI#s3://}; AK2_PB=${AK2_PB%%/*}\nAK2_PBR=$(curl -sI -m 10 \"https://$AK2_PB.s3.$AK2_R.amazonaws.com/\" | tr -d '\\r' | awk -F': ' 'tolower($1)==\"x-amz-bucket-region\"{print $2}')\necho \"ak2-stub: imds region=$AK2_R expected=$AK2_EXPECT_REGION payload bucket $AK2_PB region=$AK2_PBR\"\nif [ -z \"$AK2_R\" ] || [ \"$AK2_R\" != \"$AK2_EXPECT_REGION\" ] || [ \"$AK2_PBR\" != \"$AK2_R\" ]; then\n  echo \"ak2-stub: FATAL: region assert failed before any I/O\"; exit 97\nfi\ncase \"$AK2_PAYLOAD_URL\" in\n  \"https://$AK2_PB.s3.$AK2_R.amazonaws.com/\"*) ;;\n  *) echo \"ak2-stub: FATAL: payload URL is not the in-region endpoint of $AK2_PB\"; exit 97 ;;\nesac\ncurl -sf -m 60 --retry 3 -o /tmp/ak2-payload.sh \"$AK2_PAYLOAD_URL\" ||\n  { echo \"ak2-stub: FATAL: could not fetch $AK2_PAYLOAD_URI\"; exit 97; }\nAK2_SUM=$(sha256sum /tmp/ak2-payload.sh | cut -d' ' -f1)\n[ \"$AK2_SUM\" = \"$AK2_PAYLOAD_SHA256\" ] ||\n  { echo \"ak2-stub: FATAL: payload sha256 $AK2_SUM != $AK2_PAYLOAD_SHA256\"; exit 97; }\necho \"ak2-stub: payload verified (sha256 $AK2_SUM); exec\"\nexport AK2_STUB_FLAGS\nunset AK2_PAYLOAD_URL   # a credential for one object; the payload has no use for it\n# bash -c, exactly as spawn ran the inlined script before (same parsing, same $- semantics).\nexec bash -c \"$(cat /tmp/ak2-payload.sh)\"\n"
+  ],
+  "resources": {
+    "instance_type": "c8gn.4xlarge",
+    "architecture": "arm64",
+    "disk_gib": 60,
+    "s3_read_write": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"
+    ]
+  },
+  "placement": {
+    "availability_zone": "us-west-2b"
+  },
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/hash.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/ s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/",
+    "AK2_EXPECT_REGION": "us-west-2",
+    "AK2_BUCKETS": "aws-kraken2-942542972736-us-west-2 kraken2-ncbi-refseq-complete-v205",
+    "AK2_ALLOWED_BUCKETS": "aws-kraken2-942542972736-us-west-2 kraken2-ncbi-refseq-complete-v205",
+    "AK2_S3_PREFIX": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r28",
+    "AK2_RUN_ID": "20261009-064231-4c67532-2a5c-n64-r28",
+    "AK2_GATE": "g3",
+    "AK2_PAYLOAD_URI": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r28/payload.sh",
+    "AK2_PAYLOAD_URL": "<presigned GET of env.AK2_PAYLOAD_URI; redacted>",
+    "AK2_PAYLOAD_SHA256": "f99c23c4d439c85787ba884a1c5357c94010fa7dd20283867e4bf53c29df239e",
+    "AK2_COHORT_ID": "20261009-064231-4c67532-2a5c-n64",
+    "AK2_COHORT_PREFIX": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64",
+    "AK2_ENGINE_N": "64",
+    "AK2_ENGINE_RANK": "28",
+    "AK2_ENGINE_RENDEZVOUS": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64/rendezvous"
+  },
+  "lifecycle": {
+    "ttl": "40m",
+    "on_complete": "terminate",
+    "cost_limit": 0.64
+  },
+  "results_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r28/spawn"
+}

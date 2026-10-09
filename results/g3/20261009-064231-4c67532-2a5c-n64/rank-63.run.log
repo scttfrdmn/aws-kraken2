@@ -1,0 +1,117 @@
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261009-064231-4c67532-2a5c-n64-r63  task ak2-g3-20261009-064231-4c67532-2a5c-n64-r63  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r63
+make run: user data: 12342 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: c8gn.4xlarge (0 vCPU, 0 GiB)
+make run: launched i-01fcf55a5b8dd6da8 (c8gn.4xlarge) in us-west-2
+  | ak2: log tee up
+  | ak2-phase	2026-10-09T06:45:01Z	1791528301	preamble	no
+  | ak2: [2026-10-09T06:45:01Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+  | ak2: [2026-10-09T06:45:01Z] after set +e $-=hBc
+  | ak2: [2026-10-09T06:45:01Z] gate=g3 run=20261009-064231-4c67532-2a5c-n64-r63
+  | ak2: [2026-10-09T06:45:01Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+  | ak2: [2026-10-09T06:45:01Z] imds region=us-west-2 az=us-west-2b instance=i-01fcf55a5b8dd6da8 type=c8gn.4xlarge ami=ami-09325776a00699513
+  | ak2: [2026-10-09T06:45:02Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  | ak2: [2026-10-09T06:45:02Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+  | ak2: [2026-10-09T06:45:02Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+  | ak2: [2026-10-09T06:45:02Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  | ak2: [2026-10-09T06:45:03Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  | ak2: [2026-10-09T06:45:03Z] region assert passed
+  | ak2: [2026-10-09T06:45:03Z] drop_caches_ok=true
+  | ak2: [2026-10-09T06:45:03Z] preamble done; spec body starts
+  | ak2-phase	2026-10-09T06:45:03Z	1791528303	body	no
+  | ak2-phase	2026-10-09T06:45:03Z	1791528303	setup	no
+  | go: downloading github.com/aws/aws-sdk-go-v2 v1.47.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/config v1.33.7
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/s3 v1.114.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/credentials v1.20.7
+  | go: downloading github.com/klauspost/compress v1.20.0
+  | go: downloading github.com/aws/smithy-go v1.28.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.1
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/signin v1.10.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/sso v1.38.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/sts v1.51.2
+  | go: downloading github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.20
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.19
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.11.5
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.14.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.20.4
+  | go: downloading github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.4
+  | ak2: [2026-10-09T06:45:34Z] rank 63 of 64; hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800; stages 1 16 32 64 x 60s
+  | ak2-phase	2026-10-09T06:45:34Z	1791528334	rendezvous	no
+  | ak2: [2026-10-09T06:45:56Z] rendezvous: all 64 ready; stages start at 1791528368 (12 s from now)
+  | ak2-phase	2026-10-09T06:45:56Z	1791528356	stage-n1	no
+  | ak2: [2026-10-09T06:46:08Z] stage n1: rank 63 waits
+  | ak2-phase	2026-10-09T06:46:08Z	1791528368	stage-n16	no
+  | ak2: [2026-10-09T06:47:28Z] stage n16: rank 63 waits
+  | ak2-phase	2026-10-09T06:47:28Z	1791528448	stage-n32	no
+  | ak2: [2026-10-09T06:48:48Z] stage n32: rank 63 waits
+  | ak2-phase	2026-10-09T06:48:48Z	1791528528	stage-n64	no
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528613.1749916,"elapsed_s":5.000112702,"bytes":27648851968,"gbps_cum":5.529645753172865,"gbps_interval":5.529645753172865,"requests":476,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528618.1749945,"elapsed_s":10.00011545,"bytes":56975425536,"gbps_cum":5.697476776230618,"gbps_interval":5.865311490024805,"requests":913,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528623.1749916,"elapsed_s":15.000112668,"bytes":87778394112,"gbps_cum":5.851848986391893,"gbps_interval":6.1605971429562505,"requests":1372,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528628.174992,"elapsed_s":20.000113349,"bytes":117239185408,"gbps_cum":5.861926048227218,"gbps_interval":5.892157456688154,"requests":1811,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528633.1749907,"elapsed_s":25.00011174,"bytes":146565758976,"gbps_cum":5.862604155544466,"gbps_interval":5.865316601058882,"requests":2248,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528638.1750047,"elapsed_s":30.00012575,"bytes":177570054144,"gbps_cum":5.918976994421431,"gbps_interval":6.200841658841672,"requests":2710,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528643.175001,"elapsed_s":35.000122069,"bytes":206963736576,"gbps_cum":5.913228992972859,"gbps_interval":5.878740814328987,"requests":3148,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528648.1749957,"elapsed_s":40.00011694,"bytes":238102249472,"gbps_cum":5.952538834552717,"gbps_interval":6.227708967583858,"requests":3612,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528653.1750224,"elapsed_s":45.00014359,"bytes":267563040768,"gbps_cum":5.945826377928675,"gbps_interval":5.892126854163868,"requests":4051,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528658.1749887,"elapsed_s":50.000109862,"bytes":297225158656,"gbps_cum":5.944490111648547,"gbps_interval":5.93246359562643,"requests":4493,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528663.1749911,"elapsed_s":55.000112396,"bytes":328028127232,"gbps_cum":5.964135579763952,"gbps_interval":6.160590593012688,"requests":4952,"retries":0,"complete":false}
+  | probe-cont {"kind":"progress","label":"n64-r63","unix_s":1791528668.1749892,"elapsed_s":60.000110346,"bytes":357623136256,"gbps_cum":5.9603746425416615,"gbps_interval":5.919004231591735,"requests":5393,"retries":0,"complete":false}
+  | probe-cont {"kind":"done","label":"n64-r63","unix_s":1791528668.1752336,"elapsed_s":60.000354788,"bytes":357623136256,"gbps_cum":5.960350359920275,"gbps_interval":0,"requests":5393,"retries":0,"complete":false,"workers":64,"chunk_mib":64,"object":"https://kraken2-ncbi-refseq-complete-v205.s3.us-west-2.amazonaws.com/Kraken2_RefSeqCompleteV205/hash.k2d","object_bytes":1189091671800,"stopped_by":"seconds"}
+  | ak2-phase	2026-10-09T06:51:13Z	1791528673	push	no
+  | ak2: [2026-10-09T06:51:13Z] pushed out/cont-63.jsonl
+  | ak2: [2026-10-09T06:51:13Z] contention probe done FAIL=0
+  | ak2: [2026-10-09T06:51:13Z] spec body exit rc=0
+  | ak2-phase	2026-10-09T06:51:13Z	1791528673	end	no
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261009-064231-4c67532-2a5c-n64-r63/: 8 objects, 7 tagged now, 1 already tagged, 0 failed
+make run: run dir: results/g3/20261009-064231-4c67532-2a5c-n64-r63  (task exit 0, state terminated, cost $0.106387)
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-0304e15deaff2b657	running	c8gn.4xlarge	2026-10-09T06:44:37+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r57	ttl=40m	within TTL
+  us-west-2	i-0bf7afbd2bf2dc176	shutting-down	c8gn.4xlarge	2026-10-09T06:44:25+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r51	ttl=40m	within TTL
+  us-west-2	i-0d08098a5322d84ed	shutting-down	c8gn.4xlarge	2026-10-09T06:44:31+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r54	ttl=40m	within TTL
+  us-west-2	i-024bda5880f0afe86	shutting-down	c8gn.4xlarge	2026-10-09T06:43:18+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r18	ttl=40m	within TTL
+  us-west-2	i-03b7308391cc34ad5	shutting-down	c8gn.4xlarge	2026-10-09T06:43:10+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r14	ttl=40m	within TTL
+  us-west-2	i-0cadd6f607aedf62a	shutting-down	c8gn.4xlarge	2026-10-09T06:44:08+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r43	ttl=40m	within TTL
+  us-west-2	i-0ce30a4d539c6f76e	shutting-down	c8gn.4xlarge	2026-10-09T06:44:27+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r52	ttl=40m	within TTL
+  us-west-2	i-0916a6f0c9fbe2e25	shutting-down	c8gn.4xlarge	2026-10-09T06:43:27+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r22	ttl=40m	within TTL
+  us-west-2	i-0b8a6d5710c8794aa	shutting-down	c8gn.4xlarge	2026-10-09T06:43:34+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r26	ttl=40m	within TTL
+  us-west-2	i-0a503479c2a2c96d1	running	c8gn.4xlarge	2026-10-09T06:43:40+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r29	ttl=40m	within TTL
+  us-west-2	i-0148924788aa05880	running	c8gn.4xlarge	2026-10-09T06:44:39+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r58	ttl=40m	within TTL
+  us-west-2	i-0878a22e54f5e2cee	shutting-down	c8gn.4xlarge	2026-10-09T06:44:29+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r53	ttl=40m	within TTL
+  us-west-2	i-05333c53c4d9ec1ab	running	c8gn.4xlarge	2026-10-09T06:43:36+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r27	ttl=40m	within TTL
+  us-west-2	i-0c91b1c0d9663f795	shutting-down	c8gn.4xlarge	2026-10-09T06:43:14+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r16	ttl=40m	within TTL
+  us-west-2	i-0b60d801581805c8c	shutting-down	c8gn.4xlarge	2026-10-09T06:44:14+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r46	ttl=40m	within TTL
+  us-west-2	i-0b2dbf25b59d3638a	shutting-down	c8gn.4xlarge	2026-10-09T06:43:23+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r20	ttl=40m	within TTL
+  us-west-2	i-035d05da2f63fa8ec	running	c8gn.4xlarge	2026-10-09T06:43:38+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r28	ttl=40m	within TTL
+  us-west-2	i-05774d7d0aa8993db	shutting-down	c8gn.4xlarge	2026-10-09T06:43:08+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r13	ttl=40m	within TTL
+  us-west-2	i-0cababd8c6ef92c35	shutting-down	c8gn.4xlarge	2026-10-09T06:44:10+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r44	ttl=40m	within TTL
+  us-west-2	i-08156d4635c719c6c	shutting-down	c8gn.4xlarge	2026-10-09T06:43:25+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r21	ttl=40m	within TTL
+  us-west-2	i-0ef80c4d6282b9edc	shutting-down	c8gn.4xlarge	2026-10-09T06:43:32+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r25	ttl=40m	within TTL
+  us-west-2	i-0f3564c657f43c6d2	shutting-down	c8gn.4xlarge	2026-10-09T06:44:20+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r49	ttl=40m	within TTL
+  us-west-2	i-0a19256c4496af0f9	shutting-down	c8gn.4xlarge	2026-10-09T06:43:07+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r12	ttl=40m	within TTL
+  us-west-2	i-090a75ba559c82c62	shutting-down	c8gn.4xlarge	2026-10-09T06:43:12+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r15	ttl=40m	within TTL
+  us-west-2	i-0bdfeb42c886dcf22	shutting-down	c8gn.4xlarge	2026-10-09T06:43:16+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r17	ttl=40m	within TTL
+  us-west-2	i-0dff4ea7865651960	shutting-down	c8gn.4xlarge	2026-10-09T06:43:31+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r24	ttl=40m	within TTL
+  us-west-2	i-085d8d63116d6d733	shutting-down	c8gn.4xlarge	2026-10-09T06:44:13+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r45	ttl=40m	within TTL
+  us-west-2	i-06e2a1ca7c82140da	shutting-down	c8gn.4xlarge	2026-10-09T06:44:33+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r55	ttl=40m	within TTL
+  us-west-2	i-0806e6c063e932494	running	c8gn.4xlarge	2026-10-09T06:44:41+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r59	ttl=40m	within TTL
+  us-west-2	i-039557dbf5237c9b2	shutting-down	c8gn.4xlarge	2026-10-09T06:43:28+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r23	ttl=40m	within TTL
+  us-west-2	i-01282100520feca7c	shutting-down	c8gn.4xlarge	2026-10-09T06:43:20+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r19	ttl=40m	within TTL
+  us-west-2	i-086618a13ebd02125	shutting-down	c8gn.4xlarge	2026-10-09T06:44:19+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r48	ttl=40m	within TTL
+  us-west-2	i-054a9896d8d95911d	shutting-down	c8gn.4xlarge	2026-10-09T06:44:16+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r47	ttl=40m	within TTL
+  us-west-2	i-0b0033a0472e61f25	running	c8gn.4xlarge	2026-10-09T06:43:42+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r30	ttl=40m	within TTL
+  us-west-2	i-07881fcea00a05b47	running	c8gn.4xlarge	2026-10-09T06:42:43+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r0	ttl=40m	within TTL
+  us-west-2	i-0256437ad770a52c9	running	c8gn.4xlarge	2026-10-09T06:43:45+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r31	ttl=40m	within TTL
+  us-west-2	i-0a31bead721a09c70	shutting-down	c8gn.4xlarge	2026-10-09T06:44:22+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r50	ttl=40m	within TTL
+  us-west-2	i-035bc322207517f84	shutting-down	c8gn.4xlarge	2026-10-09T06:44:04+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r41	ttl=40m	within TTL
+  us-west-2	i-01a9e8991aaf61a9f	running	c8gn.4xlarge	2026-10-09T06:44:45+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r61	ttl=40m	within TTL
+  us-west-2	i-0f51e33096d4ac183	running	c8gn.4xlarge	2026-10-09T06:44:43+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r60	ttl=40m	within TTL
+  us-west-2	i-0ccafe1aa2b27e1dc	shutting-down	c8gn.4xlarge	2026-10-09T06:44:06+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r42	ttl=40m	within TTL
+  us-west-2	i-061c6023a67658378	running	c8gn.4xlarge	2026-10-09T06:42:45+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r1	ttl=40m	within TTL
+  us-west-2	i-0d591f24d468f09a5	running	c8gn.4xlarge	2026-10-09T06:44:35+00:00	ak2-g3-20261009-064231-4c67532-2a5c-n64-r56	ttl=40m	within TTL
+orphans: this run's instance(s) and task ak2-g3-20261009-064231-4c67532-2a5c-n64-r63 are gone (18 regions checked)

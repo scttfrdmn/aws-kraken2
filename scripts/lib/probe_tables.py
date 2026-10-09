@@ -10,7 +10,7 @@ written; identical = yes when both mates' output sha256 equals gzip -dc's. stage
 step (the sweep's discard reads, the whole-object rget and s5cmd writes onto the tmpfs, the
 time-limited aws s3 cp sample), with the ETag check's seconds after a whole write; ok = yes only
 for a complete write whose ETag check passed. cont: per stage N, every reading node's GB/s over
-its time-limited read (bytes of completed ranges / elapsed), and the minimum (the max-over-N
+its time-limited read (bytes of completed ranges / elapsed), the spread of the nodes' start times, and the minimum (the max-over-N
 term), median, maximum and the aggregate (sum). Exits non-zero if a table cannot be made.
 """
 import csv, glob, json, os, statistics, sys
@@ -81,7 +81,7 @@ elif mode == "cont":
                 if x["kind"] == "done":
                     n = int(x["label"].split("-")[0][1:])
                     per.setdefault(n, []).append((x["label"], x["bytes"], x["elapsed_s"], x["gbps_cum"], x["retries"],
-                                                  x.get("error", "")))
+                                                  x.get("error", ""), x["unix_s"] - x["elapsed_s"]))
     if not per:
         sys.exit("probe_tables: no contention results")
     rows, nodes = [], []
@@ -89,15 +89,16 @@ elif mode == "cont":
         v = per[n]
         g = [x[3] for x in v]
         rows.append([n, len(v), f"{min(g):.3f}", f"{statistics.median(g):.3f}", f"{max(g):.3f}", f"{sum(g):.3f}",
-                     sum(x[4] for x in v), sum(1 for x in v if x[5]), "50 (c8gn.4xlarge baseline)"])
-        nodes += [[n] + list(x[:2]) + [f"{x[2]:.2f}", f"{x[3]:.3f}", x[4], x[5] or "-"] for x in sorted(v)]
+                     sum(x[4] for x in v), sum(1 for x in v if x[5]), "50 (c8gn.4xlarge baseline)",
+                     f"{max(x[6] for x in v) - min(x[6] for x in v):.2f}"])
+        nodes += [[n] + list(x[:2]) + [f"{x[2]:.2f}", f"{x[3]:.3f}", x[4], x[5] or "-", f"{x[6]:.3f}"] for x in sorted(v)]
         if len(v) != n:
             print(f"probe_tables: stage N={n} has {len(v)} reading nodes", file=sys.stderr)
     write(os.path.join(d, "tables", "probe-contention.tsv"),
           ["N", "nodes_reported", "node_min_gbps", "node_median_gbps", "node_max_gbps", "aggregate_gbps", "retries",
-           "nodes_with_error", "nic_gbps"], rows)
+           "nodes_with_error", "nic_gbps", "start_spread_s"], rows)
     write(os.path.join(d, "tables", "probe-contention-nodes.tsv"),
-          ["N", "label", "bytes", "elapsed_s", "gbps", "retries", "error"], nodes)
+          ["N", "label", "bytes", "elapsed_s", "gbps", "retries", "error", "start_unix_s"], nodes)
     if any(int(r[1]) != int(r[0]) for r in rows):
         sys.exit(1)
 else:
