@@ -1,0 +1,28 @@
+util-stream-test: 1 node(s) at 9da78c0 (clean); shell flags huB; record results/rehearse/util-stream-20261009T184123Z-9da78c0.log
+util-stream-test: rootful (podman-machine-default-root) podman, image localhost/ak2-util-test:al2023 (d39ab971546f, from public.ecr.aws/amazonlinux/amazonlinux:2023)
+util-stream-test: BREAK=nostub: a negative control; this run must FAIL
+util-stream-test: ok   early stub exit: sampler 4 exited with its stub (2 ticks)
+util-stream-test: ok   interface re-resolved: once tick re-resolved the interface (rx 254)
+util-stream-test: round alone: 1 node(s) at once; magnitudes checked from above
+util-stream-test: alone r0 container exit 0
+util-stream-test: alone r0 ok   run.log streamed with phases preamble..end (['body', 'burn', 'end', 'hold', 'net', 'preamble', 'shm', 'starve'])
+util-stream-test: alone r0 ok   the stub ran under errexit, as spawn starts it ($-=ehBc), and the run went on
+util-stream-test: alone r0 ok   util.tsv uploaded 2 time(s) before the end phase (3 in all; ticks [38, 68, 87])
+util-stream-test: alone r0 ok   each upload during the run has more ticks than the last
+util-stream-test: alone r0 ok   longest run stretch without an upload 30.9 s (a TTL kill loses at most that; pusher every 30 s)
+util-stream-test: alone r0 ok   the last upload is non-empty
+util-stream-test: alone r0 ok   no malformed lines (0)
+util-stream-test: alone r0 FAIL first tick (preamble, 1791571289.618) precedes the preamble (1791571289): the stub started it
+util-stream-test: alone r0 ok   last tick is final (final) at/after the end phase
+util-stream-test: alone r0 ok   the sampler runs at nice -10 (want -10)
+util-stream-test: alone r0 ok   max gap between ticks 1.02 s
+util-stream-test: alone r0 FAIL phases in the ticks: ['preamble', 'body', 'burn', 'shm', 'net', 'starve', 'hold', 'end']
+util-stream-test: alone r0 ok   87 ticks over 78.5 s (1 Hz)
+util-stream-test: alone r0 ok   burn: 7.4 busy vCPU-s in 7.3 s (one vCPU burnt; alone: <= 1.6 x)
+util-stream-test: alone r0 ok   shm: used +260 MiB, Shmem +256 MiB at peak (256 MiB written to /dev/shm; alone: <= 330 / 300)
+util-stream-test: alone r0 ok   net: 69627350 bytes on eth0 (64 MiB downloaded; alone: <= 80 MiB)
+util-stream-test: alone r0 ok   starve: mem_gap_s 0.0 s, largest tick gap 1.0 s, 116.2 busy vCPU-s in 14.5 s (8 CPUs, nproc loops un-niced; sampler nice -10)
+util-stream-test: alone r0 node U_cpu 0.004784 U_mem 0.000041 (peak 0.146178) U_net 0.000000; mem_gap_s 0.0; unobservable 0.0/218499.6/0.8 s
+util-stream-test: alone r0 sampler CPU 0.23 s over 85 ticks (2.71 ms per tick)
+util-stream-test: alone r0 uploads over 79 s: run.log x16 requests.tsv x16 preflight.json x1 util.tsv x3
+util-stream-test: FAILED (KEEP=1 keeps the work dir)
