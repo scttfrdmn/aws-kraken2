@@ -22,4 +22,6 @@ run	spec	type	nodes	cost_usd	ended_or_state	orphans_rc	outcome	evidence
 20261008-162516-ec47001-e4a7-n32	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	4.2948	members done	1	ok	
 20261008-163144-ec47001	runs/g3-u1-x8g.24xlarge.json		1	0.0000			ok	
 20261008-163526-3201a75	runs/g3-u1-x8g.24xlarge.json	x8g.24xlarge	1	9.8351	terminated	0	ok	
-20261008-194917-ce5d8ee	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	0.0000			ok	
+20261008-194917-ce5d8ee	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	6.4884	terminated	0	defect: diagnostic run without the NVMe read-ahead tune (read_ahead_kb boot default)	first sample still running after 50+ min; interrupted, instance terminated from the launch host (results/g3/20261008-194917-ce5d8ee/log/run.log)
+20261008-211637-5a3b2e5	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	2.7354	terminated	0	ok	
+20261009-015708-210e1b5	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	0.0000			ok	

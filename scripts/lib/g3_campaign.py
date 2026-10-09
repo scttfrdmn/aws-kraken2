@@ -12,7 +12,7 @@ spend.tsv: every run since SINCE (campaign points, failed attempts, staging, U1,
 orphan result. rules.tsv: the stopping rules of #25 evaluated on points.tsv.
 summary.md: the three tables, generated.
 """
-import csv, glob, json, os, statistics, sys
+import collections, csv, glob, json, os, statistics, sys
 
 SINCE = sys.argv[1] if len(sys.argv) > 1 else "2026-10-08T04:00:00Z"
 G = "results/g3"
@@ -189,6 +189,17 @@ for d in sorted(glob.glob(os.path.join(G, "2026*"))):
                        os.path.basename(d)])
 w("u2-pairs.tsv", ["pair", "engine_point", "engine_s", "engine_basis", "upstream_s", "upstream_basis", "u2_run"], u2)
 
+# The pre-fix engine (#44): per cohort sample in U1's cross-check, whether the engine's outputs
+# equalled upstream's there (pre-fix), from every U1 run's tables/law1-crosscheck.tsv.
+cc = collections.defaultdict(lambda: [0, 0])
+for f in glob.glob(os.path.join(G, "*", "tables", "law1-crosscheck.tsv")):
+    for r in tsv(f):
+        cc[r["sample"]][0] += 1
+        cc[r["sample"]][1] += r["identical"] != "yes"
+changes = {k for k, v in cc.items() if v[1]}
+w("prefix-engine.tsv", ["sample", "comparisons", "differing", "u1_crosscheck_changes_with_the_fix"],
+  [[k, v[0], v[1], "yes" if v[1] else "no"] for k, v in sorted(cc.items())])
+
 total = sum(float(s_[4]) for s_ in spend)
 defect = sum(float(s_[4]) for s_ in spend if s_[7].startswith("defect"))
 with open(os.path.join(OUT, "summary.md"), "w") as fh:
@@ -204,9 +215,11 @@ with open(os.path.join(OUT, "summary.md"), "w") as fh:
     fh.write("E2's fleets are memory-equal, not vCPU-equal (fleet_vcpus); the knee is read with that next to it (rules.tsv).\n\n")
     fh.write("The c8g N=16 vs N=32 comparison (the N=64 rule) is confounded: N=16 ran at 1 in flight (the most a 96 GiB node "
              "holds), N=32 at 6. E5, E6 and N=64 are on HOLD until the Law-1 defect #44 is fixed and verified.\n\n")
-    fh.write("**Law 1 (#44):** U1's cross-check found 3 of the first 100 cohort samples (SRR5935755, SRR5935786, SRR5935807) "
-             "whose engine outputs differ from upstream's in every engine cohort; until the fix is verified, no engine output on "
-             "RODA v205 is claimed identical to upstream's.\n\n")
+    fh.write("**Law 1 (#44):** every engine output in E1-E4 and checkpoint 2 was produced by the pre-fix engine (first-hit "
+             "order in ResolveTree; fixed by the clean-room HitCounts, merged at cf3a6f8). Only reads that hit an orphan "
+             "taxonomy node (RODA v205: 246 nodes with external ID 0 and parent 0) can differ. The cohort samples whose U1 "
+             f"cross-check changes with the fix are listed in prefix-engine.tsv ({len(changes)}: "
+             f"{', '.join(sorted(changes)) or 'none'}); E5 and E6 regenerate with the fix.\n\n")
     fh.write("Predictions use E1's measured rates: load 1.80 GB/s per node; input 1.84 Mpairs/s per stream; worker rate 161,638 "
              "pairs per worker CPU-second (E1 c10; the cohort LPT rate here is per vCPU of wall time, so the ratio also carries "
              "idle and non-worker time).\n\n")
