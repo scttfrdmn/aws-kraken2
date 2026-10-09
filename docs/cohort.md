@@ -162,6 +162,17 @@ make g3-tables                                            # results/g3/campaign/
       batch of the run.
   - **The placement + order lever** (j mod N against LPT, which also orders each node's samples
     heaviest first) is resolved only if its gain exceeds 2 × the within-run spread.
+- **`make g3-frontier`** (`scripts/lib/g3_frontier.py`) writes the H-main per-axis bests and the
+  Pareto sets: `results/g3/campaign/frontier.{tsv,md}` and `pareto.tsv`.
+  - They are given per cohort size (1, 10, 100) and regime (resident, from-scratch), ours against
+    upstream at its best (U1, U2, with fq preparation added back).
+  - $/sample is derived (price × nodes × wall) on both sides.
+  - Each ratio is decomposed by Law 5: time into width × per-vCPU efficiency; $/sample into price
+    per vCPU-hour × per-vCPU efficiency; staging alongside, from scratch.
+  - The registered references and the kill condition are evaluated mechanically.
+  - Ours at cohort 1000 is a placeholder only; upstream's model there is infeasible as
+    specified.
+  - frontier.md's definitions are generated from the script's docstring.
 - **Defect attempts** are named in `scripts/lib/g3_defects.tsv` and carried into `spend.tsv` and
   `summary.md`, in three classes:
   - `defect`, our own;
