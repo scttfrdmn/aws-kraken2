@@ -1,10 +1,10 @@
 {
  "what": "the #26 fit (WP-10 of the #25 ladder): the registered T(N) and cost model, then each addition as a separate fit",
  "generated_by": "scripts/lib/fit26.py",
- "generated_by_sha256": "eebfd2490128611b190daa95bd2e2b9afb0a73dd12669f59a88740cedb007131",
- "commit": "b40f7072f8edf50d165beef91d966757cd6af347",
+ "generated_by_sha256": "7f2c89b4d5935b6b2bc31c03550e10fc8233ae5564fcba292a088016ebef7794",
+ "commit": "af262b0c50363c1ded522bd0f4e0fe9b5bb2f5f2",
  "scripts_dirty": false,
- "generated_at": "2026-10-09T20:12:25Z",
+ "generated_at": "2026-10-09T20:49:05Z",
  "registered": {
   "T": "T(N) = t_boot + S/(N*B) + W/(N*c*r) + t_probe + t_gather + t_tail",
   "cost": "Cost ~= p*[N*(t_boot + t_tail) + S/B + W/(c*r)]",
@@ -267,6 +267,9 @@
   "S_bytes": 1189091671800,
   "b_route_bytes_per_pair": 475.8833026113671,
   "r_input_e1_pairs_per_s": 1840000.0,
+  "r_input_source": "results/g3/20261008-021537-cb0cea7-7e51-n8/tables/summary.md",
+  "hitbench_post_over_pre": 1.0252,
+  "hitbench_source": "results/g3/campaign/frontier.md",
   "threads_per_sample": 16,
   "N_grid": [
    1,
@@ -293,6 +296,10 @@
   {
    "path": "results/g3/20261008-021537-cb0cea7-7e51-n8/tables/batches.tsv",
    "sha256": "c8a08c5c30878e85297b5d833417701f5bbd5f138dab02a24d59a5999f320eef"
+  },
+  {
+   "path": "results/g3/20261008-021537-cb0cea7-7e51-n8/tables/summary.md",
+   "sha256": "c110e187047e35862b31c6f5f9a48b5b158cf9dfbcef84962a5403b054e91ffd"
   },
   {
    "path": "results/g3/20261008-042842-626bb79-dddc-n2/cohort.json",
@@ -439,6 +446,10 @@
    "sha256": "7dea8f833928026e7384988b5ad4690397a7d2f410bd8c0e1cc49ebfd4d4a547"
   },
   {
+   "path": "results/g3/campaign/frontier.md",
+   "sha256": "add97e24ce63f2b610d4b2ad7b7d828fc015c6bb2d4ccbf2415c81bedc6d3249"
+  },
+  {
    "path": "results/g3/campaign/points.tsv",
    "sha256": "7478aa1230365e67178688e0e0739947b5932ea717128e404b1a8fa60568e418"
   },
@@ -457,6 +468,8 @@
   "params.tsv",
   "residuals.tsv",
   "heldout.tsv",
+  "cost_residuals.tsv",
+  "hwidth_knee.tsv",
   "predictions.tsv",
   "optimal.tsv"
  ]

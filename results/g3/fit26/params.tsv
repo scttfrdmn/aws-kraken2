@@ -1,45 +1,45 @@
-fit	param	unit	value	se	abs_t	n_obs	dof	derived	derived_value	derived_se	derived_unit	note
-R	K	s	256.292	21.1	12.15	9	6					
-R	beta	s/GB	0.247246	0.0438	5.64	9	6	B	4.04456	0.717	GB/s per node	
-R	rho	s/(Mpair/vCPU)	6.93676	3.79	1.83	9	6	r	144160	7.87e+04	pairs/s per vCPU	
-R+t_input	K	s	254.995	17.9	14.22	9	6					
-R+t_input	beta	s/GB	0.249372	0.0416	6.00	9	6	B	4.01007	0.668	GB/s per node	
-R+t_input	rho	s/(Mpair/vCPU)	6.89305	3.2	2.15	9	6	r	145074	6.74e+04	pairs/s per vCPU	
-R+t_emit	K	s	246.467	37.6	6.55	9	5					
-R+t_emit	beta	s/GB	0.243856	0.0486	5.02	9	5	B	4.10079	0.818	GB/s per node	
-R+t_emit	rho	s/(Mpair/vCPU)	6.20862	4.66	1.33	9	5	r	161066	1.21e+05	pairs/s per vCPU	
-R+t_emit	tau_emit	s/sample	2.39745	7.29	0.33	9	5					
-R+t_net	K	s	257.098	23.5	10.93	9	5					
-R+t_net	beta	s/GB	0.241347	0.0592	4.08	9	5	B	4.14341	1.02	GB/s per node	
-R+t_net	rho	s/(Mpair/vCPU)	7.63122	5.82	1.31	9	5	r	131041	1e+05	pairs/s per vCPU	
-R+t_net	gamma_net	1	-0.167389	0.989	0.17	9	5					unphysical (negative)
-R+t_fetch	K	s	256.292	-	-	9	5					not identifiable (J'J singular)
-R+t_fetch	beta	s/GB	0.228296	-	-	9	5	B	4.38028	-	GB/s per node	not identifiable (J'J singular)
-R+t_fetch	rho	s/(Mpair/vCPU)	6.93676	-	-	9	5	r	144160	-	pairs/s per vCPU	not identifiable (J'J singular)
-R+t_fetch	phi_fetch	s/GB	0.20903	-	-	9	5					not identifiable (J'J singular)
-R+t_sync	K	s	184.725	136	1.36	9	5					
-R+t_sync	beta	s/GB	0.289988	0.0927	3.13	9	5	B	3.44842	1.1	GB/s per node	
-R+t_sync	rho	s/(Mpair/vCPU)	9.12339	5.75	1.59	9	5	r	109608	6.9e+04	pairs/s per vCPU	
-R+t_sync	kappa_sync	s/doubling	15.1334	28.3	0.53	9	5					
-R+c_used	K	s	241.346	26.9	8.97	9	6					
-R+c_used	beta	s/GB	0.242726	0.0446	5.44	9	6	B	4.11987	0.757	GB/s per node	
-R+c_used	rho	s/(Mpair/vCPU)	8.60295	4.55	1.89	9	6	r	116239	6.14e+04	pairs/s per vCPU	
-R+B_nic	K	s	247.58	35.3	7.00	9	6					
-R+B_nic	beta_nic	s/(GB/(GB/s))	1.17005	0.434	2.69	9	6	eta	0.854666	0.317	x peak NIC rate	
-R+B_nic	rho	s/(Mpair/vCPU)	2.44809	8.54	0.29	9	6	r	408483	1.43e+06	pairs/s per vCPU	
-P-reg	t_boot.t_boot	s	60.5556	1.43	42.49	9	8					
-P-reg	load.beta	s/GB	0.310766	0.0282	11.03	9	8	B	3.21786	0.292	GB/s per node	
-P-reg	classify.t_pg	s	16.4635	7.06	2.33	9	7					
-P-reg	classify.rho	s/(Mpair/vCPU)	7.87269	0.924	8.52	9	7	r	127021	1.49e+04	pairs/s per vCPU	
-P-reg	t_tail.t_tail	s	91.1111	14.4	6.31	9	8					
-P-full	t_boot.t_boot	s	60.5556	1.43	42.49	9	8					
-P-full	load.beta_nic	s/(GB/(GB/s))	1.18306	0.0573	20.65	9	8	eta	0.845265	0.0409	x peak NIC rate	
-P-full	t_fetch.a_fetch	s	12.6278	3.18	3.97	9	7					
-P-full	t_fetch.phi_fetch	s/GB	0.625325	0.0763	8.19	9	7					
-P-full	classify.t_pg	s	-9.13819	6.13	1.49	18	13					unphysical (negative)
-P-full	classify.rho	s/(Mpair/vCPU)	10.5002	0.647	16.22	18	13	r	95236.5	5.87e+03	pairs/s per vCPU	
-P-full	classify.gamma_net	1	-0.217227	0.0697	3.12	18	13					unphysical (negative)
-P-full	classify.tau_emit	s/sample	0.759694	1.22	0.62	18	13					
-P-full	classify.r_input	Mpairs/s	1.65939	0.23	7.22	18	13					
-P-full	t_sync.kappa_sync	s/doubling	22.7961	2.85	8.00	9	8					
-P-full	t_tail.t_tail	s	41.7778	2.87	14.55	9	8					
+fit	param	unit	value	se	abs_t	n_obs	dof	derived	derived_value	derived_se	derived_unit	note	engine_pre_fix
+R	K	s	256.292	21.1	12.15	9	6						yes
+R	beta	s/GB	0.247246	0.0438	5.64	9	6	B	4.04456	0.717	GB/s per node		yes
+R	rho	s/(Mpair/vCPU)	6.93676	3.79	1.83	9	6	r	144160	7.87e+04	pairs/s per vCPU		yes
+R+t_input	K	s	254.995	17.9	14.22	9	6						yes
+R+t_input	beta	s/GB	0.249372	0.0416	6.00	9	6	B	4.01007	0.668	GB/s per node		yes
+R+t_input	rho	s/(Mpair/vCPU)	6.89305	3.2	2.15	9	6	r	145074	6.74e+04	pairs/s per vCPU		yes
+R+t_emit	K	s	246.467	37.6	6.55	9	5						yes
+R+t_emit	beta	s/GB	0.243856	0.0486	5.02	9	5	B	4.10079	0.818	GB/s per node		yes
+R+t_emit	rho	s/(Mpair/vCPU)	6.20862	4.66	1.33	9	5	r	161066	1.21e+05	pairs/s per vCPU		yes
+R+t_emit	tau_emit	s/sample	2.39745	7.29	0.33	9	5						yes
+R+t_net	K	s	257.098	23.5	10.93	9	5						yes
+R+t_net	beta	s/GB	0.241347	0.0592	4.08	9	5	B	4.14341	1.02	GB/s per node		yes
+R+t_net	rho	s/(Mpair/vCPU)	7.63122	5.82	1.31	9	5	r	131041	1e+05	pairs/s per vCPU		yes
+R+t_net	gamma_net	1	-0.167389	0.989	0.17	9	5					unphysical (negative)	yes
+R+t_fetch	K	s	256.292	-	-	9	6					fit singular (J'J); this parameter is identifiable, its se is not computed	yes
+R+t_fetch	beta	s/GB	-	-	-	9	6					not identifiable (null space of J)	yes
+R+t_fetch	rho	s/(Mpair/vCPU)	6.93676	-	-	9	6	r	144160	-	pairs/s per vCPU	fit singular (J'J); this parameter is identifiable, its se is not computed	yes
+R+t_fetch	phi_fetch	s/GB	-	-	-	9	6					not identifiable (null space of J)	yes
+R+t_sync	K	s	184.725	136	1.36	9	5						yes
+R+t_sync	beta	s/GB	0.289988	0.0927	3.13	9	5	B	3.44842	1.1	GB/s per node		yes
+R+t_sync	rho	s/(Mpair/vCPU)	9.12339	5.75	1.59	9	5	r	109608	6.9e+04	pairs/s per vCPU		yes
+R+t_sync	kappa_sync	s/doubling	15.1334	28.3	0.53	9	5						yes
+R+c_used	K	s	241.346	26.9	8.97	9	6						yes
+R+c_used	beta	s/GB	0.242726	0.0446	5.44	9	6	B	4.11987	0.757	GB/s per node		yes
+R+c_used	rho	s/(Mpair/vCPU)	8.60295	4.55	1.89	9	6	r	116239	6.14e+04	pairs/s per vCPU		yes
+R+B_nic	K	s	247.58	35.3	7.00	9	6						yes
+R+B_nic	beta_nic	s/(GB/(GB/s))	1.17005	0.434	2.69	9	6	eta	0.854666	0.317	x peak NIC rate		yes
+R+B_nic	rho	s/(Mpair/vCPU)	2.44809	8.54	0.29	9	6	r	408483	1.43e+06	pairs/s per vCPU		yes
+P-reg	t_boot.t_boot	s	60.5556	1.43	42.49	9	8						yes
+P-reg	load.beta	s/GB	0.310766	0.0282	11.03	9	8	B	3.21786	0.292	GB/s per node		yes
+P-reg	classify.t_pg	s	16.4635	7.06	2.33	9	7						yes
+P-reg	classify.rho	s/(Mpair/vCPU)	7.87269	0.924	8.52	9	7	r	127021	1.49e+04	pairs/s per vCPU		yes
+P-reg	t_tail.t_tail	s	91.1111	14.4	6.31	9	8						yes
+P-full	t_boot.t_boot	s	60.5556	1.43	42.49	9	8						yes
+P-full	load.beta_nic	s/(GB/(GB/s))	1.18306	0.0573	20.65	9	8	eta	0.845265	0.0409	x peak NIC rate		yes
+P-full	t_fetch.a_fetch	s	12.6278	3.18	3.97	9	7						yes
+P-full	t_fetch.phi_fetch	s/GB	0.625325	0.0763	8.19	9	7						yes
+P-full	classify.t_pg	s	-9.13819	6.13	1.49	18	13					unphysical (negative)	yes
+P-full	classify.rho	s/(Mpair/vCPU)	10.5002	0.647	16.22	18	13	r	95236.5	5.87e+03	pairs/s per vCPU		yes
+P-full	classify.gamma_net	1	-0.217227	0.0697	3.12	18	13					unphysical (negative)	yes
+P-full	classify.tau_emit	s/sample	0.759694	1.22	0.62	18	13						yes
+P-full	classify.r_input	Mpairs/s	1.65939	0.23	7.22	18	13						yes
+P-full	t_sync.kappa_sync	s/doubling	22.7961	2.85	8.00	9	8						yes
+P-full	t_tail.t_tail	s	41.7778	2.87	14.55	9	8						yes
