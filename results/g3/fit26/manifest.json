@@ -1,0 +1,463 @@
+{
+ "what": "the #26 fit (WP-10 of the #25 ladder): the registered T(N) and cost model, then each addition as a separate fit",
+ "generated_by": "scripts/lib/fit26.py",
+ "generated_by_sha256": "eebfd2490128611b190daa95bd2e2b9afb0a73dd12669f59a88740cedb007131",
+ "commit": "b40f7072f8edf50d165beef91d966757cd6af347",
+ "scripts_dirty": false,
+ "generated_at": "2026-10-09T20:12:25Z",
+ "registered": {
+  "T": "T(N) = t_boot + S/(N*B) + W/(N*c*r) + t_probe + t_gather + t_tail",
+  "cost": "Cost ~= p*[N*(t_boot + t_tail) + S/B + W/(c*r)]",
+  "where": "#26; verbatim on #25 (2026-10-07)"
+ },
+ "observable": "T_with_harness_s (points.tsv): first launch to the last member's termination",
+ "points": [
+  {
+   "spec": "runs/g3-e2-x8g.12xlarge-n2.json",
+   "cohort": "20261008-042842-626bb79-dddc-n2",
+   "commit": "8a6dbe61ab3ad3cae0bda631ba8d1136b09e1972",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e3-r8g.4xlarge-n16.json",
+   "cohort": "20261008-044702-3c2153c-55a5-n16",
+   "commit": "9c4a5c762db39c86a6d09e95a503f1b19d310b10",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e2-x8g.24xlarge-n1.json",
+   "cohort": "20261008-051833-067c8d1-7e14-n1",
+   "commit": "14f2960b0677bb21b794fa1de5c7c642d3392703",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e2-x8g.8xlarge-n4.json",
+   "cohort": "20261008-061609-0a7cc03-ba07-n4",
+   "commit": "4a8f57c3f85688f9af904192e5c28dbcd186b4a3",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e2-x8g.4xlarge-n8.json",
+   "cohort": "20261008-062751-c217150-8332-n8",
+   "commit": "4a8f57c3f85688f9af904192e5c28dbcd186b4a3",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e2-x8g.2xlarge-n16.json",
+   "cohort": "20261008-064058-4a8f57c-d64a-n16",
+   "commit": "68dea5ba15cc436b534181415d6fc0d9b64b8e08",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e3-c8g.12xlarge-n16.json",
+   "cohort": "20261008-152754-c825453-0fc3-n16",
+   "commit": "b74c0f27c23ad30f1ef9fa3b414ea3f2f68655cc",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e3-c9g.12xlarge-n16.json",
+   "cohort": "20261008-155257-b74c0f2-6d43-n16",
+   "commit": "ec4700168b3540a134729f919ba109c4d4bbd92a",
+   "engine_pre_fix": "yes"
+  },
+  {
+   "spec": "runs/g3-e4-c8g.12xlarge-n32.json",
+   "cohort": "20261008-162516-ec47001-e4a7-n32",
+   "commit": "3201a7537f9e1c4bb761cbf2ed211b77499557fa",
+   "engine_pre_fix": "yes"
+  }
+ ],
+ "engine_pre_fix": {
+  "fix": "904c2a5",
+  "points_pre_fix": 9,
+  "points": 9,
+  "e1": "yes"
+ },
+ "fits": {
+  "R": {
+   "kind": "end to end",
+   "what": "registered, end to end: T = K + beta*S/N + rho*W/(N*c), K = t_boot + t_probe + t_gather + t_tail (only their sum is identifiable from T)",
+   "params": [
+    "K",
+    "beta",
+    "rho"
+   ],
+   "theta": [
+    256.2924305771017,
+    0.24724568480657508,
+    6.936758421983109
+   ],
+   "rmse_s": 27.591140157667052,
+   "loo_rmse_s": 38.13858946171175
+  },
+  "R+t_input": {
+   "kind": "end to end",
+   "what": "registered + t_input: the classify term becomes max(W/(N*c*r), w_max/r_input), r_input = 1.84 Mpairs/s per stream fixed at E1's measurement (#25 E1 addition)",
+   "params": [
+    "K",
+    "beta",
+    "rho"
+   ],
+   "theta": [
+    254.99469511525956,
+    0.24937223304396655,
+    6.893045381039473
+   ],
+   "rmse_s": 26.986944986208997,
+   "loo_rmse_s": 37.965283794165984
+  },
+  "R+t_emit": {
+   "kind": "end to end",
+   "what": "registered + t_emit = tau_emit * samples per lane, n_lane = ceil(cohort / (N * in flight))",
+   "params": [
+    "K",
+    "beta",
+    "rho",
+    "tau_emit"
+   ],
+   "theta": [
+    246.4666280932018,
+    0.2438556455012506,
+    6.208616749328933,
+    2.397454794219032
+   ],
+   "rmse_s": 27.29765920542466,
+   "loo_rmse_s": 60.42179976544114
+  },
+  "R+t_net": {
+   "kind": "end to end",
+   "what": "registered + t_net = gamma_net * W*b_route*(N-1)/N^2 / NIC peak rate (routed lookup bytes per node at line rate; gamma 1 = serial, 0 = hidden)",
+   "params": [
+    "K",
+    "beta",
+    "rho",
+    "gamma_net"
+   ],
+   "theta": [
+    257.09766894590274,
+    0.24134703557668025,
+    7.631223478052408,
+    -0.16738946025528417
+   ],
+   "rmse_s": 27.512373306214187,
+   "loo_rmse_s": 68.36830846886296
+  },
+  "R+t_fetch": {
+   "kind": "end to end",
+   "what": "registered + t_fetch = phi_fetch * (cohort input GB / N) (each node fetches its own inputs; the registered form has no input fetch)",
+   "params": [
+    "K",
+    "beta",
+    "rho",
+    "phi_fetch"
+   ],
+   "theta": [
+    256.29243055608845,
+    0.22829592270220103,
+    6.936758427292279,
+    0.2090299744993139
+   ],
+   "rmse_s": 27.591140157667038,
+   "loo_rmse_s": 38.138589437629996
+  },
+  "R+t_sync": {
+   "kind": "end to end",
+   "what": "registered + t_sync = kappa_sync * log2(N) (rendezvous, start skew and the max-over-N of per-node tails; the registered form has no term that grows with N)",
+   "params": [
+    "K",
+    "beta",
+    "rho",
+    "kappa_sync"
+   ],
+   "theta": [
+    184.72531884275475,
+    0.28998796009437217,
+    9.123390252772776,
+    15.13341259397799
+   ],
+   "rmse_s": 26.83626889600476,
+   "loo_rmse_s": 60.43216576213013
+  },
+  "R+c_used": {
+   "kind": "end to end",
+   "what": "registered with c = threads in use, min(vCPUs, in flight x T16), in place of vCPUs (a redefinition of a registered symbol, reported as an addition)",
+   "params": [
+    "K",
+    "beta",
+    "rho"
+   ],
+   "theta": [
+    241.34577302630615,
+    0.24272611760711243,
+    8.602945212947976
+   ],
+   "rmse_s": 27.26783666100946,
+   "loo_rmse_s": 43.37934820982123
+  },
+  "R+B_nic": {
+   "kind": "end to end",
+   "what": "registered with B = eta x the type's peak NIC rate in place of one constant B (a redefinition of a registered symbol, reported as an addition)",
+   "params": [
+    "K",
+    "beta_nic",
+    "rho"
+   ],
+   "theta": [
+    247.57994488075735,
+    1.1700474359945203,
+    2.448085261251805
+   ],
+   "rmse_s": 46.59944091171579,
+   "loo_rmse_s": 84.22020250787105
+  },
+  "P-reg": {
+   "kind": "per term",
+   "what": "registered, per term: each registered term fitted to its own phase (t_boot = boot+setup+manifest; S/(N*B) = load; W/(N*c*r) + t_probe + t_gather = the LPT batch wall; t_tail = body tail + harness tail max); T = their sum, so the input fetch and the rendezvous skew (not in the registered form) are in the residual",
+   "params": [
+    "t_boot.t_boot",
+    "load.beta",
+    "classify.t_pg",
+    "classify.rho",
+    "t_tail.t_tail"
+   ],
+   "theta": [
+    60.55555555555556,
+    0.31076588125361054,
+    16.463507516075968,
+    7.872686819271808,
+    91.11111111111111
+   ],
+   "rmse_s": 74.38554483018078,
+   "loo_rmse_s": 89.61834168767845
+  },
+  "P-full": {
+   "kind": "per term",
+   "what": "every addition, per term: t_boot; load = beta_nic*S/(N*NIC peak) (B_nic); t_fetch = a + phi*input GB/N; classify = max(t_pg + rho*W/(N*c_used) + gamma_net*x_net + tau_emit*n_lane, w_max/r_input), fitted on the cohort-100 LPT walls and the cohort-1 walls; t_sync = kappa*log2 N on skew + (harness tail max - median); t_tail = body tail + harness tail median. The phases sum exactly to T",
+   "params": [
+    "t_boot.t_boot",
+    "load.beta_nic",
+    "t_fetch.a_fetch",
+    "t_fetch.phi_fetch",
+    "classify.t_pg",
+    "classify.rho",
+    "classify.gamma_net",
+    "classify.tau_emit",
+    "classify.r_input",
+    "t_sync.kappa_sync",
+    "t_tail.t_tail"
+   ],
+   "theta": [
+    60.55555555555556,
+    1.183060509654097,
+    12.627751572342278,
+    0.625325440415896,
+    -9.138193464208522,
+    10.500178367829315,
+    -0.2172269031339597,
+    0.7596935842035966,
+    1.6593888634541856,
+    22.796116504854368,
+    41.777777777776
+   ],
+   "rmse_s": 36.8063227635136,
+   "loo_rmse_s": 40.73010582965445
+  }
+ },
+ "constants": {
+  "S_bytes": 1189091671800,
+  "b_route_bytes_per_pair": 475.8833026113671,
+  "r_input_e1_pairs_per_s": 1840000.0,
+  "threads_per_sample": 16,
+  "N_grid": [
+   1,
+   64
+  ],
+  "draws": 200,
+  "seed": 26,
+  "held_out": "runs/g3-e4-c8g.12xlarge-n32.json",
+  "memory_rule": "mem >= 1.15 x hash.k2d/N + 8 GB + 7.5 GB x in flight (scripts/g3/mkspec.sh)"
+ },
+ "inputs": [
+  {
+   "path": "results/cohort/PRJNA398089/runs.tsv",
+   "sha256": "fb2957ae8202c18be05641e85b0e9fcfdba7ecfe6b0f93d6349287c99422bd96"
+  },
+  {
+   "path": "results/g0a/20261006-005556-fe849b2/out/head-hash.k2d.json",
+   "sha256": "00588412d0516cf8172046ac7bd3ddac56f85d1a72d92c09241453d5228772af"
+  },
+  {
+   "path": "results/g3/20261008-021537-cb0cea7-7e51-n8/cohort.json",
+   "sha256": "101be371b583ff5b274e68e141b2d806897e499d859d78e949238d342d2f8c8c"
+  },
+  {
+   "path": "results/g3/20261008-021537-cb0cea7-7e51-n8/tables/batches.tsv",
+   "sha256": "c8a08c5c30878e85297b5d833417701f5bbd5f138dab02a24d59a5999f320eef"
+  },
+  {
+   "path": "results/g3/20261008-042842-626bb79-dddc-n2/cohort.json",
+   "sha256": "e2f5b3b0b554d224a45b8475bb9a1d87b8580f47eee2485f7f25333f71b5e49c"
+  },
+  {
+   "path": "results/g3/20261008-042842-626bb79-dddc-n2/tables/batches.tsv",
+   "sha256": "41c16c8cad26503c435544862112949f721e50108450924f1c2402aa2b3e2d5d"
+  },
+  {
+   "path": "results/g3/20261008-042842-626bb79-dddc-n2/tables/point.tsv",
+   "sha256": "45ea29d0729bd45cc51f48356cf259b260b77d320fbce84c40eae7d6769311da"
+  },
+  {
+   "path": "results/g3/20261008-042842-626bb79-dddc-n2/tables/rates.tsv",
+   "sha256": "a0a1459c08df4afe5034bc198b32464ebec9bf4c775b66125ee82a01852799ed"
+  },
+  {
+   "path": "results/g3/20261008-044702-3c2153c-55a5-n16/cohort.json",
+   "sha256": "b193147cc6ac6d5584dae3b94c3d49f75d5e9bd458d0d19d26b911c7f158d3bd"
+  },
+  {
+   "path": "results/g3/20261008-044702-3c2153c-55a5-n16/tables/batches.tsv",
+   "sha256": "a7a779048cc53a3c8dd5f3230d8a8be2fd38340e9ca57487aa67a297157e300e"
+  },
+  {
+   "path": "results/g3/20261008-044702-3c2153c-55a5-n16/tables/point.tsv",
+   "sha256": "98f9758a56ef952f197236a776970e48a6bbc30634b09cd582694f610dd2a5b6"
+  },
+  {
+   "path": "results/g3/20261008-044702-3c2153c-55a5-n16/tables/rates.tsv",
+   "sha256": "8b16286763dca77e31cf14e9116ee4e92a68907cf2608a12eabc0caee9c21050"
+  },
+  {
+   "path": "results/g3/20261008-051833-067c8d1-7e14-n1/cohort.json",
+   "sha256": "7a129f0fc6be0398e0a28e2bb5c3e3bcb1cf6eb4db9401d7f79ed1705680f09e"
+  },
+  {
+   "path": "results/g3/20261008-051833-067c8d1-7e14-n1/tables/batches.tsv",
+   "sha256": "42bd94fe305805eb099012c33e4afd5fcd911981543c59771035f9076be334f5"
+  },
+  {
+   "path": "results/g3/20261008-051833-067c8d1-7e14-n1/tables/point.tsv",
+   "sha256": "71facd181d21cc9d5909bd0f211309486d89a67d5b93667581bfd664e32ed566"
+  },
+  {
+   "path": "results/g3/20261008-051833-067c8d1-7e14-n1/tables/rates.tsv",
+   "sha256": "91691c8416d7c0fd776bd4cf0ae2afa46a50878828eefc0d16562d17791bd12f"
+  },
+  {
+   "path": "results/g3/20261008-061609-0a7cc03-ba07-n4/cohort.json",
+   "sha256": "8301683c62be390ba8d133a9e47b9f797e68cd4db8523478b5a5d77b23f24e4f"
+  },
+  {
+   "path": "results/g3/20261008-061609-0a7cc03-ba07-n4/tables/batches.tsv",
+   "sha256": "6372ba9a1b29552ab5958f399089a7c470db21d654f9b89ee4b4ac9ffb1b3c64"
+  },
+  {
+   "path": "results/g3/20261008-061609-0a7cc03-ba07-n4/tables/point.tsv",
+   "sha256": "d001d65797b271cc1d08b02b16a101a9eef6c111c4b3eac62ad486e253adafb3"
+  },
+  {
+   "path": "results/g3/20261008-061609-0a7cc03-ba07-n4/tables/rates.tsv",
+   "sha256": "c9c540d2c94bea46ed11315e011bec5353fb24ae1aa5a517a998087abab7b4ce"
+  },
+  {
+   "path": "results/g3/20261008-062751-c217150-8332-n8/cohort.json",
+   "sha256": "e1b62ccdb511cd40a7081a428b3532c14960c7cc702a9fe82c1e532d29f82227"
+  },
+  {
+   "path": "results/g3/20261008-062751-c217150-8332-n8/tables/batches.tsv",
+   "sha256": "d5535ab795dcb5e375bbc99b92109f9ab1fdff88de9099d3aee77a89e1fd6b93"
+  },
+  {
+   "path": "results/g3/20261008-062751-c217150-8332-n8/tables/point.tsv",
+   "sha256": "6811e48c9507570c7e30c6ffdf7248b21a0337bc5789ef765bf0ecb1c0f01f20"
+  },
+  {
+   "path": "results/g3/20261008-062751-c217150-8332-n8/tables/rates.tsv",
+   "sha256": "cebddddb8d41de1e74083bef54bc610974ce135b78fe9b9039d438e27cdc0303"
+  },
+  {
+   "path": "results/g3/20261008-064058-4a8f57c-d64a-n16/cohort.json",
+   "sha256": "c4533c272df02691e17d2658268c01141313c6d0344ed06b248b5f1dfb109b48"
+  },
+  {
+   "path": "results/g3/20261008-064058-4a8f57c-d64a-n16/tables/batches.tsv",
+   "sha256": "0585ba97a4af5e5f9118958ec4d4258ebc4fa249c26a885c775ea1c7454bdb2e"
+  },
+  {
+   "path": "results/g3/20261008-064058-4a8f57c-d64a-n16/tables/point.tsv",
+   "sha256": "9f26896cb188714eb50b0706944b3857c0a3d3c938a94960c5b8e69e9d63f498"
+  },
+  {
+   "path": "results/g3/20261008-064058-4a8f57c-d64a-n16/tables/rates.tsv",
+   "sha256": "b82927f4e1bd8d762e0adaca1e93c32cb422f34cf08fb187d247a868aa68a3bd"
+  },
+  {
+   "path": "results/g3/20261008-152754-c825453-0fc3-n16/cohort.json",
+   "sha256": "fad973ae1c5bd04a5c60c389418a42bdc65901d00954dc84db282f5ab07ee76a"
+  },
+  {
+   "path": "results/g3/20261008-152754-c825453-0fc3-n16/tables/batches.tsv",
+   "sha256": "3bf370af856c994116f96faa4b88398c5ad33db3862ccd41ecd88a3d7034bffb"
+  },
+  {
+   "path": "results/g3/20261008-152754-c825453-0fc3-n16/tables/point.tsv",
+   "sha256": "1eb7aa954bbea6bd804ff7602b8d31c59a8144467da71614c577fd9f84ba1946"
+  },
+  {
+   "path": "results/g3/20261008-152754-c825453-0fc3-n16/tables/rates.tsv",
+   "sha256": "2e884346ed2b7c8118623b3179485e5536ab6a21bdfe91bda9b4077be5213bca"
+  },
+  {
+   "path": "results/g3/20261008-155257-b74c0f2-6d43-n16/cohort.json",
+   "sha256": "3e9503a93e82127dfacbafdcccbb60588b7b2934af12ccec49ac03ceaa350f62"
+  },
+  {
+   "path": "results/g3/20261008-155257-b74c0f2-6d43-n16/tables/batches.tsv",
+   "sha256": "028e4e1caf94b44c92ebda3a564ecb031bba997fbb05db5d3b8e3a1dacde9158"
+  },
+  {
+   "path": "results/g3/20261008-155257-b74c0f2-6d43-n16/tables/point.tsv",
+   "sha256": "e03b7920a28b3a36f46935dd172a930b0145e0245a6887ba39db52c3e9b57f30"
+  },
+  {
+   "path": "results/g3/20261008-155257-b74c0f2-6d43-n16/tables/rates.tsv",
+   "sha256": "6f8d38a7b50ac0c441f8592d172b17228aecd8b186c39f96263d6cd30cd9a1d6"
+  },
+  {
+   "path": "results/g3/20261008-162516-ec47001-e4a7-n32/cohort.json",
+   "sha256": "7357b41d54f69206d4d6c979bae26ce67a73f679d7586b6e4f198a82925d8887"
+  },
+  {
+   "path": "results/g3/20261008-162516-ec47001-e4a7-n32/tables/batches.tsv",
+   "sha256": "bca2206d351f5ef528c8f66ce2aa7733c3996d3cd493d3d0cb2eec2023c20230"
+  },
+  {
+   "path": "results/g3/20261008-162516-ec47001-e4a7-n32/tables/point.tsv",
+   "sha256": "052f825554d3539f33d4db0aa911b7f521857607e7562cc7d9d61201a6e273df"
+  },
+  {
+   "path": "results/g3/20261008-162516-ec47001-e4a7-n32/tables/rates.tsv",
+   "sha256": "7dea8f833928026e7384988b5ad4690397a7d2f410bd8c0e1cc49ebfd4d4a547"
+  },
+  {
+   "path": "results/g3/campaign/points.tsv",
+   "sha256": "7478aa1230365e67178688e0e0739947b5932ea717128e404b1a8fa60568e418"
+  },
+  {
+   "path": "results/instance-types/us-west-2.json",
+   "sha256": "5fff763b2845d430ce8376af4ded73aee9dc2dcff49002ad47700be10cc6a6a0"
+  },
+  {
+   "path": "results/util-backfill/util-backfill.tsv",
+   "sha256": "ade6ec886eabebb0e5f291bc98072603996373eedccea048643d702ecabef01f"
+  }
+ ],
+ "outputs": [
+  "fit26.md",
+  "points.tsv",
+  "params.tsv",
+  "residuals.tsv",
+  "heldout.tsv",
+  "predictions.tsv",
+  "optimal.tsv"
+ ]
+}

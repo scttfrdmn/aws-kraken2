@@ -1,0 +1,91 @@
+fit	spec	type	N	engine_pre_fix	T_obs_s	T_pred_s	T_pred_se_s	resid_s	resid_pct	loo_pred_s	loo_resid_s	designated_held_out
+R	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	484.2	18.1	+14.8	+3.0	478.2	+20.8	
+R	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	305.0	13.1	-60.0	-24.5	315.6	-70.6	
+R	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	631.2	31.4	-4.2	-0.7	657.8	-30.8	
+R	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	390.5	14.1	-0.5	-0.1	390.6	-0.6	
+R	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	353.7	17.8	-27.7	-8.5	364.3	-38.3	
+R	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	335.3	20.2	+39.7	+10.6	313.4	+61.6	
+R	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	284.8	17.9	+10.2	+3.5	280.8	+14.2	
+R	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	284.8	17.9	+4.2	+1.5	283.1	+5.9	
+R	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	270.5	19.4	+23.5	+8.0	258.9	+35.1	yes
+R+t_input	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	483.6	17.3	+15.4	+3.1	477.8	+21.2	
+R+t_input	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	303.7	12.8	-58.7	-23.9	314.0	-69.0	
+R+t_input	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	631.9	30.6	-4.9	-0.8	661.7	-34.7	
+R+t_input	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	389.4	13.9	+0.6	+0.1	389.3	+0.7	
+R+t_input	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	352.4	17.3	-26.4	-8.1	363.6	-37.6	
+R+t_input	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	333.8	19.5	+41.2	+11.0	311.8	+63.2	
+R+t_input	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	284.8	18.4	+10.2	+3.5	280.2	+14.8	
+R+t_input	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	284.8	18.4	+4.2	+1.4	282.9	+6.1	
+R+t_input	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	275.5	18.1	+18.5	+6.3	264.0	+30.0	yes
+R+t_emit	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	485.4	20.0	+13.6	+2.7	479.7	+19.3	
+R+t_emit	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	301.3	18.1	-56.3	-23.0	319.4	-74.4	
+R+t_emit	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	630.4	34.1	-3.4	-0.5	652.9	-25.9	
+R+t_emit	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	390.0	15.4	-0.0	-0.0	390.1	-0.1	
+R+t_emit	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	353.8	19.3	-27.8	-8.5	364.4	-38.4	
+R+t_emit	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	335.7	21.9	+39.3	+10.5	313.9	+61.1	
+R+t_emit	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	290.4	25.9	+4.6	+1.6	285.9	+9.1	
+R+t_emit	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	290.4	25.9	-1.4	-0.5	291.8	-2.8	
+R+t_emit	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	262.5	32.4	+31.5	+10.7	149.2	+144.8	yes
+R+t_net	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	481.7	24.8	+17.3	+3.5	467.4	+31.6	
+R+t_net	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	305.6	14.8	-60.6	-24.7	317.2	-72.2	
+R+t_net	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	633.1	36.1	-6.1	-1.0	763.1	-136.1	
+R+t_net	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	386.7	27.2	+3.3	+0.9	382.7	+7.3	
+R+t_net	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	354.5	20.0	-28.5	-8.7	366.3	-40.3	
+R+t_net	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	339.0	30.8	+36.0	+9.6	255.9	+119.1	
+R+t_net	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	284.3	19.7	+10.7	+3.6	280.0	+15.0	
+R+t_net	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	284.5	19.6	+4.5	+1.6	282.7	+6.3	
+R+t_net	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	270.7	21.3	+23.3	+7.9	259.1	+34.9	yes
+R+t_fetch	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	484.2	-	+14.8	+3.0	478.2	+20.8	
+R+t_fetch	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	305.0	-	-60.0	-24.5	315.6	-70.6	
+R+t_fetch	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	631.2	-	-4.2	-0.7	657.8	-30.8	
+R+t_fetch	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	390.5	-	-0.5	-0.1	390.6	-0.6	
+R+t_fetch	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	353.7	-	-27.7	-8.5	364.3	-38.3	
+R+t_fetch	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	335.3	-	+39.7	+10.6	313.4	+61.6	
+R+t_fetch	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	284.8	-	+10.2	+3.5	280.8	+14.2	
+R+t_fetch	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	284.8	-	+4.2	+1.5	283.1	+5.9	
+R+t_fetch	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	270.5	-	+23.5	+8.0	258.9	+35.1	yes
+R+t_sync	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	478.7	21.9	+20.3	+4.1	466.7	+32.3	
+R+t_sync	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	306.7	14.3	-61.7	-25.2	318.3	-73.3	
+R+t_sync	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	635.9	34.6	-8.9	-1.4	746.4	-119.4	
+R+t_sync	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	381.0	23.3	+9.0	+2.3	374.6	+15.4	
+R+t_sync	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	353.0	19.0	-27.0	-8.3	363.4	-37.4	
+R+t_sync	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	346.6	30.1	+28.4	+7.6	280.6	+94.4	
+R+t_sync	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	280.1	21.0	+14.9	+5.0	272.5	+22.5	
+R+t_sync	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	280.1	21.0	+8.9	+3.1	275.6	+13.4	
+R+t_sync	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	277.8	24.8	+16.2	+5.5	263.2	+30.8	yes
+R+c_used	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	486.0	18.4	+13.0	+2.6	480.4	+18.6	
+R+c_used	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	297.0	14.0	-52.0	-21.2	308.0	-63.0	
+R+c_used	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	630.3	31.1	-3.3	-0.5	652.1	-25.1	
+R+c_used	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	388.7	13.3	+1.3	+0.3	388.5	+1.5	
+R+c_used	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	352.7	17.0	-26.7	-8.2	362.0	-36.0	
+R+c_used	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	334.6	19.4	+40.4	+10.8	314.1	+60.9	
+R+c_used	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	297.0	14.0	-2.0	-0.7	297.4	-2.4	
+R+c_used	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	297.0	14.0	-8.0	-2.8	298.7	-9.7	
+R+c_used	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	256.6	24.8	+37.4	+12.7	211.1	+82.9	yes
+R+B_nic	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	523.5	33.5	-24.5	-4.9	536.4	-37.4	
+R+B_nic	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	304.7	22.7	-59.7	-24.4	315.8	-70.8	
+R+B_nic	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	554.4	39.6	+72.6	+11.6	486.7	+140.3	
+R+B_nic	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	454.5	24.8	-64.5	-16.5	469.6	-79.6	
+R+B_nic	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	361.7	31.4	-35.7	-11.0	377.3	-51.3	
+R+B_nic	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	315.4	45.4	+59.6	+15.9	212.6	+162.4	
+R+B_nic	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	282.1	30.3	+12.9	+4.4	277.0	+18.0	
+R+B_nic	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	279.0	30.1	+10.0	+3.5	275.1	+13.9	
+R+B_nic	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	264.8	32.8	+29.2	+9.9	250.5	+43.5	yes
+P-reg	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	444.7	23.0	+54.3	+10.9	441.0	+58.0	
+P-reg	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	225.7	15.3	+19.3	+7.9	230.7	+14.3	
+P-reg	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	629.5	37.0	-2.5	-0.4	759.9	-132.9	
+P-reg	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	329.4	17.3	+60.6	+15.5	332.9	+57.1	
+P-reg	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	283.2	15.7	+42.8	+13.1	286.3	+39.7	
+P-reg	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	260.1	15.3	+114.9	+30.6	254.8	+120.2	
+P-reg	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	202.7	15.8	+92.3	+31.3	192.2	+102.8	
+P-reg	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	202.7	15.8	+86.3	+29.9	194.7	+94.3	
+P-reg	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	185.4	15.9	+108.6	+36.9	183.1	+110.9	yes
+P-full	runs/g3-e2-x8g.12xlarge-n2.json	x8g.12xlarge	2	yes	499	531.4	13.5	-32.4	-6.5	540.7	-41.7	
+P-full	runs/g3-e3-r8g.4xlarge-n16.json	r8g.4xlarge	16	yes	245	293.5	12.7	-48.5	-19.8	288.1	-43.1	
+P-full	runs/g3-e2-x8g.24xlarge-n1.json	x8g.24xlarge	1	yes	627	583.9	15.8	+43.1	+6.9	574.5	+52.5	
+P-full	runs/g3-e2-x8g.8xlarge-n4.json	x8g.8xlarge	4	yes	390	441.4	11.7	-51.4	-13.2	444.9	-54.9	
+P-full	runs/g3-e2-x8g.4xlarge-n8.json	x8g.4xlarge	8	yes	326	366.8	10.6	-40.8	-12.5	371.5	-45.5	
+P-full	runs/g3-e2-x8g.2xlarge-n16.json	x8g.2xlarge	16	yes	375	341.7	12.5	+33.3	+8.9	338.0	+37.0	
+P-full	runs/g3-e3-c8g.12xlarge-n16.json	c8g.12xlarge	16	yes	295	281.3	12.5	+13.7	+4.6	276.4	+18.6	
+P-full	runs/g3-e3-c9g.12xlarge-n16.json	c9g.12xlarge	16	yes	289	278.4	12.5	+10.6	+3.7	279.1	+9.9	
+P-full	runs/g3-e4-c8g.12xlarge-n32.json	c8g.12xlarge	32	yes	294	259.2	15.0	+34.8	+11.8	253.0	+41.0	yes
