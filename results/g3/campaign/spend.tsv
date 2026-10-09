@@ -25,3 +25,7 @@ run	spec	type	nodes	cost_usd	ended_or_state	orphans_rc	outcome	evidence	orphans_
 20261008-194917-ce5d8ee	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	6.4884	terminated	0	defect: diagnostic run without the NVMe read-ahead tune (read_ahead_kb boot default)	first sample still running after 50+ min; interrupted, instance terminated from the launch host (results/g3/20261008-194917-ce5d8ee/log/run.log)	
 20261008-211637-5a3b2e5	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	2.7354	terminated	0	ok		
 20261009-015708-210e1b5	runs/g3-diag44-r8gd.16xlarge.json	r8gd.16xlarge	1	2.6505	terminated	0	ok		
+20261009-060042-b6e1265	runs/g3-probe-decomp-c8g.4xlarge.json	c8g.4xlarge	1	0.1163	terminated	0	ok		
+20261009-061441-c0b50ca	runs/g3-probe-stage-x8g.24xlarge.json	x8g.24xlarge	1	2.6418	terminated	0	ok		
+20261009-063433-ca143e7-7f1c-n64	runs/g3-probe-cont-c8gn.4xlarge.json	c8gn.4xlarge	64	0.6976	members done (fail fast: rank 24 exited 2)	0	defect: launch-host tree edited during a multi-node launch	"ranks 24-63 ""uncommitted changes in scripts/ ... commit first"" (results/g3/20261009-063433-ca143e7-7f1c-n64/rank-24.run.log); fail fast stopped ranks 0-23 before their stages; rerun as 20261009-064231-4c67532-2a5c-n64"	
+20261009-064231-4c67532-2a5c-n64	runs/g3-probe-cont-c8gn.4xlarge.json	c8gn.4xlarge	64	8.3437	members done	0	ok		
