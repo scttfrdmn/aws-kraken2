@@ -1,0 +1,36 @@
+spec	driver	rc	gzip_bytes	limit	headroom	quota	scratch_commit	note
+runs/g0a.json	run.sh	0	14007	15360	1353	ok 1xt4g.micro 2/1989 L-1216C47A	-	
+runs/g0c-probes.json	run.sh	0	14126	15360	1234	ok 1xc7g.large 2/1989 L-1216C47A	-	
+runs/g0c-runs.json	run.sh	0	14001	15360	1359	ok 1xc8gn.2xlarge 8/1989 L-1216C47A	-	
+runs/g1-oracle.json	run.sh	0	14140	15360	1220	ok 1xm7g.2xlarge 8/1989 L-1216C47A	-	
+runs/g2-c8gd.json	run.sh	0	14190	15360	1170	ok 1xc8gd.8xlarge 32/1989 L-1216C47A	-	
+runs/g2-c9gd.json	run.sh	0	14190	15360	1170	ok 1xc9gd.8xlarge 32/1989 L-1216C47A	-	
+runs/g2-nvme.json	run.sh	0	14190	15360	1170	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g2-nvme2.json	run.sh	0	14189	15360	1171	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g2-nvme3.json	run.sh	0	14195	15360	1165	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g2-ram.json	run.sh	0	14188	15360	1172	ok 1xr8gd.48xlarge 192/1989 L-1216C47A	-	
+runs/g2-ram2.json	run.sh	0	14059	15360	1301	ok 1xr8gd.48xlarge 192/1989 L-1216C47A	-	
+runs/g2-smoke.json	run.sh	0	14080	15360	1280	ok 1xr8gd.xlarge 4/1989 L-1216C47A	-	
+runs/g3-diag44-r8gd.16xlarge.json	run-multi n=1	0	14099	15360	1261	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g3-e1.json	run-multi n=1	0	14135	15360	1225	ok 1xx8g.4xlarge 16/128 L-7295265B	-	
+runs/g3-e2-x8g.12xlarge-n2.json	run-multi n=2	0	14420	15360	940	ok 2xx8g.12xlarge 96/128 L-7295265B	-	
+runs/g3-e2-x8g.24xlarge-n1.json	run-multi n=1	0	14414	15360	946	ok 1xx8g.24xlarge 96/128 L-7295265B	-	
+runs/g3-e2-x8g.2xlarge-n16.json	run-multi n=16	0	14417	15360	943	ok 16xx8g.2xlarge 128/128 L-7295265B	-	
+runs/g3-e2-x8g.4xlarge-n8.json	run-multi n=8	0	14417	15360	943	ok 8xx8g.4xlarge 128/128 L-7295265B	-	
+runs/g3-e2-x8g.8xlarge-n4.json	run-multi n=4	0	14415	15360	945	ok 4xx8g.8xlarge 128/128 L-7295265B	-	
+runs/g3-e3-c8g.12xlarge-n16.json	run-multi n=16	0	14420	15360	940	ok 16xc8g.12xlarge 768/1989 L-1216C47A	-	
+runs/g3-e3-c9g.12xlarge-n16.json	run-multi n=16	0	14421	15360	939	ok 16xc9g.12xlarge 768/1989 L-1216C47A	-	
+runs/g3-e3-r8g.4xlarge-n16.json	run-multi n=16	0	14421	15360	939	ok 16xr8g.4xlarge 256/1989 L-1216C47A	-	
+runs/g3-e4-c8g.12xlarge-n32.json	run-multi n=32	0	14420	15360	940	ok 32xc8g.12xlarge 1536/1989 L-1216C47A	-	
+runs/g3-probe-cont-c8gn.4xlarge.json	run-multi n=1	0	14104	15360	1256	ok 1xc8gn.4xlarge 16/1989 L-1216C47A	-	
+runs/g3-probe-decomp-c8g.4xlarge.json	run-multi n=1	0	14104	15360	1256	ok 1xc8g.4xlarge 16/1989 L-1216C47A	-	
+runs/g3-probe-stage-x8g.24xlarge.json	run-multi n=1	0	14102	15360	1258	ok 1xx8g.24xlarge 96/128 L-7295265B	-	
+runs/g3-roda-n8.json	run-multi n=1	0	14165	15360	1195	ok 1xx8g.4xlarge 16/128 L-7295265B	-	
+runs/g3-std8.json	run-multi n=1	0	14186	15360	1174	ok 1xc8g.2xlarge 8/1989 L-1216C47A	-	
+runs/g3-u1-x8g.24xlarge.json	run-multi n=1	0	14102	15360	1258	ok 1xx8g.24xlarge 96/128 L-7295265B	-	
+runs/g3-u2-r8gd.16xlarge.json	run-multi n=1	0	14103	15360	1257	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/loadbench-g4.json	run.sh	0	14032	15360	1328	ok 1xr8gd.2xlarge 8/1989 L-1216C47A	-	
+runs/loadbench.json	run.sh	0	14025	15360	1335	ok 1xm7g.2xlarge 8/1989 L-1216C47A	-	
+runs/stage-cohort.json	run-multi n=1	0	14037	15360	1323	ok 1xc8g.large 2/1989 L-1216C47A	-	
+runs/g3-c1000-x8g.24xlarge-n1.json	run-multi n=1	0	14112	15360	1248	ok 1xx8g.24xlarge 96/128 L-7295265B	c6b56a1	
+runs/g3-c1000-r8g.4xlarge-n16.json	run-multi n=16	0	14116	15360	1244	ok 16xr8g.4xlarge 258/1989 L-1216C47A	5f027e6	

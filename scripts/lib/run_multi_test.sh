@@ -31,7 +31,8 @@ case "$1 $2" in
   "ec2 describe-security-groups")
     echo '{"GroupId":"sg-t","IpPermissions":[{"IpProtocol":"-1","UserIdGroupPairs":[{"GroupId":"sg-t"}],"IpRanges":[],"Ipv6Ranges":[],"PrefixListIds":[]},{"IpProtocol":"tcp","FromPort":22,"ToPort":22,"IpRanges":[{"CidrIp":"0.0.0.0/0"}]}]}' ;;
   "ec2 describe-instances")
-    [ -e "$S/fail-describe" ] && { echo "An error occurred (RequestLimitExceeded)" >&2; exit 255; }
+    # Only the sweeps (by spawn:task-id tag) fail; the pre-launch quota check's state-filtered call does not.
+    [ -e "$S/fail-describe" ] && [[ " $* " == *tag:spawn:task-id* ]] && { echo "An error occurred (RequestLimitExceeded)" >&2; exit 255; }
     f=$(arg --filters "$@"); task=${f#Name=tag:spawn:task-id,Values=}
     for i in "$S"/inst/*; do [ -e "$i" ] || continue
       read -r t st < "$i"; [ "$t" = "$task" ] && [ "$st" != terminated ] && basename "$i"; done | tr '\n' ' ' ;;
@@ -44,6 +45,10 @@ case "$1 $2" in
   "s3api list-multipart-uploads") if [ -s "$S/uploads" ]; then cat "$S/uploads"; fi; exit 0 ;;
   "s3api abort-multipart-upload") echo "abort $(arg --key "$@") $(arg --upload-id "$@")" >> "$S/log"; : > "$S/uploads" ;;
   "s3 cp") exit 0 ;;
+  # The pre-launch quota check (scripts/lib/quota_check.sh): c8g.large 2 vCPU, x8g.24xlarge 96;
+  # the X quota is us-west-2's 128.
+  "ec2 describe-instance-types") case " $* " in *" x8g.24xlarge "*) printf 'x8g.24xlarge\t96\n' ;; *) printf 'c8g.large\t2\n' ;; esac ;;
+  "service-quotas get-service-quota") case " $* " in *" L-7295265B "*) echo 128.0 ;; *) echo 1989.0 ;; esac ;;
   "s3api list-object-versions") printf 'aws-kraken2/t/x/out/o.txt\tV1\t3\t"e"\n' ;;
   *) echo "stub aws: unexpected $*" >&2; exit 2 ;;
 esac
@@ -69,12 +74,33 @@ cat > "$T/orphans.sh" <<'EOF'
 n=0; for i in "$AK2T_STATE"/inst/*; do [ -e "$i" ] || continue; read -r t st < "$i"; [ "$st" = terminated ] || { echo "alive $i"; n=1; }; done; exit $n
 EOF
 printf '#!/usr/bin/env bash\nexit 0\n' > "$T/tag.sh"
-chmod +x "$T/bin/aws" "$T/driver.sh" "$T/orphans.sh" "$T/tag.sh"
+# Stub truffle for the cost_limit check (scripts/lib/cost_check.sh): us-west-2 on-demand prices.
+cat > "$T/bin/truffle" <<'EOF'
+#!/usr/bin/env bash
+case $2 in c8g.large) p=0.07976 ;; x8g.24xlarge) p=9.3792 ;; *) echo '[]'; exit 0 ;; esac
+printf '[{"instance_type":"%s","on_demand_price":%s}]\n' "$2" "$p"
+EOF
+chmod +x "$T/bin/aws" "$T/bin/truffle" "$T/driver.sh" "$T/orphans.sh" "$T/tag.sh"
 
 # A scratch repo holding run-multi.sh, ak2.env and a cohort spec.
-R="$T/repo"; mkdir -p "$R/scripts" "$R/runs"
+R="$T/repo"; mkdir -p "$R/scripts/lib" "$R/runs" "$R/results/cohort/PRJNA398089"
 cp "$HERE/scripts/run-multi.sh" "$HERE/scripts/ak2.env" "$R/scripts/"
-echo '{"env":{"AK2_REGION":"us-west-2"},"resources":{"instance_type":"c8g.large"},"placement":{"availability_zone":"us-west-2a"},"lifecycle":{"cost_limit":0.1}}' > "$R/runs/t.json"
+cp "$HERE/scripts/lib/quota_check.sh" "$HERE/scripts/lib/accessions.sh" "$HERE/scripts/lib/cost_check.sh" "$R/scripts/lib/"
+cp "$HERE/results/cohort/PRJNA398089/runs.tsv" "$R/results/cohort/PRJNA398089/"
+# mkspec(FILE TYPE TTL COST ACCESSIONS BODY): a cohort spec.
+mk() {
+  jq -n --arg type "$2" --arg ttl "$3" --argjson cost "$4" --arg acc "$5" --arg body "$6" '{command:["bash","-c",$body],
+    env:{AK2_REGION:"us-west-2", AK2_ACCESSIONS:$acc}, resources:{instance_type:$type},
+    placement:{availability_zone:"us-west-2a"}, lifecycle:{ttl:$ttl, cost_limit:$cost}}' > "$R/runs/$1"
+}
+RESOLVE='ACC=$("$W/repo/scripts/lib/accessions.sh" -r "$W/repo" "$AK2_ACCESSIONS")'
+mk t.json c8g.large 1h 0.08 "" 'echo hi'
+# Two x8g.24xlarge (192 vCPU) against the X quota of 128: refused before any launch.
+mk x.json x8g.24xlarge 1h 9.38 "@PRJNA398089:1-2" "$RESOLVE"
+mk badref.json c8g.large 1h 0.08 "@PRJNA398089:1-1001" "$RESOLVE"
+# A reference whose body never resolves it; a cost_limit typo (\$93.80 for \$9.38).
+mk nobody.json c8g.large 1h 0.08 "@PRJNA398089:1-2" 'echo hi'
+mk typo.json x8g.24xlarge 1h 93.8 "" 'echo hi'
 ( cd "$R" && git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm t ) || { echo "run_multi_test: cannot make the scratch repo"; exit 1; }
 
 # scenario NAME SIGNAL WHEN BEHAVE0 BEHAVE1 BEHAVE2 [setup]: run a 3-member cohort.
@@ -96,7 +122,7 @@ run_scenario() {
   ALIVE=$(for i in "$S"/inst/*; do [ -e "$i" ] || continue; read -r t st < "$i"; [ "$st" = terminated ] || basename "$i"; done | tr '\n' ' ')
   COHORT=$(ls -d "$R"/results/t/*/cohort.json 2>/dev/null | tail -1)
   CJ=$(cat "$COHORT" 2>/dev/null)
-  OUTTSV=$(cat "$(dirname "$COHORT")/outputs.tsv" 2>/dev/null); rm -rf "$R/results"
+  OUTTSV=$(cat "$(dirname "$COHORT")/outputs.tsv" 2>/dev/null); rm -rf "$R/results/t"
 }
 expect() {  # name rc_want
   local name=$1 want=$2
@@ -138,6 +164,43 @@ grep -q 'abort aws-kraken2/t/x/out/o.txt UPLOAD1' "$S/log" && [ "$(echo "$CJ" | 
 
 [ "$(echo "$OUTTSV" | awk -F'\t' 'NR==1{print NF, $2}')" = "4 V1" ] && ok "uploads: outputs.tsv records key, VersionId, size, ETag" ||
   bad "uploads: outputs.tsv is '$OUTTSV'"
+
+# The pre-launch quota check: 2 x x8g.24xlarge refused (also under DRY_RUN), 1 allowed through to
+# the member driver; a reference past the end of runs.tsv refused before anything.
+# refused NAME NODES SPEC [DRY_RUN]
+pre_launch() {
+  local name=$1 n=$2 spec=$3 dry=${4:-}
+  S="$T/state-$name"; mkdir -p "$S/inst"; : > "$S/log"; : > "$S/uploads"
+  echo "1 1 0" > "$S/behave-r0"; echo "1 1 0" > "$S/behave-r1"
+  ( cd "$R" && PATH="$T/bin:$PATH" AK2T_STATE="$S" AK2_MULTI_RUN_SH="$T/driver.sh" AK2_MULTI_ORPHANS_SH="$T/orphans.sh" \
+      AK2_MULTI_TAG_SH="$T/tag.sh" AK2_MULTI_POLL_S=1 DRY_RUN=$dry exec scripts/run-multi.sh t "$spec" "$n" ) > "$S/out" 2>&1
+  RC=$?; CJ=$(cat "$R"/results/t/*/cohort.json 2>/dev/null); rm -rf "$R/results/t"
+}
+pre_launch quota2 2 runs/x.json
+[ "$RC" = 2 ] && grep -q 'REFUSED: 2 x x8g.24xlarge = 192 vCPU' "$S/out" && ! grep -q launch "$S/log" &&
+  ok "quota: 2 x x8g.24xlarge refused before any launch" || { bad "quota: 2 x x8g.24xlarge: exit $RC"; tail -5 "$S/out"; }
+pre_launch quota2dry 2 runs/x.json 1
+[ "$RC" = 2 ] && grep -q 'REFUSED' "$S/out" && ok "quota: refused under DRY_RUN too" || { bad "quota: DRY_RUN: exit $RC"; tail -5 "$S/out"; }
+pre_launch quota1 1 runs/x.json
+[ "$RC" = 0 ] && grep -q 'quota_check: ok: 1 x x8g.24xlarge = 96 vCPU' "$S/out" && grep -q 'launch i-0' "$S/log" &&
+  grep -q 'accessions: @PRJNA398089:1-2 -> 2 runs' "$S/out" &&
+  ok "quota: 1 x x8g.24xlarge allowed and launched; the accession reference resolved" || { bad "quota: 1 x x8g.24xlarge: exit $RC"; tail -5 "$S/out"; }
+echo "$CJ" | jq -e --arg b "$(git -C "$R" rev-parse HEAD:results/cohort/PRJNA398089/runs.tsv)" \
+  '.sample_accessions_ref == {ref:"@PRJNA398089:1-2", runs_tsv:"results/cohort/PRJNA398089/runs.tsv", blob:$b}
+   and .cost_limit_check.ok and .quota_check.within_quota' >/dev/null &&
+  ok "cohort.json: sample_accessions_ref {ref, runs_tsv, blob}, cost_limit_check and quota_check recorded" ||
+  bad "cohort.json: $(echo "$CJ" | jq -c '{sample_accessions_ref, cost_limit_check, quota_check}')"
+pre_launch nobody 1 runs/nobody.json
+[ "$RC" = 2 ] && grep -q "never calls scripts/lib/accessions.sh" "$S/out" && ! grep -q launch "$S/log" &&
+  ok "accessions: a reference with a body that never resolves it refused before any launch" || { bad "accessions: nobody exit $RC"; tail -5 "$S/out"; }
+pre_launch typo 1 runs/typo.json
+[ "$RC" = 2 ] && grep -q "cost_check: REFUSED: 1 x cost_limit \$93.8" "$S/out" && ! grep -q launch "$S/log" &&
+  ok "cost_limit: a typo (\$93.80 for 60m of x8g.24xlarge) refused before any launch" || { bad "cost_limit: typo exit $RC"; tail -5 "$S/out"; }
+pre_launch typodry 1 runs/typo.json 1
+[ "$RC" = 2 ] && grep -q "cost_check: REFUSED" "$S/out" && ok "cost_limit: refused under DRY_RUN too" || { bad "cost_limit: DRY_RUN exit $RC"; tail -5 "$S/out"; }
+pre_launch badref 1 runs/badref.json
+[ "$RC" = 2 ] && grep -q "does not resolve" "$S/out" && ! grep -q launch "$S/log" &&
+  ok "accessions: a reference past runs.tsv refused before any launch" || { bad "accessions: badref exit $RC"; tail -5 "$S/out"; }
 
 echo "run_multi_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]

@@ -1,0 +1,36 @@
+spec	driver	rc	gzip_bytes	limit	headroom	quota	scratch_commit	note
+runs/g0a.json	run.sh	2	14007	15360	1353	-	-	make run: refused before launch: lifecycle.cost_limit $0.05 is above what 15m of t4g.micro can cost (above)
+runs/g0c-probes.json	run.sh	2	14126	15360	1234	-	-	make run: refused before launch: lifecycle.cost_limit $0.5 is above what 40m of c7g.large can cost (above)
+runs/g0c-runs.json	run.sh	2	13999	15360	1361	-	-	make run: refused before launch: lifecycle.cost_limit $1.0 is above what 50m of c8gn.2xlarge can cost (above)
+runs/g1-oracle.json	run.sh	2	14143	15360	1217	-	-	make run: refused before launch: lifecycle.cost_limit $3.0 is above what 3h of m7g.2xlarge can cost (above)
+runs/g2-c8gd.json	run.sh	2	14194	15360	1166	-	-	make run: refused before launch: lifecycle.cost_limit $6.0 is above what 3h of c8gd.8xlarge can cost (above)
+runs/g2-c9gd.json	run.sh	2	14195	15360	1165	-	-	make run: refused before launch: lifecycle.cost_limit $6.5 is above what 3h of c9gd.8xlarge can cost (above)
+runs/g2-nvme.json	run.sh	0	14192	15360	1168	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g2-nvme2.json	run.sh	0	14192	15360	1168	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g2-nvme3.json	run.sh	0	14196	15360	1164	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g2-ram.json	run.sh	0	14192	15360	1168	ok 1xr8gd.48xlarge 192/1989 L-1216C47A	-	
+runs/g2-ram2.json	run.sh	0	14059	15360	1301	ok 1xr8gd.48xlarge 192/1989 L-1216C47A	-	
+runs/g2-smoke.json	run.sh	2	14085	15360	1275	-	-	make run: refused before launch: lifecycle.cost_limit $1.0 is above what 1h of r8gd.xlarge can cost (above)
+runs/g3-diag44-r8gd.16xlarge.json	run-multi n=1	0	14102	15360	1258	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/g3-e1.json	run-multi n=1	0	14141	15360	1219	ok 1xx8g.4xlarge 16/256 L-7295265B	-	
+runs/g3-e2-x8g.12xlarge-n2.json	run-multi n=2	0	14421	15360	939	ok 2xx8g.12xlarge 96/256 L-7295265B	-	
+runs/g3-e2-x8g.24xlarge-n1.json	run-multi n=1	0	14416	15360	944	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-e2-x8g.2xlarge-n16.json	run-multi n=16	0	14422	15360	938	ok 16xx8g.2xlarge 128/256 L-7295265B	-	
+runs/g3-e2-x8g.4xlarge-n8.json	run-multi n=8	0	14419	15360	941	ok 8xx8g.4xlarge 128/256 L-7295265B	-	
+runs/g3-e2-x8g.8xlarge-n4.json	run-multi n=4	0	14418	15360	942	ok 4xx8g.8xlarge 128/256 L-7295265B	-	
+runs/g3-e3-c8g.12xlarge-n16.json	run-multi n=16	0	14420	15360	940	ok 16xc8g.12xlarge 768/1989 L-1216C47A	-	
+runs/g3-e3-c9g.12xlarge-n16.json	run-multi n=16	0	14423	15360	937	ok 16xc9g.12xlarge 768/1989 L-1216C47A	-	
+runs/g3-e3-r8g.4xlarge-n16.json	run-multi n=16	0	14423	15360	937	ok 16xr8g.4xlarge 256/1989 L-1216C47A	-	
+runs/g3-e4-c8g.12xlarge-n32.json	run-multi n=32	0	14421	15360	939	ok 32xc8g.12xlarge 1536/1989 L-1216C47A	-	
+runs/g3-probe-cont-c8gn.4xlarge.json	run-multi n=1	0	14104	15360	1256	ok 1xc8gn.4xlarge 16/1989 L-1216C47A	-	
+runs/g3-probe-decomp-c8g.4xlarge.json	run-multi n=1	0	14106	15360	1254	ok 1xc8g.4xlarge 16/1989 L-1216C47A	-	
+runs/g3-probe-stage-x8g.24xlarge.json	run-multi n=1	0	14103	15360	1257	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-roda-n8.json	run-multi n=1	0	14165	15360	1195	ok 1xx8g.4xlarge 16/256 L-7295265B	-	
+runs/g3-std8.json	run-multi n=1	2	-	15360	-	-	-	make run (multi): refused before launch: 1 x cost_limit $1.0 is above what 1h of 1 x c8g.2xlarge can cost (above)
+runs/g3-u1-x8g.24xlarge.json	run-multi n=1	0	14105	15360	1255	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-u2-r8gd.16xlarge.json	run-multi n=1	0	14105	15360	1255	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/loadbench-g4.json	run.sh	2	14032	15360	1328	-	-	make run: refused before launch: lifecycle.cost_limit $3.0 is above what 2h30m of r8gd.2xlarge can cost (above)
+runs/loadbench.json	run.sh	2	14029	15360	1331	-	-	make run: refused before launch: lifecycle.cost_limit $2.0 is above what 2h30m of m7g.2xlarge can cost (above)
+runs/stage-cohort.json	run-multi n=1	2	-	15360	-	-	-	make run (multi): refused before launch: 1 x cost_limit $0.5 is above what 4h of 1 x c8g.large can cost (above)
+runs/g3-c1000-x8g.24xlarge-n1.json	run-multi n=1	0	14116	15360	1244	ok 1xx8g.24xlarge 96/256 L-7295265B	7c8be4d	
+runs/g3-c1000-c8g.12xlarge-n32.json	run-multi n=32	0	14117	15360	1243	ok 32xc8g.12xlarge 1536/1989 L-1216C47A	a9a6bbb	
