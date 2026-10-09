@@ -48,8 +48,8 @@ TTL_S=$(ttl_s "$TTL")
 [ "$TTL_S" -gt 0 ] || die "lifecycle.ttl '$TTL' is zero"
 [ "$TTL_S" -le "$AK2_MAX_TTL_S" ] || die "lifecycle.ttl $TTL (${TTL_S}s) exceeds AK2_MAX_TTL_S=$AK2_MAX_TTL_S"
 awk -v c="$COST" 'BEGIN{exit !(c+0 > 0)}' || die "spec has no positive lifecycle.cost_limit"
-awk -v c="$COST" -v m="$AK2_MAX_COST_USD" 'BEGIN{exit !(c+0 <= m+0)}' ||
-  die "lifecycle.cost_limit \$$COST exceeds AK2_MAX_COST_USD=\$$AK2_MAX_COST_USD"
+# The upper bound on cost_limit is price-derived (TTL x on-demand price x (1 + epsilon), no budget
+# cap; scripts/lib/cost_check.sh), so it is checked once the planned type is known, below.
 OC=$(q '.lifecycle.on_complete // "terminate"')
 [ "$OC" = terminate ] || die "lifecycle.on_complete must be terminate (got $OC)"
 [ -z "$(q '.container // empty')" ] ||
@@ -96,6 +96,9 @@ if [[ "$ACCESSIONS_REF" == @* ]]; then
   [ -z "$(git status --porcelain -- "$ACCESSIONS_TSV")" ] ||
     die "env.AK2_ACCESSIONS $ACCESSIONS_REF: $ACCESSIONS_TSV has uncommitted changes; commit first"
   ACCESSIONS_BLOB=$(git rev-parse "HEAD:$ACCESSIONS_TSV") || die "cannot read the blob id of $ACCESSIONS_TSV"
+  # A reference is only the accessions if the body resolves it on the node.
+  q '.command[2] // ""' | grep -q 'accessions\.sh' ||
+    die "env.AK2_ACCESSIONS $ACCESSIONS_REF is a reference, but the body never calls scripts/lib/accessions.sh to resolve it on the node"
 fi
 ACCESSIONS=$(scripts/lib/accessions.sh "$ACCESSIONS_REF") || die "env.AK2_ACCESSIONS '$ACCESSIONS_REF' does not resolve"
 [ -z "$ACCESSIONS_TSV" ] ||
@@ -209,6 +212,9 @@ if [ -n "$COHORT_ID$COHORT_RANK$COHORT_N" ]; then
   [[ "$COHORT_N" =~ ^[1-9][0-9]*$ ]] && [[ "$COHORT_RANK" =~ ^[0-9]+$ ]] && [ "$COHORT_RANK" -lt "$COHORT_N" ] ||
     die "AK2_COHORT_RANK=$COHORT_RANK AK2_COHORT_N=$COHORT_N: want 0 <= rank < n"
   [ "${COHORT_ID##*-n}" = "$COHORT_N" ] || die "AK2_COHORT_ID $COHORT_ID does not end in -n$COHORT_N"
+  # The bodies check out the commit named in the cohort id (cut -d- -f3): it must be this one.
+  [ "$(echo "$COHORT_ID" | cut -d- -f3)" = "$(git rev-parse --short=7 HEAD)" ] ||
+    die "AK2_COHORT_ID $COHORT_ID names commit $(echo "$COHORT_ID" | cut -d- -f3), but HEAD is $(git rev-parse --short=7 HEAD); the nodes would run another commit"
   RUN_ID="$COHORT_ID-r$COHORT_RANK"
   COHORT_PREFIX="s3://$RESULTS_BUCKET/$AK2_RESULTS_ROOT/$GATE/$COHORT_ID"
 fi
@@ -329,6 +335,17 @@ PLANNED=$(awk '/^Instance:/{print $2; exit}' "$RUN_DIR/spawn-plan.txt")
 [ -n "$PLANNED" ] || die "could not read the planned instance type from spawn-plan.txt"
 TMP_SPEC=$(mktemp) && jq --arg t "$PLANNED" '.resources.instance_type = $t' "$LIVE_SPEC" > "$TMP_SPEC" &&
   mv "$TMP_SPEC" "$LIVE_SPEC" && write_resolved || die "could not pin instance type"
+# ---- cost_limit against TTL x the planned type's on-demand price (scripts/lib/cost_check.sh) ----
+# Per instance (a cohort member's cost_limit is its own; run-multi.sh checked NODES x it). No
+# budget cap (Scott, 2026-10-09, #25): above TTL x price x (1 + epsilon) is taken for a typo.
+COSTCHK_JSON=$(scripts/lib/cost_check.sh "$REGION" "$PLANNED" "$TTL" "$COST" 1)
+CRC=$?
+if [ $CRC -ne 0 ]; then
+  rm -rf "$RUN_DIR"
+  [ $CRC -eq 1 ] && die "refused before launch: lifecycle.cost_limit \$$COST is above what $TTL of $PLANNED can cost (above)"
+  die "refused before launch: the cost_limit check could not judge $PLANNED in $REGION (above)"
+fi
+mset --argjson cc "$COSTCHK_JSON" '.cost_limit_check = $cc' || die "could not record the cost_limit check in $M"
 # ---- on-demand vCPU quota, for the planned type (scripts/lib/quota_check.sh; DRY_RUN too) ----
 # One instance here, plus every on-demand instance of its quota family alive in the region (so a
 # cohort member counts the members already up; run-multi.sh checked all NODES before any launch).

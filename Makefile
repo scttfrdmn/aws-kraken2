@@ -18,6 +18,7 @@ test:
 	bash scripts/lib/harness_poll_test.sh
 	bash scripts/lib/run_multi_test.sh
 	bash scripts/lib/quota_check_test.sh
+	bash scripts/lib/run_sh_test.sh
 
 lint:
 	$(GO) vet $(PKGS)

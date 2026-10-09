@@ -9,8 +9,9 @@
 #   - the engine env for each member (AK2_ENGINE_N/RANK/RENDEZVOUS, AK2_COHORT_PREFIX), set by
 #     run.sh from AK2_COHORT_* (a spec cannot set them);
 #   - preconditions a cohort needs and a single run does not: the spec pins instance_type and
-#     placement.availability_zone (all members in one AZ), n x cost_limit is within the
-#     AK2_MAX_COST_USD backstop, and the region's default-VPC default security group (where
+#     placement.availability_zone (all members in one AZ), n x cost_limit is at most n x TTL x the
+#     on-demand price x (1 + epsilon) (scripts/lib/cost_check.sh; no budget cap), the on-demand
+#     vCPU quota holds (scripts/lib/quota_check.sh), and the region's default-VPC default security group (where
 #     spawn task run puts every instance; spawn adds no rules) admits itself and nothing beyond
 #     22/tcp and ICMP;
 #   - fail fast: once any member's run.sh exits non-zero, the other members' instances are
@@ -35,7 +36,7 @@ GATE=${1:-}; SPEC=${2:-}; NODES=${3:-}
 die() { echo "make run (multi): $*" >&2; exit 2; }
 say() { echo "make run (multi): $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-for t in jq aws git; do command -v "$t" >/dev/null || die "$t not on PATH"; done
+for t in jq aws git truffle; do command -v "$t" >/dev/null || die "$t not on PATH"; done
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate> SPEC=runs/<file>.json NODES=<n>"
 [[ "$NODES" =~ ^[1-9][0-9]*$ ]] && [ "$NODES" -le 64 ] || die "NODES=$NODES: want 1 to 64"
 case "$SPEC" in runs/*.json) ;; *) die "SPEC must be a checked-in runs/*.json" ;; esac
@@ -52,8 +53,7 @@ AZ=$(q '.placement.availability_zone // empty')
 [ -n "$AZ" ] || die "a cohort spec must pin placement.availability_zone (every member in one AZ)"
 [[ "$AZ" == "$REGION"* ]] || die "placement.availability_zone $AZ is not in $REGION"
 COST=$(q '.lifecycle.cost_limit // 0')
-awk -v c="$COST" -v n="$NODES" -v m="$AK2_MAX_COST_USD" 'BEGIN{exit !(c*n <= m+0)}' ||
-  die "$NODES x cost_limit \$$COST exceeds AK2_MAX_COST_USD=\$$AK2_MAX_COST_USD"
+TTL=$(q '.lifecycle.ttl // empty')
 RB_VAR="AK2_RESULTS_BUCKET_${REGION//-/_}"; RESULTS_BUCKET=${!RB_VAR:-}
 [ -n "$RESULTS_BUCKET" ] || die "no results bucket for $REGION ($RB_VAR in scripts/ak2.env)"
 # env.AK2_ACCESSIONS: a literal list or a recorded cohort range, @<project>:<a>-<b> (docs/run.md,
@@ -61,7 +61,24 @@ RB_VAR="AK2_RESULTS_BUCKET_${REGION//-/_}"; RESULTS_BUCKET=${!RB_VAR:-}
 # manifest.sample_accessions and checks that the runs.tsv it names is committed.
 ACC_REF=$(q '.env.AK2_ACCESSIONS // ""')
 ACC=$(scripts/lib/accessions.sh "$ACC_REF") || die "env.AK2_ACCESSIONS '$ACC_REF' does not resolve"
-[[ "$ACC_REF" == @* ]] && say "accessions: $ACC_REF -> $(echo "$ACC" | wc -w | tr -d ' ') runs"
+ACC_REC=null
+if [[ "$ACC_REF" == @* ]]; then
+  say "accessions: $ACC_REF -> $(echo "$ACC" | wc -w | tr -d ' ') runs"
+  q '.command[2] // ""' | grep -q 'accessions\.sh' ||
+    die "env.AK2_ACCESSIONS $ACC_REF is a reference, but the body never calls scripts/lib/accessions.sh to resolve it on the node"
+  ACC_TSV=$(scripts/lib/accessions.sh -f "$ACC_REF") || die "env.AK2_ACCESSIONS: bad reference"
+  ACC_BLOB=$(git rev-parse "HEAD:$ACC_TSV" 2>/dev/null) || die "env.AK2_ACCESSIONS $ACC_REF: $ACC_TSV is not committed"
+  ACC_REC=$(jq -nc --arg r "$ACC_REF" --arg f "$ACC_TSV" --arg b "$ACC_BLOB" '{ref:$r, runs_tsv:$f, blob:$b}')
+fi
+
+# cost_limit (per member) against TTL x the on-demand price, for all NODES (scripts/lib/cost_check.sh;
+# no budget cap, Scott 2026-10-09 #25). In DRY_RUN too.
+COSTCHK_JSON=$(scripts/lib/cost_check.sh "$REGION" "$ITYPE" "$TTL" "$COST" "$NODES")
+case $? in
+  0) ;;
+  1) die "refused before launch: $NODES x cost_limit \$$COST is above what $TTL of $NODES x $ITYPE can cost (above)" ;;
+  *) die "refused before launch: the cost_limit check could not judge $NODES x $ITYPE (above)" ;;
+esac
 
 # The on-demand vCPU quota (scripts/lib/quota_check.sh): all NODES members plus every on-demand
 # instance of the same quota family already alive in the region, before anything launches. In
@@ -250,9 +267,9 @@ finish() {
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
     --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
-    --argjson quota "$QUOTA_JSON" --arg accref "$ACC_REF" '{
+    --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" '{
       cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, nodes:$n, instance_type:$type, az:$az, region:$region,
-      quota_check:$quota, sample_accessions_ref:(if ($accref | startswith("@")) then $accref else null end),
+      quota_check:$quota, cost_limit_check:$costchk, sample_accessions_ref:$accrec,
       prefix:$prefix, network:{vpc:$vpc, security_group:$sg, admits:"itself, 22/tcp, ICMP"}, start:$start, stop:$stop,
       ended:$ended, terminated_early:$early, sweep_failures:$sweepfail, members:$members,
       cost_usd:(if ($members | all(.cost_usd != null)) then ($members | map(.cost_usd) | add * 1e6 | round / 1e6) else null end),

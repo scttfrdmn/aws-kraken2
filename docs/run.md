@@ -18,11 +18,11 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
   anything, because the manifest cites one commit for the harness, spec and decoders. It is a
   spawn TaskSpec with these constraints:
   - `lifecycle.ttl` must match `^([0-9]+[hms])+$`, be non-zero and be at most `AK2_MAX_TTL_S`
-    (8 h). `lifecycle.cost_limit` must be positive and at most `AK2_MAX_COST_USD` ($500). That
-    ceiling is a sanity check against typos, not a budget: Scott ruled on 2026-10-09 (#25) that
-    there is no budget envelope or spend cap, and spend is tracked only (manifest `cost_usd`,
-    `results/g3/campaign/spend.tsv`). Both ceilings are in `ak2.env`. Each spec's TTL and
-    `cost_limit` are its runaway backstops. Set `cost_limit` to TTL × the on-demand price, as
+    (8 h, in `ak2.env`). `lifecycle.cost_limit` must be positive and at most TTL × the planned
+    type's on-demand price × 1.10 + $0.01 ([cost_limit](#cost_limit) below). There is no fixed
+    ceiling: Scott ruled on 2026-10-09 (#25) that there is no budget envelope or spend cap, and
+    spend is tracked only (manifest `cost_usd`, `results/g3/campaign/spend.tsv`). Each spec's TTL
+    and `cost_limit` are its runaway backstops. Set `cost_limit` to TTL × the on-demand price, as
     `scripts/g3/mkspec.sh` does. `on_complete` is forced to `terminate`;
   - `command` is `["bash","-c","<script>"]`. `container`, `inputs[]` and `results_prefix` are
     refused: spawn would stage inputs before the preamble's region assert, so use `ak2_stage`;
@@ -165,7 +165,9 @@ accessions are 1792 B gzipped, against about 1000 B of headroom. A reference is 
   list, as before) and records `manifest.sample_accessions_ref = {ref, runs_tsv, blob}`, where
   `blob` is the git blob id of runs.tsv at the run's commit. It refuses a reference whose
   runs.tsv is not committed or has local changes, because the node reads the committed file.
-  `run-multi.sh` resolves the reference once before any launch (fail fast) and records it in
+  Both `run.sh` and `run-multi.sh` also refuse a reference when the body text never mentions
+  `accessions.sh`, because then nothing on the node would resolve it. `run-multi.sh` resolves the
+  reference once before any launch (fail fast) and records the same `{ref, runs_tsv, blob}` in
   `cohort.json` as `sample_accessions_ref`. Only the reference goes into the spec env, and so into
   user data.
 - **On the node.** The body resolves the same value from its repo checkout at the run's commit
@@ -217,6 +219,33 @@ refused, and one is refused while another X instance of 48 vCPU or more is runni
 `scripts/lib/quota_check_test.sh` (in `make test`) checks this against a stubbed `aws`;
 `scripts/lib/run_multi_test.sh` checks that run-multi.sh refuses 2 × x8g.24xlarge before any
 launch, under `DRY_RUN=1` too.
+
+## cost_limit
+
+There is no budget cap (Scott, 2026-10-09, #25): spend is tracked, and each run's TTL and
+`cost_limit` are backstops against a runaway. A `cost_limit` is therefore checked against what
+the run can cost, by `scripts/lib/cost_check.sh REGION TYPE TTL COST_LIMIT [NODES]`:
+
+    NODES × cost_limit ≤ NODES × (TTL in hours × on-demand price × (1 + ε) + $0.01)
+
+- The price is truffle's on-demand price for the type in the region. No price means the check
+  cannot judge, and the launch is refused.
+- ε is `AK2_COST_EPSILON`, default 0.10.
+- The cent per node covers a `cost_limit` rounded up to the cent: `scripts/g3/mkspec.sh` sets
+  TTL × price + $0.005, rounded to the cent.
+- Anything above the bound is taken for a typo and refused before launch, in `DRY_RUN=1` too.
+  A `cost_limit` below the bound is allowed; it only makes the backstop tighter.
+- `run-multi.sh` checks the NODES total before any launch, and `cohort.json` records it as
+  `cost_limit_check`.
+- `run.sh` checks each instance (NODES = 1) for the planned type, after the spawn plan, and
+  `manifest.json` records it as `cost_limit_check`.
+- `AK2_MAX_COST_USD` is unset by default; `ak2.env` does not set it. Exported in the caller's
+  environment, it adds an optional ceiling on NODES × `cost_limit`.
+
+`scripts/lib/quota_check_test.sh` checks this against a stubbed `truffle`:
+- c1000 on 32 × c8g.12xlarge (60m, $1.92 per member, $61.44 in total) is allowed;
+- a typo of $19.20 per member is refused;
+- the override and a missing price both refuse.
 
 ## DRY_RUN of every spec
 
@@ -530,11 +559,15 @@ asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
   - `AK2_COHORT_ID`, `AK2_COHORT_PREFIX` = `s3://<results bucket>/aws-kraken2/<gate>/<cohort>`.
 
   The spec body passes them to `bin/aws-kraken2` ([engine.md](engine.md)). The body takes the
-  launch commit from the cohort id (`cut -d- -f3`), not from `AK2_RUN_ID`.
+  launch commit from the cohort id (`cut -d- -f3`), not from `AK2_RUN_ID`. `run.sh` refuses a
+  cohort id whose sha7 is not `git rev-parse --short=7 HEAD`, so the nodes run the commit the
+  manifest cites (`scripts/lib/run_sh_test.sh`).
 - **Preconditions,** checked before any launch:
   - the spec pins `resources.instance_type` and `placement.availability_zone`, so every member is
     the same box in one AZ;
-  - n × `cost_limit` ≤ `AK2_MAX_COST_USD` ($500, the typo ceiling above, not a budget);
+  - n × `cost_limit` ≤ n × (TTL × the type's on-demand price × 1.10 + $0.01)
+    ([cost_limit](#cost_limit); also under `DRY_RUN=1`). `cohort.json` records it as
+    `cost_limit_check`;
   - n × the type's vCPUs, plus every on-demand instance of its quota family already alive in the
     region, fits the family's on-demand vCPU quota ([vCPU quota](#vcpu-quota); also under
     `DRY_RUN=1`). `cohort.json` records it as `quota_check`;

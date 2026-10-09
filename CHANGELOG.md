@@ -32,10 +32,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `make dryrun-userdata [GEN=…]` (`scripts/dryrun-userdata.sh`): `DRY_RUN=1` of every
     `runs/*.json`, plus campaign specs generated in a scratch worktree. It writes user data and
     quota per spec to `results/rehearse/dryrun-userdata-<ts>-<sha>.tsv`.
-  - `AK2_MAX_COST_USD` is raised from $50 to $500. Scott ruled on 2026-10-09 (#25) that there is
-    no spend cap and spend is tracked only, so this is now a ceiling against typos, not a budget.
-    It applies to a spec's `cost_limit` and to NODES × `cost_limit`. Per-run TTL and `cost_limit`
-    (TTL × on-demand price) are unchanged and remain the runaway backstops.
+  - The fixed `AK2_MAX_COST_USD=50` ceiling is removed from `scripts/ak2.env`. Scott ruled on
+    2026-10-09 (#25) that there is no budget cap and spend is tracked only. In its place,
+    `scripts/lib/cost_check.sh` refuses, as a typo, a `cost_limit` above TTL × the truffle on-demand
+    price × (1 + ε) + $0.01 per node. ε is `AK2_COST_EPSILON`, default 0.10, and the cent covers
+    rounding to the cent.
+    - `run-multi.sh` checks NODES × `cost_limit` before any launch.
+    - `run.sh` checks each member for the planned type after the spawn plan.
+    - Both do this under `DRY_RUN` too, and record it as `cost_limit_check`.
+    - `AK2_MAX_COST_USD` survives only as an optional extra ceiling, unset by default.
+    - Per-run TTL and `cost_limit` (TTL × on-demand price) are unchanged and remain the runaway
+      backstops.
+  - `run.sh` refuses a cohort id whose sha7 is not HEAD's, because the nodes check out that commit.
+  - `run.sh` and `run-multi.sh` refuse an `@…` reference when the body never calls
+    `accessions.sh`.
+  - `cohort.json` records `sample_accessions_ref` as `{ref, runs_tsv, blob}`.
+  - Tests:
+    - `scripts/lib/run_sh_test.sh` (new, in `make test`) runs the real run.sh in a scratch repo
+      with stubbed tools. It covers the cohort sha check and the reference/body check.
+    - `quota_check_test.sh` gains the cost_limit cases: c1000 on 32 × c8g.12xlarge is allowed,
+      typos are refused, and the override and a missing price both refuse.
+    - `run_multi_test.sh` gains the typo refusal (also under `DRY_RUN`), the body check and the
+      cohort.json record.
 
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It

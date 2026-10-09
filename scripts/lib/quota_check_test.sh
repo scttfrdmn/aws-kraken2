@@ -66,7 +66,37 @@ check "bad count" 2 x8g.24xlarge 0
 PATH="$T/bin:$PATH" QT_LOG="$T/log" QT_QUOTA_FAIL=1 "$QC" us-west-2 x8g.24xlarge 1 >/dev/null 2>&1
 [ $? = 2 ] && ok "service-quotas failure: exit 2 (refuse)" || bad "service-quotas failure: not exit 2"
 
-# accessions.sh on the recorded cohort: the reference expands to the same list mkspec.sh used to inline.
+# cost_check.sh against a stubbed truffle (us-west-2 on-demand prices, 2026-10-09): cost_limit is
+# refused above NODES x (TTL x price x 1.10 + $0.01), with no fixed ceiling.
+cat > "$T/bin/truffle" <<'STUB'
+#!/usr/bin/env bash
+t=$2
+case $t in c8g.12xlarge) p=1.91424 ;; x8g.24xlarge) p=9.3792 ;; c8g.4xlarge) p=0.63808 ;; *) echo '[]'; exit 0 ;; esac
+printf '[{"instance_type":"%s","on_demand_price":%s}]\n' "$t" "$p"
+STUB
+chmod +x "$T/bin/truffle"
+CC="$ROOT/scripts/lib/cost_check.sh"
+cost() {  # cost NAME WANT_RC ARGS...
+  local name=$1 want=$2 out rc; shift 2
+  out=$(PATH="$T/bin:$PATH" "$CC" "$@" 2> "$T/err"); rc=$?
+  [ "$rc" = "$want" ] && ok "cost_limit: $name: exit $rc ($(cut -c1-150 "$T/err"))" || bad "cost_limit: $name: exit $rc, want $want: $(cat "$T/err")"
+  LAST=$out
+}
+cost "c1000 on 32 x c8g.12xlarge, 60m, \$1.92 each (\$61.44 total)" 0 us-west-2 c8g.12xlarge 60m 1.92 32
+[ "$(echo "$LAST" | jq -c '[.total_cost_limit_usd, .ok]')" = '[61.44,true]' ] && ok "cost_limit: c1000 n32 record" || bad "cost_limit: c1000 n32 record '$LAST'"
+cost "typo: \$19.20 instead of \$1.92 on 32 x c8g.12xlarge" 1 us-west-2 c8g.12xlarge 60m 19.2 32
+cost "typo: \$93.80 instead of \$9.38 on x8g.24xlarge 60m" 1 us-west-2 x8g.24xlarge 60m 93.8
+cost "mkspec rounding: c8g.4xlarge 25m at \$0.27 (TTL x price \$0.2659)" 0 us-west-2 c8g.4xlarge 25m 0.27
+cost "at 1.10 x TTL x price + \$0.01 (x8g.24xlarge 60m, \$10.32)" 0 us-west-2 x8g.24xlarge 60m 10.32
+cost "just above it (\$10.33)" 1 us-west-2 x8g.24xlarge 60m 10.33
+cost "below TTL x price is allowed (a tighter backstop)" 0 us-west-2 x8g.24xlarge 60m 1
+cost "no truffle price" 2 us-west-2 mac2.metal 60m 1
+: > "$T/err"
+PATH="$T/bin:$PATH" AK2_MAX_COST_USD=50 "$CC" us-west-2 c8g.12xlarge 60m 1.92 32 > /dev/null 2> "$T/err"
+[ $? = 1 ] && grep -q "AK2_MAX_COST_USD override" "$T/err" && ok "cost_limit: the optional AK2_MAX_COST_USD override, when set, refuses \$61.44 > \$50" ||
+  bad "cost_limit: override: $(cat "$T/err")"
+
+# accessions.sh on the recorded cohort:the reference expands to the same list mkspec.sh used to inline.
 A=$("$ROOT/scripts/lib/accessions.sh" @PRJNA398089:1-1000)
 B=$(awk -F'\t' 'NR>1 && $1<=1000 {printf "%s%s", (NR>2?" ":""), $2}' "$ROOT/results/cohort/PRJNA398089/runs.tsv")
 [ -n "$A" ] && [ "$A" = "$B" ] && ok "accessions: @PRJNA398089:1-1000 = runs.tsv ranks 1-1000" || bad "accessions: 1-1000 differs"
