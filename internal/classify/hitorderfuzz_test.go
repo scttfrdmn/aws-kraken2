@@ -542,13 +542,15 @@ func (cfg *fuzzCfg) genGrowth(v int) *fuzzHist {
 	return &fuzzHist{cat: "growth/" + growthNames[v], id: v, ops: b.ops}
 }
 
-// fuzzRealHists: the per-read hit sequences of the #44 reads (testdata/issue44_reads.jsonl, the
-// events TestIssue44OrphanTies rebuilds from upstream's hit lists, internal IDs of RODA v205),
-// replayed as one worker's lifetime, read by read, and repeated; and the op history our
-// classifier itself performs on HitCounts while classifying them (recorded).
+// fuzzRealHists: the per-read hit sequences of the 16 #44 reads (testdata/issue44_events.jsonl:
+// upstream's own events and values on RODA v205, recorded by the #44 RODA recheck; the orphan the
+// reads hit is internal 2158558), replayed as one worker's lifetime, read by read, and repeated;
+// and the op history our classifier itself performs on HitCounts while classifying them
+// (recorded). A hit is every non-ambiguous event with a nonzero value, repeats included, as
+// classify.cc's hit_counts[taxon]++ (:1085) counts them (RODA's minimum_acceptable_hash_value is 0).
 func fuzzRealHists(t *testing.T, rounds int) []fuzzHist {
-	tree, ext := loadRodaLineages(t)
-	f, err := os.Open(filepath.Join("testdata", "issue44_reads.jsonl"))
+	tree, _ := loadRodaLineages(t)
+	f, err := os.Open(filepath.Join("testdata", "issue44_events.jsonl"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -560,44 +562,40 @@ func fuzzRealHists(t *testing.T, rounds int) []fuzzHist {
 	}
 	var reads []read
 	sc := bufio.NewScanner(f)
+	sc.Buffer(make([]byte, 1<<20), 1<<22)
 	for sc.Scan() {
 		var j struct {
-			ID           string `json:"id"`
-			UpstreamLine string `json:"upstream_line"`
+			ID    string `json:"id"`
+			Mates []struct {
+				Len    uint32   `json:"len"`
+				Events []string `json:"events"`
+				Values []uint32 `json:"values"`
+			} `json:"mates"`
 		}
 		if err := json.Unmarshal(sc.Bytes(), &j); err != nil {
 			t.Fatal(err)
 		}
-		fl := strings.Split(j.UpstreamLine, "\t")
-		lens := strings.Split(fl[3], "|")
-		l1, _ := strconv.ParseUint(lens[0], 10, 32)
-		l2, _ := strconv.ParseUint(lens[1], 10, 32)
-		rd := read{id: j.ID, hits: [][]uint64{nil}, len1: uint32(l1), l2: uint32(l2)}
-		for _, run := range strings.Fields(fl[4]) {
-			if run == "|:|" {
-				rd.hits = append(rd.hits, nil)
-				continue
-			}
-			p := strings.Split(run, ":")
-			cnt, _ := strconv.Atoi(p[1])
-			e, _ := strconv.ParseUint(p[0], 10, 64)
-			var v uint64
-			switch {
-			case e != 0:
-				if v = ext[e]; v == 0 {
-					t.Fatalf("%s: external %d not in the lineage table", j.ID, e)
+		if len(j.Mates) != 2 {
+			t.Fatalf("%s: %d mates", j.ID, len(j.Mates))
+		}
+		rd := read{id: j.ID, len1: j.Mates[0].Len, l2: j.Mates[1].Len}
+		for _, m := range j.Mates {
+			var hs []uint64
+			for i, e := range m.Events {
+				if strings.HasSuffix(e, ":A") || m.Values[i] == 0 {
+					continue
 				}
-			case cnt == 5:
-				v = issue44Orphan
+				if _, ok := tree[uint64(m.Values[i])]; !ok {
+					t.Fatalf("%s: value %d not in the lineage table", j.ID, m.Values[i])
+				}
+				hs = append(hs, uint64(m.Values[i]))
 			}
-			for k := 0; k < cnt; k++ {
-				rd.hits[len(rd.hits)-1] = append(rd.hits[len(rd.hits)-1], v)
-			}
+			rd.hits = append(rd.hits, hs)
 		}
 		reads = append(reads, rd)
 	}
-	if len(reads) != 13 {
-		t.Fatalf("issue44_reads.jsonl: %d reads, want 13", len(reads))
+	if len(reads) != 16 {
+		t.Fatalf("issue44_events.jsonl: %d reads, want 16", len(reads))
 	}
 	replay := func(b *hb, rd read, la int) {
 		b.op('C', 0)

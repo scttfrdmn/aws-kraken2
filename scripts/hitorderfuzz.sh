@@ -9,6 +9,9 @@
 # {manifest.json,summary.json,summary.md,probe.tsv,run.log} (plus mismatch.txt and
 # mismatch-ops.txt on a mismatch). HITORDERFUZZ_SEED overrides the seed (default 44).
 # Exit 0 only if no mismatch and every coverage target was met.
+# HITORDERFUZZ_SENSITIVITY=reversed|first-hit runs a sensitivity run instead (docs/hitorderfuzz.md,
+# "Sensitivity"): a known-wrong order under test, recorded in
+# results/g1/hitorderfuzz-<ts>-<sha>-sens-<kind>/; exit 0 only if the fuzz FAILED on a mismatch.
 set -uo pipefail
 set +e
 echo "hitorderfuzz: shell flags $-"
@@ -17,6 +20,8 @@ cd "$ROOT" || exit 1
 MODE=${1:-quick}
 case "$MODE" in quick|full|selftest) ;; *) echo "usage: $0 [quick|full|selftest]" >&2; exit 2 ;; esac
 SEED=${HITORDERFUZZ_SEED:-44}
+SENS=${HITORDERFUZZ_SENSITIVITY:-}
+case "$SENS" in ""|reversed|first-hit) ;; *) echo "hitorderfuzz: HITORDERFUZZ_SENSITIVITY=$SENS: want reversed or first-hit" >&2; exit 2 ;; esac
 IMAGE=public.ecr.aws/amazonlinux/amazonlinux:2023
 CXXFLAGS="-std=c++11 -O3"
 . scripts/pin.env
@@ -68,11 +73,11 @@ echo "hitorderfuzz: $(cat "$W/gxx.txt"); runtime $RUNTIME; native=$NATIVE"
 
 TS=$(date -u +%Y%m%dT%H%M%SZ)
 SHA=$(git rev-parse HEAD)
-RES="results/g1/hitorderfuzz-$TS-${SHA:0:7}"
+RES="results/g1/hitorderfuzz-$TS-${SHA:0:7}${SENS:+-sens-$SENS}"
 mkdir -p "$RES" || exit 1
 start=$(date -u +%FT%TZ)
 HITORDERFUZZ_CMD="$CMD" HITORDERFUZZ_MIRROR_CMD="$MIRROR" HITORDERFUZZ="$MODE" HITORDERFUZZ_SEED="$SEED" \
-  HITORDERFUZZ_OUT="$ROOT/$RES" \
+  HITORDERFUZZ_OUT="$ROOT/$RES" HITORDERFUZZ_SENSITIVITY="$SENS" \
   go test -count=1 -v -timeout 0 -run '^TestHitOrderFuzz$' ./internal/classify/ > "$RES/run.log" 2>&1
 st=$?
 stop=$(date -u +%FT%TZ)
@@ -91,7 +96,7 @@ jq -n \
   --arg bin_sha "$(shasum -a 256 "$W/umap_order" | cut -d' ' -f1)" \
   --arg src_sha "$(shasum -a 256 upstream/umap_order.cc | cut -d' ' -f1)" \
   --arg go "$(go version)" --arg host "$(uname -n)" --arg os "$(uname -s)" --arg arch "$(uname -m)" \
-  --arg start "$start" --arg stop "$stop" --argjson status "$st" \
+  --arg start "$start" --arg stop "$stop" --argjson status "$st" --arg sens "$SENS" \
   --slurpfile s "$SUMMARY" \
   '($s[0] // null) as $sum |
    {gate:"g1", what:$what, invocation:$inv, commit:$commit, dirty:$dirty, upstream_pin:$pin,
@@ -108,8 +113,17 @@ jq -n \
     results:(if $sum == null then null else
       {pass:$sum.pass, failures:$sum.failures, stats:$sum.stats, mismatch:($sum.mismatch // null),
        seconds:$sum.seconds} end),
+    sensitivity:(if $sens == "" then null else {order_under_test:$sens, must_fail:true} end),
     start:$start, stop:$stop, go_test_status:$status,
     failed:($status != 0 or $sum == null or ($sum.pass | not))}' > "$RES/manifest.json" || st=1
+if [ -n "$SENS" ]; then
+  if jq -e '.results.mismatch != null' "$RES/manifest.json" >/dev/null; then
+    echo "hitorderfuzz: sensitivity ($SENS) ok: the fuzz failed on a mismatch, as it must ($RES)"
+    exit 0
+  fi
+  echo "hitorderfuzz: sensitivity ($SENS) FAILED: the fuzz did not fail on a mismatch ($RES)" >&2
+  exit 1
+fi
 if [ "$st" = 0 ] && jq -e '.failed == false' "$RES/manifest.json" >/dev/null; then
   echo "hitorderfuzz: ok ($RES)"
   exit 0

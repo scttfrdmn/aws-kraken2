@@ -82,7 +82,21 @@ if os.path.exists(dp):
         DEF[r["run"]] = r
 for r in spend:
     dd = DEF.get(r[0])
-    r += [dd["class"] if dd else "ok", dd["evidence"] if dd else ""]
+    r += [dd["class"] if dd else "ok", dd["evidence"] if dd else "",
+          "other ak2 runs were alive at this run's own orphan check (concurrent runs; informational); the global "
+          "make orphans afterwards was clean" if str(r[6]) == "1" else ""]
+
+# The #44 fix: the clean-room HitCounts (904c2a5). A run's engine is pre-fix unless its commit
+# descends from it.
+import subprocess
+FIX = "904c2a5"
+
+
+def prefix(commit):
+    if not commit:
+        return "unknown"
+    rc = subprocess.run(["git", "merge-base", "--is-ancestor", FIX, commit], capture_output=True).returncode
+    return "no" if rc == 0 else ("yes" if rc == 1 else "unknown")
 
 rows = []
 for p in points:
@@ -101,6 +115,7 @@ for p in points:
     rate_vcpu = pairs_total / float(p["lpt_wall_s"]) / (N * nproc) if nproc else float("nan")
     load_pred = HASH / N / B_NODE
     r = dict(p)
+    r["engine_pre_fix"] = prefix(json.load(open(os.path.join(p["dir"], "cohort.json"))).get("commit", ""))
     r.update({"load_pred_s": f"{load_pred:.1f}", "load_meas_over_pred": f"{float(p['load_s']) / load_pred:.2f}",
               "mod_over_lpt": f"{float(p['mod_wall_s']) / float(p['lpt_wall_s']):.3f}" if p["mod_wall_s"] not in ("-", "") else "-",
               "busiest_rank_Mpairs": f"{max(loads.values()) / 1e6:.1f}",
@@ -108,7 +123,7 @@ for p in points:
               "vcpus_per_node": nproc, "fleet_vcpus": N * nproc if nproc else "-", "lpt_pairs_per_vcpu_s": f"{rate_vcpu:.0f}",
               "lpt_rate_over_e1_worker_cpu_rate": f"{rate_vcpu / R_CPU:.2f}"})
     rows.append(r)
-head = ["spec", "type", "N", "cohort", "inflight", "threads", "vcpus_per_node", "fleet_vcpus", "price_per_h", "cost_usd_members",
+head = ["spec", "engine_pre_fix", "type", "N", "cohort", "inflight", "threads", "vcpus_per_node", "fleet_vcpus", "price_per_h", "cost_usd_members",
         "boot_s", "setup_s", "manifest_s", "fetch_s", "load_s", "load_pred_s", "load_meas_over_pred", "rendezvous_s_max",
         "lpt_wall_s", "lpt_repeat_wall_s", "lpt_spread", "mod_wall_s", "mod_over_lpt", "placement_order_lever",
         "busiest_rank_Mpairs", "largest_sample_input_floor_s", "lpt_pairs_per_vcpu_s", "lpt_rate_over_e1_worker_cpu_rate",
@@ -116,7 +131,8 @@ head = ["spec", "type", "N", "cohort", "inflight", "threads", "vcpus_per_node", 
         "body_tail_s", "harness_tail_s_max", "harness_tail_s_median", "harness_tail_s_top3", "T_engine_s", "T_with_harness_s",
         "derived_usd_per_sample_engine", "derived_usd_per_sample_with_harness", "measured_usd_per_sample_whole_run"]
 w("points.tsv", head, [[r.get(h, "-") for h in head] for r in rows])
-w("spend.tsv", ["run", "spec", "type", "nodes", "cost_usd", "ended_or_state", "orphans_rc", "outcome", "evidence"], spend)
+w("spend.tsv", ["run", "spec", "type", "nodes", "cost_usd", "ended_or_state", "orphans_rc", "outcome", "evidence",
+                "orphans_note"], spend)
 
 # Stopping rules (#25), each T-based rule evaluated both ways: T_engine (observed critical path +
 # the body tail) and T_with_harness (+ the harness's body-end -> terminate tail).
@@ -143,7 +159,7 @@ if 16 in c8 and 32 in c8:
         out = "run N=64" if float(c8[32][col]) < float(c8[16][col]) else "skip N=64"
         if conf:
             out += (f" (CONFOUNDED: N=16 ran {c8[16]['type']} at {c8[16]['inflight']} in flight, N=32 {c8[32]['type']} at "
-                    f"{c8[32]['inflight']}; on HOLD until #44 is fixed)")
+                    f"{c8[32]['inflight']}; N=64 on HOLD pending review)")
         rules.append(["N=64 only if N=32 beats N=16 (c8g)", f"E3/E4 c8g ({col})", f"T(16) {c8[16][col]} s, T(32) {c8[32][col]} s", out])
 for r in rows:
     if r["placement_order_lever"] == "unresolved":
@@ -177,17 +193,32 @@ for d in sorted(glob.glob(os.path.join(G, "2026*"))):
             continue
         c1 = float(r["c1_home_wall_s_median"])
         if warm:
-            u2.append(["resident (table already in memory or page cache)", r["spec"], f"{c1:.2f}", "c1 home wall",
+            u2.append(["resident (table already in memory or page cache)", r["spec"], r["engine_pre_fix"], f"{c1:.2f}", "c1 home wall",
                        f"{warm[0]['classify_s']:.2f} / {warm[0]['wall_s']:.2f}", "U2 warm classify / wall", os.path.basename(d)])
         if cold:
             ours = sum(float(r[k]) for k in ("boot_s", "setup_s", "fetch_s", "load_s")) + c1
             best = min(cold, key=lambda x: x["wall_s"])
-            u2.append(["from scratch (boot, setup and staging, then the sample cold)", r["spec"],
+            u2.append(["from scratch (boot, setup and staging, then the sample cold)", r["spec"], r["engine_pre_fix"],
                        f"{ours:.0f}", "boot+setup+fetch+load+c1 home (the fetch is the point's whole fetch: conservative)",
                        f"{boot_s + setup_s + stage_s + best['wall_s']:.0f}", f"U2 boot {boot_s:.0f} + setup {setup_s:.0f} + RODA staging "
                        f"onto NVMe {stage_s:.0f} + cold wall {best['wall_s']:.1f} (T={best.get('threads')}); its reads fetch excluded",
                        os.path.basename(d)])
-w("u2-pairs.tsv", ["pair", "engine_point", "engine_s", "engine_basis", "upstream_s", "upstream_basis", "u2_run"], u2)
+w("u2-pairs.tsv", ["pair", "engine_point", "engine_pre_fix", "engine_s", "engine_basis", "upstream_s", "upstream_basis",
+                   "u2_run"], u2)
+
+# law1-u2.tsv (scripts/lib/law1_u2.sh): mark its engine cohort pre-fix or not (sample 1, SRR5935740,
+# is not among the reads #44 changes, so "identical" there does not depend on the fix).
+lp = os.path.join(OUT, "law1-u2.tsv")
+if os.path.exists(lp):
+    lr = tsv(lp)
+    if lr and "engine_pre_fix" not in lr[0]:
+        for x in lr:
+            cid = x["engine_object"].split("/")[2]
+            cj = os.path.join(G, cid, "cohort.json")
+            x["engine_pre_fix"] = prefix(json.load(open(cj)).get("commit", "")) if os.path.exists(cj) else "unknown"
+            x["note"] = ("pre-fix engine; identical holds because SRR5935740 hits no orphan taxon (#44)"
+                         if x["engine_pre_fix"] == "yes" else "")
+        w("law1-u2.tsv", list(lr[0].keys()), [list(x.values()) for x in lr])
 
 # The pre-fix engine (#44): per cohort sample in U1's cross-check, whether the engine's outputs
 # equalled upstream's there (pre-fix), from every U1 run's tables/law1-crosscheck.tsv.
@@ -202,10 +233,19 @@ w("prefix-engine.tsv", ["sample", "comparisons", "differing", "u1_crosscheck_cha
 
 total = sum(float(s_[4]) for s_ in spend)
 defect = sum(float(s_[4]) for s_ in spend if s_[7].startswith("defect"))
+capacity = sum(float(s_[4]) for s_ in spend if s_[7].startswith("capacity"))
+partial = sum(float(s_[4]) for s_ in spend if s_[7].startswith("partial"))
 with open(os.path.join(OUT, "summary.md"), "w") as fh:
     fh.write(f"# G3 campaign tables (generated by scripts/lib/g3_campaign.py; runs since {SINCE})\n\n")
-    fh.write(f"Spend since {SINCE}: ${total:.2f} over {len(spend)} runs, of which ${defect:.2f} on attempts lost to defects "
-             f"(spend.tsv outcome; scripts/lib/g3_defects.tsv). Points: {len(rows)} (points.tsv).\n\n")
+    import subprocess
+    gc = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    gd = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", "scripts"], capture_output=True, text=True).stdout.strip()
+    fh.write(f"Generated at {gc}{' (scripts dirty)' if gd else ''}. Do not edit: rerun `make g3-tables`.\n\n")
+    fh.write(f"Spend since {SINCE}: ${total:.2f} over {len(spend)} runs, of which ${defect:.2f} on attempts lost to defects, "
+             f"${capacity:.2f} on attempts lost to us-west-2a capacity (InsufficientInstanceCapacity), and ${partial:.2f} on a "
+             f"partial run completed by a later one (spend.tsv outcome; scripts/lib/g3_defects.tsv). Points: {len(rows)} "
+             f"(points.tsv). orphans_rc 1 in spend.tsv means other runs were alive at a run's own check (concurrency); the "
+             f"global make orphans afterwards was clean.\n\n")
     fh.write("**T, defined** (docs/cohort.md, \"The G3 campaign\"): derived_T = max boot + max setup + max manifest + max fetch + "
              "max load + LPT wall (per-term maxima over ranks, so not any one rank's path); observed_T = first launch to the last "
              "rank's end of batch 0 (the measured critical path); skew_rendezvous = observed - derived; T_engine = observed + body "
@@ -213,11 +253,31 @@ with open(os.path.join(OUT, "summary.md"), "w") as fh:
              "derived $/sample = N x price x T / cohort; measured $/sample = summed member cost / cohort (the whole run, every "
              "batch).\n\n")
     fh.write("E2's fleets are memory-equal, not vCPU-equal (fleet_vcpus); the knee is read with that next to it (rules.tsv).\n\n")
+    fam = []
+    for r in rows:
+        try:
+            th = int(r["inflight"]) * int(r["threads"])
+            fam.append(f"{r['type']} N={r['N']}: {r['inflight']} in flight x T{r['threads']} = {th} threads on "
+                       f"{r['vcpus_per_node']} vCPUs ({th / int(r['vcpus_per_node']):.2f} per vCPU), cohort rate "
+                       f"{r['lpt_rate_over_e1_worker_cpu_rate']} of E1's")
+        except (ValueError, TypeError, ZeroDivisionError):
+            pass
+    fh.write("**Family vs node size** (generated): the family points differ in threads per vCPU, so the family comparison is "
+             "confounded with node size and in-flight count: " + "; ".join(fam) + ".\n\n")
+    for r in rows:
+        if "-e4-" in r["spec"]:
+            fh.write(f"**E4's fixed-cost regime** (generated): the LPT batch is {r['lpt_wall_s']} s inside an observed T of "
+                     f"{r['observed_T_s']} s (rendezvous max {r['rendezvous_s_max']} s, load {r['load_s']} s, boot "
+                     f"{r['boot_s']} s, setup {r['setup_s']} s, fetch {r['fetch_s']} s): at N=32 the cohort-100 time is "
+                     f"dominated by fixed costs.\n\n")
+    fh.write("**Pre-fix provenance:** engine_pre_fix (points.tsv, u2-pairs.tsv, law1-u2.tsv) is yes for every engine point "
+             "whose commit does not descend from the #44 fix (904c2a5).\n\n")
     fh.write("The c8g N=16 vs N=32 comparison (the N=64 rule) is confounded: N=16 ran at 1 in flight (the most a 96 GiB node "
-             "holds), N=32 at 6. E5, E6 and N=64 are on HOLD until the Law-1 defect #44 is fixed and verified.\n\n")
+             "holds), N=32 at 6. E5, E6 and N=64 are on HOLD pending review.\n\n")
     fh.write("**Law 1 (#44):** every engine output in E1-E4 and checkpoint 2 was produced by the pre-fix engine (first-hit "
-             "order in ResolveTree; fixed by the clean-room HitCounts, merged at cf3a6f8). Only reads that hit an orphan "
-             "taxonomy node (RODA v205: 246 nodes with external ID 0 and parent 0) can differ. The cohort samples whose U1 "
+             "order in ResolveTree; fixed by the clean-room HitCounts at 904c2a5, with the lint fix e390c68). By inference "
+             "(the order matters only when a score tie's LCA is 0), only reads that hit an orphan taxonomy node (RODA v205: "
+             "246 nodes with external ID 0 and parent 0) can differ. The cohort samples whose U1 "
              f"cross-check changes with the fix are listed in prefix-engine.tsv ({len(changes)}: "
              f"{', '.join(sorted(changes)) or 'none'}); E5 and E6 regenerate with the fix.\n\n")
     fh.write("Predictions use E1's measured rates: load 1.80 GB/s per node; input 1.84 Mpairs/s per stream; worker rate 161,638 "

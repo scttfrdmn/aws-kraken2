@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -78,6 +78,11 @@ g3-spec:
 g3-tables:
 	python3 scripts/lib/g3_memory.py
 	python3 scripts/lib/g3_campaign.py
+
+# The H-main frontier: ours vs upstream at its best per cohort size, regime and axis, with the
+# registered references and the kill condition (results/g3/campaign/frontier.{tsv,md}).
+g3-frontier: g3-tables
+	python3 scripts/lib/g3_frontier.py
 
 # Real-S3 check of ak2etag.py (multipart and single-part) and Law 1 of the engine's sample 1
 # against U2's upstream sha256s (scripts/lib/law1_u2.sh; downloads about 1 GB).

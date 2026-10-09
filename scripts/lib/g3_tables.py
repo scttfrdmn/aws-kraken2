@@ -190,7 +190,11 @@ if mod and lpt:
     gain = mod[0] / lpt[0] - 1
     lever_res = "resolved" if gain > 2 * spread else "unresolved"
 ht_sorted = sorted(harness_tail)
-point = [coh["cohort_id"], mans[0]["task_id"], coh["instance_type"], N, C, b0[4], b0[5], f"{price:.4f}", f"{member_cost:.4f}",
+# #44: the engine is pre-fix unless the run's commit descends from the clean-room HitCounts (904c2a5).
+import subprocess
+_rc = subprocess.run(["git", "merge-base", "--is-ancestor", "904c2a5", coh.get("commit", "")], capture_output=True).returncode
+pre_fix = "no" if _rc == 0 else ("yes" if _rc == 1 else "unknown")
+point = [coh["cohort_id"], mans[0]["task_id"], pre_fix, coh["instance_type"], N, C, b0[4], b0[5], f"{price:.4f}", f"{member_cost:.4f}",
          max(int(m["billed_seconds"]) for m in mans), f"{max(boot):.0f}", f"{max(setup):.0f}", f"{max(mphase):.0f}",
          f"{max(fetch):.0f}", f"{load:.1f}", f"{rdv:.1f}", f"{lpt[0]:.2f}" if lpt else "-", f"{lpt[1]:.2f}" if len(lpt) > 1 else "-",
          f"{spread:.3f}", med(mod), lever_res, med(role_walls.get("striped", [])),
@@ -200,7 +204,7 @@ point = [coh["cohort_id"], mans[0]["task_id"], coh["instance_type"], N, C, b0[4]
          f"{max(harness_tail):.0f}", f"{statistics.median(harness_tail):.0f}", ",".join(f"{x:.0f}" for x in ht_sorted[-3:]),
          f"{T_eng:.0f}", f"{T_all:.0f}",
          f"{N * price * T_eng / 3600 / C:.5f}", f"{N * price * T_all / 3600 / C:.5f}", f"{member_cost / C:.5f}"]
-w("point.tsv", ["cohort_id", "task", "type", "N", "cohort", "inflight", "threads", "price_per_h", "cost_usd_members", "billed_s_max",
+w("point.tsv", ["cohort_id", "task", "engine_pre_fix", "type", "N", "cohort", "inflight", "threads", "price_per_h", "cost_usd_members", "billed_s_max",
                 "boot_s", "setup_s", "manifest_s", "fetch_s", "load_s", "rendezvous_s_max", "lpt_wall_s", "lpt_repeat_wall_s",
                 "lpt_spread", "mod_wall_s", "placement_order_lever", "c1_striped_wall_s_median", "c1_striped_walls",
                 "c1_home_wall_s_median", "c1_home_walls", "derived_T_s", "observed_T_s", "skew_rendezvous_s", "body_tail_s",

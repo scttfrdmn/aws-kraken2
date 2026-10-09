@@ -50,12 +50,25 @@ Histories without them behave as before, so the golden data below is unchanged.
   - at each `P`, the taxa `Range` yields must equal the golden line's taxa, in order;
   - the golden line's bucket count is not part of the interface and is not compared.
   - **Pass** means every print of every history matches.
-- **`TestIssue44OrphanTies`** classifies 13 of the 16 real reads through the public API.
-  - It uses RODA v205 lineages and the events rebuilt from upstream's hit lists.
+- **`TestIssue44OrphanTies`** replays all 16 real reads through the public API.
+  - It uses upstream's own events and values on RODA v205 (`testdata/issue44_events.jsonl`,
+    recorded by the RODA recheck) and RODA lineages.
   - It requires upstream's `--output` line byte for byte.
-  - The other 3 reads are checked end to end on RODA (`runs/g3-diag44-r8gd.16xlarge.json`).
-- Both tests fail while `newHitCounts` is the first-insertion-order placeholder
-  (`TODO(#44 clean-room)`).
+  - It fails on all 16 with the pre-fix first-hit order (0a5105c), and passes with the
+    clean-room `newHitCounts` (`hitcounts.go`, 904c2a5).
+  - It is a **regression check, not an order discriminator**. The reverse of first-insertion
+    order also passes all 16, although it differs from upstream's order in general (checked
+    locally at this commit). The clean-room order with `Range` reversed fails all 16.
+    Discrimination rests on `TestHitCountsGolden` and on the differential fuzz, whose
+    sensitivity runs (reversed, first-hit) must fail.
+- **Residual exposure:** the container's iteration order depends on its bucket count, which a
+  map keeps across `clear()` for its whole thread lifetime. Each worker thread's map therefore
+  carries the history of the reads that thread classified before.
+  - Upstream's thread-to-read assignment is not deterministic, and nor is ours, so on a read
+    whose call depends on the order, the result could depend on which reads its worker saw
+    earlier.
+  - This applies to upstream and to us alike.
+  - It was not observed: U1's six configurations, U2's, and our cohorts agree on every read.
 - To extend the golden data, add sessions to `umap_cmds.py` and rerun `make hitorder-golden`.
 - The differential fuzz, `make hitorderfuzz [HITORDERFUZZ=quick|full]`, runs the same comparison
   (orders and counts) on generated histories against the live container: every rehash boundary

@@ -9,7 +9,7 @@
 #   3. the real scripts/g3/fetch.sh (the current fetch: a child process, lanes waited for by PID)
 #      on N stub files through a stub aws: it must PASS (every file fetched and verified, exit 0).
 #   4. lanes in the body's own shell waited for by PID (U1's u1_pass): it must PASS.
-# Prints one "bash-jobs: ..." line per pattern; exits 0 only if 1 failed and 3 and 4 passed.
+# Prints one "bash-jobs: ..." line per pattern; exits 0 only if 1 and 2 failed and 3 and 4 passed.
 set +e
 trap 'true' EXIT; trap 'true' TERM; trap 'true' HUP; trap 'true' INT; trap 'true' PIPE
 N=${N:-600}; LIMIT=${LIMIT:-60}; REPO=${REPO:-/repo}; OUTF=${OUTF:-/o/bash-jobs.txt}
@@ -25,7 +25,9 @@ say "bash $BASH_VERSION; started as bash -c: ${BASH_EXECUTION_STRING:+yes}; N=$N
 HUNG=0
 trap 'HUNG=1' USR1
 watch() { ( sleep "$LIMIT"; while kill -USR1 $$ 2>/dev/null; do sleep 1; done ) > /dev/null 2>&1 & WD=$!; }
-unwatch() { kill "$WD" 2>/dev/null; }
+# unwatch stops the watchdog and waits for it, so no USR1 it sent can reach the next pattern
+# (with a short LIMIT a pending signal leaked into the next pattern and marked it hung).
+unwatch() { kill "$WD" 2>/dev/null; wait "$WD" 2>/dev/null; }
 work() { sleep "0.0$((RANDOM % 9 + 1))"; x=$(echo x); echo "item $1 $x"; }
 items=(); for i in $(seq 1 "$N"); do items+=("$i"); done
 
@@ -81,7 +83,7 @@ FERR=0; for p in "${pids[@]}"; do wait "$p" || FERR=1; done
 unwatch
 P4=pass; { [ "$FERR" != 0 ] || [ "$HUNG" = 1 ] || [ "$(grep -c item "$D/f4")" != "$N" ]; } && P4=fail
 say "4 in-shell lanes waited by PID (U1's u1_pass): $P4 (error=$FERR hung=$HUNG items=$(grep -c item "$D/f4"))"
-V=fail; [ "$P1" = fail ] && [ "$P3" = pass ] && [ "$P4" = pass ] && V=pass
-say "verdict: $V (the check resolves the defect: pattern 1 must fail; the current fetch must pass)"
+V=fail; [ "$P1" = fail ] && [ "$P2" = fail ] && [ "$P3" = pass ] && [ "$P4" = pass ] && V=pass
+say "verdict: $V (the check resolves both defects: patterns 1 and 2 must fail; the current fetch and PID lanes must pass)"
 cp "$D/r" "$OUTF"
 [ "$V" = pass ]

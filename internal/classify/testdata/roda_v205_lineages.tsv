@@ -1,8 +1,7 @@
 # RODA v205 (s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d) nodes on the
 # lineages of the taxa the #44 reads hit, internal IDs as in that taxonomy, and the one of its 246
 # trailing nodes with external ID 0 and parent 0 (internal 2158313..2158558) that the 16 reads hit
-# (2158558, from upstream's own lookups: results/g3/20261009-015708-210e1b5), and 2158313, the
-# stand-in issue44_reads.jsonl's hit-list reconstructions use. These nodes are what the hash
+# (2158558, from upstream's own lookups: results/g3/20261009-015708-210e1b5), which the hash
 # table's values reach and whose LCA with any rooted taxon is 0.
 internal	parent	external
 1730567	1606488	127582
@@ -82,4 +81,3 @@ internal	parent	external
 62880	1688	35493
 1688	40	33090
 2158558	0	0
-2158313	0	0

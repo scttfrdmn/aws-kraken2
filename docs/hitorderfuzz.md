@@ -63,7 +63,7 @@ mismatch in one category.
 
 | category | what | quick | full | selftest |
 |---|---|---:|---:|---:|
-| `real` | the 13 #44 reads (`testdata/issue44_reads.jsonl`, RODA v205 internal IDs, as `TestIssue44OrphanTies` rebuilds them): one lifetime, each read alone (3 lookup shapes), and shuffled repeats; plus `real/recorded-classify`, the op history our own classifier performs on `HitCounts` while classifying them | 100 rounds | 1000 rounds | 3 rounds |
+| `real` | the 16 #44 reads (`testdata/issue44_events.jsonl`: upstream's own events and values on RODA v205, recorded by the #44 RODA recheck; the orphan they hit is internal 2158558): one lifetime, each read alone (3 lookup shapes), and shuffled repeats; plus `real/recorded-classify`, the op history our own classifier performs on `HitCounts` while classifying them | 100 rounds | 1000 rounds | 3 rounds |
 | `lookup` | read-shaped histories with a lookup (mostly of an absent taxon) after about every second increment | 20 000 | 200 000 | 300 |
 | `random` | read-shaped histories: 1 to 4 reads, `C` per read (or, 1 in 20, none), 1 to about 2000 distinct taxa per read with repeats as runs or shuffled, an occasional lookup, ResolveTree's end shape (`V`, a lookup of a present, absent or 0 taxon, `V`) | 100 000 | 1 000 000 | 1500 |
 | `clear-random` | 250 (full: 500) clear cycles in one lifetime; refills from 0 to 6000, a third around a boundary; `B` before and after each `C` | 120 | 600 | 10 |
@@ -136,14 +136,17 @@ Go implementation of the order. It is small, because every print is a round trip
 
 Before trusting a pass, the fuzz must be able to fail. Two orders known to be wrong must FAIL:
 - the first-insertion-order placeholder (`TODO(#44 clean-room)`);
-- the same with `Range` reversed, swapped in temporarily.
+- the same implementation with `Range` reversed.
 
-Both fail in `real` at the first #44 read, and in each category alone (`HITORDERFUZZ_ONLY`).
+`HITORDERFUZZ_SENSITIVITY=reversed|first-hit make hitorderfuzz` runs either in place of
+`newHitCounts` (`hitorderfuzz_sens_test.go`). The run is recorded in
+`results/g1/hitorderfuzz-<ts>-<sha>-sens-<kind>/` and exits 0 only if the fuzz failed on a
+mismatch.
 
 ## Canonical toolchain and CI
 
 CI job `hitorderfuzz` runs `make hitorderfuzz HITORDERFUZZ=full` in `amazonlinux:2023` on
-ubuntu-24.04-arm, after asserting `g++ -dumpfullversion` = 11.5.0. It is expected to fail until
+ubuntu-24.04-arm, after asserting `g++ -dumpfullversion` = 11.5.0. It must pass: `newHitCounts` is the clean-room implementation (`hitcounts.go`, 904c2a5).
 the clean-room implementation lands. Locally, the podman path uses the same image and toolchain.
 
 **Testing a new implementation:** replace `newHitCounts` (hitorder.go) and run

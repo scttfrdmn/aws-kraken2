@@ -56,6 +56,10 @@ w(f"Run: {coh['nodes']} × {coh['instance_type']}, {coh['az']}, commit {coh['com
 w("")
 w("## Record notes")
 w("")
+w(f"- **Pre-fix engine (#44):** this run's engine ({coh['commit'][:7]}) predates the clean-room HitCounts (904c2a5), "
+  "whose ResolveTree walks upstream's hit_counts order. By inference, only reads that hit an orphan taxonomy node "
+  "(RODA v205 has 246) can differ; none of E1's 10 samples is among the 3 the U1 cross-check found "
+  "(results/g3/campaign/prefix-engine.tsv).")
 runlogs = sorted(glob.glob(os.path.join(d, "rank-*.run.log")))
 streamed = {os.path.basename(p): sum(1 for l in open(p, errors="replace") if re.search(r"ak2-sample\s", l)) for p in runlogs}
 total = sum(streamed.values())

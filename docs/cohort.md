@@ -163,7 +163,17 @@ make g3-tables                                            # results/g3/campaign/
   - **The placement + order lever** (j mod N against LPT, which also orders each node's samples
     heaviest first) is resolved only if its gain exceeds 2 × the within-run spread.
 - **Defect attempts** are named in `scripts/lib/g3_defects.tsv` and carried into `spend.tsv` and
-  `summary.md`.
+  `summary.md`, in three classes:
+  - `defect`, our own;
+  - `capacity`, us-west-2a InsufficientInstanceCapacity;
+  - `partial`, a run completed by a later one.
+- **Pre-fix engine (#44):** the outputs of E1–E4 and checkpoint 2 come from an engine that walked
+  ResolveTree's hits in first-hit order. The fix, the clean-room `HitCounts`, is 904c2a5.
+  - `engine_pre_fix` marks every engine point affected, in `point.tsv`, `points.tsv`,
+    `u2-pairs.tsv` and `law1-u2.tsv`; the E1 summary records it too.
+  - By inference, only reads hitting an orphan taxonomy node can differ.
+  - The cohort samples whose U1 cross-check changes are in
+    `results/g3/campaign/prefix-engine.tsv`.
 - **`make bash-jobs-test`** runs `scripts/tests/bash_jobs.sh` under AL2023's bash, in podman.
   - It rebuilds the body's environment: `bash -c`, the preamble's traps, a FIFO tee and push
     loop, and process substitutions.

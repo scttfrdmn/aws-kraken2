@@ -212,8 +212,8 @@ jobs:
 
   # #44: internal/classify's HitCounts vs std::unordered_map, the iteration order upstream's
   # ResolveTree walks, under the canonical platform's toolchain (amazonlinux:2023: g++ 11.5.0 and
-  # the system libstdc++). The harness is built and run natively here. It fails on purpose while
-  # newHitCounts is the first-insertion-order placeholder (TODO(#44 clean-room)).
+  # the system libstdc++). The harness is built and run natively here. It must pass: newHitCounts
+  # is the clean-room implementation (hitcounts.go, 904c2a5).
   # Runbook: docs/hitorderfuzz.md.
   hitorderfuzz:
     runs-on: ubuntu-24.04-arm

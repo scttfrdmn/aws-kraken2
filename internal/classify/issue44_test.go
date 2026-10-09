@@ -83,11 +83,6 @@ func loadRodaLineages(t *testing.T) (mapTree, map[uint64]uint64) { //nolint:unpa
 	return tree, ext
 }
 
-// issue44Orphan is the orphan taxon testdata/issue44_reads.jsonl's hit-list reconstructions use
-// (the clean-room fuzz's real histories, hitorderfuzz_test.go); 2158558 is the one the reads
-// actually hit.
-const issue44Orphan = 2158313
-
 func TestIssue44OrphanTies(t *testing.T) {
 	tree, _ := loadRodaLineages(t)
 	c, err := New(tree, IndexInfo{DNA: true}, Options{Paired: true, MinimumHitGroups: 2}, nil)
