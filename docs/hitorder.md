@@ -23,6 +23,10 @@ per `P`. One process is one map's lifetime, like one classify.cc thread's.
 
 Taxa are unsigned decimal integers.
 
+`make hitorderfuzz` (docs/hitorderfuzz.md) adds four ops: `N` (a fresh map), `V` (taxa with their
+counts, and `size()`), `B` (bucket count and size) and `G <taxon>` (`L`, printing the value read).
+Histories without them behave as before, so the golden data below is unchanged.
+
 ## Golden data: internal/classify/testdata/umap/
 
 - `ops-<k>.txt.gz` holds seven op histories from `scripts/tests/umap_cmds.py` (seeded).
@@ -53,3 +57,7 @@ Taxa are unsigned decimal integers.
 - Both tests fail while `newHitCounts` is the first-insertion-order placeholder
   (`TODO(#44 clean-room)`).
 - To extend the golden data, add sessions to `umap_cmds.py` and rerun `make hitorder-golden`.
+- The differential fuzz, `make hitorderfuzz [HITORDERFUZZ=quick|full]`, runs the same comparison
+  (orders and counts) on generated histories against the live container: every rehash boundary
+  up to 100 000 elements, clear cycles, lookups of absent taxa, and the #44 reads
+  (docs/hitorderfuzz.md).

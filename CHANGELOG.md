@@ -226,6 +226,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     (`scripts/lib/tidy.py`, `scripts/post/g3-e1{,.cohort}.sh`; run-multi runs a cohort-level post);
   - an `ak2-engine result` line;
   - fixed a data race in `TCPClient.dial` (Lo and Hi were written on every concurrent dial).
+- `make hitorderfuzz [HITORDERFUZZ=quick|full|selftest]` (`scripts/hitorderfuzz.sh`,
+  `docs/hitorderfuzz.md`, `internal/classify/hitorderfuzz_test.go`): a differential fuzz of the
+  `HitCounts` from `newHitCounts()` against `std::unordered_map` under Amazon Linux 2023's
+  g++ 11.5.0 (`upstream/umap_order.cc`, natively or in podman). It compares orders and counts at
+  every print of seeded histories (random, lookup-heavy, clear cycles, growth across every rehash
+  boundary up to 10^5 elements, and the #44 reads), stops at the first mismatch, and fails on
+  unmet coverage. `umap_order` gains the ops `N`, `V`, `B` and `G`; existing histories are
+  unchanged. A CI job runs the full corpus in `amazonlinux:2023` (#44).
 
 ### Changed
 
