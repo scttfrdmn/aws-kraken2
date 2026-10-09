@@ -38,19 +38,28 @@ main)
   ak2_phase stage-default
   # A config the body happens to have exported must not reach the stock rung's CLI.
   printf '[default]\ns3 =\n  preferred_transfer_client = crt\n' > /tmp/body.config; export AWS_CONFIG_FILE=/tmp/body.config
+  # The AMI's own config, if any, is part of "as shipped": recorded with the default client.
+  mkdir -p "$HOME/.aws"; printf '[default]\nregion = us-west-2\n' > "$HOME/.aws/config"
   lv_stage_db awscp-default s3://ak2-roda-test/db/ "$LV_NVME/db-default"; want_rc stage-default 0 $?
   unset AWS_CONFIG_FILE
   n=$(awk -F'\t' '$2 == "get" && $3 ~ /db\/hash.k2d$/ && $4 ~ /db-default/ && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
   [ "$n" = 1 ]; chk stage-default-no-override $? "$n hash.k2d get(s) by aws s3 cp with no AWS_CONFIG_FILE (the body's crt config removed for the call)"
   grep -q '"kind":"aws-client","t":[0-9.]*,"client":"default","cli_version":"aws-cli/stub","config":"none","content":"","caller_config":"/tmp/body.config","configure_get":"","instance_type":"t.test","resolved":"unknown","how":"could not determine: ' "$LV_DIR/lever.jsonl"
   chk stage-default-client-recorded $? "$(grep '"client":"default"' "$LV_DIR/lever.jsonl" | head -1)"
-  g=$(reqs stage-default GetObject); h=$(reqs stage-default HeadObject)
-  [ "$g" = 5 ] && [ "$h" = 9 ]; chk stage-default-requests $? "GetObject $g (want 5), HeadObject $h (want 9)"
+  grep '"kind":"aws-client"' "$LV_DIR/lever.jsonl" | grep '"client":"default"' | grep -q '"estimate":true,.*"home_aws_config":"present sha256 [0-9a-f]*: \[default\]\\nregion = us-west-2","home_aws_credentials":"absent","etc_aws":"absent"'
+  chk stage-default-ami-config-recorded $?
+  # resolved unknown (the stub CLI): the transfer's counts are estimates; lever.sh's own head-objects are not.
+  g=$(reqs stage-default GetObject-estimate); h=$(reqs stage-default HeadObject); he=$(reqs stage-default HeadObject-estimate); gp=$(reqs stage-default GetObject)
+  [ "$g" = 5 ] && [ "$h" = 6 ] && [ "$he" = 3 ] && [ "$gp" = 0 ]
+  chk stage-default-requests-estimate $? "GetObject-estimate $g (want 5), HeadObject $h (want 6, made), HeadObject-estimate $he (want 3), plain GetObject $gp (want 0)"
+  grep '"kind":"stage-db"' "$LV_DIR/lever.jsonl" | grep '"mode":"awscp-default"' | grep -q '"requests":"HeadObject-estimate 1 GetObject-estimate 3","estimate":true'
+  chk stage-default-estimate-recorded $?
   lv_etag "$LV_NVME/db-default/hash.k2d" "$(lv_db_etag "$LV_NVME/db-default" hash.k2d)"; want_rc etag-default 0 $?
   # The auto rule against AL2023's real aws CLI rpm (in the image; the stub stands in for it above).
-  how=$(lv__auto_rule /usr/bin/aws); r=${how%%$'\t'*}; how=${how#*$'\t'}
-  [ "$r" = classic ] && [[ $how == auto:\ awscrt.s3.is_optimized_for_system* ]]
-  chk auto-rule-real-cli $? "$(/usr/bin/aws --version 2>&1 | cut -d' ' -f1): $r ($how; a container is not a CRT-optimised type)"
+  IFS=$'\037' read -r r how plat lad <<< "$(lv__auto_rule /usr/bin/aws r8gd.48xlarge)"
+  [ "$r" = classic ] && [[ $how == auto:\ awscrt.s3.is_optimized_for_system* ]] && [[ $how == *"host r8gd.48xlarge is not on the optimised list"* ]] &&
+    [[ $how == *"CRT process lock"* ]] && [[ " $plat " == *" p4d.24xlarge "* ]] && [ "$lad" = "ladder types: r8gd.48xlarge=off x8g.24xlarge=off" ]
+  chk auto-rule-real-cli $? "$(/usr/bin/aws --version 2>&1 | cut -d' ' -f1): $r ($how); optimised: $plat; $lad"
   ak2_phase stage-classic
   lv_stage_db awscp-classic s3://ak2-roda-test/db/ "$LV_NVME/db-classic"; want_rc stage-classic 0 $?
   ET=$(lv_db_etag "$LV_NVME/db-classic" hash.k2d)
@@ -89,7 +98,8 @@ main)
   n0=$(awk -F'\t' '$2 == "get" && $4 ~ /in-(serial|lanes)\// && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
   n1=$(awk -F'\t' '$2 == "get" && $4 ~ /in-crt\// && $5 == "preferred_transfer_client=crt"' "$BK/.aws-calls.$LVT_CASE" | wc -l)
   [ "$n0" = 12 ] && [ "$n1" = 6 ]; chk fetch-client $? "$n0 of 12 serial/lanes gets with no config (default), $n1 of 6 under the crt config"
-  grep -q '"kind":"aws-client","t":[0-9.]*,"client":"crt",.*"configure_get":"crt",.*"resolved":"crt","how":"configured"' "$LV_DIR/lever.jsonl"; chk fetch-crt-recorded $?
+  grep -q '"kind":"aws-client","t":[0-9.]*,"client":"crt",.*"content":"\[default\]\\ns3 =\\n  preferred_transfer_client = crt\\n  multipart_chunksize = 8MB",.*"configure_get":"crt",.*"resolved":"crt","how":"configured","estimate":true' "$LV_DIR/lever.jsonl"; chk fetch-crt-recorded $?
+  [ "$(reqs fetch-crt GetObject-estimate)" = 6 ] && [ "$(reqs fetch-crt GetObject)" = 0 ]; chk fetch-crt-estimate $? "crt: GetObject-estimate $(reqs fetch-crt GetObject-estimate) (want 6), plain $(reqs fetch-crt GetObject)"
   bad=0
   while read -r u; do
     case $u in '#'*|'') continue ;; esac
@@ -110,7 +120,9 @@ print(m)' "$BK/.aws-calls.$LVT_CASE" "$1"; }
 s=$(ov /tmp/in-serial/); l=$(ov "$LV_NVME/in-lanes/")
   [ "$s" = 1 ] && [ "$l" -ge 2 ]; chk fetch-lane-concurrency $? "max concurrent gets: serial $s (want 1), lanes3 $l (want >= 2)"
   g=$(reqs fetch-serial GetObject); h=$(reqs fetch-serial HeadObject)
-  [ "$g" = 6 ] && [ "$h" = 12 ]; chk fetch-requests $? "serial GetObject $g (want 6), HeadObject $h (want 12)"
+  ge=$(reqs fetch-serial GetObject-estimate); he=$(reqs fetch-serial HeadObject-estimate)
+  [ "$g" = 0 ] && [ "$ge" = 6 ] && [ "$h" = 6 ] && [ "$he" = 6 ]
+  chk fetch-requests $? "serial (default client, unresolved): GetObject-estimate $ge (want 6), HeadObject-estimate $he (want 6), HeadObject $h (want 6: fetch.sh's own), plain GetObject $g (want 0)"
   grep -q '"kind":"fetch-inputs","t":[0-9.]*,"mode":"lanes3","lanes":3,"dest":"/tmp/nvme/in-lanes",.*"client":"default","client_env":"env -u AWS_CONFIG_FILE"' "$LV_DIR/lever.jsonl"
   chk fetch-recorded $?
 
@@ -148,7 +160,12 @@ PY
   [ "$n" = 4 ]; chk gunzip-shim-used-rapidgzip $? "$n rapidgzip calls (want 4)"
   gzip --version > /dev/null; n=$(awk -F'\t' '$2 == "gzip"' "$LV_DIR/gzip-shim.calls" | wc -l)
   [ "$n" = 1 ]; chk gunzip-shim-passthrough $? "gzip --version went to the real gzip ($n call)"
-  grep -q '"kind":"gunzip-shim".*"threads":4.*"rapidgzip_version":"rapidgzip, [^"]*version 0.14.5' "$LV_DIR/lever.jsonl"; chk gunzip-shim-recorded $?
+  grep -q '"kind":"gunzip-shim".*"threads":4,"threads_paired":8,"paired":"[^"]*2 shims at once: 8 decompression threads".*"rapidgzip_version":"rapidgzip, [^"]*version 0.14.5' "$LV_DIR/lever.jsonl"; chk gunzip-shim-recorded $?
+  # The hash-pinned install (pip --require-hashes from the image's wheel dir): its wheel's sha256 is a pin.
+  WH=$(find /opt/wheels -name 'rapidgzip-*.whl' | head -1); WS=$(sha "$WH")
+  grep '"kind":"tool"' "$LV_DIR/lever.jsonl" | grep '"name":"rapidgzip"' | grep -q "\"wheel\":\"$(basename "$WH")\",\"wheel_sha256\":\"$WS\",\"extension\":\"[^\"]*rapidgzip[^\"]*.so\",\"extension_sha256\":\"[0-9a-f]\{64\}\"" &&
+    [[ " ${LV_RG_HASHES[*]} " == *" $WS "* ]] && [[ $LV_RG == "$LV_DIR/rg-venv/bin/rapidgzip" ]]
+  chk rapidgzip-hash-pinned $? "$(basename "$WH") $WS, installed by pip --require-hashes; LV_RG=$LV_RG"
   lv_gunzip_shim gzip; want_rc gunzip-off 0 $?
   [ "$(command -v gzip)" = "$REALGZ" ]; chk gunzip-off-path $? "$(command -v gzip)"
 
@@ -159,7 +176,8 @@ PY
   lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/default-1; want_rc upload-enqueue-default 0 $?
   lv_upload_drain; want_rc upload-drain-default 0 $?
   n=$(awk -F'\t' '$2 == "put" && $4 ~ /up\/default-1$/ && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
-  [ "$n" = 1 ] && [ -n "$(row 1 9 awscp-default)" ]; chk upload-default-no-override $? "$n put(s) with no AWS_CONFIG_FILE"
+  [ "$n" = 1 ] && [ -n "$(row 1 9 awscp-default)" ] && [ "$(reqs upload-default PutObject-estimate)" = 1 ]
+  chk upload-default-no-override $? "$n put(s) with no AWS_CONFIG_FILE; PutObject-estimate $(reqs upload-default PutObject-estimate)"
   ak2_phase upload-serial
   lv_upload_start awscp-serial; want_rc upload-start-serial 0 $? "(the first contract's name for awscp-classic)"
   ta=$(now); lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/serial-1; r=$?; tb=$(now)
@@ -173,6 +191,23 @@ PY
   [ "$(reqs upload-serial PutObject)" = 1 ] && [ "$(reqs upload-serial UploadPart)" = 2 ] && [ "$(reqs upload-serial CreateMultipartUpload)" = 1 ]
   chk upload-serial-requests $? "PutObject $(reqs upload-serial PutObject) UploadPart $(reqs upload-serial UploadPart) (want 1 and 2: 3 MiB single, 10 MiB in 8 MiB parts)"
 
+  ak2_phase upload-s5serial
+  lv_upload_start s5cmd-serial; want_rc upload-start-s5serial 0 $?
+  lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/s5serial-1; r=$?; tb=$(now)
+  want_rc upload-enqueue-s5serial 0 "$r"
+  lv_upload_drain; want_rc upload-drain-s5serial 0 $?
+  e1=$(row 1 9 s5cmd-serial)
+  le "$e1" "$tb"; chk upload-s5serial-blocks $? "s5cmd-serial enqueue returned at $tb, after its upload ended at $e1 (S7a: the tool alone)"
+  ak2_phase upload-awsoverlap
+  lv_upload_start awscp-overlap; want_rc upload-start-awsoverlap 0 $?
+  ta=$(now); lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/awsoverlap-1; r=$?; tb=$(now)
+  want_rc upload-enqueue-awsoverlap 0 "$r"
+  sleep 3; w1=$(now)
+  lv_upload_drain; want_rc upload-drain-awsoverlap 0 $?
+  s1=$(row 1 8 awscp-overlap); e1=$(row 1 9 awscp-overlap)
+  n=$(awk -F'\t' '$2 == "put" && $4 ~ /up\/awsoverlap-1$/ && $5 == ""' "$BK/.aws-calls.$LVT_CASE" | wc -l)
+  lt "$tb" "$e1" && le "$e1" "$w1" && [ "$n" = 1 ] && [ "$(reqs upload-awsoverlap PutObject-estimate)" = 1 ]
+  chk upload-awsoverlap $? "awscp-overlap: enqueue returned at $tb, upload ran $s1 -> $e1 in the lane, with no config ($n), PutObject-estimate $(reqs upload-awsoverlap PutObject-estimate)"
   ak2_phase upload-overlap
   lv_upload_start s5cmd-overlap; want_rc upload-start-overlap 0 $?
   ta=$(now); lv_upload_enqueue /tmp/up1 s3://ak2-results-test/lvt/$LVT_CASE/up/overlap-1; r=$?; tb=$(now)
@@ -206,6 +241,16 @@ PY
   ak2_phase s5-guard
   lv_s5 ls s3://ak2-results-test/lvt/$LVT_CASE/up/ > /tmp/ls.out; want_rc s5-allowed 0 $? "$(wc -l < /tmp/ls.out) objects listed"
   [ "$(reqs s5-guard s5cmd-ls)" = 1 ]; chk s5-counted $? "s5cmd-ls $(reqs s5-guard s5cmd-ls)"
+  # Single-dash long flags: the subcommand is still found (ls, not the flag's value).
+  lv_s5 -numworkers 4 ls s3://ak2-results-test/lvt/$LVT_CASE/up/ > /dev/null; want_rc s5-single-dash 0 $?
+  [ "$(reqs s5-guard s5cmd-ls)" = 2 ] && grep -q '"kind":"s5","t":[0-9.]*,"args":"-numworkers 4 ls [^"]*","sub":"ls"' "$LV_DIR/lever.jsonl"
+  chk s5-single-dash-sub $? "s5cmd-ls $(reqs s5-guard s5cmd-ls) (want 2)"
+  # The pinned s5cmd tarball (the real 2.3.0 release in the image): checked against the sha256 in lever.sh.
+  TGZ=$(find /opt/s5 -name 's5cmd_2.3.0_Linux-*.tar.gz' | head -1)
+  ( LV_S5=""; unset AK2_REHEARSE_S5CMD; AK2_REHEARSE_S5CMD_TGZ=$TGZ lv__s5_ensure ); want_rc s5-tarball-pinned 0 $? "$TGZ"
+  case $TGZ in *arm64*) PIN=$LV_S5_SHA256_arm64 ;; *) PIN=$LV_S5_SHA256_64bit ;; esac
+  grep '"kind":"tool"' "$LV_DIR/lever.jsonl" | grep '"name":"s5cmd"' | grep -q "\"version\":\"v2.3.0[^\"]*\",.*\"tarball_sha256\":\"$PIN\""
+  chk s5-tarball-recorded $? "tarball sha256 $(sha "$TGZ") = pin $PIN"
   ;;
 
 refuse)
@@ -215,8 +260,12 @@ refuse)
   lv_s5 --numworkers 8 cp s3://ak2-results-test/a s3://ak2-undeclared-test/b; want_rc refuse-mixed 126 $?
   lv_s5 cp --metadata x=s3://ak2-undeclared-test/z /etc/hostname s3://ak2-results-test/k; want_rc refuse-embedded 126 $?
   printf 'ls s3://ak2-results-test/\n' > /tmp/cmds; lv_s5 run /tmp/cmds; want_rc refuse-run 126 $?
+  lv_s5 ls run; want_rc refuse-run-anywhere 126 $?
+  lv_s5 --endpoint-url http://127.0.0.1:9 ls s3://ak2-results-test/; want_rc refuse-endpoint 126 $?
+  lv_s5 -endpoint-url=http://127.0.0.1:9 ls s3://ak2-results-test/; want_rc refuse-endpoint-single-dash 126 $?
+  S3_ENDPOINT_URL=http://127.0.0.1:9 lv_s5 ls s3://ak2-results-test/; want_rc refuse-endpoint-env 126 $?
   [ ! -s "$BK/.s5-calls.$LVT_CASE" ]; chk refuse-never-reached-s5cmd $? "$(head -3 "$BK/.s5-calls.$LVT_CASE" 2>&1 | tr '\n\t' '; ')"
-  n=$(grep -c '"kind":"s5","t":[0-9.]*,"args":.*"refused":true' "$LV_DIR/lever.jsonl"); [ "$n" = 5 ]; chk refuse-recorded $? "$n refusals recorded"
+  n=$(grep -c '"kind":"s5","t":[0-9.]*,"args":.*"refused":true' "$LV_DIR/lever.jsonl"); [ "$n" = 9 ]; chk refuse-recorded $? "$n refusals recorded (want 9)"
   # The guard cannot be redefined by the body.
   ( eval 'lv_s5() { :; }' ) 2> /dev/null; [ $? != 0 ]; chk refuse-guard-readonly $?
   lv_upload_start s5cmd-overlap; lv_upload_enqueue /etc/hostname s3://ak2-undeclared-test/k; want_rc refuse-enqueue 1 $?
@@ -239,6 +288,19 @@ fail)
   lv_stage_db awscp-crt s3://ak2-roda-test/db/ /tmp/db; want_rc fail-bad-mode 1 $?
   lv_gunzip_shim rapidgzip-P0; want_rc fail-bad-shim 1 $?
   lv_upload_enqueue /tmp/x.bin s3://ak2-results-test/lvt/$LVT_CASE/up/late; want_rc fail-no-session 1 $?
+  # A drain that cannot write END kills the lane at once instead of leaving it to poll until the TTL.
+  lv_upload_start s5cmd-overlap; P=$LV_UP_PID
+  lv_upload_enqueue /tmp/x.bin s3://ak2-results-test/lvt/$LVT_CASE/up/endfail-1
+  mkdir "$LV_UP_Q/END.tmp"
+  t0=$(now); lv_upload_drain; r=$?; t1=$(now)
+  want_rc fail-drain-end 1 "$r"
+  ! kill -0 "$P" 2> /dev/null && lt "$(awk -v a="$t0" -v b="$t1" 'BEGIN{print b - a}')" 5
+  chk fail-drain-end-lane-killed $? "lane $P gone; drain took $(awk -v a="$t0" -v b="$t1" 'BEGIN{printf "%.2f", b - a}') s"
+  # A tampered s5cmd tarball and a tampered rapidgzip wheel are refused by their pinned sha256.
+  TGZ=$(find /opt/s5 -name 's5cmd_2.3.0_Linux-*.tar.gz' | head -1); cp "$TGZ" /tmp/bad.tgz; printf x >> /tmp/bad.tgz
+  ( LV_S5=""; unset AK2_REHEARSE_S5CMD; AK2_REHEARSE_S5CMD_TGZ=/tmp/bad.tgz lv__s5_ensure ); want_rc fail-s5-tarball 1 $?
+  mkdir -p /tmp/badwheels; for w in /opt/wheels/*.whl; do cp "$w" /tmp/badwheels/; printf x >> "/tmp/badwheels/$(basename "$w")"; done
+  ( AK2_REHEARSE_WHEELS=/tmp/badwheels lv_gunzip_shim rapidgzip-P2 ); want_rc fail-rapidgzip-wheel 1 $?
   ;;
 esac
 ak2_phase finished

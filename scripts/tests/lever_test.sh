@@ -7,8 +7,9 @@
 # edges: curl answers IMDS and the bucket-region HEAD; aws and s5cmd are stubs over a shared
 # directory (/work/bucket) that log every call with its start and end time (uploads under up/
 # take 2 s, input gets 0.4 s, so overlap and lane concurrency are visible); sudo runs the command;
-# rapidgzip is the real 0.14.5 wheel, baked into the image (localhost/ak2-lever-test), with
-# AL2023's real awscli-2 rpm for the auto-rule check.
+# the image (localhost/ak2-lever-test) carries the real rapidgzip 0.14.5 wheel (installed by
+# lever.sh with pip --require-hashes), the real s5cmd 2.3.0 tarball (its pinned sha256 checked)
+# and AL2023's real awscli-2 rpm (the auto-rule check).
 # Three cases, each its own container:
 #   main    must exit 0 with no helper errors: lv_nvme (rehearsal seam), lv_stage_db with the
 #           stock CLI as shipped (no config, even with one exported), classic and s5cmd (the
@@ -50,7 +51,9 @@ trap cleanup EXIT
 cat > "$T/Containerfile" << 'EOF'
 FROM public.ecr.aws/amazonlinux/amazonlinux:2023
 RUN dnf install -y -q gzip tar perl-interpreter python3-pip diffutils findutils util-linux-core awscli-2 && dnf clean all
-RUN python3 -m venv /opt/rg && /opt/rg/bin/pip install -q --only-binary=:all: rapidgzip==0.14.5
+RUN python3 -m pip download -q --no-deps --only-binary=:all: -d /opt/wheels rapidgzip==0.14.5
+RUN mkdir -p /opt/s5 && a=$(case $(uname -m) in aarch64) echo arm64 ;; *) echo 64bit ;; esac) && \
+    curl -fsSL -o /opt/s5/s5cmd_2.3.0_Linux-$a.tar.gz https://github.com/peak/s5cmd/releases/download/v2.3.0/s5cmd_2.3.0_Linux-$a.tar.gz
 EOF
 IMG=localhost/ak2-lever-test:$(shasum -a 256 "$T/Containerfile" | cut -c1-12)
 if ! podman image exists "$IMG"; then
@@ -124,7 +127,7 @@ B=/work/bucket
 [ "${1:-}" = version ] && { echo "v2.3.0-stub"; exit 0; }
 printf '%s\t%s\n' "$(date +%s.%3N)" "$*" >> "$B/.s5-calls.$LVT_CASE"
 a=("$@"); i=0
-while [[ ${a[$i]:-} == -* ]]; do case ${a[$i]} in --numworkers|--log|--endpoint-url|-r|--retry-count) i=$((i + 2)) ;; *) i=$((i + 1)) ;; esac; done
+while [[ ${a[$i]:-} == -* ]]; do case ${a[$i]} in --numworkers|-numworkers|--log|-log|--endpoint-url|-r|--retry-count|-retry-count) i=$((i + 2)) ;; *) i=$((i + 1)) ;; esac; done
 sub=${a[$i]:-}; i=$((i + 1)); pos=()
 while [ "$i" -lt "${#a[@]}" ]; do
   case ${a[$i]} in --concurrency|--part-size|-c|-p|--metadata) i=$((i + 2)); continue ;; -*) ;; *) pos+=("${a[$i]}") ;; esac
@@ -187,7 +190,7 @@ run_case() {
     -e AK2_EXPECT_REGION=us-west-2 -e AK2_BUCKETS="ak2-roda-test ak2-data-test" \
     -e AK2_ALLOWED_BUCKETS="ak2-roda-test ak2-data-test ak2-results-test" -e AK2_S3_PREFIX="s3://ak2-results-test/$P" \
     -e AK2_RUN_ID="lever-$c-$SHA" -e AK2_GATE=g9 -e LVT_CASE="$c" \
-    -e AK2_REHEARSE_S5CMD=/work/s5/s5cmd -e AK2_REHEARSE_RAPIDGZIP=/opt/rg/bin/rapidgzip -e AK2_REHEARSE_NVME=/tmp/nvme \
+    -e AK2_REHEARSE_S5CMD=/work/s5/s5cmd -e AK2_REHEARSE_WHEELS=/opt/wheels -e AK2_REHEARSE_NVME=/tmp/nvme \
     "$IMG" bash -e -c "$(cat "$T/payload.sh")" > "$T/$c.out" 2>&1
   rc=$?
   D="$T/bucket/ak2-results-test/$P"
@@ -213,8 +216,8 @@ PY
     main) [ ! -s "$D/out/helper-errors.tsv" ]; need $? "main: no helper errors $(head -3 "$D/out/helper-errors.tsv" 2> /dev/null | tr '\n' ';')"
       [ -s "$D/out/lever-uploads.tsv" ] && [ -s "$D/out/lever-db-db-s5-SOURCE" ]; need $? "main: uploads.tsv and the db SOURCE pushed"
       grep -E '^(stage|fetch|upload|s5)' "$D/out/requests.tsv" | awk -F'\t' '{printf "lever-test: requests %s %s %s %s\n", $1, $2, $3, $4}' ;;
-    refuse) n=$(grep -c REFUSED "$D/out/helper-errors.tsv" 2> /dev/null); [ "$n" = 5 ]; need $? "refuse: helper-errors.tsv has the 5 refusals ($n)" ;;
-    fail) for m in 'does not match ETag' 'lv_fetch_inputs: 2 of 3 verified' 'upload of /tmp/x.bin to s3://ak2-results-test/lvt/fail/up/FAILME-2 failed' 'lv_upload_drain: s5cmd-overlap: 3 of 3 uploaded, 1 failed' "mode 'awscp-crt'" "mode 'rapidgzip-P0'" 'no session' "aws client 'bogus'"; do
+    refuse) n=$(grep -c REFUSED "$D/out/helper-errors.tsv" 2> /dev/null); [ "$n" = 9 ]; need $? "refuse: helper-errors.tsv has the 9 refusals ($n)" ;;
+    fail) for m in 'does not match ETag' 'lv_fetch_inputs: 2 of 3 verified' 'upload of /tmp/x.bin to s3://ak2-results-test/lvt/fail/up/FAILME-2 failed' 'lv_upload_drain: s5cmd-overlap: 3 of 3 uploaded, 1 failed' "mode 'awscp-crt'" "mode 'rapidgzip-P0'" 'no session' "aws client 'bogus'" 'cannot write /tmp/ak2/lever/upq/END' '!= pinned' 'pip install --require-hashes rapidgzip==0.14.5 failed'; do
         grep -qF "$m" "$D/out/helper-errors.tsv" 2> /dev/null; need $? "fail: helper-errors.tsv: $m"
       done ;;
   esac
