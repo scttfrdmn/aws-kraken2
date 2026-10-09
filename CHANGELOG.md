@@ -32,6 +32,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `make dryrun-userdata [GEN=…]` (`scripts/dryrun-userdata.sh`): `DRY_RUN=1` of every
     `runs/*.json`, plus campaign specs generated in a scratch worktree. It writes user data and
     quota per spec to `results/rehearse/dryrun-userdata-<ts>-<sha>.tsv`.
+  - `AK2_MAX_COST_USD` is raised from $50 to $500. Scott ruled on 2026-10-09 (#25) that there is
+    no spend cap and spend is tracked only, so this is now a ceiling against typos, not a budget.
+    It applies to a spec's `cost_limit` and to NODES × `cost_limit`. Per-run TTL and `cost_limit`
+    (TTL × on-demand price) are unchanged and remain the runaway backstops.
 
 - Utilisation on every AWS run, on both arms (#25; Scott's definition, 2026-10-09):
   - `scripts/util-sampler.sh`: a 1 Hz, dependency-free bash sampler (no fork per tick). It

@@ -18,9 +18,12 @@ make run GATE=g0a SPEC=runs/g0a.json DRY_RUN=1  # validate + spawn sizing plan, 
   anything, because the manifest cites one commit for the harness, spec and decoders. It is a
   spawn TaskSpec with these constraints:
   - `lifecycle.ttl` must match `^([0-9]+[hms])+$`, be non-zero and be at most `AK2_MAX_TTL_S`
-    (8 h). `lifecycle.cost_limit` must be positive and at most `AK2_MAX_COST_USD` ($50, a hard
-    backstop; $5 per run is Scott's guide, not a cap). Both ceilings are in `ak2.env`. Set each
-    spec's `cost_limit` to what that run needs. `on_complete` is forced to `terminate`;
+    (8 h). `lifecycle.cost_limit` must be positive and at most `AK2_MAX_COST_USD` ($500). That
+    ceiling is a sanity check against typos, not a budget: Scott ruled on 2026-10-09 (#25) that
+    there is no budget envelope or spend cap, and spend is tracked only (manifest `cost_usd`,
+    `results/g3/campaign/spend.tsv`). Both ceilings are in `ak2.env`. Each spec's TTL and
+    `cost_limit` are its runaway backstops. Set `cost_limit` to TTL × the on-demand price, as
+    `scripts/g3/mkspec.sh` does. `on_complete` is forced to `terminate`;
   - `command` is `["bash","-c","<script>"]`. `container`, `inputs[]` and `results_prefix` are
     refused: spawn would stage inputs before the preamble's region assert, so use `ak2_stage`;
   - the script may not turn errexit back on; Law 4 says `set +e`. See [errexit](#errexit) below;
@@ -531,7 +534,7 @@ asserts, `drop_caches` probe, and scoped orphan check. A cohort adds this:
 - **Preconditions,** checked before any launch:
   - the spec pins `resources.instance_type` and `placement.availability_zone`, so every member is
     the same box in one AZ;
-  - n × `cost_limit` ≤ `AK2_MAX_COST_USD`;
+  - n × `cost_limit` ≤ `AK2_MAX_COST_USD` ($500, the typo ceiling above, not a budget);
   - n × the type's vCPUs, plus every on-demand instance of its quota family already alive in the
     region, fits the family's on-demand vCPU quota ([vCPU quota](#vcpu-quota); also under
     `DRY_RUN=1`). `cohort.json` records it as `quota_check`;
