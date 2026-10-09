@@ -103,6 +103,10 @@ targets; ad hoc commands only during exploration.
 | `make stage-cohort [PART=record\|stage]` (and `runs/stage-cohort.json`) | [docs/cohort.md](docs/cohort.md) |
 | `make tag-objects [PREFIX=…]` | [docs/tag-objects.md](docs/tag-objects.md) |
 | `make sortfuzz [SORTFUZZ=quick\|full]` | [docs/sortfuzz.md](docs/sortfuzz.md) |
+| `make hitorderfuzz [HITORDERFUZZ=quick\|full]` / `make hitorder-golden` | [docs/hitorderfuzz.md](docs/hitorderfuzz.md), [docs/hitorder.md](docs/hitorder.md) |
+| `make g3-spec` / `make g3-tables` / `make g3-frontier` | [docs/cohort.md](docs/cohort.md) |
+| `make bash-jobs-test` | [docs/cohort.md](docs/cohort.md) |
+| G3 probes (staging, contention, decompression, hitbench) | [docs/probes.md](docs/probes.md) |
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
 | `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
 | `make ami` | [docs/ami.md](docs/ami.md) |
