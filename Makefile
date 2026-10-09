@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
+.PHONY: util-stream-test hosttune-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -17,6 +17,7 @@ test:
 	python3 scripts/lib/util_test.py
 	bash scripts/lib/harness_poll_test.sh
 	bash scripts/lib/run_multi_test.sh
+	python3 scripts/lib/tune_tables.py --self-test
 
 lint:
 	$(GO) vet $(PKGS)
@@ -116,6 +117,11 @@ rehearse: util-stream-test
 	  runs/g3-diag44-*) scripts/lib/diag44_rehearse.sh $(SPEC) ;; \
 	  runs/g3-probe-*) scripts/lib/probe_rehearse.sh $(SPEC) ;; \
 	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
+
+# Host tunes (docs/probes.md, "Host tunes"): scripts/g3/hosttune.sh on an AL2023 container (podman):
+# ht_apply none changes nothing, ht_record streams, a set that cannot be written fails loudly.
+hosttune-test:
+	scripts/lib/hosttune_test.sh
 
 # Utilisation (docs/util.md): the sampler streams log/util.tsv on N AL2023 nodes (podman) running
 # run.sh's stub and preamble, checked on the uploads; BREAK=nopush|nostub are negative controls.
