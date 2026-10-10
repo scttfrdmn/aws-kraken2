@@ -76,6 +76,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `cohort.json` `params`.
   - `results/g3/ladder-modelled.tsv` holds the header only.
 
+- Ladder tables, gross and net (Scott's ruling, 2026-10-10, #25). Every wall delta and pair is
+  reported both ways, with net as the headline:
+  - net wall is computed per node: the max over nodes of (`terminated_at` −
+    `critical_measurement_s`), minus the first launch. Each node's number comes from its one
+    `lad-net {v, rank, critical_measurement_s}` line in `out/lad-net.jsonl`, which #51 computes
+    under its final rule. A missing line makes net missing (with a note). A malformed one, or a
+    `critical_measurement_s` beyond the node's own window, is a contract DEFECT;
+  - net billed and net effective cost are prorated, labelled "net (prorated)";
+  - each series gets its own resolution check.
+
+  Alias rungs (`status: alias: …` with `alias_of`) read their winner's runs from
+  `scripts/g3/ladder.resolved.tsv` (key `alias`). An unresolved alias says "alias unresolved".
+  The s5 contract follows the body's B1 rule: `differs` also covers a non-zero `gz_exit`/`rg_exit`
+  or an empty-stream sha256, and `identical` is refused with any non-zero exit. A gzip failure
+  (a non-zero `gz_exit` or an empty gzip stream) is an input DEFECT of its own. A resolved winner
+  outside `alias_of`, or a duplicate (rung, cohort) row, is a DEFECT. The net model scales the
+  in-sample measurement (sha-critical, s5-identity) by P_target/P (docs/ladder.md, "Ladder
+  tables").
 - `make g3-ladder` (`scripts/lib/ladder_tables.py`; #52, WP-8 of the #25 ladder). It builds the
   ladder's tables from the record only and writes them to `results/g3/ladder/`:
   - per-run tidy rows from the `lad-sample` lines plus the manifest, with billed $, U_cpu,
@@ -100,7 +118,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     lever. Without the fallback, the sample is a contract DEFECT. rapidgzip's output sha256
     (`rg_sha256`) matches O-arm entries to S entries and flags S entries that disagree.
   - modelled values: `make g3-ladder-model` (`scripts/lib/ladder_model.py`) derives c100 stock
-    T1 from the c10 S0-T1 records' per-thread rate. The per-sample span is the union of the
+    T1 from the c10 S0-T1 records' per-thread rate, gross and net (net from each run's net wall
+    by the same formula, billed prorated). The per-sample span is the union of the
     lad-sample `t_start`/`t_end` intervals. A run with any DEFECT (Law 1 included) cannot feed
     the model, and F < 0 refuses it. Every file is cited with its sha256. g3-ladder re-derives
     every modelled row on the current record and refuses one whose files, runs or value do not
