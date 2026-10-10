@@ -420,9 +420,13 @@ Its columns:
   since-boot value goes into the boot window, and coverage says so.
 
 A fleet takes only the nodes that have capacity and a billed window, in both numerators and
-denominators; any other node is excluded and named. A fleet row's coverage also carries its
-nodes' notes. In a cohort's table the node column is the member's run_id. Beside every table,
-`tables/util.json` records util.py's commit and every input file with its sha256.
+denominators; any other node is excluded and named. A fleet row's `allowance_exceeded` is each
+counter's delta summed over those nodes, in the node rows' `name=value;…` form; a node that lacks
+the counters, or one of them, is named in coverage. The counters are read only at start and end,
+so phase rows leave the column empty. A fleet row's coverage also carries its nodes' notes. In a cohort's table the node column is the member's run_id. Beside every table,
+`tables/util.json` records util.py's commit and every input file with its sha256. util.py
+therefore runs after the last manifest write, in run.sh after the post script and the orphan
+check; `scripts/lib/util_order_test.py` (in `make test`) checks the order.
 
 **Useful-work CPU.** The definition asks for the workload's CPU in a named cgroup scope
 (`systemd-run --scope`). That is not in place. The bodies do not start the workload in a scope
@@ -543,6 +547,11 @@ Exit status: the task's exit code, or one of these harness codes:
     the instance (about an hour after termination);
   - applies run.sh's finalisation;
   - runs the scoped orphan check and records `.orphan_check` when the manifest has none;
+  - re-derives `tables/util.tsv` after the last manifest write. If the run is a cohort member
+    (`scripts/lib/cohort_dir.sh`: the manifest's `.cohort.dir` or `.cohort.id`, or a
+    `<cohort>-r<k>` run id, whose sibling cohort dir's cohort.json lists the run), it also
+    re-derives the cohort dir's `tables/util.tsv`, whose util.json cites this member's manifest.
+    A member whose cohort has no cohort.json is reported, not re-derived;
   - writes one repair record, with its gaps, `stop_basis` and object-tag result, to
     `.manifest_repair`.
 

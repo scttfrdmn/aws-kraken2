@@ -157,6 +157,44 @@ with tempfile.TemporaryDirectory() as T:
     check("node without util.tsv: U_cpu empty", n1["U_cpu"], "")
     truth("node without util.tsv: coverage says why", n1["coverage"].startswith("no log/util.tsv"), n1["coverage"])
 
+    # #58: the fleet row sums each allowance counter over its nodes. r0: bw_in 5 -> 12 (7), pps 0.
+    # r1: bw_in 100 -> 110 (10), pps 1 -> 4 (3), linklocal 0 -> 2 (2; r0 lacks it), conntrack
+    # start only (no delta). r2: no E lines. Fleet: bw_in 17, linklocal 2, pps 3; r2 named as
+    # lacking the counters, r0 as lacking linklocal.
+    c = os.path.join(g, "coh-al")
+    os.makedirs(c)
+    e1 = ["E\t1020.000\tstart\tbw_in_allowance_exceeded\t100", "E\t1020.000\tstart\tpps_allowance_exceeded\t1",
+          "E\t1020.000\tstart\tlinklocal_allowance_exceeded\t0", "E\t1020.000\tstart\tconntrack_allowance_exceeded\t0",
+          "E\t1030.000\tend\tbw_in_allowance_exceeded\t110", "E\t1030.000\tend\tpps_allowance_exceeded\t4",
+          "E\t1030.000\tend\tlinklocal_allowance_exceeded\t2"]
+    write_run(g, "coh-al-r0", 1000, 1040, 1010, std_ticks(), extra_lines=ext)
+    write_run(g, "coh-al-r1", 1000, 1040, 1010, std_ticks(), extra_lines=e1)
+    write_run(g, "coh-al-r2", 1000, 1040, 1010, std_ticks())
+    with open(os.path.join(c, "cohort.json"), "w") as f:
+        json.dump({"cohort_id": "coh-al", "members": [{"rank": i, "run_id": f"coh-al-r{i}"} for i in range(3)]}, f)
+    assert util.main([c]) == 0
+    rows = read(os.path.join(c, "tables", "util.tsv"))
+    fl = by(rows, "fleet", "scope")["fleet"]
+    check("#58: fleet allowance = per-counter sums over the nodes", fl["allowance_exceeded"],
+          "bw_in_allowance_exceeded=17;linklocal_allowance_exceeded=2;pps_allowance_exceeded=3")
+    truth("#58: fleet coverage names the node without the counters",
+          "allowance counters missing on 1 of 3 node(s) (coh-al-r2): summed over the rest" in fl["coverage"], fl["coverage"])
+    truth("#58: fleet coverage names the node without one counter",
+          "allowance counter linklocal_allowance_exceeded missing on 1 of 3 node(s) (coh-al-r0)" in fl["coverage"], fl["coverage"])
+    truth("#58: fleet coverage names a start-only counter as unpaired, not missing",
+          "allowance counter conntrack_allowance_exceeded unpaired (start or end only) on 1 of 3 node(s) (coh-al-r1)"
+          in fl["coverage"] and "conntrack_allowance_exceeded missing on 1 of 3 node(s) (coh-al-r0)" in fl["coverage"]
+          and "(coh-al-r1)" not in fl["coverage"].split("conntrack_allowance_exceeded missing")[1].split(";")[0], fl["coverage"])
+    nd = by(rows, "node", "node")
+    check("#58: node r1 row unchanged (unpaired counter shown raw)", nd["coh-al-r1"]["allowance_exceeded"],
+          "bw_in_allowance_exceeded=10;conntrack_allowance_exceeded=start:0,end:-;linklocal_allowance_exceeded=2;"
+          "pps_allowance_exceeded=3")
+    check("#58: node r2 row says not recorded", nd["coh-al-r2"]["allowance_exceeded"], "not recorded")
+    # A single run: the fleet row carries the node's counters.
+    fl1 = by(read(os.path.join(g, "run-a", "tables", "util.tsv")), "fleet", "scope")["fleet"]
+    check("#58: one-node fleet allowance = the node's", fl1["allowance_exceeded"],
+          "bw_in_allowance_exceeded=7;pps_allowance_exceeded=0")
+
     # B1: a node without capacity must leave the numerators too. With it counted only in the
     # numerators the fleet's U_cpu was 48 / (4 x 40) = 0.30 here (1.5 with 4x the work).
     c = os.path.join(g, "coh-b1")
