@@ -80,14 +80,17 @@ GOOD = {"output": {"bytes": 10, "sha256": SHA_OUT}, "report": {"bytes": 5, "sha2
 BAD = {"output": {"bytes": 9, "sha256": SHA_BAD}, "report": {"bytes": 5, "sha256": SHA_REP}}
 
 
-def sample(arm, rung, outputs=None, s5="n/a", fallback=None, classify=10.0, acc="SRR1", rc=0, cohort=1, rg=RG1):
+def sample(arm, rung, outputs=None, s5="n/a", fallback=None, classify=10.0, acc="SRR1", rc=0, cohort=1, rg=RG1,
+           t0=None, t1=None):
     s5o = {"status": s5, "P": 16, "nproc": 192}
     if fallback:
         s5o["fallback"] = fallback
     if s5 != "n/a":
         s5o["gz_sha256"] = [GZ]
         s5o["rg_sha256"] = [GZ if s5 == "identical" else rg]
+    t0 = T0 + 1 if t0 is None else t0
     return {"v": 1, "arm": arm, "rung": rung, "cohort": cohort, "accession": acc, "idx": 0, "pairs": 1000, "rc": rc,
+            "t_start": t0, "t_end": t0 + classify if t1 is None else t1,
             "phases": {"classify": classify}, "s5": s5o, "outputs": outputs or GOOD}
 
 
@@ -230,11 +233,16 @@ def record(res, variant=""):
     single(res, "20261010-000019-aaaaaaa", "S", "S1", 1, 333, LAD_RUN_KIND="endpoint", LAD_ENDPOINT="S*-time",
            LAD_STATE="cold")
     # c10 S0-T1 (the model's input) and c100 S0-Tv (measured).
-    two = [("SRR1", 1000.0), ("SRR2", 1000.0)]
+    # Per-sample spans (union of [t_start, t_end]): A 500-1500 + 1500-2500 = 2000 s; B 500-1550 + 1550-2600 =
+    # 2100 s (variant fneg: B's span is 0-3200 = 3200 s > its 3100 s wall: the model is refused; variant
+    # c10law1: B's output differs from the stock reference: a Law 1 DEFECT, so B cannot feed the model).
     single(res, "20261010-000020-aaaaaaa", "S", "S0-T1", 1, 3000, cohort=10, accessions=("SRR1", "SRR2"),
-           samples=[sample("S", "S0-T1", acc=a, classify=c, cohort=10) for a, c in two])
+           samples=[sample("S", "S0-T1", acc="SRR1", classify=1000.0, cohort=10, t0=T0 + 500),
+                    sample("S", "S0-T1", acc="SRR2", classify=1000.0, cohort=10, t0=T0 + 1500)])
+    bspan = [(T0, T0 + 3200), (T0 + 100, T0 + 1000)] if variant == "fneg" else [(T0 + 500, T0 + 1550), (T0 + 1550, T0 + 2600)]
     single(res, "20261010-000021-aaaaaaa", "S", "S0-T1", 2, 3100, cohort=10, accessions=("SRR1", "SRR2"),
-           samples=[sample("S", "S0-T1", acc=a, classify=1050.0, cohort=10) for a, _ in two])
+           samples=[sample("S", "S0-T1", BAD if variant == "c10law1" else GOOD, acc=a, classify=1050.0, cohort=10,
+                           t0=t0, t1=t1) for a, (t0, t1) in zip(("SRR1", "SRR2"), bspan)])
     single(res, "20261010-000022-aaaaaaa", "S", "S0-Tv", 1, 3000, cohort=100,
            samples=[sample("S", "S0-Tv", cohort=100)])
     single(res, "20261010-000023-aaaaaaa", "S", "S0-Tv", 2, 3010, cohort=100,
@@ -248,22 +256,35 @@ def record(res, variant=""):
         f.write(LEVERS)
     # Modelled values, by ladder_model.py (make g3-ladder-model): c100 from c10, and c1 from c10 (ignored:
     # c1 is measured). Variant handrow adds a hand-entered row whose source cannot be checked: refused.
-    rows = []
+    rows, msgs = [], []
     for to in (100, 1):
         got, msg = ladder_model.model(res, os.path.join(res, "levers.tsv"), "S0-T1", 10, to, "@PRJTEST:1-2", "test")
         rows += got
+        msgs.append(msg)
     with open(os.path.join(res, "g3", "ladder-modelled.tsv"), "w") as f:
         f.write("\t".join(ladder_model.HEAD) + "\n")
         for r in rows:
             f.write("\t".join(map(str, r)) + "\n")
         if variant == "handrow":
-            f.write("S\tS0-Tv\t10\twall_s\t999\thand\tmy notes | results/g3/x/rates.tsv=" + "0" * 64 + "\n")
+            # The reviewer's case: a hand-entered value citing a real file with its real sha256.
+            import hashlib
+            sha = hashlib.sha256(open(os.path.join(res, "levers.tsv"), "rb").read()).hexdigest()
+            f.write("\t".join(["S", "S0-T1", "100", "wall_s", "99999", "hand", "10", "@PRJTEST:1-2", rows[0][8],
+                               f"by hand | results/levers.tsv={sha}"]) + "\n")
+            f.write("S\tS0-Tv\t10\twall_s\t999\thand\t10\t@PRJTEST:1-2\tx\tmy notes | results/g3/x/rates.tsv="
+                    + "0" * 64 + "\n")
+    if variant == "stale":
+        # A third c10 run after the model was written: the model is stale (its run set changed).
+        single(res, "20261010-000024-aaaaaaa", "S", "S0-T1", 3, 3200, cohort=10, accessions=("SRR1", "SRR2"),
+               samples=[sample("S", "S0-T1", acc="SRR1", classify=1100.0, cohort=10, t0=T0 + 500),
+                        sample("S", "S0-T1", acc="SRR2", classify=1100.0, cohort=10, t0=T0 + 1600)])
+    return msgs
 
 
 def run(variant=""):
     tmp = tempfile.mkdtemp(prefix="ladder-test-")
     res = os.path.join(tmp, "results")
-    record(res, variant)
+    msgs = record(res, variant)
     out = os.path.join(tmp, "out")
     rc = lt.main(["--results", res, "--levers", os.path.join(res, "levers.tsv"), "--out", out])
     T = {}
@@ -275,6 +296,7 @@ def run(variant=""):
         T["manifest"] = json.load(f)
     with open(os.path.join(out, "summary.md")) as f:
         T["summary"] = f.read()
+    T["model_msgs"] = msgs
     shutil.rmtree(tmp)
     return rc, T
 
@@ -514,11 +536,32 @@ def variants():
           one(T["runs.tsv"], run_id="20261010-000011-aaaaaaa-1234-n2").get("in_attribution"),
           "no: DEFECT (incomplete): 1 of 2 planned samples; missing SRR2")
     rc, T = run("handrow")
-    check("a hand-entered modelled row with an uncheckable source: exit 1", rc, 1)
-    check("the hand-entered row is refused", any(d.startswith("modelled: refused: ladder-modelled.tsv row 6 (S0-Tv c10 wall_s): "
-                                                              "source not checkable: results/g3/x/rates.tsv does not exist")
-                                                 for d in T["manifest"]["defects"]), True)
-    check("refused row not used", [x for x in T["rungs.tsv"] if x["rung"] == "S0-Tv" and x["cohort"] == "10"], [])
+    check("hand-entered modelled rows: exit 1", rc, 1)
+    dd = T["manifest"]["defects"]
+    check("the reviewer's case (99999, citing a real file's real sha256) is refused by re-derivation",
+          "modelled: refused: ladder-modelled.tsv row 6 (S0-T1 c100 wall_s): value 99999 but the model gives 5100.000 on "
+          "the current record" in dd, True)
+    check("a row citing a file that does not exist is refused",
+          "modelled: refused: ladder-modelled.tsv row 7 (S0-Tv c10 wall_s): source not checkable: results/g3/x/rates.tsv "
+          "does not exist" in dd, True)
+    check("refused rows not used: c100 stays 5100, no S0-Tv c10 row",
+          (one(T["rungs.tsv"], rung="S0-T1", axis="wall_s", cohort=100).get("median"),
+           [x for x in T["rungs.tsv"] if x["rung"] == "S0-Tv" and x["cohort"] == "10"]), ("5100.000000", []))
+    rc, T = run("stale")
+    check("a stale model (a new c10 run since): exit 1", rc, 1)
+    check("stale model refused: its run set is not what the model uses now",
+          any("cites runs 20261010-000020-aaaaaaa,20261010-000021-aaaaaaa but the model would use "
+              "20261010-000020-aaaaaaa,20261010-000021-aaaaaaa,20261010-000024-aaaaaaa now" in d for d in T["manifest"]["defects"]),
+          True)
+    check("stale rows not used", [x for x in T["rungs.tsv"] if x["rung"] == "S0-T1" and x["cohort"] == "100"], [])
+    rc, T = run("fneg")
+    check("model refused when S > wall (F < 0)", T["model_msgs"][0],
+          "refused: 20261010-000021-aaaaaaa: per-sample span S 3200.000 s > wall 3100.0 s (fixed part F = -100.000 s < 0)")
+    check("no modelled c100 row then", [x for x in T["rungs.tsv"] if x["rung"] == "S0-T1" and x["cohort"] == "100"], [])
+    rc, T = run("c10law1")
+    check("a c10 run with a Law 1 DEFECT: exit 1", rc, 1)
+    check("it cannot feed the model: c100 from run A alone (5000)",
+          one(T["rungs.tsv"], rung="S0-T1", axis="wall_s", cohort=100).get("median"), 5000.0)
     rc, T = run("noterm")
     r = one(T["runs.tsv"], run_id="20261010-000017-aaaaaaa")
     check("no terminated_at: wall missing (no start/stop fallback), with a note",
@@ -557,6 +600,7 @@ def units():
                           "S1": {"arm": "S", "lever": "s5cmd", "predecessor": "S0-Tv"}}), ["S0-T1", "S0-Tv"])
     bad = {"run_id": "r", "params": {"arm": "S", "rung": "S1", "cohort": 1}, "samples": [
         {"v": 1, "arm": "S", "rung": "S2", "cohort": 1, "accession": "X", "pairs": 1, "rc": 0, "phases": {},
+         "t_start": 5.0, "t_end": 6.0,
          "outputs": {"output": {"bytes": 1, "sha256": "zz"}}, "s5": {"status": "maybe"}, "_node": "r"}]}
     check("contract: rung mismatch, no report, bad sha, bad s5 (4 errors)", len(lt.contract_errors(bad)), 4)
     bad["samples"][0].update(rung="S1", outputs=GOOD, s5={"status": "n/a", "fallback": "gzip"})
@@ -566,9 +610,24 @@ def units():
           ["r r X: s5.status differs disagrees with rg_sha256 vs gz_sha256"])
     bad["samples"][0]["s5"] = {"status": "identical", "rg_sha256": [GZ]}
     check("contract: rg/gz sha256 lists required", len(lt.contract_errors(bad)), 1)
+    tmp = tempfile.mkdtemp(prefix="ladder-lv-")
+    with open(os.path.join(tmp, "l.tsv"), "w") as f:
+        f.write("rung\tarm\tpredecessor\tlever\tcounterpart\tstatus\n"
+                "S3\tS\tS2\thosttune\tnot-run: in the wrong column\t\n"
+                "S4\tS\tS3\tpxt\tO4\tnot-run: no parameter change\n")
+    lv = lt.load_levers(os.path.join(tmp, "l.tsv"), lt.Reader())
+    shutil.rmtree(tmp)
+    check("not-run is read from the status column only", (lv["S3"]["not_run"], lv["S4"]["not_run"]),
+          ("", "not-run: no parameter change"))
+    check("union of sample spans", ladder_model.union_seconds([(0, 10), (5, 12), (20, 25)]), 17.0)
     ok, why = lt.check_source("x | a=b", "/nonexistent")
     check("check_source: a missing file is not checkable", (ok, why), (False, "a does not exist"))
     check("check_source: no file list", lt.check_source("results/g3/x/rates.tsv", "/")[0], False)
+    bad["samples"][0].update(s5={"status": "n/a"}, t_end=4.0)
+    check("contract: t_end before t_start", lt.contract_errors(bad),
+          ["r r X: t_start and t_end must be epoch seconds with t_end >= t_start"])
+    del bad["samples"][0]["t_start"]
+    check("contract: t_start required", lt.contract_errors(bad), ["r r X: missing t_start"])
 
 
 def main():

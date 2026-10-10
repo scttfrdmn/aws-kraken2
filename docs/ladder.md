@@ -216,8 +216,13 @@ value is worked by hand. It covers:
 - per-cohort and duplicate endpoint declarations;
 - an endpoint-run total with a non-zero residual;
 - per-lever decompositions that sum to their totals;
-- modelled rows: derived by `ladder_model.py` (c10 → c100, worked by hand), ignored with a note
-  where measured runs exist, and a hand-entered row with an uncheckable source refused;
+- modelled rows:
+  - derived by `ladder_model.py` (c10 → c100, worked by hand), and ignored with a note where
+    measured runs exist;
+  - refused when hand-entered (the reviewer's case: 99999 citing a real file and sha256), when
+    stale (a new c10 run since), or when a cited file does not exist;
+  - the model itself is refused when a run's span exceeds its wall (F < 0), and a c10 run with a
+    Law 1 DEFECT cannot feed it;
 - missing terminated_at, a bad PARAMS enum and a bad `v`.
 
 ```bash
@@ -278,10 +283,11 @@ Contract version 1:
 | `accession` | yes | non-empty str | the run accession |
 | `pairs` | yes | int ≥ 0 | read pairs classified |
 | `rc` | yes | int (not a string) | the classify invocation's exit status; non-zero is a DEFECT "sample failed" and excludes the run |
+| `t_start`, `t_end` | yes | number | epoch seconds (3 decimals) when the sample's work started and ended on the node, with `t_end` ≥ `t_start`. The model's per-sample span is the union of these intervals. |
 | `phases` | yes | object | phase name → seconds, written with 3 decimals (ms granularity). A `sample:` lever phase must use names that appear here. |
 | `outputs` | yes | object | role → `{"bytes": int, "sha256": "<64 lowercase hex, computed on the node>"}`. `output` and `report` are required; add `classified_1`, `classified_2`, `unclassified_1` and `unclassified_2` when they are written. The set of roles is the file set. |
 | `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the sha lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, one per input file in mate order (R1, R2). They must be equal-length lists of 64 lowercase hex: `identical` means the lists are equal, `differs` means they are not. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
-| `rank`, `idx`, `t_start`, `t_end`, `input_bytes`, `threads` | no | | node rank, index in the cohort, epoch start and end, input bytes, threads |
+| `rank`, `idx`, `input_bytes`, `threads` | no | | node rank, index in the cohort, input bytes, threads |
 
 A missing or ill-typed required field is a DEFECT (contract) and excludes the run.
 
@@ -297,18 +303,18 @@ comments. Columns are read by name:
 | `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two. |
 | `endpoint` | the endpoint(s) this rung is, for example `S*-time;S*-cost` (every cohort) or `c1:S*-time;c10:S*-time` (per cohort; a per-cohort declaration wins). Two rungs declaring the same endpoint for the same cohort is a DEFECT (levers). An endpoint that is not declared gives the status "endpoint not declared"; nothing is selected from the data. |
 | `pred_wall_s`, `pred_usd`, `pred_phase_s` (optional) | the predicted delta on each axis, set against the threshold |
-| any cell starting `not-run` (e.g. a `status` column) | the rung is not run, for example `not-run: no parameter change` for S3 when the tune probe chose `none`. It has its own deltas row labelled with that text and no numbers. Its successor's delta is taken against the **nearest run ancestor**, and labelled with that ancestor and with the skipped rung's text (deltas.tsv `predecessor_basis` and status; pairs.tsv lever-row note). The pairs skip the rung. A run on such a rung gets a note. |
+| `status` (optional) | empty for a run rung. `not-run: <reason>` (read from this column only) means the rung is not run, for example `not-run: no parameter change` for S3 when the tune probe chose `none`. It has its own deltas row labelled with that text and no numbers. Its successor's delta is taken against the **nearest run ancestor**, and labelled with that ancestor and with the skipped rung's text (deltas.tsv `predecessor_basis` and status; pairs.tsv lever-row note). The pairs skip the rung. A run on such a rung gets a note. |
 
 The **stock rungs** are the S root whose lever is `stock` (S0-T1) and its `threads` child
 (S0-Tv). They are the sources of pairs 1 and 2, and the candidates for the Law 1 reference.
 
 **Modelled values** go in `results/g3/ladder-modelled.tsv` (`--modelled`), which
 **`make g3-ladder-model`** writes (`scripts/lib/ladder_model.py`). Scott named c100 stock T1 as
-modelled from c10's per-thread rate, and that is the default. For each cold, valid c10 S0-T1
-ladder run:
-- P = its pairs, S = its per-sample seconds (the sum of every lad-sample `phases` value), and
-  r = P / S, the per-thread rate at T1;
-- the fixed part is F = wall − S;
+modelled from c10's per-thread rate, and that is the default. For each cold c10 S0-T1 ladder run
+that passes validation **and Law 1** (a run with any DEFECT cannot feed the model):
+- P = its pairs, S = its per-sample span (the union of its lad-sample `[t_start, t_end]`
+  intervals), and r = P / S, the per-thread rate at T1;
+- the fixed part is F = wall − S. If F < 0 (S > wall) on any run, the model is refused;
 - wall(c100) = F + P_target / r, where P_target is the `read_count` sum of `@PRJNA398089:1-100`
   in the recorded runs.tsv;
 - billed(c100) = wall × price/h × nodes / 3600.
@@ -316,11 +322,20 @@ ladder run:
 The value written is the median over those runs. The flags are `--rung`, `--from-cohort`,
 `--to-cohort` and `--target-ref`. It exits 2 and writes nothing if no run qualifies.
 
-The file's columns are `arm`, `rung`, `cohort`, `axis`, `value`, `basis` and `source`. `source`
-is `<generator, commit, run IDs, target> | path=sha256 path=sha256 ...`, covering every file read
-(each run's manifest, lad-samples and util files, and the runs.tsv), with paths relative to the
-repo. g3-ladder re-hashes every cited file. A row that cites nothing, or whose files are missing
-or changed (for example a hand-entered row), is **refused** as a DEFECT (modelled).
+The file's columns are `arm`, `rung`, `cohort`, `axis`, `value`, `basis`, `from_cohort`,
+`target_ref`, `runs` (the run IDs used, comma-separated) and `source`. `source` is `<generator,
+commit, run IDs, target> | path=sha256 path=sha256 ...`, covering every file read (each run's
+manifest, lad-samples and util files, the runs.tsv and the lever table), with paths relative to
+the repo.
+
+g3-ladder checks every row in two ways. Any failure **refuses** the row as a DEFECT (modelled):
+1. It re-hashes every cited file. A row that cites nothing, or whose files are missing or
+   changed, fails.
+2. It **re-derives the row**: it runs `ladder_model.model()` on the current record with the
+   row's own rung, `from_cohort`, `cohort` and `target_ref`. The row must reproduce the value
+   (to 1e-6 relative) from exactly the same set of runs. This catches a hand-entered or edited
+   value even when it cites real files, and a stale model (the qualifying runs changed since it
+   was written).
 
 A modelled row is used only where a (rung, cohort) has no measured run on that axis. Where
 measured runs exist, it is ignored and a note says so. A used row appears in rungs.tsv with basis

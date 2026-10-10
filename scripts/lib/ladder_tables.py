@@ -200,9 +200,11 @@ def load_levers(path, rd):
             r[k] = next((f[a].strip() for a in al if a in f and f[a] is not None), "")
         if r["predecessor"] in ("-", "none"):
             r["predecessor"] = ""
-        # A rung marked `not-run: <reason>` in any cell (e.g. S3 when the tune probe chose none): it has
-        # no runs; its successor's delta is taken against the nearest run ancestor.
-        r["not_run"] = next((v.strip() for v in f.values() if isinstance(v, str) and v.strip().lower().startswith("not-run")), "")
+        # A rung whose `status` column is `not-run: <reason>` (e.g. S3 when the tune probe chose none):
+        # it has no runs; its successor's delta is taken against the nearest run ancestor. Only the
+        # status column is read for this.
+        st = (f.get("status") or "").strip()
+        r["not_run"] = st if st.lower().startswith("not-run") else ""
         if not r["arm"]:
             r["arm"] = r["rung"][:1]
         if r["rung"]:
@@ -304,25 +306,50 @@ def check_source(source, repo):
     return True, ""
 
 
-def load_modelled(path, rd, repo):
-    """(rung, cohort, axis) -> {value, basis, source}, and the refused rows. Columns: arm, rung,
-    cohort, axis, value, basis, source (written by make g3-ladder-model). A row whose source is not
-    checkable (check_source) is refused. Missing file: {}."""
+MODEL_COLS = ("arm", "rung", "cohort", "axis", "value", "basis", "from_cohort", "target_ref", "runs", "source")
+
+
+def load_modelled(path, rd, repo, results, levers_path):
+    """(rung, cohort, axis) -> {value, basis, source}, and the refused rows. The file is written by
+    make g3-ladder-model (ladder_model.py). Every row is re-derived: its cited files must check
+    (check_source), and ladder_model.model() on the current record, with the row's own rung,
+    from_cohort, cohort and target_ref, must give the same value from exactly the same runs.
+    Anything else (a hand-entered row, an edited value, a stale model) is refused. Missing file: {}."""
     if not path or not os.path.exists(path):
         return {}, []
-    out, refused = {}, []
+    import ladder_model  # noqa: E402 (ladder_model imports this module)
+    out, refused, cache = {}, [], {}
     lines = [ln for ln in rd.text(path).splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
     for i, f in enumerate(csv.DictReader(lines, delimiter="\t"), 2):
-        v, c = num(f.get("value")), f.get("cohort", "")
-        if v is None or not c.isdigit():
-            refused.append(f"{os.path.basename(path)} row {i}: value or cohort is not a number")
+        where = f"{os.path.basename(path)} row {i} ({f.get('rung')} c{f.get('cohort')} {f.get('axis')})"
+        miss = [k for k in MODEL_COLS if not (f.get(k) or "").strip()]
+        v, c, fc = num(f.get("value")), (f.get("cohort") or ""), (f.get("from_cohort") or "")
+        if miss or v is None or not c.isdigit() or not fc.isdigit():
+            refused.append(f"{where}: not a g3-ladder-model row (missing or non-numeric: {', '.join(miss) or 'value/cohort'})")
             continue
         ok, why = check_source(f.get("source", ""), repo)
         if not ok:
-            refused.append(f"{os.path.basename(path)} row {i} ({f.get('rung')} c{c} {f.get('axis')}): source not checkable: {why}")
+            refused.append(f"{where}: source not checkable: {why}")
             continue
-        out[(f.get("rung", ""), int(c), f.get("axis", ""))] = {"value": v, "basis": f.get("basis", "modelled"),
-                                                                 "source": f.get("source", "")}
+        key = (f["rung"], int(fc), int(c), f["target_ref"])
+        if key not in cache:
+            try:
+                cache[key] = ladder_model.model(results, levers_path, key[0], key[1], key[2], key[3])
+            except SystemExit as e:
+                cache[key] = ([], str(e))
+        rows, msg = cache[key]
+        got = {r[3]: r for r in rows}.get(f["axis"])
+        if got is None:
+            refused.append(f"{where}: the model does not reproduce it on the current record ({msg})")
+            continue
+        want_runs = set(got[8].split(","))
+        if set(f["runs"].split(",")) != want_runs:
+            refused.append(f"{where}: cites runs {f['runs']} but the model would use {got[8]} now (stale or edited)")
+            continue
+        if abs(float(got[4]) - v) > 1e-6 * max(1.0, abs(v)):
+            refused.append(f"{where}: value {f['value']} but the model gives {got[4]} on the current record")
+            continue
+        out[(f["rung"], int(c), f["axis"])] = {"value": v, "basis": f.get("basis", "modelled"), "source": f["source"]}
     return out, refused
 
 
@@ -509,9 +536,12 @@ def sample_errors(run, s):
     p = run["params"]
     where = f"{run['run_id']} {s.get('_node')} {s.get('accession', '?')}"
     errs = []
-    for k in ("v", "arm", "rung", "cohort", "accession", "pairs", "rc", "phases", "outputs", "s5"):
+    for k in ("v", "arm", "rung", "cohort", "accession", "pairs", "rc", "t_start", "t_end", "phases", "outputs", "s5"):
         if k not in s:
             errs.append(f"{where}: missing {k}")
+    if "t_start" in s and "t_end" in s and not (isinstance(s["t_start"], (int, float)) and isinstance(s["t_end"], (int, float))
+                                               and not isinstance(s["t_start"], bool) and s["t_end"] >= s["t_start"]):
+        errs.append(f"{where}: t_start and t_end must be epoch seconds with t_end >= t_start")
     if "v" in s and not (is_int(s["v"]) and s["v"] == CONTRACT_V):
         errs.append(f"{where}: v {s['v']!r} is not {CONTRACT_V}")
     for k in ("arm", "rung", "cohort"):
@@ -1168,7 +1198,7 @@ def main(argv=None):
     rd = Reader()
     levers = load_levers(a.levers, rd)
     mpath = a.modelled or os.path.join(a.results, "g3", "ladder-modelled.tsv")
-    modelled, refused = load_modelled(mpath, rd, os.path.dirname(os.path.abspath(a.results)))
+    modelled, refused = load_modelled(mpath, rd, os.path.dirname(os.path.abspath(a.results)), a.results, a.levers)
     runs = discover(a.results, rd)
     spend_p = a.spend or os.path.join(a.results, "g3", "campaign", "spend.tsv")
     cs = None

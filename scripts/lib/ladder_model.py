@@ -8,15 +8,17 @@ c10's per-thread rate and flagged"), derived from the record only.
                   [--out results/g3/ladder-modelled.tsv]
 
 Model, per measured run of RUNG at FROM-COHORT (cold ladder runs that pass ladder_tables'
-validation):
-  P = the run's pairs (sum of its lad-sample pairs); S = its per-sample seconds (sum over its
-  lad-sample lines of every phases value); per-thread rate r = P / S (T1: one thread);
-  fixed F = wall - S (boot, setup, staging: everything not per sample).
+validation and Law 1):
+  P = the run's pairs (sum of its lad-sample pairs); S = its per-sample span (the union of its
+  lad-sample [t_start, t_end] intervals); per-thread rate r = P / S (T1: one thread);
+  fixed F = wall - S (boot, setup, staging: everything not per sample). F < 0 (S > wall)
+  refuses the model.
   wall(TO) = F + P_target / r, where P_target = the read_count sum of TARGET-REF's ranks in the
   recorded runs.tsv; billed(TO) = wall(TO) x price/h x nodes / 3600.
-The value written is the median over the measured runs. Every row's source cites this script's
-commit and every file it read as path=sha256 (ladder_tables.py refuses a row whose files do not
-check). The rows are flagged as modelled wherever they are used.
+The value written is the median over the measured runs. Each row records from_cohort,
+target_ref and the runs used; its source cites this script's commit and every file it read as
+path=sha256. ladder_tables.py re-derives every row with model() on the current record and refuses
+one whose files, runs or value do not match. The rows are flagged as modelled wherever used.
 """
 import argparse
 import csv
@@ -28,7 +30,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ladder_tables as lt  # noqa: E402
 
-HEAD = ["arm", "rung", "cohort", "axis", "value", "basis", "source"]
+HEAD = list(lt.MODEL_COLS)
 
 
 def target_pairs(repo, ref, rd):
@@ -47,23 +49,45 @@ def target_pairs(repo, ref, rd):
     return sum(int(r["read_count"]) for r in rows), p
 
 
+def union_seconds(spans):
+    """The length of the union of [t_start, t_end] intervals."""
+    tot, end = 0.0, None
+    for a, b in sorted(spans):
+        if end is None or a > end:
+            tot += b - a
+            end = b
+        elif b > end:
+            tot += b - end
+            end = b
+    return tot
+
+
 def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
-    """(rows, message). rows: the wall_s and billed_usd rows, or [] if no run qualifies."""
+    """(rows, message). rows: the wall_s and billed_usd rows, or [] if the model is refused or no
+    run qualifies. A run qualifies if it is a cold ladder run of RUNG at C_FROM that passes
+    ladder_tables' validation and Law 1 (any DEFECT excludes it)."""
     repo = os.path.dirname(os.path.abspath(results))
     rd = lt.Reader()
     levers = lt.load_levers(levers_path, rd)
     runs = lt.discover(results, rd)
     lt.validate(runs, levers, [])
+    lt.law1(runs, levers, [], [])
     use = [r for r in runs if r["params"]["rung"] == rung and r["params"].get("cohort") == c_from
            and r["params"]["run_kind"] == "ladder" and r["params"]["state"] == "cold" and not r["exclude"]]
     walls, bills, ids, cite = [], [], [], []
     ptar, runs_tsv = target_pairs(repo, ref, rd)
-    for r in use:
-        P = sum(s["pairs"] for s in r["samples"])
-        S = sum(v for s in r["samples"] for v in s["phases"].values())
-        if not S or r["wall_s"] is None or r["price"] is None:
+    for r in sorted(use, key=lambda r: r["run_id"]):
+        if r["wall_s"] is None or r["price"] is None or not r["samples"]:
             continue
-        w = (r["wall_s"] - S) + ptar / (P / S)
+        P = sum(s["pairs"] for s in r["samples"])
+        S = union_seconds([(s["t_start"], s["t_end"]) for s in r["samples"]])
+        if S <= 0:
+            continue
+        F = r["wall_s"] - S
+        if F < 0:
+            return [], (f"refused: {r['run_id']}: per-sample span S {S:.3f} s > wall {r['wall_s']:.1f} s (fixed part "
+                        f"F = {F:.3f} s < 0)")
+        w = F + ptar / (P / S)
         walls.append(w)
         bills.append(w * r["price"] * r["nodes"] / 3600.0)
         ids.append(r["run_id"])
@@ -75,16 +99,19 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
                 cite.append(f"{os.path.relpath(p, repo)}={sha}")
     if not walls:
         return [], f"no cold, valid {rung} ladder runs at c{c_from} under {results}"
-    rs_sha = rd.files[os.path.abspath(runs_tsv)][1]
-    cite.append(f"{os.path.relpath(runs_tsv, repo)}={rs_sha}")
+    for p in (runs_tsv, levers_path):
+        if p and os.path.abspath(p) in rd.files:
+            cite.append(f"{os.path.relpath(os.path.abspath(p), repo)}={rd.files[os.path.abspath(p)][1]}")
     commit = git_commit if git_commit is not None else lt.git("rev-parse", "HEAD")
     src = (f"scripts/lib/ladder_model.py {commit or 'unknown'}: c{c_from} {rung} runs {', '.join(ids)}; target {ref} "
            f"({ptar} pairs) | " + " ".join(cite))
-    basis = (f"c{c_from} {rung} per-thread rate: wall = (wall - per-sample s) + c{c_to} pairs / (pairs per per-sample s); "
-             f"median of {len(walls)} run(s)")
+    basis = (f"c{c_from} {rung} per-thread rate: wall = (wall - per-sample span) + c{c_to} pairs / (pairs per "
+             f"per-sample second); median of {len(walls)} run(s)")
     arm = (levers.get(rung) or {}).get("arm", rung[:1])
-    rows = [[arm, rung, c_to, "wall_s", f"{statistics.median(walls):.3f}", basis, src],
-            [arm, rung, c_to, "billed_usd", f"{statistics.median(bills):.6f}", basis + "; x price/h x nodes / 3600", src]]
+    run_ids = ",".join(ids)
+    rows = [[arm, rung, c_to, "wall_s", f"{statistics.median(walls):.3f}", basis, c_from, ref, run_ids, src],
+            [arm, rung, c_to, "billed_usd", f"{statistics.median(bills):.6f}", basis + "; x price/h x nodes / 3600",
+             c_from, ref, run_ids, src]]
     return rows, f"{len(walls)} run(s): wall {statistics.median(walls):.1f} s, billed ${statistics.median(bills):.4f}"
 
 
