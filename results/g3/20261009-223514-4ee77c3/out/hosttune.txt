@@ -1,0 +1,4171 @@
+== setup 2026-10-09T22:36:22Z 1791585382.967870249
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12488   3377    272    101     89     19     12      6      4      2 378800 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 0
+thp_collapse_alloc_failed 0
+thp_file_alloc 0
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 0
+thp_split_page 0
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 0
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1552590092 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:      8192 kB
+FilePmdMapped:         0 kB
+== pre-t1-a-none 2026-10-09T22:37:29Z 1791585449.545374356
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  76033  74761  49801  25658  10501   4218   1721    893    490    257 376669 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 1
+thp_collapse_alloc_failed 0
+thp_file_alloc 2673
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 0
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 1
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549412996 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t1-a-none 2026-10-09T22:41:38Z 1791585698.182436252
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  20532  28639  48049  27468  11464   4306   1232    889    500     17  93254 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 1
+thp_collapse_alloc_failed 0
+thp_file_alloc 569766
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 0
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 1
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387447032 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t1-a-none 2026-10-09T22:41:44Z 1791585704.061726362
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  43713  24007  23018  13355   5681   3028   1240    890    500    312 376417 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 1
+thp_collapse_alloc_failed 0
+thp_file_alloc 570221
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 567086
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 1
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546564260 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t2-b-none 2026-10-09T22:41:46Z 1791585706.837853641
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  42939  38487  31232  18520   7528   4024   1859    893    500    328 376638 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 1
+thp_collapse_alloc_failed 0
+thp_file_alloc 570221
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 567086
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 1
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548321568 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t2-b-none 2026-10-09T22:46:59Z 1791586019.363035468
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  28896  42256  35986  28913  20217  12775   6683   3622   2132   1630 374305 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 570677
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 567086
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548042596 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t3-a-defermadv 2026-10-09T22:47:02Z 1791586022.177562898
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  13660  17327  34270  28032  19308  12073   6387   3352   1948   1608 374701 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 570677
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 567086
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548752564 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t3-a-defermadv 2026-10-09T22:51:11Z 1791586271.599585045
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  15017  11388  15904  27922  19270  12234   6021   3472   2002    184  92007 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1137770
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 567086
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387621752 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t3-a-defermadv 2026-10-09T22:51:17Z 1791586277.475648481
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  21719  13768  13690  13151   8182   9261   6031   3485   2001   1617 374617 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1138225
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1134172
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546583188 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t4-a-always 2026-10-09T22:51:20Z 1791586280.311252898
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  15014  21018  17994  19124  11033  10463   6661   3498   1993   1601 374866 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1138225
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1134172
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548358052 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t4-a-always 2026-10-09T22:55:27Z 1791586527.874278036
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   6088   6387  20049  26100  16141  11393   5946   3494   1974    184  92054 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1705318
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1134172
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387404360 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t4-a-always 2026-10-09T22:55:33Z 1791586533.793938042
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  26174  15636  14579  15138   8502   8781   5951   3493   1979   1589 374675 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 3712
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1705773
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546795956 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t5-b-precompact 2026-10-09T22:55:36Z 1791586536.661311495
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  30598  25080  18426  19625  10102   9660   6604   3489   1971   1575 374895 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 567003
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1705773
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548336404 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t5-b-precompact 2026-10-09T23:00:31Z 1791586831.097744667
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  42632  39150  35343  29935  21181  13906   7755   4520   2556   2423 373547 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1134006
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1706229
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1547988484 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t6-b-defermadv 2026-10-09T23:00:33Z 1791586833.521379161
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   7935  23231  34395  29634  20899  13761   8001   4680   2578   2401 373789 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1134006
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1706229
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 1
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548774928 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t6-b-defermadv 2026-10-09T23:06:03Z 1791587163.237906803
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  25261  44327  41792  35813  26121  17374   8953   5045   2889   2717 372964 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1701009
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1706685
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548143140 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t7-a-defer 2026-10-09T23:06:06Z 1791587166.005704373
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10866  22701  39709  34471  25025  16725   9076   5206   2971   2672 373264 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1701009
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 1706685
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549016780 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t7-a-defer 2026-10-09T23:10:15Z 1791587415.305968022
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  15278  12016  21695  33668  24344  16444   8409   5239   3048    204  91084 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1701009
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2273778
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 1701258
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387616236 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t7-a-defer 2026-10-09T23:10:21Z 1791587421.250132696
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  16947  17313  15445  17176  13139  15937   8421   5235   3044   2783 373115 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1701009
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2274233
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546742240 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t8-b-proactive 2026-10-09T23:10:23Z 1791587423.963572896
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  16259  22789  18440  20232  16302  16296   9037   5211   3031   2816 373353 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 634880
+compact_free_scanned 1664171
+compact_isolated 22488
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 1701009
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2274233
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548344276 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t8-b-proactive 2026-10-09T23:15:39Z 1791587739.806270198
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9716  24242  23118  18606  12241   8131   5711   4320   3258   2633 373994 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2268012
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2274689
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548223000 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t9-b-always 2026-10-09T23:15:42Z 1791587742.526040489
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8535  10562  15685  19059  12668   8487   5991   4309   3249   2593 374235 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2268012
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2274689
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 2
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549038236 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t9-b-always 2026-10-09T23:20:53Z 1791588053.144784337
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  38894  40024  35587  31482  22358  14503   7808   4198   2189   3054 373353 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2835015
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2275145
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 3
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548156248 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t10-a-none 2026-10-09T23:20:55Z 1791588055.799888913
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12410  28808  34729  31416  22198  14409   8343   4220   2203   3004 373591 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2835015
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2275145
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 3
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548957800 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t10-a-none 2026-10-09T23:25:04Z 1791588304.382387568
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12574  12537  12558  29786  21449  14049   7632   4390   2385    110  91626 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2835015
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2842238
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2268344
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 3
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387562536 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t10-a-none 2026-10-09T23:25:10Z 1791588310.300329368
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  20124  15137  13862  16249  11373  11125   7635   4406   2396   3034 373496 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2835015
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2842693
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 3
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546733488 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t11-b-none 2026-10-09T23:25:13Z 1791588313.074103266
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  16274  24537  16918  19313  13589  12064   8259   4421   2417   3035 373733 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 2835015
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2842693
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 3
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548366996 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t11-b-none 2026-10-09T23:30:13Z 1791588613.228339787
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  31972  30704  28602  24340  17547  12248   8299   5141   2684   3180 373326 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3402018
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2843149
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548380744 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t12-b-defer 2026-10-09T23:30:16Z 1791588616.079707858
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12000  12242  24932  24243  17379  12282   8739   5227   2696   3123 373517 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3402018
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2843149
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548915476 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t12-b-defer 2026-10-09T23:35:41Z 1791588941.663774639
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  41017  38111  36870  30863  22774  15037   8555   4934   2685   3722 372716 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 19802112
+compact_free_scanned 5492011
+compact_isolated 383462
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2843605
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548080012 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t13-a-precompact 2026-10-09T23:35:45Z 1791588945.231620674
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12872  21836  35791  30727  22493  14899   8993   4980   2693   3654 372998 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 462653440
+compact_free_scanned 7155772
+compact_isolated 418383
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 2843605
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548939664 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t13-a-precompact 2026-10-09T23:39:49Z 1791589189.227824950
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10978  12592  13614  29597  21602  14568   8402   5155   2894     92  91330 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 462653440
+compact_free_scanned 7155772
+compact_isolated 418383
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3410698
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 2835430
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387504600 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t13-a-precompact 2026-10-09T23:39:55Z 1791589195.117667405
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  19549  16653  14170  16412  10290  11644   8394   5186   2921   3636 372880 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 462653440
+compact_free_scanned 7155772
+compact_isolated 418383
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3411153
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3402516
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546588204 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t14-a-proactive 2026-10-09T23:39:57Z 1791589197.877447623
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  16732  23952  18189  19980  12411  12756   8970   5240   2955   3648 373115 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 462653440
+compact_free_scanned 7155772
+compact_isolated 418383
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 19167232
+compact_daemon_free_scanned 3827840
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3411153
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3402516
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548293036 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t14-a-proactive 2026-10-09T23:44:04Z 1791589444.150590348
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   7187   8561  25424  26921  17980  13478   8534   5177   2931    118  91361 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 577593344
+compact_free_scanned 10716419
+compact_isolated 533666
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 134107136
+compact_daemon_free_scanned 7388487
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3978246
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3402516
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387452360 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t14-a-proactive 2026-10-09T23:44:10Z 1791589450.067939930
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  25812  17360  16839  16777   9964  11256   8549   5173   2934   3641 372916 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 577593344
+compact_free_scanned 10716419
+compact_isolated 533666
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 134107136
+compact_daemon_free_scanned 7388487
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3978701
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3969602
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546807984 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t15-b-none 2026-10-09T23:44:12Z 1791589452.833225113
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  27195  25603  21702  20711  12645  11995   8854   5175   2945   3650 373135 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 577593344
+compact_free_scanned 10716419
+compact_isolated 533666
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 134107136
+compact_daemon_free_scanned 7388487
+thp_fault_alloc 3969021
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3978701
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3969602
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548352508 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t15-b-none 2026-10-09T23:49:02Z 1791589742.360296422
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  38731  36373  35861  31144  22689  15079   8868   5538   2877   3879 372523 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 577593344
+compact_free_scanned 10716419
+compact_isolated 533666
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 134107136
+compact_daemon_free_scanned 7388487
+thp_fault_alloc 4536024
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3979157
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3969602
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548167496 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t16-a-proactive 2026-10-09T23:49:05Z 1791589745.203391348
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9759  16818  34752  30722  22257  14939   9257   5651   2945   3837 372758 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 577593344
+compact_free_scanned 10716419
+compact_isolated 533666
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 134107136
+compact_daemon_free_scanned 7388487
+thp_fault_alloc 4536024
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 3979157
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3969602
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548919372 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t16-a-proactive 2026-10-09T23:53:14Z 1791589994.485521462
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10252  12450  12306  28022  21624  14828   8909   5863   3056     41  91211 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 4536024
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 4546250
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 3969602
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387529224 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t16-a-proactive 2026-10-09T23:53:20Z 1791590000.413927851
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14357  17681  15208  17566  11243  12013   8917   5882   3072   3836 372635 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 4536024
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 4546705
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 4536688
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546789480 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t17-b-defer 2026-10-09T23:53:23Z 1791590003.278374059
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  15126  22286  17429  21964  14011  12939   9426   5906   3086   3836 372870 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 4536024
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 4546705
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 4536688
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548423224 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t17-b-defer 2026-10-09T23:58:02Z 1791590282.478577945
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  37301  37336  35669  30671  22251  15020   9465   6216   3513   4335 372011 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 4547161
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 4536688
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548102900 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t18-a-none 2026-10-09T23:58:05Z 1791590285.261801152
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14933  24745  33497  29725  21305  14614   9842   6490   3579   4289 372273 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 4547161
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 4536688
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549017756 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t18-a-none 2026-10-10T00:02:10Z 1791590530.173344551
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  13361  13013  12475  26071  20527  14354   9176   6625   3728     28  90998 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5114254
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 4536688
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387605316 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t18-a-none 2026-10-10T00:02:16Z 1791590536.086128285
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  11331  14461  12934  15164  10909   9610   9175   6652   3759   4194 372238 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 717045673
+compact_free_scanned 14177765
+compact_isolated 570105
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5114709
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5103774
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546580180 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t19-a-precompact 2026-10-10T00:02:19Z 1791590539.631139869
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14116  20694  16509  19831  13837  11216   9734   6674   3778   4193 372469 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5114709
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5103774
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548356832 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t19-a-precompact 2026-10-10T00:06:30Z 1791590790.091923232
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  13606   9012  19593  26312  18065  12697   9039   6669   3786     50  91018 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5681802
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5103774
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387497128 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t19-a-precompact 2026-10-10T00:06:36Z 1791590796.049473933
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  19838  13805  15274  17712  10193   9449   9038   6670   3787   4199 372260 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5682257
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5670860
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546766204 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t20-b-defermadv 2026-10-10T00:06:38Z 1791590798.922334705
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  25622  24949  20135  20792  12530  10582   9697   6684   3790   4200 372491 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5103027
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5682257
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5670860
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548474156 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t20-b-defermadv 2026-10-10T00:12:47Z 1791591167.606192158
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  40675  40447  39013  34830  26222  17381   9502   5345   3145   4412 371996 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5670030
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5682713
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5670860
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548166920 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t21-a-defermadv 2026-10-10T00:12:50Z 1791591170.422733252
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   6090  19250  36913  33490  25128  17036   9937   5681   3227   4282 372288 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5670030
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 5682713
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5670860
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548965996 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t21-a-defermadv 2026-10-10T00:16:59Z 1791591419.270682372
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12642  11966  10680  30125  24472  16905   9501   5902   3385     44  90953 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5670030
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 6249806
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 5670860
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387483948 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t21-a-defermadv 2026-10-10T00:17:05Z 1791591425.172898352
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14157  16839  13197  16389  13093  15148   9504   5924   3406   4317 372140 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5670030
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 6250261
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546699356 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t22-b-proactive 2026-10-10T00:17:08Z 1791591428.001649506
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  16414  25833  16739  20767  15389  15795  10141   5945   3448   4319 372362 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1160320937
+compact_free_scanned 15910376
+compact_isolated 627143
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 273559465
+compact_daemon_free_scanned 10849833
+thp_fault_alloc 5670030
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 6250261
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 4
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548338224 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t22-b-proactive 2026-10-10T00:22:59Z 1791591779.751924290
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  23675  47814  44858  39194  29767  20132  11427   6180   2912   4826 371382 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1362824025
+compact_free_scanned 21856327
+compact_isolated 866036
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6237033
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 6250717
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1547985936 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t23-b-precompact 2026-10-10T00:23:03Z 1791591783.484425704
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8709  27139  42666  38383  29367  20082  11734   6326   2939   4788 371626 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6237033
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 2
+thp_collapse_alloc_failed 0
+thp_file_alloc 6250717
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 2
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548769260 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t23-b-precompact 2026-10-10T00:28:36Z 1791592116.378339715
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12322  28131  30167  27073  20401  14744  10135   6400   3718   4539 371933 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6804036
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 3
+thp_collapse_alloc_failed 0
+thp_file_alloc 6251173
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 3
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548146904 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t24-a-defer 2026-10-10T00:28:39Z 1791592119.193700250
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10315  12569  21682  27036  20299  14734  10243   6520   3754   4450 372200 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6804036
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 3
+thp_collapse_alloc_failed 0
+thp_file_alloc 6251173
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 3
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548907008 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t24-a-defer 2026-10-10T00:32:48Z 1791592368.728239192
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10584  11027  12025  21443  19800  14680   9770   6840   3869     67  90927 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6804036
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 3
+thp_collapse_alloc_failed 0
+thp_file_alloc 6818266
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6237946
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 3
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387612160 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t24-a-defer 2026-10-10T00:32:54Z 1791592374.702516873
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  20070  13835  12805  14447  11352   8313   9770   6895   3875   4404 372079 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6804036
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 3
+thp_collapse_alloc_failed 0
+thp_file_alloc 6818721
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6805032
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 3
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546619176 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t25-b-always 2026-10-10T00:32:57Z 1791592377.584107174
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  11506  16348  16073  18437  13428   9861  10423   6951   3888   4393 372314 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 6804036
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 3
+thp_collapse_alloc_failed 0
+thp_file_alloc 6818721
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6805032
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 3
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 5
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548266188 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t25-b-always 2026-10-10T00:38:21Z 1791592701.268677169
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  46052  49236  46714  42308  32945  22394  11499   6291   2803   4989 371162 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 6819177
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6805032
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548103932 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t26-a-always 2026-10-10T00:38:23Z 1791592703.721828501
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   7744  38267  45100  41348  32157  21944  11814   6465   2903   4965 371425 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 6819177
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6805032
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548998992 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t26-a-always 2026-10-10T00:42:32Z 1791592952.791323958
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9717  10251  26274  39214  30630  21620  11709   6730   3109     54  90424 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7386270
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 6805032
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387555908 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t26-a-always 2026-10-10T00:42:38Z 1791592958.745387386
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  23567  16251  18638  19922  18951  21612  11721   6764   3127   4899 371318 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7386725
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7372118
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546674076 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t27-a-defer 2026-10-10T00:42:41Z 1791592961.686365981
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9120  24542  25820  24683  21921  21572  12339   6827   3156   4912 371547 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7386725
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7372118
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548324168 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t27-a-defer 2026-10-10T00:46:46Z 1791593206.024546085
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  13928   9773  31130  33430  26420  21241  11704   6885   3198     65  90457 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7953818
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7372118
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387470968 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t27-a-defer 2026-10-10T00:46:51Z 1791593211.965236220
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  16866  14117  19515  19863  16849  21230  11706   6894   3201   4881 371360 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 1805733721
+compact_free_scanned 23572609
+compact_isolated 898528
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7954273
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546733344 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t28-b-precompact 2026-10-10T00:46:55Z 1791593215.628764566
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  23280  21410  26827  24384  20288  21122  12338   6904   3218   4884 371591 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2248654681
+compact_free_scanned 25283811
+compact_isolated 918953
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7371039
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7954273
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 6
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548422424 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t28-b-precompact 2026-10-10T00:52:06Z 1791593526.765091081
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  39829  42897  41874  37646  28747  19977  11750   6335   3250   4932 371266 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2248654681
+compact_free_scanned 25283811
+compact_isolated 918953
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7938042
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7954729
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548078436 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t29-b-proactive 2026-10-10T00:52:09Z 1791593529.636822835
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12863  33853  40731  37407  28629  20066  12050   6500   3276   4905 371463 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2248654681
+compact_free_scanned 25283811
+compact_isolated 918953
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 476062553
+compact_daemon_free_scanned 16795784
+thp_fault_alloc 7938042
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7954729
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548815504 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t29-b-proactive 2026-10-10T00:57:26Z 1791593846.194151295
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  33125  33257  33120  28235  20342  13780   8720   5537   3885   4666 371972 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2686262105
+compact_free_scanned 35192324
+compact_isolated 1251688
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 8505045
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7955185
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548014524 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t30-a-always 2026-10-10T00:57:29Z 1791593849.082103856
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10785  19389  30770  27493  20024  13849   8977   5526   3849   4461 372376 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2686262105
+compact_free_scanned 35192324
+compact_isolated 1251688
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 8505045
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 7955185
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548999952 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t30-a-always 2026-10-10T01:01:34Z 1791594094.066912467
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  12602  13669  11572  22052  19650  13655   8381   5751   3920     49  91179 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2686262105
+compact_free_scanned 35192324
+compact_isolated 1251688
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 8505045
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 8522278
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 7939204
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387645756 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t30-a-always 2026-10-10T01:01:40Z 1791594100.029941805
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8968  16948  14628  15473  11285   8284   8210   5801   3942   4333 372346 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2686262105
+compact_free_scanned 35192324
+compact_isolated 1251688
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 8505045
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 8522733
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 8506290
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546713676 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t31-b-always 2026-10-10T01:01:42Z 1791594102.946095455
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14752  23798  18299  18606  13247   9512   8940   5880   3955   4335 372571 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2686262105
+compact_free_scanned 35192324
+compact_isolated 1251688
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 8505045
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 8522733
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 8506290
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548397416 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t31-b-always 2026-10-10T01:08:20Z 1791594500.171558812
+-- thp enabled=madvise defrag=always shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9361  14911  20534  18707  14331  10230   7591   4943   3331   3767 373141 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 2686262105
+compact_free_scanned 35192324
+compact_isolated 1251688
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 8523189
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 8506290
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548214300 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t32-a-precompact 2026-10-10T01:08:23Z 1791594503.829765743
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8137  12519  11051  15559  14082  10144   7520   5064   3331   3700 373449 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 8523189
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 8506290
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549078824 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t32-a-precompact 2026-10-10T01:12:27Z 1791594747.444425112
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8921  14207  11998   9539  10699  10360   7011   5217   3411     54  91775 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9090282
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 8506290
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387554916 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t32-a-precompact 2026-10-10T01:12:33Z 1791594753.368975134
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  20414  16669  14810  11050   8515   6133   4147   5076   3438   3674 373278 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9090737
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9073376
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546707084 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t33-a-none 2026-10-10T01:12:36Z 1791594756.135331682
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   7762  19875  17592  12982   9781   7023   5402   5173   3458   3684 373503 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9090737
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9073376
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548317372 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t33-a-none 2026-10-10T01:16:40Z 1791595000.283198186
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8670   8454  13448  15067  12099   9127   5771   5271   3473     64  91781 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9657830
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9073376
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387458728 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t33-a-none 2026-10-10T01:16:46Z 1791595006.235307778
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  21992  14919  14823  12590   9145   6129   3784   5168   3474   3673 373293 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9658285
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9640462
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546837936 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t34-b-defer 2026-10-10T01:16:49Z 1791595009.067799921
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  21415  21993  17658  14232  10459   7189   4942   5267   3488   3674 373507 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9072048
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9658285
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9640462
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 7
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548455764 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t34-b-defer 2026-10-10T01:22:16Z 1791595336.669736221
+-- thp enabled=madvise defrag=defer shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  30976  45839  44556  39775  30510  20245   9753   5255   2901   4541 371753 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9658741
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9640462
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548096648 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t35-a-proactive 2026-10-10T01:22:19Z 1791595339.519010138
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9427  27944  43068  39115  30029  20138  10308   5458   2916   4495 372021 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3130122073
+compact_free_scanned 36871657
+compact_isolated 1265899
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 913669977
+compact_daemon_free_scanned 26704297
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 9658741
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9640462
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549043036 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t35-a-proactive 2026-10-10T01:26:25Z 1791595585.614913188
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   9079  13629  29171  37055  28785  19963  10204   5660   3058     41  90763 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10225834
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 9640462
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387604664 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t35-a-proactive 2026-10-10T01:26:31Z 1791595591.539542764
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=100 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  18482  15558  18640  20372  15838  19973  10233   5704   3078   4451 371881 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10226289
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10207548
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546664844 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t36-a-defermadv 2026-10-10T01:26:34Z 1791595594.378637055
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14555  21060  24140  25310  19924  20037  10729   5785   3109   4450 372102 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10226289
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10207548
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548318504 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== load-t36-a-defermadv 2026-10-10T01:30:43Z 1791595843.128169770
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  10926   7166  28609  33282  24983  19655  10310   5874   3139     53  90798 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10793382
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10207548
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        387535916 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 1166872576 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t36-a-defermadv 2026-10-10T01:30:49Z 1791595849.092304897
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  14065   9035  18779  19074  14974  19094  10312   5871   3141   4444 371922 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10793837
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10774634
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1546723316 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6402048 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t37-b-defermadv 2026-10-10T01:30:52Z 1791595852.114060480
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  27177  20218  25415  22722  17584  19334  10935   5901   3153   4437 372147 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 9639051
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10793837
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10774634
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548377532 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t37-b-defermadv 2026-10-10T01:36:10Z 1791596170.236361178
+-- thp enabled=madvise defrag=defer+madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  48138  55680  56755  51472  41243  28868  15045   6930   3147   5316 370068 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 10206054
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10794293
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10774634
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1547753360 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== pre-t38-b-none 2026-10-10T01:36:13Z 1791596173.069945346
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal   8559  48145  54585  50182  40230  28623  15555   7234   3205   5318 370290 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 10206054
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 4
+thp_collapse_alloc_failed 0
+thp_file_alloc 10794293
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10774634
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 4
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 8
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548622820 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== post-t38-b-none 2026-10-10T01:41:36Z 1791596496.193271016
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  33021  41102  42728  37622  29298  20622  13951   8124   4266   5237 370485 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 10773057
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 5
+thp_collapse_alloc_failed 0
+thp_file_alloc 10794749
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10774634
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 5
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 9
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1548112592 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  6400000 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== end 2026-10-10T01:42:08Z 1791596528.147250264
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      4      4      4      8     11      8      7      7      5    218 
+Node 0, zone   Normal  18179  32701  36279  32621  25579  18128  13696   8204   4534   5122 370986 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3147946329
+compact_free_scanned 41890261
+compact_isolated 1307436
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 931494233
+compact_daemon_free_scanned 31722901
+thp_fault_alloc 10773057
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 6
+thp_collapse_alloc_failed 0
+thp_file_alloc 10794749
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 10774634
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 8
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 9
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1549231708 kB
+AnonHugePages:         0 kB
+ShmemHugePages:  5466112 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB

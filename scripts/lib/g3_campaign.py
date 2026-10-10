@@ -44,8 +44,23 @@ def start_of(d):
     return "", None
 
 
+def ladder_dir(d):
+    """A #25 ladder run (or cohort) dir: its manifest.json or cohort.json carries params naming a
+    rung (docs/ladder.md, "Ladder tables"). Ladder runs under another gate than g3 are counted too."""
+    for f in ("manifest.json", "cohort.json"):
+        p = os.path.join(d, f)
+        if os.path.exists(p):
+            pr = json.load(open(p)).get("params")
+            return isinstance(pr, dict) and any(k.lower().endswith("rung") and v for k, v in pr.items())
+    return False
+
+
+DIRS = sorted(glob.glob(os.path.join(G, "2026*")))
+DIRS += sorted(d for d in glob.glob(os.path.join("results", "*", "2026*"))
+               if not d.startswith(G + os.sep) and os.path.isdir(d) and ladder_dir(d))
+
 points, spend = [], []
-for d in sorted(glob.glob(os.path.join(G, "2026*"))):
+for d in DIRS:
     if not os.path.isdir(d):
         continue
     st, j = start_of(d)
@@ -56,7 +71,7 @@ for d in sorted(glob.glob(os.path.join(G, "2026*"))):
         # interrupted cohort included; cohort.json's own total is null there).
         mc = 0.0
         for m in [m for m in j.get("members", []) if m.get("run_id")]:  # a member that never launched has no run
-            mp = os.path.join(G, m["run_id"], "manifest.json")
+            mp = os.path.join(os.path.dirname(d), m["run_id"], "manifest.json")
             if os.path.exists(mp):
                 mc += float(json.load(open(mp)).get("cost_usd") or 0)
         spend.append([os.path.basename(d), j.get("spec"), j.get("instance_type"), j.get("nodes"), f"{mc:.4f}",
