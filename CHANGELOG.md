@@ -15,22 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     U_mem and U_net from the fleet row of `tables/util.tsv`. A missing row is reported as
     missing, never imputed.
   - per-rung, per-cohort medians and ranges on wall, billed $ and the lever's own phase. Runs
-    with any DEFECT are excluded: incomplete against the planned accession set, a failed
-    sample, or a contract error.
-  - each rung's delta against its predecessor. A delta is resolved only if |Δmedian| > 2 ×
-    max(range, range, instrument granularity q). Otherwise it is unresolvable, never a null,
-    with "below instrument granularity" as its own label. The predicted delta and the measured
-    spread are shown beside it.
+    with any DEFECT are excluded: incomplete against the planned accession set (a cohort's
+    comes from cohort.json), a cohort member that never launched, a failed sample, a contract
+    error, or a Law 1 DEFECT.
+  - each rung's delta against its predecessor, or against its nearest run ancestor when a rung
+    is marked `not-run` (labelled so). A delta is resolved only if |Δmedian| > 2 × max(range,
+    range, instrument granularity q). Otherwise it is unresolvable, never a null, with "below
+    instrument granularity" as its own label. The predicted delta and the measured spread are
+    shown beside it.
   - effective cost per resource (util's fleet cost_usd ÷ U_cpu, ÷ U_mem, ÷ U_net, and U_net per
     direction), never combined.
   - the three pairs S vs S\*, S vs O\* and S\* vs O\* on the declared (per-cohort) time and cost
     endpoints. Each total sits beside its per-lever decomposition, in pairs.tsv and summary.md.
   - cross-arm Law 1 against a stock reference, by on-node sha256 and file set. Any mismatch,
     and any O-arm accession without a stock reference, is a DEFECT, and the target exits 1.
-    S5's rapidgzip identity rule covers gzip fallbacks (reported as findings against the lever)
-    and non-preserving inputs (exempt, and out of the attribution).
-  - modelled values, flagged; cold and warm endpoint rows; spend; and a `manifest.json` that
-    cites every input with its sha256 and the commit.
+    S5: a failed identity check falls back to gzip, which is reported as a finding against the
+    lever. Without the fallback, the sample is a contract DEFECT. rapidgzip's output sha256
+    (`rg_sha256`) matches O-arm entries to S entries and flags S entries that disagree.
+  - modelled values: `make g3-ladder-model` (`scripts/lib/ladder_model.py`) derives c100 stock
+    T1 from the c10 S0-T1 records' per-thread rate and cites every file with its sha256.
+    g3-ladder refuses a row whose cited files do not check, and flags every use.
+  - cold and warm endpoint rows; spend; and a `manifest.json` that cites every input with its
+    sha256 and the commit.
 
   The `lad-sample`, PARAMS and lever-table contract with the ladder body (#51) is in
   docs/ladder.md, "Ladder tables". `make test` runs `scripts/lib/ladder_tables_test.py` on a

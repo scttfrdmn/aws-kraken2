@@ -200,6 +200,9 @@ def load_levers(path, rd):
             r[k] = next((f[a].strip() for a in al if a in f and f[a] is not None), "")
         if r["predecessor"] in ("-", "none"):
             r["predecessor"] = ""
+        # A rung marked `not-run: <reason>` in any cell (e.g. S3 when the tune probe chose none): it has
+        # no runs; its successor's delta is taken against the nearest run ancestor.
+        r["not_run"] = next((v.strip() for v in f.values() if isinstance(v, str) and v.strip().lower().startswith("not-run")), "")
         if not r["arm"]:
             r["arm"] = r["rung"][:1]
         if r["rung"]:
@@ -248,6 +251,22 @@ def stock_rungs(levers):
                            and x["predecessor"] in roots})
 
 
+def run_pred(levers, rung):
+    """(the nearest ancestor that is not marked not-run, [the skipped not-run rungs])."""
+    p, skipped = (levers.get(rung) or {}).get("predecessor", ""), []
+    while p and (levers.get(p) or {}).get("not_run") and p not in skipped:
+        skipped.append(p)
+        p = levers[p].get("predecessor", "")
+    return p, skipped
+
+
+def pred_basis(levers, rung):
+    p, skipped = run_pred(levers, rung)
+    if not skipped:
+        return "direct"
+    return f"nearest run ancestor {p or '-'} (" + "; ".join(f"{x} {levers[x]['not_run']}" for x in skipped) + ")"
+
+
 def chain(levers, target):
     out, seen, r = [], set(), target
     while r and r not in seen:
@@ -263,20 +282,48 @@ def has_rapidgzip(levers, rung):
                for r in chain(levers, rung)) and (levers.get(rung) or {}).get("arm") == "S"
 
 
-def load_modelled(path, rd):
-    """(rung, cohort, axis) -> {value, basis, source}. Columns: arm, rung, cohort, axis, value,
-    basis, source. Missing file: {}."""
+def check_source(source, repo):
+    """A modelled row's source is `<generator text> | path=sha256 path=sha256 ...` (paths relative
+    to the repo root). It is checkable only if it names at least one file and every file exists
+    with that sha256. Returns (ok, reason)."""
+    if "|" not in source:
+        return False, "no `| path=sha256 ...` list"
+    pairs = source.split("|", 1)[1].split()
+    if not pairs:
+        return False, "no files cited"
+    for p in pairs:
+        if "=" not in p:
+            return False, f"{p!r} is not path=sha256"
+        rel, sha = p.rsplit("=", 1)
+        f = os.path.join(repo, rel)
+        if not os.path.isfile(f):
+            return False, f"{rel} does not exist"
+        with open(f, "rb") as fh:
+            if hashlib.sha256(fh.read()).hexdigest() != sha:
+                return False, f"{rel} sha256 is not {sha[:12]}..."
+    return True, ""
+
+
+def load_modelled(path, rd, repo):
+    """(rung, cohort, axis) -> {value, basis, source}, and the refused rows. Columns: arm, rung,
+    cohort, axis, value, basis, source (written by make g3-ladder-model). A row whose source is not
+    checkable (check_source) is refused. Missing file: {}."""
     if not path or not os.path.exists(path):
-        return {}
-    out = {}
+        return {}, []
+    out, refused = {}, []
     lines = [ln for ln in rd.text(path).splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
-    for f in csv.DictReader(lines, delimiter="\t"):
+    for i, f in enumerate(csv.DictReader(lines, delimiter="\t"), 2):
         v, c = num(f.get("value")), f.get("cohort", "")
         if v is None or not c.isdigit():
+            refused.append(f"{os.path.basename(path)} row {i}: value or cohort is not a number")
+            continue
+        ok, why = check_source(f.get("source", ""), repo)
+        if not ok:
+            refused.append(f"{os.path.basename(path)} row {i} ({f.get('rung')} c{c} {f.get('axis')}): source not checkable: {why}")
             continue
         out[(f.get("rung", ""), int(c), f.get("axis", ""))] = {"value": v, "basis": f.get("basis", "modelled"),
                                                                  "source": f.get("source", "")}
-    return out
+    return out, refused
 
 
 # ---------------------------------------------------------------- one run
@@ -343,6 +390,8 @@ def planned_set(man, results, rd, notes):
     if isinstance(acc, list) and acc:
         return set(map(str, acc))
     ref = man.get("sample_accessions_ref") or {}
+    if isinstance(ref, str):
+        ref = {"ref": ref}
     m = re.match(r"^@([A-Za-z0-9_.-]+):(\d+)-(\d+)$", str(ref.get("ref", "")))
     if not m:
         return None
@@ -372,14 +421,17 @@ def read_run(d, rd, results):
         kind, commit, gate = "single", man.get("commit"), man.get("gate")
     elif os.path.exists(cp):
         coh = rd.json(cp)
-        members = []
+        members, missing = [], []
         for m in coh.get("members", []):
             rid = m.get("run_id")
             md = os.path.join(os.path.dirname(d), rid) if rid else None
-            if md and os.path.exists(os.path.join(md, "manifest.json")):
+            if md and m.get("manifest") != "missing" and os.path.exists(os.path.join(md, "manifest.json")):
                 members.append((rid, md, rd.json(os.path.join(md, "manifest.json"))))
             else:
-                notes.append(f"member rank {m.get('rank')}: no manifest")
+                missing.append(f"rank {m.get('rank')}" + (f" ({rid})" if rid else ""))
+        want = coh.get("nodes") if is_int(coh.get("nodes")) else len(coh.get("members", []))
+        if want > len(coh.get("members", [])):
+            missing.append(f"{want - len(coh.get('members', []))} member(s) absent from cohort.json (nodes {want})")
         params = norm_params(coh.get("params")) or (norm_params(members[0][2].get("params")) if members else None)
         if not params:
             return None
@@ -387,7 +439,8 @@ def read_run(d, rd, results):
     else:
         return None
     run = {"run_id": os.path.basename(os.path.normpath(d)), "dir": d, "kind": kind, "gate": gate, "commit": commit,
-           "params": params, "notes": notes, "nodes": len(members), "exclude": []}
+           "params": params, "notes": notes, "nodes": len(members), "exclude": [],
+           "missing_members": missing if kind == "cohort" else []}
     m0 = members[0][2] if members else {}
     inst = m0.get("instance") or {}
     run.update(type=inst.get("type"), az=inst.get("az"), region=m0.get("region"),
@@ -412,14 +465,15 @@ def read_run(d, rd, results):
             if v >= ph.get(k, -1):
                 ph[k], pc[k] = v, c[k]
     run["phases_run"], run["phase_entries"] = ph, pc
-    planned = set()
-    for _, _, m in members:
-        x = planned_set(m, results, rd, notes)
-        if x is None:
-            planned = None
-            break
-        planned |= x
-    run["planned"] = planned if members else None
+    if kind == "single":
+        run["planned"], run["planned_basis"] = planned_set(m0, results, rd, notes), "manifest"
+    else:
+        # The cohort's own record (cohort.json sample_accessions_ref, or a sample_accessions list),
+        # never the union of the members that happened to write a manifest.
+        run["planned"], run["planned_basis"] = planned_set(coh, results, rd, notes), "cohort.json"
+        if run["planned"] is None and not coh.get("sample_accessions_ref") and members:
+            # A literal list is not in cohort.json; every member got the same spec env.
+            run["planned"], run["planned_basis"] = planned_set(m0, results, rd, notes), f"{members[0][0]} manifest (literal list)"
     samples = []
     for rid, md, _ in members:
         for o in lad_lines(md, rd, notes, rid):
@@ -491,7 +545,20 @@ def sample_errors(run, s):
             errs.append(f"{where}: s5.fallback {s5.get('fallback')!r} not in {'/'.join(S5_FALLBACK)}")
         elif s5.get("fallback", "none") == "gzip" and s5.get("status") != "differs":
             errs.append(f"{where}: s5.fallback gzip without s5.status differs")
+        elif s5.get("status") == "differs" and s5.get("fallback", "none") != "gzip":
+            errs.append(f"{where}: s5.status differs needs s5.fallback gzip (the body falls back to gzip on that input)")
+        elif s5.get("status") != "n/a":
+            rg, gz = s5.get("rg_sha256"), s5.get("gz_sha256")
+            if not (sha_list(rg) and sha_list(gz) and len(rg) == len(gz)):
+                errs.append(f"{where}: s5.rg_sha256 and s5.gz_sha256 must be equal-length lists of 64-hex sha256 "
+                            "(one per input file, mate order)")
+            elif (rg == gz) != (s5.get("status") == "identical"):
+                errs.append(f"{where}: s5.status {s5.get('status')} disagrees with rg_sha256 vs gz_sha256")
     return errs
+
+
+def sha_list(v):
+    return isinstance(v, list) and v and all(isinstance(x, str) and HEX64.match(x) for x in v)
 
 
 def contract_errors(run):
@@ -510,6 +577,10 @@ def validate(runs, levers, defects):
     """Contract, failed samples and completeness. Each DEFECT also excludes its run."""
     for r in runs:
         rid = r["run_id"]
+        if r["missing_members"]:
+            e = f"cohort member manifest missing: {', '.join(r['missing_members'])}"
+            defects.append(("incomplete", f"{rid}: {e}"))
+            r["exclude"].append(f"DEFECT (incomplete): {e}")
         for e in params_errors(r["params"], levers):
             defects.append(("contract", f"{rid}: {e}"))
             r["exclude"].append(f"DEFECT (contract): {e}")
@@ -542,6 +613,8 @@ def validate(runs, levers, defects):
             r["exclude"].append(f"state {r['params']['state']}: ladder runs are cold")
         if r["params"]["rung"] not in levers:
             r["notes"].append(f"rung {r['params']['rung']} is not in ladder.levers.tsv")
+        elif levers[r["params"]["rung"]].get("not_run"):
+            r["notes"].append(f"rung {r['params']['rung']} is marked {levers[r['params']['rung']]['not_run']!r} in ladder.levers.tsv")
         r["exclude"] = list(dict.fromkeys(r["exclude"]))
 
 
@@ -639,7 +712,7 @@ class Groups:
     """The runs entering the attribution, by (rung, cohort), and the cold endpoint runs by
     (tag, rung, cohort); modelled values fill a (rung, cohort, axis) with no measured run."""
 
-    def __init__(self, runs, levers, modelled):
+    def __init__(self, runs, levers, modelled, emap, notes):
         self.levers, self.modelled = levers, modelled
         self.g, self.e = {}, {}
         for r in runs:
@@ -650,7 +723,15 @@ class Groups:
                 self.g.setdefault((p["rung"], p["cohort"]), []).append(r)
             elif p["state"] == "cold":
                 for t in split_tags(p["endpoint"]):
+                    want, _ = endpoint_rung(emap, t, p["cohort"])
+                    if want != p["rung"]:
+                        notes.append(f"{r['run_id']}: cold endpoint run for {t} at c{p['cohort']} is on {p['rung']}, but "
+                                     f"ladder.levers.tsv declares {want or 'no rung'}: not used for the {t} total")
+                        continue
                     self.e.setdefault((t, p["rung"], p["cohort"]), []).append(r)
+        for (rung, cohort, axis) in sorted(modelled, key=str):
+            if any(axis_value(r, axis, levers, rung)[0] is not None for r in self.runs(rung, cohort)):
+                notes.append(f"modelled {rung} c{cohort} {axis} ignored: measured runs exist")
 
     def runs(self, rung, cohort):
         return self.g.get((rung, cohort), [])
@@ -698,7 +779,9 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
             s, rs = G.endpoint_stats(tag, rung, cohort, ax)
             if s["n"]:
                 return s, rs, f"{tag} endpoint runs (n {s['n']})"
-        return G.stats(rung, cohort, ax), G.runs(rung, cohort), "ladder runs"
+        s = G.stats(rung, cohort, ax)
+        return s, G.runs(rung, cohort), ("a modelled value (flagged: not a measurement)" if s["basis"] == "modelled"
+                                         else "ladder runs")
     a, ar, aw = side(tgt, tgt_tag)
     b, br, bw = side(src, src_tag)
     tot = delta(a, b)
@@ -712,30 +795,32 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
         return [L(note=f"totals: target from {aw}, source from {bw}; no per-lever path: {src} is not on {tgt}'s "
                        f"predecessor chain ({' <- '.join(ch)}) in ladder.levers.tsv; the total alone is not an attribution",
                   **total)]
-    steps = list(reversed(ch[:ch.index(src)]))
+    steps = [r for r in reversed(ch[:ch.index(src)]) if not levers[r].get("not_run")]
     rows, ssum, missing = [], 0.0, []
     for i, rung in enumerate(steps, 1):
         lv = levers[rung]
-        x, y = G.stats(rung, cohort, ax), G.stats(lv["predecessor"], cohort, ax, rung)
+        pr, _ = run_pred(levers, rung)
+        x, y = G.stats(rung, cohort, ax), G.stats(pr, cohort, ax, rung)
         d = delta(x, y)
         if d["delta"] is None:
             missing.append(rung)
         else:
             ssum += d["delta"]
-        rows.append(L(row="lever", step=i, rung=rung, predecessor=lv["predecessor"], lever=lv["lever"], n_rung=x["n"],
+        pb = pred_basis(levers, rung)
+        rows.append(L(row="lever", step=i, rung=rung, predecessor=pr, lever=lv["lever"], n_rung=x["n"],
                       n_pred=y["n"], delta=fmt(d["delta"]), status=d["status"], granularity_q=fmt(d["q"]),
-                      threshold=fmt(d["threshold"]),
-                      util_coverage=coverage(G.runs(rung, cohort) + G.runs(lv["predecessor"], cohort)) if eff else ""))
+                      threshold=fmt(d["threshold"]), note="" if pb == "direct" else f"against the {pb}",
+                      util_coverage=coverage(G.runs(rung, cohort) + G.runs(pr, cohort)) if eff else ""))
     complete = not missing and tot["delta"] is not None
-    ident = aw == "ladder runs" and bw == "ladder runs"
+    ident = "endpoint runs" not in aw and "endpoint runs" not in bw
     note = f"totals: target from {aw}, source from {bw}"
     if missing:
         note += f"; steps missing medians: {', '.join(missing)}"
     elif not steps:
         note += "; source = target: no levers"
     elif complete:
-        note += ("; residual is an identity (both totals are ladder medians, so the lever deltas telescope)" if ident
-                 else "; residual = endpoint-run total minus the ladder's lever deltas")
+        note += ("; residual is an identity (both totals are the values the lever rows use, so the deltas telescope)"
+                 if ident else "; residual = endpoint-run total minus the ladder's lever deltas")
     rows.append(L(sum_of_lever_deltas=fmt(ssum) if complete else "incomplete",
                   residual_total_minus_sum=fmt(tot["delta"] - ssum) if complete else "", note=note, **total))
     return rows
@@ -743,7 +828,8 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
 
 def law1(runs, levers, defects, notes):
     """Per accession: file set and sha256 of every successful, contract-clean sample against a
-    stock reference. Also marks the runs S5's rule excludes from the attribution."""
+    stock reference; every Law 1 DEFECT excludes its run. S5: an O-arm `differs` entry must match an
+    S entry's rg_sha256; S entries that disagree with each other on rg_sha256 are flagged."""
     stock = set(stock_rungs(levers))
     by = {}
     for r in runs:
@@ -751,87 +837,82 @@ def law1(runs, levers, defects, notes):
             if id(s) in r.get("bad_samples", set()) or s.get("rc") != 0:
                 continue
             by.setdefault(str(s["accession"]), []).append((r, s))
-    summ, det, s5rows = [], [], []
-    differs = lambda s: s5_of(s)[0] == "differs" and s5_of(s)[1] != "gzip"
+    summ, det, s5rows, flags = [], [], [], []
     for acc in sorted(by):
         ent = sorted(by[acc], key=lambda e: (e[0]["params"]["arm"] != "S", e[0]["params"]["rung"] not in stock,
                                              e[0]["params"]["rung"], e[0]["run_id"], str(e[1].get("_node"))))
-        s_ok = [e for e in ent if e[0]["params"]["arm"] == "S" and not differs(e[1])]
+        s_ent = [e for e in ent if e[0]["params"]["arm"] == "S"]
         on_o = any(e[0]["params"]["arm"] == "O" for e in ent)
-        ref = s_ok[0] if s_ok else None
+        ref = s_ent[0] if s_ent else None
         ref_stock = bool(ref and ref[0]["params"]["rung"] in stock)
         rmap = {k: v["sha256"] for k, v in ref[1]["outputs"].items()} if ref else {}
-        bad, n_s5 = [], 0
+        bad = []
         if on_o and not ref_stock:
-            bad.append("no stock reference for an accession on the O arm" + ("" if ref else " (no S-arm entry)"))
+            e = "no stock reference for an accession on the O arm" + ("" if ref else " (no S-arm entry)")
+            bad.append(e)
+            for r, _ in ent:
+                if r["params"]["arm"] == "O":
+                    r["exclude"].append(f"DEFECT (Law 1): {acc}: {e}")
+        s_rg = {}
+        for r, s in s_ent:
+            if s5_of(s)[0] == "differs":
+                s_rg.setdefault(tuple(s["s5"]["rg_sha256"]), []).append(r["run_id"])
+        if len(s_rg) > 1:
+            flags.append(f"{acc}: S-arm s5 differs entries disagree on rg_sha256 ({len(s_rg)} distinct: "
+                         + "; ".join(", ".join(v) for v in s_rg.values()) + ")")
         for r, s in ent:
             omap = {k: v["sha256"] for k, v in s["outputs"].items()}
             arm, rung = r["params"]["arm"], r["params"]["rung"]
-            cmp_to, cmp_map, why = ref, rmap, "reference"
-            if differs(s) and arm == "O":
-                same = [e for e in ent if e[0]["params"]["arm"] == "S" and differs(e[1])]
-                if not same:
-                    st = "DEFECT: s5 differs on the O arm and no S entry has the same decompressor status"
-                    bad.append(f"{r['run_id']}: {st}")
-                    cmp_to = None
-                else:
-                    cmp_to, why = same[0], "the S entry with the same decompressor status"
-                    cmp_map = {k: v["sha256"] for k, v in same[0][1]["outputs"].items()}
-            if cmp_to is None and not (differs(s) and arm == "O"):
+            if ref is None:
                 st = "no upstream reference"
-            elif cmp_to is None:
-                pass
-            elif r is cmp_to[0] and s is cmp_to[1]:
+            elif r is ref[0] and s is ref[1]:
                 st = "reference"
-            elif set(omap) != set(cmp_map):
-                st = (f"DEFECT: file set differs from {why} (missing {','.join(sorted(set(cmp_map) - set(omap))) or '-'}; "
-                      f"extra {','.join(sorted(set(omap) - set(cmp_map))) or '-'})")
-            elif omap != cmp_map:
-                st = f"DEFECT: sha256 differs from {why} on " + ",".join(k for k in sorted(omap) if omap[k] != cmp_map.get(k))
+            elif set(omap) != set(rmap):
+                st = (f"DEFECT: file set differs from the reference (missing {','.join(sorted(set(rmap) - set(omap))) or '-'}; "
+                      f"extra {','.join(sorted(set(omap) - set(rmap))) or '-'})")
+            elif omap != rmap:
+                st = "DEFECT: sha256 differs from the reference on " + ",".join(k for k in sorted(omap) if omap[k] != rmap.get(k))
             else:
-                st = "identical" if why == "reference" else f"identical to {why} ({cmp_to[0]['run_id']})"
-            if differs(s) and arm == "S":
-                n_s5 += 1
-                eq = cmp_to is not None and omap == cmp_map
-                if has_rapidgzip(levers, rung) and not eq and cmp_to is not None:
-                    st = "S5 not output-preserving on this input"
-                    r["exclude"].append(f"S5 not output-preserving on {acc} (no gzip fallback)")
-                elif eq:
-                    r["notes"].append(f"{acc}: s5 differs with no fallback, but the outputs equal the reference")
-                s5rows.append([acc, r["run_id"], arm, rung, r["params"]["cohort"], "differs", s5_of(s)[1],
-                               (s.get("s5") or {}).get("P", ""), (s.get("s5") or {}).get("nproc", ""),
-                               "yes" if eq else "no", st])
-            elif differs(s) and arm == "O" and st.startswith("identical"):
-                r["exclude"].append(f"{acc}: s5 differs (no gzip fallback): measured on the same truncated input as {why}")
-            if s5_of(s) == ("differs", "gzip"):
-                s5rows.append([acc, r["run_id"], arm, rung, r["params"]["cohort"], "differs", "gzip",
-                               (s.get("s5") or {}).get("P", ""), (s.get("s5") or {}).get("nproc", ""),
-                               "yes" if omap == rmap else "no", st])
-            if st.startswith("DEFECT") and f"{r['run_id']}: {st}" not in bad:
+                st = "identical"
+            if st.startswith("DEFECT"):
                 bad.append(f"{r['run_id']}: {st}")
-            for role in sorted(set(omap) | set(cmp_map)):
+                r["exclude"].append(f"DEFECT (Law 1): {acc}: {st[8:]}")
+            if s5_of(s)[0] == "differs":
+                rg = tuple(s["s5"]["rg_sha256"])
+                if arm == "O":
+                    match = s_rg.get(rg)
+                    if match:
+                        chk = f"rg_sha256 matches the S entry {match[0]}"
+                    else:
+                        chk = "DEFECT: O-arm s5 differs and no S entry has the same rg_sha256"
+                        bad.append(f"{r['run_id']}: {chk}")
+                        r["exclude"].append(f"DEFECT (Law 1): {acc}: {chk[8:]}")
+                else:
+                    chk = "S rapidgzip output" + (": disagrees with another S entry (flagged)" if len(s_rg) > 1 else "")
+                s5rows.append([acc, r["run_id"], arm, rung, r["params"]["cohort"], "differs", s5_of(s)[1],
+                               s["s5"].get("P", ""), s["s5"].get("nproc", ""), ",".join(rg),
+                               "yes" if ref and omap == rmap else "no", st, chk])
+            for role in sorted(set(omap) | set(rmap)):
                 o = s["outputs"].get(role) or {}
                 det.append([acc, r["run_id"], s.get("_node", ""), arm, rung, r["params"]["cohort"], role, o.get("bytes", ""),
-                            o.get("sha256", "absent"), cmp_map.get(role, "absent"), st])
+                            o.get("sha256", "absent"), rmap.get(role, "absent"), st])
         for b in bad:
             defects.append(("Law 1", f"{acc} {b}"))
         if bad:
             status = "DEFECT"
         elif not ref:
             status = "no upstream reference"
-        elif len(ent) - n_s5 > 1:
+        elif len(ent) > 1:
             status = "identical"
         else:
             status = "one entry: nothing to compare"
         summ.append([acc, len(ent), ",".join(sorted({e[0]["params"]["arm"] for e in ent})),
                      ",".join(sorted({e[0]["params"]["rung"] for e in ent})),
                      f"{ref[0]['run_id']} ({ref[0]['params']['rung']}{'' if ref_stock else ', not a stock rung'})" if ref
-                     else "none", ",".join(sorted(rmap)), status,
-                     "; ".join(bad) + (f"; {n_s5} S-arm s5-differs entr{'y' if n_s5 == 1 else 'ies'} (s5-nonpreserving.tsv)"
-                                       if n_s5 else "")])
+                     else "none", ",".join(sorted(rmap)), status, "; ".join(bad)])
     for r in runs:
         r["exclude"] = list(dict.fromkeys(r["exclude"]))
-    return summ, det, s5rows
+    return summ, det, s5rows, flags
 
 
 def s5_findings(runs, levers):
@@ -861,8 +942,8 @@ def build(runs, levers, campaign_spend=None, modelled=None):
     for e in eerr:
         defects.append(("levers", e))
     validate(runs, levers, defects)
-    l1, det, s5rows = law1(runs, levers, defects, notes)
-    G = Groups(runs, levers, modelled)
+    l1, det, s5rows, s5flags = law1(runs, levers, defects, notes)
+    G = Groups(runs, levers, modelled, emap, notes)
 
     # 1. runs.tsv and tidy.tsv
     rh = ["run_id", "gate", "kind", "arm", "rung", "cohort", "rep", "run_kind", "endpoint", "state", "type", "nodes", "az",
@@ -937,22 +1018,30 @@ def build(runs, levers, campaign_spend=None, modelled=None):
                          "util_coverage", "note"], erows)
 
     # 3. deltas.tsv
-    dh = ["arm", "rung", "predecessor", "lever", "counterpart", "cohort", "axis", "lever_phase", "n_rung", "n_pred",
-          "median_rung", "median_pred", "delta", "range_rung", "range_pred", "measured_spread", "granularity_q",
-          "threshold", "status", "predicted_delta", "predicted_resolvable"]
+    dh = ["arm", "rung", "predecessor", "predecessor_basis", "lever", "counterpart", "cohort", "axis", "lever_phase",
+          "n_rung", "n_pred", "median_rung", "median_pred", "delta", "range_rung", "range_pred", "measured_spread",
+          "granularity_q", "threshold", "status", "predicted_delta", "predicted_resolvable"]
     drows = []
+    for cohort in sorted({c for _, c in keys}):
+        for rung, lv in sorted(levers.items()):
+            if lv.get("not_run"):
+                for ax in AXES:
+                    drows.append([lv["arm"], rung, lv["predecessor"], "", lv["lever"], lv["counterpart"], cohort, ax, "",
+                                  "", "", "", "", "", "", "", "", "", "", lv["not_run"], "", ""])
     for (rung, cohort) in keys:
         lv = levers.get(rung)
-        if not lv or not lv["predecessor"]:
+        if not lv or not lv["predecessor"] or lv.get("not_run"):
             continue
+        pr, _ = run_pred(levers, rung)
+        pb = pred_basis(levers, rung)
         for ax in AXES:
-            a, b = G.stats(rung, cohort, ax), G.stats(lv["predecessor"], cohort, ax, rung)
+            a, b = G.stats(rung, cohort, ax), G.stats(pr, cohort, ax, rung)
             d = delta(a, b, num(lv.get(PRED_COL[ax])))
-            drows.append([lv["arm"], rung, lv["predecessor"], lv["lever"], lv["counterpart"], cohort, ax,
+            drows.append([lv["arm"], rung, pr, pb, lv["lever"], lv["counterpart"], cohort, ax,
                           lv["phase"] if ax == "lever_phase_s" else "", a["n"], b["n"], fmt(a["median"]), fmt(b["median"]),
                           fmt(d["delta"]), fmt(a["range"]), fmt(b["range"]), fmt(d["measured_spread"]), fmt(d["q"]),
-                          fmt(d["threshold"]), d["status"], fmt(d["predicted"]),
-                          d["predicted_resolvable"] or ("no prediction" if d["predicted"] is None else "")])
+                          fmt(d["threshold"]), d["status"] + ("" if pb == "direct" else f" (against the {pb})"),
+                          fmt(d["predicted"]), d["predicted_resolvable"] or ("no prediction" if d["predicted"] is None else "")])
     T["deltas.tsv"] = (dh, drows)
 
     # 5. pairs.tsv
@@ -976,7 +1065,7 @@ def build(runs, levers, campaign_spend=None, modelled=None):
     T["law1-detail.tsv"] = (["accession", "run_id", "node", "arm", "rung", "cohort", "role", "bytes", "sha256",
                              "compared_sha256", "status"], det)
     T["s5-nonpreserving.tsv"] = (["accession", "run_id", "arm", "rung", "cohort", "s5_status", "s5_fallback", "s5_P",
-                                  "nproc", "outputs_equal_reference", "status"], s5rows)
+                                  "nproc", "rg_sha256", "outputs_equal_reference", "law1_status", "s5_check"], s5rows)
 
     # 7. endpoint decomposition runs: cold and warm rows
     eg = {}
@@ -1009,7 +1098,7 @@ def build(runs, levers, campaign_spend=None, modelled=None):
     sp.append(["TOTAL", "", "", "", "", "", "", "", "", "", fmt(tot), f"{nmiss} run(s) without a bill" if nmiss else ""])
     T["spend.tsv"] = (["run_id", "gate", "arm", "rung", "cohort", "rep", "run_kind", "state", "type", "nodes", "billed_usd",
                        "in_campaign_spend"], sp)
-    findings = s5_findings(runs, levers)
+    findings = s5_findings(runs, levers) + s5flags
     return T, defects, notes, [(r, "; ".join(r["exclude"])) for r in runs if r["exclude"]], findings
 
 
@@ -1079,13 +1168,14 @@ def main(argv=None):
     rd = Reader()
     levers = load_levers(a.levers, rd)
     mpath = a.modelled or os.path.join(a.results, "g3", "ladder-modelled.tsv")
-    modelled = load_modelled(mpath, rd)
+    modelled, refused = load_modelled(mpath, rd, os.path.dirname(os.path.abspath(a.results)))
     runs = discover(a.results, rd)
     spend_p = a.spend or os.path.join(a.results, "g3", "campaign", "spend.tsv")
     cs = None
     if os.path.exists(spend_p):
         cs = {r.get("run") for r in csv.DictReader(rd.text(spend_p).splitlines(), delimiter="\t")}
     T, defects, notes, excl, findings = build(runs, levers, cs, modelled)
+    defects += [("modelled", f"refused: {x}") for x in refused]
     if not levers:
         notes.insert(0, f"no lever table at {os.path.relpath(a.levers, ROOT)}: no predecessors, endpoints, deltas or pairs")
     os.makedirs(a.out, exist_ok=True)

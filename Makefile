@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -104,6 +104,13 @@ g3-fit:
 # rows and spend (results/g3/ladder/; docs/ladder.md, "Ladder tables").
 g3-ladder:
 	python3 scripts/lib/ladder_tables.py
+
+# The modelled stock T1 point at c100 from the c10 S0-T1 records' per-thread rate (Scott, #25),
+# written to results/g3/ladder-modelled.tsv with every cited file's sha256; g3-ladder reads it and
+# refuses any row whose cited files do not check (docs/ladder.md, "Modelled values"). Exits 2 if no
+# c10 S0-T1 run qualifies.
+g3-ladder-model:
+	python3 scripts/lib/ladder_model.py
 
 # Real-S3 check of ak2etag.py (multipart and single-part) and Law 1 of the engine's sample 1
 # against U2's upstream sha256s (scripts/lib/law1_u2.sh; downloads about 1 GB).
