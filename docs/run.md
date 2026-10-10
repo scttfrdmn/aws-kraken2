@@ -424,7 +424,9 @@ denominators; any other node is excluded and named. A fleet row's `allowance_exc
 counter's delta summed over those nodes, in the node rows' `name=value;…` form; a node that lacks
 the counters, or one of them, is named in coverage. The counters are read only at start and end,
 so phase rows leave the column empty. A fleet row's coverage also carries its nodes' notes. In a cohort's table the node column is the member's run_id. Beside every table,
-`tables/util.json` records util.py's commit and every input file with its sha256.
+`tables/util.json` records util.py's commit and every input file with its sha256. util.py
+therefore runs after the last manifest write, in run.sh after the post script and the orphan
+check; `scripts/lib/util_order_test.py` (in `make test`) checks the order.
 
 **Useful-work CPU.** The definition asks for the workload's CPU in a named cgroup scope
 (`systemd-run --scope`). That is not in place. The bodies do not start the workload in a scope

@@ -602,9 +602,6 @@ mset --arg state "$STATE" --arg basis "$FINAL_BASIS" --arg end "$END_ISO" --argj
   | .cost_basis = "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests"
   | .manifest_finalised_at = $fin'
 EXIT=$(jq -r '.task.exit_code // 99' "$M" 2>/dev/null || echo 99)
-# Utilisation (docs/run.md, "Utilisation"): tables/util.tsv from log/util.tsv and the manifest.
-python3 scripts/lib/util.py "$RUN_DIR" > "$RUN_DIR/tables/util.log" 2>&1 ||
-  say "WARNING: scripts/lib/util.py failed on $RUN_DIR (tables/util.log)"
 [ "$REQS" = null ] && say "WARNING: the spec recorded no request counts (ak2_req)"
 
 # ---- spec-specific local post-processing: scripts/post/<spec name>.sh, if it exists ----
@@ -629,5 +626,10 @@ else
 fi
 rm -f "$RUN_DIR/orphan_check.json"
 mset --argjson oc "$OC" '.orphan_check = $oc' || say "WARNING: could not record the orphan check in the manifest"
+# Utilisation (docs/run.md, "Utilisation"): tables/util.tsv from log/util.tsv and the manifest.
+# It runs after the last manifest write (the post script above may write it too), so util.json's
+# manifest sha256 is the final manifest's (#58). Nothing may write the manifest after this line.
+python3 scripts/lib/util.py "$RUN_DIR" > "$RUN_DIR/tables/util.log" 2>&1 ||
+  say "WARNING: scripts/lib/util.py failed on $RUN_DIR (tables/util.log)"
 [ "$ORC" -eq 0 ] || { say "THIS RUN'S INSTANCE IS STILL ALIVE (or a region could not be checked)"; exit 3; }
 exit "$EXIT"

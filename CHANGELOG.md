@@ -587,6 +587,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   names any node that lacks the counters or one of them. Phase rows stay empty: the counters are
   read only at start and end. `results/g3/20261009-223514-4ee77c3/tables/util.tsv` and its
   `util.json` were regenerated with the fix.
+- `scripts/run.sh` ran util.py before the spec's post script and the `.orphan_check` write,
+  both of which can change the manifest. So `tables/util.json` recorded the sha256 of a manifest
+  that no longer existed (found on 20261009-223514-4ee77c3, #58). util.py now runs after the
+  last manifest write. `make test` runs `scripts/lib/util_order_test.py`, which checks that
+  order statically in run.sh, refinalise.sh and run-multi.sh, and checks that no cohort post
+  script writes a manifest or cohort.json. refinalise.sh and run-multi.sh already had the right
+  order.
 
 - Law 1 on RODA v205 (#44). ResolveTree walked the hits in first-hit order, but upstream walks
   its per-thread `std::unordered_map` hit_counts (classify.cc:897-949). When a score tie's
