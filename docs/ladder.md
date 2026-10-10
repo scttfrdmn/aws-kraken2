@@ -187,3 +187,136 @@ debugging; `KEEP=1` keeps the work dir.
 - The lane's main-shell check (the body's shell is the test itself).
 
 These are first exercised by the ladder rehearsal and the first ladder run (#53).
+
+# The ladder body, lever table and generator (#51)
+
+**What:** one spec body for both arms of both #25 ladders (S → S\*: upstream at the pin; S\* →
+O\*: ours), the table of every rung, and the generator that turns a rung into a spec.
+
+```bash
+make ladder-check                                   # one key-group per rung, counterparts, endpoints
+make ladder-spec ARM=S RUNG=S1 COHORT=1             # runs/g3-l-s1-c1.json
+make ladder-spec ARM=S RUNG=S1 COHORT=10 TTL=240    # other cohorts give TTL (minutes)
+make dryrun-userdata                                # DRY_RUN=1 of every committed spec, recorded
+make run GATE=g3 SPEC=runs/g3-l-s1-c1.json NODES=1  # NODES = WANT_N (REPLICAS x SHARDS)
+make ladder-stream-test                             # the body's launch and watch functions (in make test)
+```
+
+## The lever table (`scripts/g3/ladder.levers.tsv`)
+
+One row per rung; its header comment defines the columns. Read by `scripts/lib/ladder_levers.py`,
+the generator, and by column name by #52's `ladder_tables.py`. `lever` is what the tables report:
+the key-group, except `stock` (S0-T1), `threads` (S0-Tv) and `rapidgzip` (S5). `group` is the
+key-group the one-lever check compares.
+
+**Key-groups:** CLASSIFIER; THREADS+PROCS; DB_STAGE; DB_PLACE+DB_LOAD; HOST_TUNES; GUNZIP;
+IN_FETCH+IN_CLIENT+IN_DEST; OUT_UPLOAD; REPLICAS+SHARDS; PLACEMENT; INFLIGHT; SETUP; ETAG_CHECK;
+HOST (the instance type). REPLICAS and SHARDS are one group, the fleet layout, so O1 (K replicas
+→ one K-shard engine at equal $/h) is one lever. THREADS and PROCS are one group, P × T.
+
+**The check** (`make ladder-check`, also in `make test`; `--self-test` shows each failure mode is
+caught): against its predecessor, a rung's changed keys, less the keys its `coupled` column names
+with a reason, fall in exactly its `group`. A coupled key must really change and lie outside the
+group. Every counterpart is an existing rung or `none: <reason>`. ETAG_CHECK is `on` everywhere.
+Each of S\*-time, S\*-cost, O\*-time and O\*-cost is declared for cohorts 1, 10, 100 and 1000 on
+exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). The module is importable (`load`,
+`check`, `resolve`, `changed`, `coupled_keys`, `spec_params`) for #53's `ladder_check.py`.
+
+**Rungs that are not one lever, and why** (the `coupled` column):
+- **S2a** (host r8gd.48xlarge → x8g.24xlarge) also moves the inputs to tmpfs (IN_DEST): x8g has no
+  instance store, and Scott ruled that the inputs move at S2a. A separate IN_DEST rung on
+  r8gd.48xlarge before S2a would remove the coupling.
+- **O0b** (ours' plain path → the engine at N = 1) also changes DB_STAGE/DB_PLACE/DB_LOAD to
+  ranged-get/memory/resident and PROCS/INFLIGHT to 1/P. It cannot be split: the engine has no -M,
+  so it holds the table resident, and a resident copy beside the staged tmpfs copy is
+  2 × 1107 GiB, over the 1536 GiB of every S\* host. PROCS → INFLIGHT is the same sample width
+  carried into one process.
+
+**Splits made for Law 5:** S2b → S2b-i (`-M` on the same NVMe) then S2b-ii (the table on tmpfs);
+S7 → S7a (tool) then S7b (overlap); O4 → O4a (LPT) then O4b (in flight).
+
+**Endpoints** are rungs declared before any run: `Sstar-time` and `Sstar-cost` are S9 on the host
+whose rung (S9, Sstar-r8g, Sstar-r8gd) has the lowest median wall_s (billed_usd) at that cohort;
+ladder 2 starts from `Sstar-time`; O5, its top, is O\*-time and O\*-cost.
+
+**Placeholders:** `@probe-tune` (S3's set, from the #41 probe) and `@select:<rung>[:<KEY>]`
+(S4's P × T, S8's K, the S\* hosts, O2's family, O3's N, O4b's in flight; `@select:S4:PROCS`
+means S4's PROCS value). Descendants carry the same token, so one resolution reaches every rung
+that inherits it. `scripts/g3/ladder.resolved.tsv` (absent so far: columns origin, cohort, key,
+value, source) resolves a token per cohort, and every row must name the `results/` file it comes
+from. The generator refuses any rung with a placeholder left.
+
+**Predictions:** `pred_*` are filled only where a measured rate gives one: S5's `pred_phase_s`
+(−7.8 s at c1, from probe (c), if classify is gzip-bound). Classic `aws s3 cp` has never been
+measured, so S1 has none. Modelled values go in `results/g3/ladder-modelled.tsv` (header only
+until c10 is measured; the c100 S0-T1 row is modelled from c10's per-thread rate).
+
+## The generator (`scripts/g3/mkspec-ladder.sh ARM RUNG COHORT [TTL=<min>]`)
+
+It writes `runs/g3-l-<rung>-c<cohort>.json`: the body with its `@PARAMS@` line replaced by
+`RUNG=…; ARM=…; COHORT=…; WANT_N=…; <every PARAM>` (in the payload, never in env),
+`env.AK2_ACCESSIONS = @PRJNA398089:1-<C>`, the type and AZ pinned (so the driver is run-multi.sh
+with NODES = WANT_N), 60 GiB disk, and `cost_limit` = TTL × the truffle on-demand price + $0.005,
+to the cent. It refuses: a table that fails the check; ARM other than the rung's; any placeholder;
+a type whose memory (or one NVMe device) cannot hold the rung at that cohort (the table on tmpfs
+or in the process, inputs and outputs at 150 B per pair, 16 GiB of slack; the engine by
+mkspec.sh's rule); a cohort other than 1 without TTL. The same table, cohort and price give the
+same bytes. `run.sh` and `run-multi.sh` write the PARAMS block into `manifest.params` and
+`cohort.json` `params` (`ladder_levers.py spec-params`: lowercase keys, ints for cohort, want_n,
+replicas and shards, `run_kind: ladder`, `state: cold`); other specs get `params: null`.
+
+Generated and committed at c1 (every rung fully determined there): S0-T1, S0-Tv, S1, S2b-i,
+S2b-ii, S2a. All six pass `DRY_RUN=1` (user data, cost and quota checks):
+`results/rehearse/dryrun-userdata-*-<sha7>.tsv`.
+
+## The body (`scripts/g3/ladder.body.sh`)
+
+Its header lists the phases; they are the same on both arms: setup, fetch-db, etag-hash.k2d,
+fetch-inputs, identity (S5 and later only), load, classify, upload-drain, push. The engine's order
+is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table it loaded.
+- **Cold by construction.** `ak2_drop_caches` before anything, and again before `load`.
+  `lad-mem` records Cached, Dirty, Writeback and the huge-page counters at load start.
+- **Build.** Upstream from source at the pin (`scripts/oracle-build.sh`), ours at the run's commit
+  (`make build`). SETUP=serial waits for the build in setup; overlap waits just before load.
+- **ETag on every arm.** Upstream and ours-plain: `lv_etag` on the staged hash.k2d. The engine:
+  `AK2_ENGINE_VERIFY_ETAG=1`, and the run fails without its `ak2-engine etag` line.
+- **Phase boundaries** come from the classifiers' own output. load → classify on the first
+  "Loading database information... done."; for the engine, load → etag-hash.k2d on its
+  `shard-load` timing line and → classify on its `connect` line. A boundary never observed is
+  still opened when the classifiers end, so every run has every phase.
+- **Per-sample path** (upstream, ours-plain): PROCS lanes, samples placed by PLACEMENT. Under a
+  serial upload mode (awscp-default, s5cmd-serial) a lane's next sample waits until the main shell
+  has uploaded the previous one; under overlap it does not. Ours-plain gets `AK2_DECOMPRESS=pipe`
+  whenever a shim is in use. **Engine path:** one cohort-mode process per node over the replica's
+  samples (`parallel:<PLACEMENT>`, INFLIGHT in flight); a serial upload mode is refused, because it
+  could not hold back the engine's next sample.
+- **Fleet:** rank r is replica r / SHARDS, shard r % SHARDS; replicas split the cohort by
+  PLACEMENT, and each engine replica has its own rendezvous (`…/rendezvous/g<replica>`).
+- **lad-sample** (#52's contract v1): one line per classified sample, streamed into the run log
+  and appended to `out/lad-samples.jsonl`. Fields: v, arm, rung, cohort, accession, pairs, rc,
+  phases (seconds to the ms: classify, sha, upload when serial, s5-identity, classify-process,
+  engine-*), outputs (output and report: bytes and the sha256 that `lv_upload_enqueue` computed on
+  the node before the upload), s5 {status n/a|identical|differs, fallback none|gzip, P, nproc},
+  plus rank, idx, t_start, t_end, input_bytes and threads. No classified/unclassified outputs are
+  written. Under O5's `sdk-stream` there is no local copy: the line waits for the push phase,
+  where each output is fetched by GET and hashed (`sha256_source` says so).
+- **S5.** The shim goes on PATH only (lever.sh), and the run fails if `$KRAKEN2_DIR` holds a gzip
+  or bzip2. The identity phase compares rapidgzip -P k with gzip -dc, by sha256, on every input at
+  this run's -P, and records -P and nproc. A sample that differs gets `s5.status: differs`
+  ("S5 not output-preserving on this input") and falls back to GNU gzip by per-sample shim
+  behaviour: a `gzip` ahead of the shim on PATH sends exactly its inputs to GNU gzip, and logs
+  them (`out/s5-fallback.calls`). After classify the run fails unless `gzip-shim.calls` has at
+  least 2 rapidgzip lines per non-fallback sample, and the fallback log 2 per fallback sample.
+  `rapidgzip-Pauto` is k = clamp(floor(nproc / (2 × samples at once)), 1, 16), resolved on the node.
+- **Streaming order.** `cmd 2> >(tee FILE | sed …) > /dev/null`: the process substitution forks
+  with the stdout in effect at that point, the run log. `make ladder-stream-test` checks this on
+  observed output, and shows the reverse order streams nothing.
+
+**Rehearsal seams** (`AK2_REHEARSE_*`, which run.sh refuses in a spec's env): lever.sh's (NVME,
+S5CMD, S5CMD_TGZ, RAPIDGZIP, WHEELS), upstream-cohort.sh's RAMDB_ROOT, and the body's GO,
+HT_ROOT, HASH_URL, SAMPLES and WEIGHTS, as probe_rehearse.sh and cohort_rehearse.sh use them.
+The full local rehearsal (Standard-8 served as RODA, K = 2 replicas, N = 2 shards, end-to-end
+Law 1) is #53.
+
+**Not covered locally:** the body end to end (#53); real NVMe, tmpfs and drop_caches; the
+identity phase on real rapidgzip (lever-test covers the shim).
