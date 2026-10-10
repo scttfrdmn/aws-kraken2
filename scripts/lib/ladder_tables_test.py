@@ -81,7 +81,7 @@ BAD = {"output": {"bytes": 9, "sha256": SHA_BAD}, "report": {"bytes": 5, "sha256
 
 
 def sample(arm, rung, outputs=None, s5="n/a", fallback=None, classify=10.0, acc="SRR1", rc=0, cohort=1, rg=RG1,
-           t0=None, t1=None):
+           t0=None, t1=None, extra=None):
     s5o = {"status": s5, "P": 16, "nproc": 192}
     if fallback:
         s5o["fallback"] = fallback
@@ -92,7 +92,7 @@ def sample(arm, rung, outputs=None, s5="n/a", fallback=None, classify=10.0, acc=
     t0 = T0 + 1 if t0 is None else t0
     return {"v": 1, "arm": arm, "rung": rung, "cohort": cohort, "accession": acc, "idx": 0, "pairs": 1000, "rc": rc,
             "t_start": t0, "t_end": t0 + classify if t1 is None else t1,
-            "phases": {"classify": classify}, "s5": s5o, "outputs": outputs or GOOD}
+            "phases": dict({"classify": classify}, **(extra or {})), "s5": s5o, "outputs": outputs or GOOD}
 
 
 UTIL_HEAD = ["scope", "node", "phase", "U_cpu", "U_mem_mean", "U_mem_peak", "U_net_baseline", "U_net_peak",
@@ -145,6 +145,12 @@ def lines(d, samples, crit=0.0, rank=0, net="ok"):
             f.write("[c1] lad-net " + json.dumps(ln) + "\n")
 
 
+def gzfail(x):
+    """The identity phase's gzip exited 1 on the input: an input or staging failure."""
+    x["s5"]["gz_exit"] = [1]
+    return x
+
+
 def single(res, rid, arm, rung, rep, wall, phases=None, samples=None, util_cost=None, util_mode="fleet", start=0,
            accessions=("SRR1",), ref=None, term=True, cohort=1, crit=0.0, net="ok", **pk):
     d = os.path.join(res, "g3", rid)
@@ -167,12 +173,14 @@ def record(res, variant=""):
     single(res, "20261010-000003-aaaaaaa", "S", "S0-Tv", 1, 600, {"fetch-db": 300, "classify": 40})
     single(res, "20261010-000004-aaaaaaa", "S", "S0-Tv", 2, 620, {"fetch-db": 310, "classify": 40}, util_mode="node")
     single(res, "20261010-000005-aaaaaaa", "S", "S1", 1, 560, {"fetch-db": 100, "classify": 40},
-           net="none" if variant == "nonet" else ({"v": 1, "rank": 7, "critical_measurement_s": 0} if variant == "badnet" else "ok"))
+           net="none" if variant == "nonet" else ({"v": 1, "rank": 7, "critical_measurement_s": 0} if variant == "badnet" else "ok"),
+           crit=600.0 if variant == "critbig" else 0.0)
     single(res, "20261010-000006-aaaaaaa", "S", "S1", 2, 600, {"fetch-db": 102, "classify": 40}, util_mode="none")
     single(res, "20261010-000007-aaaaaaa", "S", "S2", 1, 400, {"setup": 5, "identity": 30, "classify": 50}, crit=30.0)
     # S2 rep 2: its S5 identity check failed and the body fell back to gzip: output-preserving, kept.
     single(res, "20261010-000008-aaaaaaa", "S", "S2", 2, 410, {"setup": 5, "identity": 90, "classify": 50}, crit=90.0,
-           samples=[sample("S", "S2", s5="differs", fallback="gzip", rg=RG1)])
+           samples=[(gzfail if variant == "gzfail" else (lambda x: x))(
+               sample("S", "S2", s5="differs", fallback="gzip", rg=RG1))])
     # O0 rep 1's planned set is a reference (@PRJTEST:1-1 = SRR1), resolved from runs.tsv.
     single(res, "20261010-000009-aaaaaaa", "O", "O0", 1, 300, ref="@PRJTEST:1-1")
     o0 = None
@@ -246,8 +254,8 @@ def record(res, variant=""):
     # 2100 s (variant fneg: B's span is 0-3200 = 3200 s > its 3100 s wall: the model is refused; variant
     # c10law1: B's output differs from the stock reference: a Law 1 DEFECT, so B cannot feed the model).
     single(res, "20261010-000020-aaaaaaa", "S", "S0-T1", 1, 3000, cohort=10, accessions=("SRR1", "SRR2"), crit=100.0,
-           samples=[sample("S", "S0-T1", acc="SRR1", classify=1000.0, cohort=10, t0=T0 + 500),
-                    sample("S", "S0-T1", acc="SRR2", classify=1000.0, cohort=10, t0=T0 + 1500)])
+           samples=[sample("S", "S0-T1", acc="SRR1", classify=1000.0, cohort=10, t0=T0 + 500, extra={"sha-critical": 10.0}),
+                    sample("S", "S0-T1", acc="SRR2", classify=1000.0, cohort=10, t0=T0 + 1500, extra={"sha-critical": 10.0})])
     bspan = [(T0, T0 + 1600), (T0 + 1600, T0 + 3200)] if variant == "fneg" else [(T0 + 500, T0 + 1550), (T0 + 1550, T0 + 2600)]
     single(res, "20261010-000021-aaaaaaa", "S", "S0-T1", 2, 3100, cohort=10, accessions=("SRR1", "SRR2"),
            samples=[sample("S", "S0-T1", BAD if variant == "c10law1" else GOOD, acc=a, classify=1050.0, cohort=10,
@@ -262,18 +270,24 @@ def record(res, variant=""):
     with open(os.path.join(res, "g3", "campaign", "spend.tsv"), "w") as f:
         f.write("run\tcost_usd\n20261010-000001-aaaaaaa\t1\n")
     with open(os.path.join(res, "levers.tsv"), "w") as f:
-        if variant == "alias":
+        if variant in ("alias", "aliasbad"):
             # Sstar-time: an alias rung (no runs of its own), resolved at c1 to S2 in ladder.resolved.tsv and
             # unresolved elsewhere; O0's predecessor is the alias.
             lv = LEVERS.replace("\tstatus\n", "\tstatus\talias_of\n").replace("O0\tO\tS3\t", "O0\tO\tSstar-time\t")
-            lv += "Sstar-time\tS\tS3\tHOST\tO2\trun:classify\t\t\talias: the winner's runs\tS2|S1\n"
+            lv += "Sstar-time\tS\tS3\tHOST\tO2\trun:classify\t\t\talias: the winner's runs\tS2|S1|S0-Tv\n"
             f.write(lv)
         else:
             f.write(LEVERS)
-    if variant == "alias":
+    if variant in ("alias", "aliasbad"):
+        if variant == "aliasbad":
+            with open(os.path.join(res, "levers.tsv"), "w") as f:
+                f.write(lv)
         with open(os.path.join(res, "resolved.tsv"), "w") as f:
             f.write("origin\tcohort\tkey\tvalue\tsource\nSstar-time\t1\talias\tS2\tresults/g3/20261010-000007-aaaaaaa\n"
                     "S4\t1\tPROCS\t4\tresults/g3/x\n")
+            if variant == "aliasbad":
+                # A winner outside alias_of, and a second row for (Sstar-time, c1): both DEFECTs.
+                f.write("Sstar-time\t10\talias\tS9\tresults/x\nSstar-time\t1\talias\tS1\tresults/y\n")
     if variant == "overlap":
         # A c10 "T1" run whose 10 samples ran concurrently (each 500-1500): union 1000 s < sum 10000 s - 10 ms.
         accs = [f"SRR{10 + k}" for k in range(10)]
@@ -381,15 +395,21 @@ def base():
           (g.get("basis", "")[:18], g.get("n"), g.get("median")), ("modelled (flagged)", "1", "5100.000000"))
     g = one(T["rungs.tsv"], rung="S0-T1", axis="billed_usd", cohort=100)
     check("modelled c100 billed (5.0, 5.2)", g.get("median"), 5.1)
-    # Net, the same formula: A's lad-net critical 100 s -> net wall 2900, F_net 900, 900 + 4000 = 4900;
-    # B's 0 -> 5200. Median 5050. Net billed prorated: 5.0 x 4900/5000 = 4.9, 5.2 x 5200/5200 = 5.2 -> 5.05.
+    # Net: A's lad-net critical 100 s, of which its samples' sha-critical 10 + 10 = 20 s is in-sample. Net wall
+    # 2900; fixed part 2900 - 2000 + 20 = 920; per-sample net 2000 - 20 = 1980, x 4000/2000 pairs = 3960: 4880.
+    # B carries no in-sample share: 3100 - 2100 + 2100 x 2 = 5200 (measurement fixed at c10). Median 5040.
+    # Net billed prorated: 5.0 x 4880/5000 = 4.88, 5.2 x 5200/5200 = 5.2 -> 5.04.
     g = one(T["rungs.tsv"], rung="S0-T1", axis="wall_net_s", cohort=100)
-    check("modelled c100 net wall (4900, 5200)", (g.get("median"), g.get("basis", "")[:18]), ("5050.000000", "modelled (flagged)"))
+    check("modelled c100 net wall (4880, 5200)", (g.get("median"), g.get("basis", "")[:18]), ("5040.000000", "modelled (flagged)"))
+    check("net basis: A's in-sample share scaled, B's measurement fixed",
+          ("in-sample measurement scaled by P_target/P on 20261010-000020-aaaaaaa (20.000 s)" in g.get("basis", ""),
+           "measurement treated as fixed at its c10 value on 20261010-000021-aaaaaaa" in g.get("basis", "")), (True, True))
     g = one(T["rungs.tsv"], rung="S0-T1", axis="billed_net_usd", cohort=100)
-    check("modelled c100 net billed, prorated (4.9, 5.2)", g.get("median"), 5.05)
+    check("modelled c100 net billed, prorated (4.88, 5.2)", g.get("median"), 5.04)
     d = one(T["deltas.tsv"], rung="S0-Tv", axis="wall_net_s", cohort=100)
-    check("net delta on the modelled value (3005 - 5050), flagged", (d.get("delta"), d.get("status")),
-          ("-2045.000000", "modelled (flagged): not a measurement, not resolvable"))
+    check("net delta on the modelled value (3005 - 5040), flagged", (d.get("delta"), d.get("status")),
+          ("-2035.000000", "modelled (flagged): not a measurement, not resolvable"))
+    check("summary: net comes from each node's lad-net number", "lad-net critical_measurement_s" in T["summary"], True)
     g = one(T["rungs.tsv"], rung="S0-T1", axis="wall_s", cohort=1)
     check("the c1 model is ignored: c1 stays measured", (g.get("basis"), g.get("median")), ("measured", "1005.000000"))
     check("note: modelled row ignored because measured runs exist",
@@ -622,6 +642,9 @@ def variants():
     g = one(T["rungs.tsv"], rung="Sstar-time", axis="wall_s", cohort=10)
     check("an unresolved alias says so, never a silent empty", (g.get("n"), g.get("basis")),
           ("0", "alias unresolved: no ladder.resolved.tsv row (key alias)"))
+    check("note: unresolved at c100 although a candidate has runs there",
+          "Sstar-time is unresolved at c100 although its candidates S0-Tv have runs there (alias unresolved: no "
+          "ladder.resolved.tsv row (key alias))" in T["manifest"]["notes"], True)
     d = one(T["deltas.tsv"], rung="Sstar-time", axis="wall_s", cohort=10)
     check("its delta: alias unresolved", d.get("status"), "alias unresolved")
     d = one(T["deltas.tsv"], rung="Sstar-time", axis="wall_s", cohort=1)
@@ -646,6 +669,24 @@ def variants():
     check("a malformed lad-net line: exit 1", rc, 1)
     check("malformed lad-net: contract DEFECT, excluded", one(T["runs.tsv"], run_id="20261010-000005-aaaaaaa").get("in_attribution"),
           "no: DEFECT (contract): 20261010-000005-aaaaaaa 20261010-000005-aaaaaaa: lad-net: rank 7 is not the node's rank 0")
+    rc, T = run("critbig")
+    check("critical_measurement_s beyond the node's window: exit 1", rc, 1)
+    check("... a contract DEFECT, the run excluded", one(T["runs.tsv"], run_id="20261010-000005-aaaaaaa").get("in_attribution"),
+          "no: DEFECT (contract): 20261010-000005-aaaaaaa 20261010-000005-aaaaaaa: lad-net: critical_measurement_s 600.000 "
+          "exceeds the node's window 560.000 s (terminated_at - launch_time)")
+    rc, T = run("aliasbad")
+    check("resolved: a winner outside alias_of and a duplicate row: exit 1", rc, 1)
+    dd = T["manifest"]["defects"]
+    check("both are DEFECTs", ("resolved: ladder.resolved.tsv: Sstar-time at c10 names 'S9', not one of its alias_of S2|S1|S0-Tv" in dd,
+                               "resolved: ladder.resolved.tsv: Sstar-time at c1 resolved more than once" in dd), (True, True))
+    check("the duplicated cohort is left unresolved", one(T["rungs.tsv"], rung="Sstar-time", axis="wall_s", cohort=1).get("basis"),
+          "alias unresolved: Sstar-time at c1 has more than one ladder.resolved.tsv row")
+    rc, T = run("gzfail")
+    check("gzip failed in the identity phase: exit 1", rc, 1)
+    check("... its own DEFECT (input or staging), the run excluded",
+          one(T["runs.tsv"], run_id="20261010-000008-aaaaaaa").get("in_attribution"),
+          "no: DEFECT (input): SRR1: input or staging failure: gzip exited [1]")
+    check("... and not an S5 finding", any("fell back to gzip" in f for f in T["manifest"]["findings"]), False)
     rc, T = run("overlap")
     check("model refused when 10 samples overlap (not a serial T1 run)", T["model_msgs"][0],
           "refused: 20261010-000025-aaaaaaa: samples overlap (union of spans 1000.000 s < their sum 10000.000 s - 1 ms x 10): "
@@ -740,12 +781,26 @@ def units():
     with open(os.path.join(tmp, "r.tsv"), "w") as f:
         f.write("origin\tcohort\tkey\tvalue\tsource\nSstar-time\tc10\talias\tS7\tresults/x\n"
                 "Sstar-time\t1\talias\tS9\tresults/y\n")
-    res = lt.load_resolved(os.path.join(tmp, "r.tsv"), lt.Reader(),
-                           {"Sstar-time": {"alias": True, "alias_of": ["S9", "Sstar-r8g"]}})
+    res, errs = lt.load_resolved(os.path.join(tmp, "r.tsv"), lt.Reader(),
+                                 {"Sstar-time": {"alias": True, "alias_of": ["S9", "Sstar-r8g"]}})
     shutil.rmtree(tmp)
-    check("resolved: a winner outside alias_of is not a resolution; c-prefixed cohorts read",
-          res, {("Sstar-time", 10): (None, "alias unresolved: ladder.resolved.tsv names 'S7', not one of S9|Sstar-r8g"),
-                ("Sstar-time", 1): ("S9", "alias of S9 (ladder.resolved.tsv; source results/y)")})
+    check("resolved: a winner outside alias_of is not a resolution, and a DEFECT; c-prefixed cohorts read",
+          (res, errs), ({("Sstar-time", 10): (None, "alias unresolved: ladder.resolved.tsv names 'S7', not one of S9|Sstar-r8g"),
+                         ("Sstar-time", 1): ("S9", "alias of S9 (ladder.resolved.tsv; source results/y)")},
+                        ["ladder.resolved.tsv: Sstar-time at c10 names 'S7', not one of its alias_of S9|Sstar-r8g"]))
+    # N-1, the reviewer's cases: critical_measurement_s beyond the node's own window.
+    big = {"run_id": "x", "nodes_info": [nd("A", 0, 0.0, 150.0, ok(0, 500.0)), nd("B", 1, 1.0, 200.0, ok(1, 500.0))]}
+    check("crit (500, 500) against windows (150, 199): two DEFECTs", lt.lad_net_errors(big),
+          ["x A: lad-net: critical_measurement_s 500.000 exceeds the node's window 150.000 s (terminated_at - launch_time)",
+           "x B: lad-net: critical_measurement_s 500.000 exceeds the node's window 199.000 s (terminated_at - launch_time)"])
+    one_ = {"run_id": "y", "nodes_info": [nd("A", 0, 1.0, 200.0, ok(0, 300.0))]}
+    check("crit 300 against a 199 s window: a DEFECT", lt.lad_net_errors(one_),
+          ["y A: lad-net: critical_measurement_s 300.000 exceeds the node's window 199.000 s (terminated_at - launch_time)"])
+    check("crit equal to the window is allowed", lt.lad_net_errors({"run_id": "z", "nodes_info": [nd("A", 0, 1.0, 200.0, ok(0, 199.0))]}),
+          [])
+    check("an empty gzip stream is an input failure", lt.gzip_failed({"s5": {"status": "differs", "gz_exit": [0, 0],
+                                                                              "gz_sha256": [GZ, lt.EMPTY_SHA]}}),
+          "input or staging failure: gzip's output is the empty stream")
     bad["samples"][0]["s5"] = {"status": "identical", "rg_sha256": [GZ]}
     check("contract: rg/gz sha256 lists required", len(lt.contract_errors(bad)), 1)
     tmp = tempfile.mkdtemp(prefix="ladder-lv-")

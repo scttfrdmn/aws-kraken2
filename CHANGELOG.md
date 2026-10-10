@@ -14,16 +14,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - net wall is computed per node: the max over nodes of (`terminated_at` −
     `critical_measurement_s`), minus the first launch. Each node's number comes from its one
     `lad-net {v, rank, critical_measurement_s}` line in `out/lad-net.jsonl`, which #51 computes
-    under its final rule. A missing line makes net missing (with a note), and a malformed one is a
-    contract DEFECT;
+    under its final rule. A missing line makes net missing (with a note). A malformed one, or a
+    `critical_measurement_s` beyond the node's own window, is a contract DEFECT;
   - net billed and net effective cost are prorated, labelled "net (prorated)";
   - each series gets its own resolution check.
 
   Alias rungs (`status: alias: …` with `alias_of`) read their winner's runs from
   `scripts/g3/ladder.resolved.tsv` (key `alias`). An unresolved alias says "alias unresolved".
   The s5 contract follows the body's B1 rule: `differs` also covers a non-zero `gz_exit`/`rg_exit`
-  or an empty-stream sha256, and `identical` is refused with any non-zero exit (docs/ladder.md,
-  "Ladder tables").
+  or an empty-stream sha256, and `identical` is refused with any non-zero exit. A gzip failure
+  (a non-zero `gz_exit` or an empty gzip stream) is an input DEFECT of its own. A resolved winner
+  outside `alias_of`, or a duplicate (rung, cohort) row, is a DEFECT. The net model scales the
+  in-sample measurement (sha-critical, s5-identity) by P_target/P (docs/ladder.md, "Ladder
+  tables").
 - `make g3-ladder` (`scripts/lib/ladder_tables.py`; #52, WP-8 of the #25 ladder). It builds the
   ladder's tables from the record only and writes them to `results/g3/ladder/`:
   - per-run tidy rows from the `lad-sample` lines plus the manifest, with billed $, U_cpu,

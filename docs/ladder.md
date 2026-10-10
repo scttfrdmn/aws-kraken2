@@ -286,7 +286,7 @@ Contract version 1:
 | `t_start`, `t_end` | yes | number | epoch seconds (3 decimals) when the sample's work started and ended on the node, with `t_end` ≥ `t_start`. The model's per-sample span is the union of these intervals. |
 | `phases` | yes | object | phase name → seconds, written with 3 decimals (ms granularity). A `sample:` lever phase must use names that appear here. |
 | `outputs` | yes | object | role → `{"bytes": int, "sha256": "<64 lowercase hex, computed on the node>"}`. `output` and `report` are required; add `classified_1`, `classified_2`, `unclassified_1` and `unclassified_2` when they are written. The set of roles is the file set. |
-| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "gz_exit": [int, ...], "rg_exit": [int, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, with `gz_exit` and `rg_exit` each tool's real exit status, one per input file in mate order (R1, R2). The four lists must have the same length: the shas 64 lowercase hex, the exits integers. **The body's B1 rule** decides `differs`: the sha lists differ, **or** any exit is non-zero, **or** either list holds the empty-stream sha256 (`e3b0c442…b855`). `differs` must satisfy it and `identical` must not; so `identical` with a non-zero exit, or with an empty output, is a contract DEFECT. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
+| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "gz_exit": [int, ...], "rg_exit": [int, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, with `gz_exit` and `rg_exit` each tool's real exit status, one per input file in mate order (R1, R2). The four lists must have the same length: the shas 64 lowercase hex, the exits integers. **The body's B1 rule** decides `differs`: the sha lists differ, **or** any exit is non-zero, **or** either list holds the empty-stream sha256 (`e3b0c442…b855`). `differs` must satisfy it and `identical` must not; so `identical` with a non-zero exit, or with an empty output, is a contract DEFECT. **A non-zero `gz_exit`, or an empty gzip stream** (`e3b0c442…` in `gz_sha256`), is a DEFECT of its own, of class `input`: an input or staging failure, not an S5 finding. The run is excluded, and the sample is not counted in the S5 fallback finding. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
 | `rank`, `idx`, `input_bytes`, `threads` | no | | node rank, index in the cohort, input bytes, threads |
 
 A missing or ill-typed required field is a DEFECT (contract) and excludes the run.
@@ -302,9 +302,13 @@ rung, with 0 where the node did no measurement-only work:
 | `rank` | yes | int | the node's rank (0 for a single run; the cohort.json member rank otherwise) |
 | `critical_measurement_s` | yes | number ≥ 0 | the node's measurement-only seconds on its critical path, 3 decimals: everything #51's rule takes out of the gross wall (S5's identity, O5's sha-get, the critical share of output hashing, …) |
 
-A missing line makes the run's net missing, with a note. A malformed line (wrong `v`, a rank
-that is not the node's, negative seconds) or more than one line per node is a DEFECT (contract),
-and the run is excluded.
+A missing line makes the run's net missing, with a note. The following are each a DEFECT
+(contract), and the run is excluded:
+- a malformed line: a wrong `v`, a rank that is not the node's, or negative seconds;
+- more than one line per node;
+- a `critical_measurement_s` larger than the node's own window (`terminated_at` − `launch_time`).
+
+With that last rule, net can never be negative.
 
 **`scripts/g3/ladder.levers.tsv`** (#51) is tab-separated with a header row. `#` lines are
 comments. Columns are read by name:
@@ -319,7 +323,7 @@ comments. Columns are read by name:
 | `endpoint` | the endpoint(s) this rung is, for example `S*-time;S*-cost` (every cohort) or `c1:S*-time;c10:S*-time` (per cohort; a per-cohort declaration wins). Two rungs declaring the same endpoint for the same cohort is a DEFECT (levers). An endpoint that is not declared gives the status "endpoint not declared"; nothing is selected from the data. |
 | `pred_wall_s`, `pred_usd`, `pred_phase_s` (optional) | the predicted delta on each axis, set against the threshold |
 | `alias_of` | for an alias rung, its candidates separated by `\|` (e.g. `S9\|Sstar-r8g\|Sstar-r8gd`) |
-| `status` (optional) | empty or `run` for a run rung. `alias: <rule>`, with `alias_of` set, marks an **alias rung** (Sstar-time, Sstar-cost): it has no runs of its own, and at each cohort its runs are those of the winner that `scripts/g3/ladder.resolved.tsv` names for it (below). An alias with no resolution at a cohort, or whose named winner is not one of its `alias_of`, gives the status "alias unresolved" in rungs.tsv, deltas.tsv and pairs.tsv, never a silent empty. An alias whose winner is its own predecessor adds no lever: its delta row says "<rung> is an alias of its predecessor <rung>: no lever", and the pairs skip it. Otherwise the alias's delta is its winner's runs against the alias's predecessor, labelled "alias of <winner>". A rung that takes an alias as its predecessor (O0) is measured against the winner's runs. |
+| `status` (optional) | empty or `run` for a run rung. `alias: <rule>`, with `alias_of` set, marks an **alias rung** (Sstar-time, Sstar-cost): it has no runs of its own, and at each cohort its runs are those of the winner that `scripts/g3/ladder.resolved.tsv` names for it (below). An alias with no resolution at a cohort, or whose named winner is not one of its `alias_of`, gives the status "alias unresolved" in rungs.tsv, deltas.tsv and pairs.tsv, never a silent empty. A ladder.resolved.tsv row whose winner is outside `alias_of`, and a second row for the same (rung, cohort), are each a DEFECT (resolved) and leave the alias unresolved there. An alias left unresolved at a cohort where any of its candidates has runs gets a note. An alias whose winner is its own predecessor adds no lever: its delta row says "<rung> is an alias of its predecessor <rung>: no lever", and the pairs skip it. Otherwise the alias's delta is its winner's runs against the alias's predecessor, labelled "alias of <winner>". A rung that takes an alias as its predecessor (O0) is measured against the winner's runs. |
 | `status`, continued | `not-run: <reason>` (read from this column only) means the rung is not run, for example `not-run: no parameter change` for S3 when the tune probe chose `none`. It has its own deltas row labelled with that text and no numbers. Its successor's delta is taken against the **nearest run ancestor**, and labelled with that ancestor and with the skipped rung's text (deltas.tsv `predecessor_basis` and status; pairs.tsv lever-row note). The pairs skip the rung. A run on such a rung gets a note. |
 
 The **stock rungs** are the S root whose lever is `stock` (S0-T1) and its `threads` child
@@ -337,11 +341,17 @@ that passes validation **and Law 1** (a run with any DEFECT cannot feed the mode
 - wall(c100) = F + P_target / r, where P_target is the `read_count` sum of `@PRJNA398089:1-100`
   in the recorded runs.tsv;
 - billed(c100) = wall × price/h × nodes / 3600;
-- net, by the same formula from the run's net wall (the per-node lad-net rule): F_net = net wall
-  − S, wall_net(c100) = F_net + P_target / r, and billed_net(c100) = billed(c100) ×
-  wall_net/wall, prorated as the tables prorate. The `wall_net_s` and `billed_net_usd` rows are
-  written only when every run used has a net wall and F_net ≥ 0; otherwise the message names
-  the run and only the gross rows are written.
+- net, from the run's net wall (the per-node lad-net rule):
+  - C = wall − net wall is the run's measurement-only seconds;
+  - its in-sample share C_in, the sum of the samples' own `phases["sha-critical"]` and
+    `phases["s5-identity"]` (inside their spans), scales with the samples, and the rest is fixed;
+  - wall_net(c100) = (net wall − S + C_in) + (S − C_in) × P_target / P;
+  - billed_net(c100) = billed(c100) × wall_net/wall, prorated as the tables prorate.
+
+  A run whose sample lines carry neither share is labelled "measurement treated as fixed at its
+  c10 value" in `basis`; its formula reduces to F_net + P_target / r. The `wall_net_s` and
+  `billed_net_usd` rows are written only when every run used has a net wall, C_in ≤ C and a
+  fixed part ≥ 0. Otherwise the message names the run, and only the gross rows are written.
 
 The value written is the median over those runs. The flags are `--rung`, `--from-cohort`,
 `--to-cohort` and `--target-ref`. It exits 2 and writes nothing if no run qualifies.
@@ -414,7 +424,8 @@ never generates it.
   seconds. The axes are `wall_net_s`/`wall_s`, `billed_net_usd`/`billed_usd` and
   `eff_*_net_usd`/`eff_*_usd`. The `series` column labels each axis "net (headline)",
   "net (prorated; headline)", "net (prorated)" or "gross", and `net_basis` names the rule. The
-  resolution check runs on each series separately. A net wall below 0 gets a note. The modelled
+  resolution check runs on each series separately. A `critical_measurement_s` beyond its node's
+  window is a contract DEFECT, so net is never negative. The modelled
   rows (`make g3-ladder-model`) carry both gross and net.
 - **Resolution.** A delta (rung median − predecessor median) is **resolved** only if |Δ| > 2 ×
   max(range of the rung, range of the predecessor, q). Every other delta is **unresolvable**,

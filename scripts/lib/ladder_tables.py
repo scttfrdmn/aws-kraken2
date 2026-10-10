@@ -230,12 +230,13 @@ def load_levers(path, rd):
 
 
 def load_resolved(path, rd, levers):
-    """(alias rung, cohort) -> (winner or None, note), from ladder.resolved.tsv rows with key
-    `alias` (columns origin, cohort, key, value, source). A winner not among the rung's alias_of
-    candidates is not a resolution. Missing file: {}."""
-    out = {}
+    """((alias rung, cohort) -> (winner or None, note), errors), from ladder.resolved.tsv rows with
+    key `alias` (columns origin, cohort, key, value, source). A winner outside the rung's alias_of
+    and a duplicated (rung, cohort) are errors (DEFECTs), and leave the alias unresolved there.
+    Missing file: ({}, [])."""
+    out, errs = {}, []
     if not path or not os.path.exists(path):
-        return out
+        return out, errs
     lines = [ln for ln in rd.text(path).splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
     for f in csv.DictReader(lines, delimiter="\t"):
         if (f.get("key") or "").strip() != "alias":
@@ -244,11 +245,16 @@ def load_resolved(path, rd, levers):
         lv = levers.get(rung)
         if not c.isdigit() or not lv or not lv.get("alias"):
             continue
-        if v not in lv["alias_of"]:
-            out[(rung, int(c))] = (None, f"alias unresolved: ladder.resolved.tsv names {v!r}, not one of {'|'.join(lv['alias_of'])}")
+        k = (rung, int(c))
+        if k in out:
+            errs.append(f"ladder.resolved.tsv: {rung} at c{c} resolved more than once")
+            out[k] = (None, f"alias unresolved: {rung} at c{c} has more than one ladder.resolved.tsv row")
+        elif v not in lv["alias_of"]:
+            errs.append(f"ladder.resolved.tsv: {rung} at c{c} names {v!r}, not one of its alias_of {'|'.join(lv['alias_of'])}")
+            out[k] = (None, f"alias unresolved: ladder.resolved.tsv names {v!r}, not one of {'|'.join(lv['alias_of'])}")
         else:
-            out[(rung, int(c))] = (v, f"alias of {v} (ladder.resolved.tsv; source {f.get('source') or '-'})")
-    return out
+            out[k] = (v, f"alias of {v} (ladder.resolved.tsv; source {f.get('source') or '-'})")
+    return out, errs
 
 
 def declared_endpoints(levers):
@@ -581,6 +587,9 @@ def lad_net_errors(run):
                 errs.append(f"{where}: rank {x.get('rank')!r} is not the node's rank {n['rank']!r}")
             elif not (isinstance(c, (int, float)) and not isinstance(c, bool) and c >= 0):
                 errs.append(f"{where}: critical_measurement_s {c!r} is not seconds >= 0")
+            elif n["launch"] is not None and n["term"] is not None and c > n["term"] - n["launch"]:
+                errs.append(f"{where}: critical_measurement_s {c:.3f} exceeds the node's window "
+                            f"{n['term'] - n['launch']:.3f} s (terminated_at - launch_time)")
     return errs
 
 
@@ -696,6 +705,20 @@ def sample_errors(run, s):
     return errs
 
 
+def gzip_failed(s):
+    """The reason, if the identity phase's gzip run failed on this input (a non-zero gz_exit, or an
+    empty gzip stream); "" otherwise."""
+    x = s.get("s5") if isinstance(s.get("s5"), dict) else {}
+    if x.get("status") in (None, "n/a"):
+        return ""
+    why = []
+    if any(e != 0 for e in x.get("gz_exit") or []):
+        why.append(f"gzip exited {x.get('gz_exit')}")
+    if EMPTY_SHA in (x.get("gz_sha256") or []):
+        why.append("gzip's output is the empty stream")
+    return ("input or staging failure: " + " and ".join(why)) if why else ""
+
+
 def sha_list(v):
     return isinstance(v, list) and v and all(isinstance(x, str) and HEX64.match(x) for x in v)
 
@@ -737,6 +760,11 @@ def validate(runs, levers, defects):
             elif s["rc"] != 0:
                 defects.append(("sample failed", f"{rid} {s['accession']}: rc {s['rc']}"))
                 r["exclude"].append(f"DEFECT (sample failed): {s['accession']} rc {s['rc']}")
+            if not es and gzip_failed(s):
+                # gzip itself failed or gave an empty stream: an input or staging failure, not an S5 finding.
+                e = f"{s['accession']}: {gzip_failed(s)}"
+                defects.append(("input", f"{rid} {e}"))
+                r["exclude"].append(f"DEFECT (input): {e}")
         r["bad_samples"] = bad
         got = [str(s.get("accession")) for s in r["samples"]]
         if r["planned"] is None:
@@ -1114,7 +1142,7 @@ def s5_findings(runs, levers):
                 if "accession" in s:
                     x = by.setdefault(r["params"]["rung"], [set(), set()])
                     x[1].add(str(s["accession"]))
-                    if s5_of(s) == ("differs", "gzip"):
+                    if s5_of(s) == ("differs", "gzip") and not gzip_failed(s):
                         x[0].add(str(s["accession"]))
     for rung, (fb, allacc) in sorted(by.items()):
         if fb:
@@ -1192,6 +1220,12 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
     keys = set(G.g) | {(r, c) for r, c, _ in modelled}
     cs = {c for _, c in keys}
     keys = sorted(keys | {(r, c) for r, lv in levers.items() if lv.get("alias") for c in cs})
+    for (rung, c) in keys:
+        if (levers.get(rung) or {}).get("alias") and G.alias(rung, c)[0] is None:
+            have = [x for x in levers[rung]["alias_of"] if G.runs(x, c)]
+            if have:
+                notes.append(f"{rung} is unresolved at c{c} although its candidates {', '.join(have)} have runs there "
+                             f"({G.alias(rung, c)[1]})")
     # 2. rungs.tsv (and 4. effcost.tsv)
     srows, erows = [], []
     for (rung, cohort) in keys:
@@ -1351,9 +1385,9 @@ def summary_md(T, defects, notes, excl, runs, commit, findings):
     if blocks:
         L += ["## Pairs (net is the headline, gross beside it: wall on the time endpoint, billed $ on the cost endpoint; "
               "every axis is in pairs.tsv)", "",
-              "Net = gross - run:identity - run:sha-get - the max over (node, lane) of sample:sha-critical (Scott, "
-              "2026-10-10); net billed is prorated (billed x net/gross). Each total is followed by its per-lever rows "
-              "(Law 5).", "",
+              "Net wall = the max over nodes of (terminated_at - that node's lad-net critical_measurement_s, the "
+              "measurement-only seconds as the ladder body defines them) - the first launch (Scott, 2026-10-10); net billed "
+              "is prorated (billed x net/gross). Each total is followed by its per-lever rows (Law 5).", "",
               "| pair | cohort | axis | series | source | target | endpoint basis | row | rung | delta | status | "
               "ratio source/target | sum of lever deltas | net basis | note |",
               "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
@@ -1389,9 +1423,9 @@ def main(argv=None):
     cs = None
     if os.path.exists(spend_p):
         cs = {r.get("run") for r in csv.DictReader(rd.text(spend_p).splitlines(), delimiter="\t")}
-    resolved = load_resolved(a.resolved, rd, levers)
+    resolved, rerrs = load_resolved(a.resolved, rd, levers)
     T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved)
-    defects += [("modelled", f"refused: {x}") for x in refused]
+    defects += [("modelled", f"refused: {x}") for x in refused] + [("resolved", x) for x in rerrs]
     if not levers:
         notes.insert(0, f"no lever table at {os.path.relpath(a.levers, ROOT)}: no predecessors, endpoints, deltas or pairs")
     os.makedirs(a.out, exist_ok=True)
