@@ -41,9 +41,9 @@ GROUPS = ["CLASSIFIER", "THREADS+PROCS", "DB_STAGE", "DB_PLACE+DB_LOAD", "HOST_T
           "ETAG_CHECK", "HOST"]
 GROUP = {k: g for g in GROUPS for k in g.split("+")}
 GROUP["instance"] = "HOST"
-COLS = ["rung", "arm", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
+COLS = ["rung", "arm", "status", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
         "pred_wall_s", "pred_usd", "pred_phase_s", "instance", "az", "ttl_min_c1"] + KEYS + ["note"]
-LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
+LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S3": "host-tunes", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
 ENDPOINTS = {"S": ("S*-time", "S*-cost"), "O": ("O*-time", "O*-cost")}
 COHORTS = (1, 10, 100, 1000)
 SAFE = re.compile(r"^[A-Za-z0-9._-]+$")
@@ -151,6 +151,12 @@ def check(rows):
             for c in [c.strip() for c in cp.split(",")]:
                 if c not in names:
                     probs.append("%s: counterpart %r is neither a rung nor 'none: <reason>'" % (n, c))
+        st = r["status"]
+        if st != "run" and not re.fullmatch(r"not-run: .{8,}", st):
+            probs.append("%s: status %r (run, or not-run: <reason>)" % (n, st))
+        pr = names.get(r["predecessor"])
+        if pr is not None and pr["status"] != "run":
+            probs.append("%s: predecessor %s is not run (%s); name the rung before it" % (n, pr["rung"], pr["status"]))
         if r["predecessor"] == "-":
             if r["group"] != "-":
                 probs.append("%s: the root changes no key-group (group '-')" % n)
@@ -163,6 +169,10 @@ def check(rows):
         co = coupled_keys(r)
         free = [k for k in ch if k not in co]
         groups = sorted({GROUP[k] for k in free})
+        if st != "run":
+            if ch:
+                probs.append("%s: is %s but changes %s against %s" % (n, st, ",".join(ch), p["rung"]))
+            continue
         if r["group"] not in GROUPS:
             probs.append("%s: group %s is not a key-group (%s)" % (n, r["group"], " ".join(GROUPS)))
         if groups != [r["group"]]:
@@ -239,6 +249,8 @@ def resolve(rows, rung, cohort, resolved=None):
     if rung not in names:
         raise KeyError("no rung %s in the table" % rung)
     r = names[rung]
+    if r["status"] != "run":
+        raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
     res = read_resolved(resolved) if resolved is not None else {}
     bad, out = [], {}
     for k in KEYS + ["instance"]:
@@ -444,14 +456,23 @@ def _self_test():
         resolve(rows, r, 1, None)
     try:
         resolve(rows, "S3", 1, None)
-        raise AssertionError("S3 resolved without a resolution")
+        raise AssertionError("the not-run S3 resolved")
     except Unresolved as e:
-        assert "HOST_TUNES=@probe-tune" in str(e), e
+        assert "not-run" in str(e), e
+    assert names["S4"]["predecessor"] == "S2a" and names["S3"]["HOST_TUNES"] == "none"
+    t = _copy(rows)
+    by_name(t)["S3"]["HOST_TUNES"] = "precompact"
+    assert any("S3: is not-run: no parameter change but changes HOST_TUNES" in p for p in check(t)), check(t)
+    t = _copy(rows)
+    by_name(t)["S4"]["predecessor"] = "S3"
+    assert any("S4: predecessor S3 is not run" in p for p in check(t)), check(t)
     with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
-        f.write("origin\tcohort\tkey\tvalue\tsource\nS3\t1\tHOST_TUNES\tnone\tresults/g3/x/tables/tune-selection.tsv\n")
+        f.write("origin\tcohort\tkey\tvalue\tsource\nS4\t1\tTHREADS\t96\tresults/g3/x/tables/pxt.tsv\n"
+                "S4\t1\tPROCS\t1\tresults/g3/x/tables/pxt.tsv\n")
     try:
-        assert resolve(rows, "S3", 1, f.name)["params"]["HOST_TUNES"] == "none"
-        for rung, c in (("S3", 10), ("S4", 1)):
+        assert resolve(rows, "S4", 1, f.name)["params"]["THREADS"] == "96"
+        assert resolve(rows, "S5", 1, f.name)["params"]["THREADS"] == "96"   # inherits S4's token
+        for rung, c in (("S4", 10), ("S8", 1)):
             try:
                 resolve(rows, rung, c, f.name)
                 raise AssertionError("%s resolved at c%d" % (rung, c))

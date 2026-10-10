@@ -206,7 +206,7 @@ make ladder-stream-test                             # the body's launch and watc
 
 One row per rung; its header comment defines the columns. Read by `scripts/lib/ladder_levers.py`,
 the generator, and by column name by #52's `ladder_tables.py`. `lever` is what the tables report:
-the key-group, except `stock` (S0-T1), `threads` (S0-Tv) and `rapidgzip` (S5). `group` is the
+the key-group, except `stock` (S0-T1), `threads` (S0-Tv), `host-tunes` (S3) and `rapidgzip` (S5). `group` is the
 key-group the one-lever check compares.
 
 **Key-groups:** CLASSIFIER; THREADS+PROCS; DB_STAGE; DB_PLACE+DB_LOAD; HOST_TUNES; GUNZIP;
@@ -239,7 +239,14 @@ S7 → S7a (tool) then S7b (overlap); O4 → O4a (LPT) then O4b (in flight).
 whose rung (S9, Sstar-r8g, Sstar-r8gd) has the lowest median wall_s (billed_usd) at that cohort;
 ladder 2 starts from `Sstar-time`; O5, its top, is O\*-time and O\*-cost.
 
-**Placeholders:** `@probe-tune` (S3's set, from the #41 probe) and `@select:<rung>[:<KEY>]`
+**Not-run rungs** (`status`: `run`, or `not-run: <reason>`): kept for the record, never
+generated, never a predecessor, and they must change nothing against their own predecessor.
+S3 is one: the tune probe (run 20261009-223514-4ee77c3) selected `none` for both regimes, and the
+null is not evidence of no effect (regime a's load, median 243.4 s, sits at the 244.4 s network
+floor; regime b's spread was 33 s). So HOST_TUNES is `none` throughout, S3's lever is
+`host-tunes`, and S4's predecessor is S2a. O0b's tune (regime b) is also `none`.
+
+**Placeholders:** `@probe-tune` (a host-tune set still to be chosen; none is left) and `@select:<rung>[:<KEY>]`
 (S4's P × T, S8's K, the S\* hosts, O2's family, O3's N, O4b's in flight; `@select:S4:PROCS`
 means S4's PROCS value). Descendants carry the same token, so one resolution reaches every rung
 that inherits it. `scripts/g3/ladder.resolved.tsv` (absent so far: columns origin, cohort, key,
