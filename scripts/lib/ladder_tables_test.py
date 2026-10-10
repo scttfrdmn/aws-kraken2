@@ -145,6 +145,17 @@ def lines(d, samples, crit=0.0, rank=0, net="ok"):
             f.write("[c1] lad-net " + json.dumps(ln) + "\n")
 
 
+def identity_lines(d, objs):
+    """out/lad.jsonl (with a non-identity line beside them) and the streamed lad-identity lines."""
+    with open(os.path.join(d, "out", "lad.jsonl"), "w") as f:
+        f.write(json.dumps({"kind": "config", "params": {}}) + "\n")
+        for o in objs:
+            f.write(json.dumps(o) + "\n")
+    with open(os.path.join(d, "log", "run.log"), "a") as f:
+        for o in objs:
+            f.write("[c1] lad-identity " + json.dumps(o) + "\n")
+
+
 def gzfail(x):
     """The identity phase's gzip exited 1 on the input: an input or staging failure."""
     x["s5"]["gz_exit"] = [1]
@@ -178,9 +189,19 @@ def record(res, variant=""):
     single(res, "20261010-000006-aaaaaaa", "S", "S1", 2, 600, {"fetch-db": 102, "classify": 40}, util_mode="none")
     single(res, "20261010-000007-aaaaaaa", "S", "S2", 1, 400, {"setup": 5, "identity": 30, "classify": 50}, crit=30.0)
     # S2 rep 2: its S5 identity check failed and the body fell back to gzip: output-preserving, kept.
-    single(res, "20261010-000008-aaaaaaa", "S", "S2", 2, 410, {"setup": 5, "identity": 90, "classify": 50}, crit=90.0,
-           samples=[(gzfail if variant == "gzfail" else (lambda x: x))(
+    # Its lad-net carries the components (identity 90 + sha-get 0 + sha-critical 0 = 90).
+    single(res, "20261010-000008-aaaaaaa", "S", "S2", 2, 410, {"setup": 5, "identity": 90, "classify": 50},
+           net={"v": 1, "rank": 0, "critical_measurement_s": 90.0, "identity_s": 90.0, "sha_get_s": 0.0, "sha_critical_s": 0.0},
+           samples=[(gzfail if variant in ("gzfail", "idboth") else (lambda x: x))(
                sample("S", "S2", s5="differs", fallback="gzip", rg=RG1))])
+    if variant in ("idline", "idboth"):
+        # The body's identity lines (out/lad.jsonl, kind identity; streamed as lad-identity): GNU gzip gave an
+        # empty stream on SRR1_1 (input_defect), while the sample's own s5 (idline) shows nothing wrong.
+        identity_lines(os.path.join(res, "g3", "20261010-000008-aaaaaaa"),
+                       [{"kind": "identity", "file": "SRR1_1.fastq.gz", "sample": "SRR1", "gzip_sha256": lt.EMPTY_SHA,
+                         "gzip_exit": 0, "identical": False, "input_defect": True},
+                        {"kind": "identity", "file": "SRR1_2.fastq.gz", "sample": "SRR1", "gzip_exit": 0,
+                         "identical": True, "input_defect": False}])
     # O0 rep 1's planned set is a reference (@PRJTEST:1-1 = SRR1), resolved from runs.tsv.
     single(res, "20261010-000009-aaaaaaa", "O", "O0", 1, 300, ref="@PRJTEST:1-1")
     o0 = None
@@ -276,6 +297,10 @@ def record(res, variant=""):
             lv = LEVERS.replace("\tstatus\n", "\tstatus\talias_of\n").replace("O0\tO\tS3\t", "O0\tO\tSstar-time\t")
             lv += "Sstar-time\tS\tS3\tHOST\tO2\trun:classify\t\t\talias: the winner's runs\tS2|S1|S0-Tv\n"
             f.write(lv)
+        elif variant == "notruncohort":
+            # S1 is not run at c1 (not_run_cohorts): S2's c1 delta is against S0-Tv.
+            f.write(LEVERS.replace("\tstatus\n", "\tstatus\tnot_run_cohorts\n")
+                    .replace("\t-50\n", "\t-50\t\tc1: the only candidate is S0-Tv's own configuration\n"))
         else:
             f.write(LEVERS)
     if variant in ("alias", "aliasbad"):
@@ -445,6 +470,7 @@ def base():
     g = one(T["rungs.tsv"], rung="S2", axis="billed_net_usd", cohort=1)
     check("S2 net billed, prorated", (g.get("median"), g.get("series")), ("0.345000", "net (prorated; headline)"))
     r = one(runs, run_id="20261010-000008-aaaaaaa")
+    check("runs.tsv: the lad-net components", r.get("net_components"), "r0=identity:90.000,sha_get:0.000,sha_critical:0.000")
     check("runs.tsv: gross 410, net 320 from the node's lad-net (r0=90)",
           (r.get("wall_s"), r.get("wall_net_s"), r.get("critical_measurement_s"), r.get("net_basis")),
           ("410.0", "320.000", "r0=90.000", lt.NET_BASIS))
@@ -687,6 +713,30 @@ def variants():
           one(T["runs.tsv"], run_id="20261010-000008-aaaaaaa").get("in_attribution"),
           "no: DEFECT (input): SRR1: input or staging failure: gzip exited [1]")
     check("... and not an S5 finding", any("fell back to gzip" in f for f in T["manifest"]["findings"]), False)
+    rc, T = run("notruncohort")
+    check("not_run_cohorts: exit 0", rc, 0)
+    nr = "not-run at c1: the only candidate is S0-Tv's own configuration (not_run_cohorts)"
+    d = one(T["deltas.tsv"], rung="S2", axis="wall_s", cohort=1)
+    check("S2 at c1 against the nearest run ancestor S0-Tv (405 - 610)", (d.get("predecessor"), d.get("delta"),
+          d.get("predecessor_basis")), ("S0-Tv", "-205.000000", f"nearest run ancestor S0-Tv (S1 {nr})"))
+    d = one(T["deltas.tsv"], rung="S1", axis="wall_s", cohort=1)
+    check("S1's own c1 row carries the label, no numbers", (d.get("status"), d.get("delta")), (nr, ""))
+    check("S1 is not skipped at cohorts it does not list",
+          [x for x in T["deltas.tsv"] if x["rung"] == "S1" and x["cohort"] == "100" and x["status"].startswith("not-run")], [])
+    lev = [(x["rung"], x["delta"]) for x in T["pairs.tsv"] if x["pair"] == "S vs S*" and x["source"] == "S0-T1"
+           and x["axis"] == "billed_usd" and x["cohort"] == "1" and x["row"] in ("lever", "total")]
+    check("pairs skip S1 at c1 and keep the sum", lev, [("S0-Tv", "-0.395000"), ("S2", "-0.205000"), ("", "-0.600000")])
+    check("a run on a not-run cohort gets a note",
+          "is marked" in one(T["runs.tsv"], run_id="20261010-000005-aaaaaaa").get("notes", ""), True)
+    rc, T = run("idline")
+    check("input_defect on an identity line: exit 1", rc, 1)
+    check("... an input DEFECT, the run excluded", one(T["runs.tsv"], run_id="20261010-000008-aaaaaaa").get("in_attribution"),
+          "no: DEFECT (input): SRR1: input or staging failure: the identity line flags input_defect on SRR1_1.fastq.gz "
+          "(gzip exit 0)")
+    rc, T = run("idboth")
+    check("flagged by both the sample's s5 and the identity line: one DEFECT",
+          [d for d in T["manifest"]["defects"] if d.startswith("input: 20261010-000008-aaaaaaa")],
+          ["input: 20261010-000008-aaaaaaa SRR1: input or staging failure: gzip exited [1]"])
     rc, T = run("overlap")
     check("model refused when 10 samples overlap (not a serial T1 run)", T["model_msgs"][0],
           "refused: 20261010-000025-aaaaaaa: samples overlap (union of spans 1000.000 s < their sum 10000.000 s - 1 ms x 10): "
@@ -796,6 +846,20 @@ def units():
     one_ = {"run_id": "y", "nodes_info": [nd("A", 0, 1.0, 200.0, ok(0, 300.0))]}
     check("crit 300 against a 199 s window: a DEFECT", lt.lad_net_errors(one_),
           ["y A: lad-net: critical_measurement_s 300.000 exceeds the node's window 199.000 s (terminated_at - launch_time)"])
+    parts = lambda c, i, g, h: [{"v": 1, "rank": 0, "critical_measurement_s": c, "identity_s": i, "sha_get_s": g,
+                                  "sha_critical_s": h}]
+    check("lad-net components summing to critical_measurement_s (within 1 ms) are accepted",
+          lt.lad_net_errors({"run_id": "z", "nodes_info": [nd("A", 0, 0.0, 200.0, parts(100.0, 60.0, 30.0, 10.0005))]}), [])
+    check("components off by 2 ms: a DEFECT",
+          lt.lad_net_errors({"run_id": "z", "nodes_info": [nd("A", 0, 0.0, 200.0, parts(100.0, 60.0, 30.0, 10.002))]}),
+          ["z A: lad-net: identity_s + sha_get_s + sha_critical_s = 100.002 is not critical_measurement_s 100.000 (within 1 ms)"])
+    check("a partial set of components: a DEFECT",
+          lt.lad_net_errors({"run_id": "z", "nodes_info": [nd("A", 0, 0.0, 200.0,
+                                                               [{"v": 1, "rank": 0, "critical_measurement_s": 5.0, "identity_s": 5.0}])]}),
+          ["z A: lad-net: identity_s, sha_get_s, sha_critical_s must all be seconds >= 0 when any is given"])
+    check("not_run_cohorts parses c-prefixed lists with reasons and bare lists",
+          (lt.parse_cohort_list("c1: a; b;c10: x"), lt.parse_cohort_list("1;10"), lt.parse_cohort_list("")),
+          ({1: "a; b", 10: "x"}, {1: "", 10: ""}, {}))
     check("crit equal to the window is allowed", lt.lad_net_errors({"run_id": "z", "nodes_info": [nd("A", 0, 1.0, 200.0, ok(0, 199.0))]}),
           [])
     check("an empty gzip stream is an input failure", lt.gzip_failed({"s5": {"status": "differs", "gz_exit": [0, 0],
