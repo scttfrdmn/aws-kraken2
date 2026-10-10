@@ -107,6 +107,7 @@ targets; ad hoc commands only during exploration.
 | `make hitorderfuzz [HITORDERFUZZ=quick\|full]` / `make hitorder-golden` | [docs/hitorderfuzz.md](docs/hitorderfuzz.md), [docs/hitorder.md](docs/hitorder.md) |
 | `make g3-spec` / `make g3-tables` / `make g3-frontier` / `make g3-fit` | [docs/cohort.md](docs/cohort.md) |
 | `make g3-ladder` / `make g3-ladder-model` (ladder tables: per-rung attribution, three pairs, cross-arm Law 1) | [docs/ladder.md](docs/ladder.md) |
+| `make ladder-spec ARM=… RUNG=… COHORT=…` / `make ladder-check` / `make ladder-stream-test` (the ladder body, lever table and generator) | [docs/ladder.md](docs/ladder.md) |
 | `make bash-jobs-test` | [docs/cohort.md](docs/cohort.md) |
 | G3 probes (staging, contention, decompression, hitbench, host tunes) / `make hosttune-test` | [docs/probes.md](docs/probes.md) |
 | `make lever-test` (the ladder lever library, `scripts/g3/lever.sh`) | [docs/ladder.md](docs/ladder.md) |
