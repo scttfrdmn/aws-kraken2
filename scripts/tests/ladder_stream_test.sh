@@ -48,6 +48,8 @@ if [ "${FAKE_GZ:-0}" = 1 ]; then for f in "${in[@]}"; do gzip -dc "$f" > /dev/nu
 printf 'Loading database information...' >&2; sleep 0.3; echo ' done.' >&2
 printf 'C\tread1\t9606\t150|150\t9606:1\n' > "$out"; printf '100.00\t1\t1\tR\t1\troot (%s)\n' "$out" > "$rep"
 sleep 0.3
+# FAKE_B_EXTRA: B classifies that many seconds longer (case B: a span that surely covers A's hashing).
+case $out in */B/output) sleep "${FAKE_B_EXTRA:-0}" ;; esac
 echo "10 sequences (0.00 Mbp) processed in 0.300s (2.0 Kseq/m, 0.00 Mbp/m)." >&2
 echo "  5 sequences classified (50.00%)" >&2
 exit 0
@@ -163,7 +165,9 @@ check "A: serial: C started ($c_start) after A's uploads ended ($a_up_end)" "awk
 
 # ---- B: overlap (the lane does not wait) ----
 setup_case B
-run_case B 0 s5cmd-overlap 0
+# B classifies 3 s longer than A and C: it starts with A, before A is done, and outlives all of the main
+# shell's work on A (poll, two hashes, the stand-in upload: about 1 s), so A's hashes are covered.
+FAKE_B_EXTRA=3 run_case B 0 s5cmd-overlap 0
 check "B: the run ended cleanly" "grep -q 'case-end CRC=0 FAIL=0 NDONE=3' '$C/run.log'"
 a_up_end=$(grep "/out/A/report" "$C/uploads.log" | awk '{print $2}')
 c_start=$(grep "/out/C/output" "$C/fake.log" | awk '{print $1}')
@@ -174,7 +178,7 @@ lastcrit() {  # the last-finishing sample: its hash comes after every classify s
 }
 check "A: serial, 2 lanes: the last sample's hash is all critical" "lastcrit '$TD/A/run.log'"
 check "B: overlap: the last sample's hash is all critical" "lastcrit '$TD/B/run.log'"
-check "B: overlap: a sample hashed while another classified has sha-critical 0" "[ \$(samplesof '$TD/B/run.log' | jq -s 'map(select(.phases[\"sha-critical\"] == 0 and .phases.sha > 0)) | length') -ge 1 ]"
+check "B: overlap: A, hashed while B still classified, has sha-critical 0" "samplesof '$TD/B/run.log' | jq -se '(map(select(.accession == \"A\"))[0] | .phases.sha > 0.15 and .phases[\"sha-critical\"] == 0) and (map(select(.accession == \"B\"))[0].t_end > (map(select(.accession == \"A\"))[0].t_end + 2))' > /dev/null"
 # ---- S: one lane, serial: the lane is idle while each sample hashes, so every hash is critical ----
 setup_case S
 CASE_PROCS=1 run_case S 0 awscp-default 1
