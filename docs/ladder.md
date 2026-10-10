@@ -229,19 +229,30 @@ exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). The module is importa
   2 × 1107 GiB, over the 1536 GiB of every S\* host. PROCS → INFLIGHT is the same sample width
   carried into one process.
 
-**Splits made for Law 5:** S2b → S2b-i (`-M` on the same NVMe) then S2b-ii (the table on tmpfs);
-S2c (the inputs onto tmpfs, on r8gd.48xlarge; lever `IN_DEST`) before S2a, so S2a changes the host
-only (Scott, 2026-10-10); S7 → S7a (tool) then S7b (overlap); O4 → O4a (LPT) then O4b (in flight).
+**Splits made for Law 5:**
+- S2b → S2b-i (`-M` on the same NVMe), then S2b-ii (the table on a tmpfs with huge=never, the tmpfs
+  default), then S2d (that tmpfs mounted huge=always; `DB_PLACE=tmpfs-huge`). The inputs' tmpfs is
+  huge=never on every rung.
+- S2c (the inputs onto tmpfs, on r8gd.48xlarge; lever `IN_DEST`) before S2a, so S2a changes the host
+  only (Scott, 2026-10-10).
+- S7 → S7a (tool) then S7b (overlap); O4 → O4a (LPT) then O4b (in flight).
 
-**Endpoints** are rungs declared before any run: `Sstar-time` and `Sstar-cost` are S9 on the host
-whose rung (S9, Sstar-r8g, Sstar-r8gd) has the lowest median wall_s (billed_usd) at that cohort.
+**Endpoints** are declared before any run, on `Sstar-time`, `Sstar-cost`, O5 and O5-cost.
+`Sstar-time` and `Sstar-cost` are **aliases** (`status: alias: …`, candidates in `alias_of`): they
+have no runs of their own. Each is the runs of the candidate (S9, Sstar-r8g, Sstar-r8gd) that its
+registered rule selects at that cohort, so nothing is run twice. The selection is a row of
+`ladder.resolved.tsv` (origin `Sstar-time`, the cohort, key `alias`, the winning rung, its source),
+and the alias's host, which O0's `=pred` inherits, is the winner's. The tables must read an alias
+rung as its winner's runs (`scripts/tests/ladder_levers_tables_test.py` stands in for that until
+they do). S\*-cost and O\*-cost are chosen by the **lowest median billed $** (Scott, 2026-10-10);
+effective cost per resource is still reported for every endpoint.
 **Ladder 2 runs twice** (Scott, 2026-10-10): the time side O0 … O5 from `Sstar-time`, with O3's N
 the fit's time-optimal one, and the cost side O0-cost … O5-cost from `Sstar-cost`, with its own
 selections (`@select:O2-cost`, `@select:O3-cost` at the cost-optimal N, `@select:O4b-cost`). O5 is
 O\*-time and O5-cost is O\*-cost, so each pair's lever rows follow its endpoint's own predecessor
 chain back to S0-T1. The S rungs' counterparts name both sides.
 
-**Not-run rungs** (`status`: `run`, or `not-run: <reason>`): kept for the record, never
+**Not-run rungs** (`status`: `run`, `not-run: <reason>`, or `alias: <rule>` for the S* endpoints): kept for the record, never
 generated, never a predecessor, and they must change nothing against their own predecessor.
 S3 is one: the tune probe (run 20261009-223514-4ee77c3) selected `none` for both regimes, and the
 null is not evidence of no effect (regime a's load, median 243.4 s, sits at the 244.4 s network
@@ -252,8 +263,67 @@ floor; regime b's spread was 33 s). So HOST_TUNES is `none` throughout, S3's lev
 (S4's P × T, S8's K, the S\* hosts, O2's family, O3's N, O4b's in flight; `@select:S4:PROCS`
 means S4's PROCS value). Descendants carry the same token, so one resolution reaches every rung
 that inherits it. `scripts/g3/ladder.resolved.tsv` (absent so far: columns origin, cohort, key,
-value, source) resolves a token per cohort, and every row must name the `results/` file it comes
-from. The generator refuses any rung with a placeholder left.
+value, source) resolves a token per cohort. The generator refuses any rung with a placeholder
+left, and refuses a resolution when:
+- its source is not an existing `results/…` path inside a run or cohort dir (a directory below
+  `results/` holding `manifest.json` or `cohort.json`);
+- it resolves S4 with neither THREADS nor PROCS as a `vcpus/<k>` ratio;
+- after resolving, the one-lever check, run again on the resolved values against the resolved
+  predecessor, fails: the rung is identical to its predecessor (mark it not-run instead), or it
+  changes another key-group.
+
+**Selection rules** (the `select` column, registered before any run; every `@select:<rung>`
+selection has one, and a rule names the candidates, the axis and the ties):
+
+| rung | candidates | axis | ties |
+|---|---|---|---|
+| S4 | P × T = vCPUs, P a divisor of vCPUs, P ≤ cohort; recorded as THREADS=T, PROCS=vcpus/T | median wall_s | fewer processes |
+| S8 | K = 1 … min(cohort, the free X quota in x8g.24xlarge) replicas | median wall_s | fewer nodes |
+| Sstar-time | S9, Sstar-r8g, Sstar-r8gd (alias) | median wall_s | fewer vCPUs |
+| Sstar-cost | S9, Sstar-r8g, Sstar-r8gd (alias) | median billed_usd | fewer vCPUs |
+| O2 / O2-cost | the c8g, c9g, r8g and x8g types whose memory holds 1/N of the table at O1's N | wall_s / billed_usd | fewer fleet vCPUs |
+| O3 / O3-cost | N ∈ {1, 2, 4, 8, 16, 32, 64} that O2's type can hold | the #26 fit's time-optimal / cost-optimal N | fewer nodes |
+| O4b / O4b-cost | INFLIGHT 1 … vCPUs / THREADS on O3's type, memory permitting | wall_s / billed_usd | fewer in flight |
+
+Ladder 1 is one chain until S\*, so S4 and S8 select on time. On one host, billed $ is price × wall,
+so S4's two axes give the same order; S8's do not, and its cost side is left to the S\*-cost
+endpoint and to the cost-side ladder 2.
+
+**Derived parameters** (the `derived` column names what moves with each lever):
+- `THREADS=vcpus`, and any `vcpus/<k>`, is resolved on the node from its nproc, with a minimum of 1.
+- `rapidgzip-Pauto` follows the host's vCPUs and the samples at once.
+- So a rung that changes the host (S2a, Sstar-r8g, Sstar-r8gd, O2, O2-cost) moves them too. That
+  is why S4's P × T is carried as a ratio of vCPUs (PROCS=vcpus/T), not as absolute counts.
+- Every `lad-config` line records each PARAM as given (`params`) and the values used (`resolved`:
+  threads, procs, inflight, gunzip_P, nproc).
+
+**Measurement-only phases** (Scott, 2026-10-10: every delta and pair is reported gross and net of
+them, with the net figure as the headline; the ETag check stays in, because it is a real user step
+on every arm):
+
+| name | scope | what | on the critical path |
+|---|---|---|---|
+| `identity` | run phase (`run:identity`) | S5's rapidgzip vs gzip check on every input | strictly sequential, before load: subtract it whole |
+| `sha-get` | run phase (`run:sha-get`, O5 only) | the GET and sha256 of each output the SDK emitter streamed | strictly sequential, after upload-drain: subtract it whole |
+| `sha` | sample phase (`sample:sha`) | the sha256 of a sample's outputs at enqueue (gross) | not necessarily: see `sha-critical` |
+| `sha-critical` | sample phase (`sample:sha-critical`) | the part of `sha` on the critical path | all of it when the sample's lane waits for it (a serial upload mode on the per-sample path) or no classifier is still running; 0 while classification carries on beside it (overlap, the engine) |
+
+Net wall = gross − `run:identity` − `run:sha-get` − the maximum, over (node, lane), of the sum of
+`sample:sha-critical`. That is exact for one lane. For several lanes under a serial upload mode it
+is a lower bound, because the main shell hashes one sample at a time. O5's samples carry
+`sha-critical` 0, since `sha-get` holds their cost. `phases.s5-identity` is each sample's share of
+`run:identity`, so do not subtract it as well.
+
+The input sha256 against its metadata (NB10) is **not** separated. It runs inside lever.sh's
+`lv_fetch_inputs` (scripts/g3/fetch.sh), in the fetch lanes and overlapped with the other files'
+GETs, so separating it would mean changing the #50 contract. It is the same on both arms and stays
+inside `fetch-inputs`.
+
+**Run order** (Law 4, cheapest rung first):
+- Within each cohort, run the rungs cheapest first, by TTL × price from the generator, or by the
+  measured cost once a rung has run.
+- Cohorts go c1, then c10, then c100.
+- n = 2, with rep 2 in the reverse order of rep 1.
 
 **Predictions:** `pred_*` are filled only where a measured rate gives one: S5's `pred_phase_s`
 (−7.8 s at c1, from probe (c), if classify is gzip-bound). Classic `aws s3 cp` has never been
@@ -276,7 +346,7 @@ estimate, and noting that the classic `aws s3 cp` rate is unmeasured. `run.sh` a
 replicas and shards, `run_kind: ladder`, `state: cold`); other specs get `params: null`.
 
 Generated and committed at c1 (every rung fully determined there): S0-T1, S0-Tv, S1, S2b-i,
-S2b-ii, S2c, S2a. All seven pass `DRY_RUN=1` (user data, cost and quota checks):
+S2b-ii, S2d, S2c, S2a. All eight pass `DRY_RUN=1` (user data, cost and quota checks):
 `results/rehearse/dryrun-userdata-*-<sha7>.tsv`.
 
 ## The body (`scripts/g3/ladder.body.sh`)
@@ -310,11 +380,23 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
   the node before the upload), s5 {status n/a|identical|differs, fallback none|gzip, gz_sha256 and
   rg_sha256 (per mate, in mate order, when status is not n/a; identical means they are equal), P, nproc},
   plus rank, idx, t_start, t_end, input_bytes and threads. No classified/unclassified outputs are
-  written. Under O5's `sdk-stream` there is no local copy: the line waits for the push phase,
-  where each output is fetched by GET and hashed (`sha256_source` says so).
+  written. Under O5's `sdk-stream` there is no local copy: each output is fetched by GET and hashed
+  in the `sha-get` phase, and each sample's line streams (and is pushed) as soon as its GETs finish
+  (`sha256_source` says so).
+- **Engine checks.** A shard reads exactly the samples the placement homes on it. A failure of
+  `cohort_place.py needs` or `table`, or any disagreement between the two (an empty NEED while
+  samples are homed there, say), is fatal. After classify, every home sample must have its
+  ak2-sample line, or the run fails.
 - **S5.** The shim goes on PATH only (lever.sh), and the run fails if `$KRAKEN2_DIR` holds a gzip
   or bzip2. The identity phase compares rapidgzip -P k with gzip -dc, by sha256, on every input at
-  this run's -P, and records -P and nproc. A sample that differs gets `s5.status: differs`
+  this run's -P, and records -P, nproc and each tool's real exit status. Each status is taken inside
+  the tool's own command substitution, because the pipeline's PIPESTATUS is gone once the
+  substitution returns. A mate differs if:
+  - the two sha256 differ;
+  - either tool exits non-zero;
+  - or either output is empty (the empty-stream sha256, e3b0c442…).
+
+  The lad-sample `s5` carries `gz_exit` and `rg_exit` (per mate) beside the sha lists. A sample that differs gets `s5.status: differs`
   ("S5 not output-preserving on this input") and falls back to GNU gzip by per-sample shim
   behaviour: a `gzip` ahead of the shim on PATH sends exactly its inputs to GNU gzip, and logs
   them (`out/s5-fallback.calls`). After classify the run fails unless `gzip-shim.calls` has at

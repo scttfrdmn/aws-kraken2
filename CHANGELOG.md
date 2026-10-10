@@ -38,6 +38,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `aws s3 cp` rate is unmeasured.
   - `rapidgzip-Pauto` is a registered rule (accepted 2026-10-10): k = clamp(floor(nproc ÷
     (2 × samples at once)), 1, 16) threads per mate.
+  - The #51 review fixes:
+    - The S5 identity phase records each tool's real exit status (B1). A non-zero exit or an
+      empty output now differs and falls back to gzip, and the stream test covers a failing tool.
+    - The measurement-only phases have distinct names (`identity`, `sha-get`, `sha`,
+      `sha-critical`), so deltas can be reported gross and net (Scott, 2026-10-10).
+    - S2d (huge=always) comes before S2c, and S2b-ii's tmpfs is huge=never (NB7).
+      `upstream-cohort.sh mount` takes an optional HUGE argument.
+    - The S\* endpoints are aliases of the selected candidate's runs, and S\*-cost and O\*-cost
+      are chosen by lowest median billed $.
+    - Every selection has a registered rule (`select` column, NB4).
+    - A resolution must cite a `results/` run dir, and the one-lever check runs again on the
+      resolved values (NB3).
+    - Derived values: `vcpus/<k>` ratios, a `derived` column, and the values used in `lad-config`
+      (NB1).
+    - Engine runs check completeness of the home samples (NB5), and `needs` must agree with the
+      placement (NB6).
+    - O5 streams each lad-sample as its GETs finish (NB8).
+    - The run order is documented (NB9). The input sha256 is not separated, and the reason is
+      recorded (NB10).
   - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and
     `cohort.json` `params`.
   - `results/g3/ladder-modelled.tsv` holds the header only.
