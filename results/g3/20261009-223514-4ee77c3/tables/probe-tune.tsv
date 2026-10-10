@@ -1,0 +1,13 @@
+regime	set	n	n_trials	total_s	min_s	max_s	range_s	load_s	load_range_s	classify_s	classify_range_s	precompact_s	gain_s	threshold_s	qualifies	compact_stall	thp_fallbacks
+a	none	3	3	245.397	244.710	249.153	4.443	243.398	4.450	2.001	0.009	0.000	-	-	-	0	0
+a	precompact	3	3	245.562	245.120	251.986	6.866	242.673	6.830	2.001	0.016	0.888	-0.165	13.732	no (gain within 2x range)	0	0
+a	proactive	3	3	246.981	246.691	249.904	3.213	244.976	3.215	2.003	0.004	0.000	-1.584	8.886	no (gain within 2x range)	0	0
+a	defer	3	3	249.852	244.963	250.150	5.187	247.844	5.205	2.008	0.018	0.000	-4.455	10.374	no (gain within 2x range)	0	0
+a	defermadv	3	3	249.468	249.360	250.023	0.663	247.465	0.698	2.003	0.035	0.000	-4.071	8.886	no (gain within 2x range)	0	0
+a	always	3	3	248.185	245.574	249.654	4.080	246.183	4.072	2.002	0.008	0.000	-2.788	8.886	no (gain within 2x range)	0	0
+b	none	3	3	291.666	281.013	314.192	33.179	288.645	33.180	2.997	0.025	0.000	-	-	-	0	0
+b	precompact	3	3	303.340	285.855	324.446	38.592	299.382	37.484	3.073	0.321	0.885	-11.674	77.183	no (gain within 2x range)	0	0
+b	proactive	3	3	307.895	306.608	342.783	36.175	304.671	36.256	3.036	0.269	0.000	-16.229	72.350	no (gain within 2x range)	0	0
+b	defer	3	3	316.333	270.747	319.002	48.255	313.283	48.256	2.980	0.071	0.000	-24.667	96.509	no (gain within 2x range)	0	0
+b	defermadv	3	3	319.977	309.385	359.543	50.157	316.841	49.929	3.136	0.228	0.000	-28.311	100.314	no (gain within 2x range)	0	0
+b	always	3	3	314.867	302.161	387.828	85.668	311.878	85.661	2.964	0.032	0.000	-23.200	171.335	no (gain within 2x range)	0	0
