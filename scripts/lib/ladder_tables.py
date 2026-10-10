@@ -66,9 +66,22 @@ EFF = [("eff_cpu_usd", "U_cpu"), ("eff_mem_usd", "U_mem_mean"), ("eff_net_baseli
        ("eff_net_rx_peak_usd", "U_net_rx_peak"), ("eff_net_tx_baseline_usd", "U_net_tx_baseline"),
        ("eff_net_tx_peak_usd", "U_net_tx_peak")]
 EFF_U = dict(EFF)
-AXES = ["wall_s", "billed_usd", "lever_phase_s"]
-PRED_COL = {"wall_s": "pred_wall_s", "billed_usd": "pred_usd", "lever_phase_s": "pred_phase_s"}
-PAIR_AXES = [("time", "wall_s"), ("cost", "billed_usd")] + [("cost", e) for e, _ in EFF]
+EMPTY_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"  # sha256 of an empty stream
+# Gross and net (Scott, 2026-10-10, #25): every wall delta and pair is reported gross and net of the
+# measurement-only work, net the headline. The tables do not re-derive that work: each node emits one
+# `lad-net {"v": 1, "rank", "critical_measurement_s"}` line (#51 computes the number under its rule),
+# and net wall = max over nodes of (that node's terminated_at - its critical_measurement_s) - the first
+# launch_time.
+NET_BASIS = "per node: max over nodes of (terminated_at - lad-net critical_measurement_s) - first launch"
+EFF_NET = [(e.replace("_usd", "_net_usd"), e) for e, _ in EFF]
+AXES = ["wall_net_s", "wall_s", "billed_net_usd", "billed_usd", "lever_phase_s"]
+NET_OF = {"wall_net_s": "wall_s", "billed_net_usd": "billed_usd", **dict(EFF_NET)}
+PRED_COL = {"wall_s": "pred_wall_s", "wall_net_s": "pred_wall_s", "billed_usd": "pred_usd", "billed_net_usd": "pred_usd",
+            "lever_phase_s": "pred_phase_s"}
+PAIR_AXES = [("time", "wall_net_s"), ("time", "wall_s"), ("cost", "billed_net_usd"), ("cost", "billed_usd")] + \
+    [x for (en, e) in EFF_NET for x in (("cost", en), ("cost", e))]
+SERIES = {"wall_s": "gross", "billed_usd": "gross", "wall_net_s": "net (headline)", "billed_net_usd": "net (prorated; headline)",
+          **{e: "gross" for e, _ in EFF}, **{en: "net (prorated)" for en, _ in EFF_NET}, "lever_phase_s": "phase"}
 
 
 # ---------------------------------------------------------------- small helpers
@@ -205,10 +218,36 @@ def load_levers(path, rd):
         # status column is read for this.
         st = (f.get("status") or "").strip()
         r["not_run"] = st if st.lower().startswith("not-run") else ""
+        # An alias rung (`status: alias: ...` with `alias_of` set) has no runs of its own: its runs are
+        # those of the winner named in ladder.resolved.tsv (key alias) for each cohort.
+        r["alias_of"] = [x.strip() for x in (f.get("alias_of") or "").split("|") if x.strip()]
+        r["alias"] = st.lower().startswith("alias:") and bool(r["alias_of"])
         if not r["arm"]:
             r["arm"] = r["rung"][:1]
         if r["rung"]:
             out[r["rung"]] = r
+    return out
+
+
+def load_resolved(path, rd, levers):
+    """(alias rung, cohort) -> (winner or None, note), from ladder.resolved.tsv rows with key
+    `alias` (columns origin, cohort, key, value, source). A winner not among the rung's alias_of
+    candidates is not a resolution. Missing file: {}."""
+    out = {}
+    if not path or not os.path.exists(path):
+        return out
+    lines = [ln for ln in rd.text(path).splitlines() if ln.strip() and not ln.lstrip().startswith("#")]
+    for f in csv.DictReader(lines, delimiter="\t"):
+        if (f.get("key") or "").strip() != "alias":
+            continue
+        rung, c, v = (f.get("origin") or "").strip(), (f.get("cohort") or "").strip().lstrip("c"), (f.get("value") or "").strip()
+        lv = levers.get(rung)
+        if not c.isdigit() or not lv or not lv.get("alias"):
+            continue
+        if v not in lv["alias_of"]:
+            out[(rung, int(c))] = (None, f"alias unresolved: ladder.resolved.tsv names {v!r}, not one of {'|'.join(lv['alias_of'])}")
+        else:
+            out[(rung, int(c))] = (v, f"alias of {v} (ladder.resolved.tsv; source {f.get('source') or '-'})")
     return out
 
 
@@ -354,9 +393,9 @@ def load_modelled(path, rd, repo, results, levers_path):
 
 
 # ---------------------------------------------------------------- one run
-def lad_lines(member_dir, rd, notes, label):
+def lad_lines(member_dir, rd, notes, label, tag="lad-sample", fname="lad-samples.jsonl"):
     pushed, streamed = [], []
-    for p in sorted(glob.glob(os.path.join(member_dir, "out", "**", "lad-samples.jsonl"), recursive=True)):
+    for p in sorted(glob.glob(os.path.join(member_dir, "out", "**", fname), recursive=True)):
         for i, ln in enumerate(rd.text(p).splitlines()):
             if ln.strip():
                 try:
@@ -367,21 +406,21 @@ def lad_lines(member_dir, rd, notes, label):
     if os.path.exists(log):
         dec = json.JSONDecoder()
         for ln in rd.text(log).splitlines():
-            k = ln.find("lad-sample {")
+            k = ln.find(tag + " {")
             if k < 0:
                 continue
             try:
-                streamed.append(dec.raw_decode(ln[k + len("lad-sample "):])[0])
+                streamed.append(dec.raw_decode(ln[k + len(tag) + 1:])[0])
             except ValueError:
-                notes.append(f"{label}: a streamed lad-sample line is not JSON (cut off?)")
+                notes.append(f"{label}: a streamed {tag} line is not JSON (cut off?)")
     key = lambda o: json.dumps(o, sort_keys=True)
     if pushed and streamed and sorted(map(key, pushed)) != sorted(map(key, streamed)):
-        notes.append(f"{label}: streamed lad-sample lines ({len(streamed)}) differ from the pushed file ({len(pushed)}); "
+        notes.append(f"{label}: streamed {tag} lines ({len(streamed)}) differ from the pushed file ({len(pushed)}); "
                      "the pushed file is used")
     if pushed:
         return pushed
     if streamed:
-        notes.append(f"{label}: no pushed lad-samples.jsonl; lines taken from the streamed log")
+        notes.append(f"{label}: no pushed {fname}; lines taken from the streamed log")
     return streamed
 
 
@@ -445,15 +484,17 @@ def read_run(d, rd, results):
         if not params:
             return None
         members = [(man.get("run_id") or os.path.basename(d), d, man)]
+        ranks = {members[0][0]: (man.get("cohort") or {}).get("rank", 0)}
         kind, commit, gate = "single", man.get("commit"), man.get("gate")
     elif os.path.exists(cp):
         coh = rd.json(cp)
-        members, missing = [], []
+        members, missing, ranks = [], [], {}
         for m in coh.get("members", []):
             rid = m.get("run_id")
             md = os.path.join(os.path.dirname(d), rid) if rid else None
             if md and m.get("manifest") != "missing" and os.path.exists(os.path.join(md, "manifest.json")):
                 members.append((rid, md, rd.json(os.path.join(md, "manifest.json"))))
+                ranks[rid] = m.get("rank")
             else:
                 missing.append(f"rank {m.get('rank')}" + (f" ({rid})" if rid else ""))
         want = coh.get("nodes") if is_int(coh.get("nodes")) else len(coh.get("members", []))
@@ -508,6 +549,10 @@ def read_run(d, rd, results):
             o["_node"] = rid
             samples.append(o)
     run["samples"] = samples
+    run["nodes_info"] = [{"rid": rid, "rank": ranks.get(rid), "launch": ts((m.get("instance") or {}).get("launch_time")),
+                          "term": ts((m.get("instance") or {}).get("terminated_at")),
+                          "lad_net": lad_lines(md, rd, notes, rid, "lad-net", "lad-net.jsonl")} for rid, md, m in members]
+    net_components(run)
     u = read_util(d, rd)
     run["util"] = u
     run["util_coverage"] = "missing (no tables/util.tsv fleet row)" if u is None else (u.get("coverage") or "full")
@@ -516,6 +561,60 @@ def read_run(d, rd, results):
         uv, c = (None, None) if u is None else (u.get(uk), u.get("cost_usd"))
         run["eff"][e] = None if uv is None or c is None else (float("inf") if uv == 0 else c / uv)
     return run
+
+
+def lad_net_errors(run):
+    """The lad-net contract: exactly one line per node, {"v": 1, "rank": the node's rank,
+    "critical_measurement_s": seconds >= 0}. A missing line is not an error here (net is then
+    missing, with a note); a malformed or duplicated one is."""
+    errs = []
+    for n in run.get("nodes_info", []):
+        L = n["lad_net"]
+        where = f"{run['run_id']} {n['rid']}: lad-net"
+        if len(L) > 1:
+            errs.append(f"{where}: {len(L)} lines (one per node)")
+        for x in L:
+            c = x.get("critical_measurement_s") if isinstance(x, dict) else None
+            if not isinstance(x, dict) or not (is_int(x.get("v")) and x["v"] == CONTRACT_V):
+                errs.append(f"{where}: v must be {CONTRACT_V}")
+            elif not is_int(x.get("rank")) or x["rank"] != n["rank"]:
+                errs.append(f"{where}: rank {x.get('rank')!r} is not the node's rank {n['rank']!r}")
+            elif not (isinstance(c, (int, float)) and not isinstance(c, bool) and c >= 0):
+                errs.append(f"{where}: critical_measurement_s {c!r} is not seconds >= 0")
+    return errs
+
+
+def net_components(run):
+    """Net wall (Scott, 2026-10-10; the per-node rule pending #51's final definition): the max over
+    nodes of (terminated_at - critical_measurement_s from that node's lad-net line), minus the first
+    launch_time. Missing (never imputed) if any node lacks a valid lad-net line or its timestamps.
+    Net billed and net effective cost are prorated, x net/gross."""
+    info = run.get("nodes_info", [])
+    crit, ends, why = {}, [], []
+    for n in info:
+        L = [x for x in n["lad_net"] if isinstance(x, dict)]
+        c = L[-1].get("critical_measurement_s") if len(L) == 1 else None
+        if len(L) != 1 or not (isinstance(c, (int, float)) and not isinstance(c, bool) and c >= 0):
+            why.append(f"rank {n['rank']}: {'no lad-net line' if not L else 'no valid lad-net line'}")
+            continue
+        crit[n["rank"]] = c
+        if n["term"] is None:
+            why.append(f"rank {n['rank']}: no terminated_at")
+            continue
+        ends.append(n["term"] - c)
+    launches = [n["launch"] for n in info]
+    run["net"] = {"critical": crit, "basis": NET_BASIS}
+    if why or not ends or None in launches:
+        run["wall_net_s"] = None
+        if info:
+            run["notes"].append("net missing (not imputed): " + "; ".join(why or ["no launch_time"]))
+    else:
+        run["wall_net_s"] = max(ends) - min(launches)
+        if run["wall_net_s"] < 0:
+            run["notes"].append(f"net wall {run['wall_net_s']:.3f} s < 0")
+    w = run["wall_s"]
+    run["net_ratio"] = None if not w or run["wall_net_s"] is None else run["wall_net_s"] / w
+    run["billed_net_usd"] = None if run["billed_usd"] is None or run["net_ratio"] is None else run["billed_usd"] * run["net_ratio"]
 
 
 def discover(results, rd):
@@ -578,12 +677,22 @@ def sample_errors(run, s):
         elif s5.get("status") == "differs" and s5.get("fallback", "none") != "gzip":
             errs.append(f"{where}: s5.status differs needs s5.fallback gzip (the body falls back to gzip on that input)")
         elif s5.get("status") != "n/a":
-            rg, gz = s5.get("rg_sha256"), s5.get("gz_sha256")
+            rg, gz, rx, gx = s5.get("rg_sha256"), s5.get("gz_sha256"), s5.get("rg_exit"), s5.get("gz_exit")
             if not (sha_list(rg) and sha_list(gz) and len(rg) == len(gz)):
                 errs.append(f"{where}: s5.rg_sha256 and s5.gz_sha256 must be equal-length lists of 64-hex sha256 "
                             "(one per input file, mate order)")
-            elif (rg == gz) != (s5.get("status") == "identical"):
-                errs.append(f"{where}: s5.status {s5.get('status')} disagrees with rg_sha256 vs gz_sha256")
+            elif not (isinstance(rx, list) and isinstance(gx, list) and len(rx) == len(rg) == len(gx)
+                      and all(is_int(x) for x in rx + gx)):
+                errs.append(f"{where}: s5.rg_exit and s5.gz_exit must be integer lists, one per mate")
+            else:
+                # The body's B1 rule: a mate differs if the sha256 differ, either tool exits non-zero,
+                # or either output is the empty stream.
+                differs = rg != gz or any(x != 0 for x in rx + gx) or EMPTY_SHA in rg + gz
+                if s5.get("status") == "identical" and differs:
+                    errs.append(f"{where}: s5.status identical, but the B1 rule says differs (sha256 lists, a non-zero "
+                                "exit, or an empty-stream sha256)")
+                elif s5.get("status") == "differs" and not differs:
+                    errs.append(f"{where}: s5.status differs, but the lists are equal, every exit is 0 and no output is empty")
     return errs
 
 
@@ -613,6 +722,9 @@ def validate(runs, levers, defects):
             r["exclude"].append(f"DEFECT (incomplete): {e}")
         for e in params_errors(r["params"], levers):
             defects.append(("contract", f"{rid}: {e}"))
+            r["exclude"].append(f"DEFECT (contract): {e}")
+        for e in lad_net_errors(r):
+            defects.append(("contract", e))
             r["exclude"].append(f"DEFECT (contract): {e}")
         bad = set()
         for s in r["samples"]:
@@ -686,6 +798,14 @@ def axis_value(run, axis, levers, phase_rung):
         return run["wall_s"], Q_WALL
     if axis == "billed_usd":
         return run["billed_usd"], q_billed(run)
+    if axis == "wall_net_s":
+        return run["wall_net_s"], Q_WALL + Q_SAMPLE_PHASE  # the timestamps, plus critical_measurement_s at ms
+    if axis == "billed_net_usd":
+        return run["billed_net_usd"], q_billed(run)
+    if axis in NET_OF and axis.startswith("eff_"):
+        v, q = axis_value(run, NET_OF[axis], levers, phase_rung)
+        r = run["net_ratio"]
+        return (None if v is None or r is None else v * r), q
     if axis == "lever_phase_s":
         return phase_value(run, (levers.get(phase_rung) or {}).get("phase"))
     if axis in run["eff"]:
@@ -711,6 +831,9 @@ def delta(a, b, predicted=None):
     """a: the rung's (or target's) stats, b: the predecessor's (or source's). The resolution rule."""
     d = {"delta": None, "status": "", "measured_spread": None, "q": None, "threshold": None, "predicted": predicted,
          "predicted_resolvable": ""}
+    if "alias unresolved" in (a["basis"], b["basis"]):
+        d["status"] = "alias unresolved"
+        return d
     if not a["n"] or not b["n"]:
         d["status"] = "missing: " + " and ".join(w for w, s in (("rung", a), ("predecessor", b)) if not s["n"]) + " has no runs"
         return d
@@ -742,8 +865,8 @@ class Groups:
     """The runs entering the attribution, by (rung, cohort), and the cold endpoint runs by
     (tag, rung, cohort); modelled values fill a (rung, cohort, axis) with no measured run."""
 
-    def __init__(self, runs, levers, modelled, emap, notes):
-        self.levers, self.modelled = levers, modelled
+    def __init__(self, runs, levers, modelled, emap, notes, resolved=None):
+        self.levers, self.modelled, self.resolved = levers, modelled, resolved or {}
         self.g, self.e = {}, {}
         for r in runs:
             if r["exclude"]:
@@ -763,11 +886,24 @@ class Groups:
             if any(axis_value(r, axis, levers, rung)[0] is not None for r in self.runs(rung, cohort)):
                 notes.append(f"modelled {rung} c{cohort} {axis} ignored: measured runs exist")
 
+    def alias(self, rung, cohort):
+        """(winner, note) for an alias rung, (rung, "") for any other."""
+        if not (self.levers.get(rung) or {}).get("alias"):
+            return rung, ""
+        return self.resolved.get((rung, cohort), (None, "alias unresolved: no ladder.resolved.tsv row (key alias)"))
+
     def runs(self, rung, cohort):
-        return self.g.get((rung, cohort), [])
+        w, _ = self.alias(rung, cohort)
+        return self.g.get((w, cohort), []) if w else []
 
     def stats(self, rung, cohort, axis, phase_rung=None):
+        w, note = self.alias(rung, cohort)
+        if w is None:
+            return {"n": 0, "median": None, "min": None, "max": None, "range": None, "q": None,
+                    "basis": "alias unresolved", "basis_note": note}
         s = stats([axis_value(r, axis, self.levers, phase_rung or rung) for r in self.runs(rung, cohort)])
+        if note:
+            s["basis_note"] = note
         m = self.modelled.get((rung, cohort, axis))
         if not s["n"] and m:
             s = {"n": 1, "median": m["value"], "min": m["value"], "max": m["value"], "range": None, "q": None,
@@ -784,11 +920,29 @@ def coverage(runs):
     return " | ".join(c)
 
 
+def net_basis(runs):
+    return " | ".join(sorted({r["net"]["basis"] for r in runs}))
+
+
+def alias_step(G, rung, cohort):
+    """For an alias rung: (skip, note). Skip when its winner is its own run predecessor (the alias
+    then adds no lever: its runs are the predecessor's)."""
+    if not (G.levers.get(rung) or {}).get("alias"):
+        return False, ""
+    w, note = G.alias(rung, cohort)
+    if w is None:
+        return False, note
+    pr, _ = run_pred(G.levers, rung)
+    if w == pr:
+        return True, f"{rung} is an alias of its predecessor {pr}: no lever"
+    return False, note
+
+
 # ---------------------------------------------------------------- the tables
-PAIR_HEAD = ["pair", "cohort", "endpoint_axis", "axis", "source", "target", "endpoint_basis", "row", "step", "rung",
+PAIR_HEAD = ["pair", "cohort", "endpoint_axis", "axis", "series", "source", "target", "endpoint_basis", "row", "step", "rung",
              "predecessor", "lever", "n_rung", "n_pred", "delta", "status", "granularity_q", "threshold",
              "source_median", "target_median", "ratio_source_over_target", "sum_of_lever_deltas",
-             "residual_total_minus_sum", "util_coverage", "note"]
+             "residual_total_minus_sum", "util_coverage", "net_basis", "note"]
 
 
 def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_basis, G):
@@ -797,8 +951,9 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
     endpoint runs where they exist, else from its ladder rung's runs."""
     levers = G.levers
     basis = f"source {src or '-'}: {src_basis}; target {tgt or '-'}: {tgt_basis}"
-    base = {"pair": name, "cohort": cohort, "endpoint_axis": fam, "axis": ax, "source": src or "", "target": tgt or "",
-            "endpoint_basis": basis}
+    base = {"pair": name, "cohort": cohort, "endpoint_axis": fam, "axis": ax, "series": SERIES.get(ax, ""),
+            "source": src or "", "target": tgt or "", "endpoint_basis": basis}
+    netax = ax in NET_OF
     L = lambda **k: [dict(base, **k).get(h, "") for h in PAIR_HEAD]
     eff = ax.startswith("eff_")
     if not src or not tgt:
@@ -819,17 +974,18 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
     total = dict(row="total", n_rung=a["n"], n_pred=b["n"], delta=fmt(tot["delta"]), status=tot["status"],
                  granularity_q=fmt(tot["q"]), threshold=fmt(tot["threshold"]), source_median=fmt(b["median"]),
                  target_median=fmt(a["median"]), ratio_source_over_target=fmt(ratio),
-                 util_coverage=coverage(ar + br) if eff else "")
+                 util_coverage=coverage(ar + br) if eff else "", net_basis=net_basis(ar + br) if netax else "")
     ch = chain(levers, tgt)
     if src not in ch:
         return [L(note=f"totals: target from {aw}, source from {bw}; no per-lever path: {src} is not on {tgt}'s "
                        f"predecessor chain ({' <- '.join(ch)}) in ladder.levers.tsv; the total alone is not an attribution",
                   **total)]
-    steps = [r for r in reversed(ch[:ch.index(src)]) if not levers[r].get("not_run")]
+    steps = [r for r in reversed(ch[:ch.index(src)]) if not levers[r].get("not_run") and not alias_step(G, r, cohort)[0]]
     rows, ssum, missing = [], 0.0, []
     for i, rung in enumerate(steps, 1):
         lv = levers[rung]
         pr, _ = run_pred(levers, rung)
+        _, anote = alias_step(G, rung, cohort)
         x, y = G.stats(rung, cohort, ax), G.stats(pr, cohort, ax, rung)
         d = delta(x, y)
         if d["delta"] is None:
@@ -839,8 +995,10 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
         pb = pred_basis(levers, rung)
         rows.append(L(row="lever", step=i, rung=rung, predecessor=pr, lever=lv["lever"], n_rung=x["n"],
                       n_pred=y["n"], delta=fmt(d["delta"]), status=d["status"], granularity_q=fmt(d["q"]),
-                      threshold=fmt(d["threshold"]), note="" if pb == "direct" else f"against the {pb}",
-                      util_coverage=coverage(G.runs(rung, cohort) + G.runs(pr, cohort)) if eff else ""))
+                      threshold=fmt(d["threshold"]),
+                      note="; ".join(x for x in ("" if pb == "direct" else f"against the {pb}", anote) if x),
+                      util_coverage=coverage(G.runs(rung, cohort) + G.runs(pr, cohort)) if eff else "",
+                      net_basis=net_basis(G.runs(rung, cohort) + G.runs(pr, cohort)) if netax else ""))
     complete = not missing and tot["delta"] is not None
     ident = "endpoint runs" not in aw and "endpoint runs" not in bw
     note = f"totals: target from {aw}, source from {bw}"
@@ -965,7 +1123,7 @@ def s5_findings(runs, levers):
     return out
 
 
-def build(runs, levers, campaign_spend=None, modelled=None):
+def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
     modelled = modelled or {}
     T, defects, notes = {}, [], []
     emap, eerr = declared_endpoints(levers)
@@ -973,12 +1131,13 @@ def build(runs, levers, campaign_spend=None, modelled=None):
         defects.append(("levers", e))
     validate(runs, levers, defects)
     l1, det, s5rows, s5flags = law1(runs, levers, defects, notes)
-    G = Groups(runs, levers, modelled, emap, notes)
+    G = Groups(runs, levers, modelled, emap, notes, resolved)
 
     # 1. runs.tsv and tidy.tsv
     rh = ["run_id", "gate", "kind", "arm", "rung", "cohort", "rep", "run_kind", "endpoint", "state", "type", "nodes", "az",
-          "commit", "price_usd_per_h", "wall_s", "billed_usd", "lever_phase", "lever_phase_s", "planned_samples", "samples",
-          "pairs"] + U_COLS + ["util_cost_usd"] + [e for e, _ in EFF] + ["util_coverage", "in_attribution", "notes"]
+          "commit", "price_usd_per_h", "wall_s", "wall_net_s", "critical_measurement_s", "net_basis", "billed_usd", "billed_net_usd", "lever_phase", "lever_phase_s", "planned_samples", "samples",
+          "pairs"] + U_COLS + ["util_cost_usd"] + [e for e, _ in EFF] + [en for en, _ in EFF_NET] + \
+        ["util_coverage", "in_attribution", "notes"]
     rows, tidy = [], []
     for r in runs:
         p = r["params"]
@@ -993,13 +1152,18 @@ def build(runs, levers, campaign_spend=None, modelled=None):
             inattr = "yes"
         row = [r["run_id"], r["gate"], r["kind"], p.get("arm", ""), p["rung"], p.get("cohort", ""), p["rep"], p["run_kind"],
                p["endpoint"], p["state"], r["type"], r["nodes"], r["az"], r["commit"], fmt(r["price"], 4),
-               fmt(r["wall_s"], 1), fmt(r["billed_usd"]), lp, fmt(phase_value(r, lp)[0], 3),
+               fmt(r["wall_s"], 1), fmt(r["wall_net_s"], 3),
+               ";".join(f"r{k}={v:.3f}" for k, v in sorted(r["net"]["critical"].items(), key=lambda kv: str(kv[0]))),
+               r["net"]["basis"],
+               fmt(r["billed_usd"]), fmt(r["billed_net_usd"]), lp, fmt(phase_value(r, lp)[0], 3),
                "" if r["planned"] is None else len(r["planned"]), len(r["samples"]), pairs] + \
               [fmt(u.get(k)) for k in U_COLS] + [fmt(u.get("cost_usd"))] + [fmt(r["eff"][e]) for e, _ in EFF] + \
+              [fmt(axis_value(r, en, levers, p["rung"])[0]) for en, _ in EFF_NET] + \
               [r["util_coverage"], inattr, "; ".join(r["notes"])]
         rows.append(row)
         base = [r["run_id"], p.get("arm", ""), p["rung"], p.get("cohort", ""), p["rep"], p["run_kind"], p["state"]]
-        for k, v in (("wall_s", fmt(r["wall_s"], 1)), ("billed_usd", fmt(r["billed_usd"]))):
+        for k, v in (("wall_s", fmt(r["wall_s"], 1)), ("wall_net_s", fmt(r["wall_net_s"], 3)),
+                     ("billed_usd", fmt(r["billed_usd"])), ("billed_net_usd", fmt(r["billed_net_usd"]))):
             tidy.append(base + ["", "", "", k, v if v != "" else "missing"])
         for k in U_COLS + ["cost_usd"]:
             tidy.append(base + ["", "", "", "util." + k if k == "cost_usd" else k,
@@ -1025,53 +1189,66 @@ def build(runs, levers, campaign_spend=None, modelled=None):
     T["tidy.tsv"] = (["run_id", "arm", "rung", "cohort", "rep", "run_kind", "state", "node", "accession", "idx", "metric",
                       "value"], tidy)
 
-    keys = sorted(set(G.g) | {(r, c) for r, c, _ in modelled})
+    keys = set(G.g) | {(r, c) for r, c, _ in modelled}
+    cs = {c for _, c in keys}
+    keys = sorted(keys | {(r, c) for r, lv in levers.items() if lv.get("alias") for c in cs})
     # 2. rungs.tsv (and 4. effcost.tsv)
     srows, erows = [], []
     for (rung, cohort) in keys:
         arm = (levers.get(rung) or {}).get("arm", rung[:1])
         for ax in AXES:
             s = G.stats(rung, cohort, ax)
-            srows.append([arm, rung, cohort, ax, (levers.get(rung) or {}).get("phase", "") if ax == "lever_phase_s" else "",
+            srows.append([arm, rung, cohort, ax, SERIES.get(ax, ""),
+                          (levers.get(rung) or {}).get("phase", "") if ax == "lever_phase_s" else "",
                           s.get("basis_note", "measured"), s["n"], fmt(s["median"]), fmt(s["min"]), fmt(s["max"]),
                           fmt(s["range"]) if s["n"] >= 2 else "n<2", fmt(s["q"])])
         rs = G.runs(rung, cohort)
         missing = sum(1 for r in rs if r["util"] is None)
-        for ax in U_COLS + [e for e, _ in EFF]:
+        for ax in U_COLS + [x for (en, e) in EFF_NET for x in (en, e)]:
             s = G.stats(rung, cohort, ax)
-            erows.append([arm, rung, cohort, ax, s["n"], fmt(s["median"]), fmt(s["min"]), fmt(s["max"]),
+            erows.append([arm, rung, cohort, ax, SERIES.get(ax, ""), s["n"], fmt(s["median"]), fmt(s["min"]), fmt(s["max"]),
                           fmt(s["range"]) if s["n"] >= 2 else "n<2", fmt(s["q"]), coverage(rs),
                           f"util missing on {missing} of {len(rs)} run(s): not imputed" if missing else ""])
-    T["rungs.tsv"] = (["arm", "rung", "cohort", "axis", "lever_phase", "basis", "n", "median", "min", "max", "range",
-                       "granularity_q"], srows)
-    T["effcost.tsv"] = (["arm", "rung", "cohort", "metric", "n", "median", "min", "max", "range", "granularity_q",
+    T["rungs.tsv"] = (["arm", "rung", "cohort", "axis", "series", "lever_phase", "basis", "n", "median", "min", "max",
+                       "range", "granularity_q"], srows)
+    T["effcost.tsv"] = (["arm", "rung", "cohort", "metric", "series", "n", "median", "min", "max", "range", "granularity_q",
                          "util_coverage", "note"], erows)
 
     # 3. deltas.tsv
-    dh = ["arm", "rung", "predecessor", "predecessor_basis", "lever", "counterpart", "cohort", "axis", "lever_phase",
+    dh = ["arm", "rung", "predecessor", "predecessor_basis", "lever", "counterpart", "cohort", "axis", "series", "lever_phase",
           "n_rung", "n_pred", "median_rung", "median_pred", "delta", "range_rung", "range_pred", "measured_spread",
-          "granularity_q", "threshold", "status", "predicted_delta", "predicted_resolvable"]
+          "granularity_q", "threshold", "status", "predicted_delta", "predicted_resolvable", "net_basis"]
     drows = []
     for cohort in sorted({c for _, c in keys}):
         for rung, lv in sorted(levers.items()):
             if lv.get("not_run"):
                 for ax in AXES:
-                    drows.append([lv["arm"], rung, lv["predecessor"], "", lv["lever"], lv["counterpart"], cohort, ax, "",
-                                  "", "", "", "", "", "", "", "", "", "", lv["not_run"], "", ""])
+                    drows.append([lv["arm"], rung, lv["predecessor"], "", lv["lever"], lv["counterpart"], cohort, ax,
+                                  SERIES.get(ax, ""), "", "", "", "", "", "", "", "", "", "", "", lv["not_run"], "", "", ""])
     for (rung, cohort) in keys:
         lv = levers.get(rung)
         if not lv or not lv["predecessor"] or lv.get("not_run"):
             continue
         pr, _ = run_pred(levers, rung)
         pb = pred_basis(levers, rung)
+        skip, anote = alias_step(G, rung, cohort)
+        if anote:
+            pbcol = anote if pb == "direct" else f"{pb}; {anote}"
+        else:
+            pbcol = pb
         for ax in AXES:
             a, b = G.stats(rung, cohort, ax), G.stats(pr, cohort, ax, rung)
             d = delta(a, b, num(lv.get(PRED_COL[ax])))
-            drows.append([lv["arm"], rung, pr, pb, lv["lever"], lv["counterpart"], cohort, ax,
+            if skip:
+                d = dict(d, delta=None, status=anote, measured_spread=None, q=None, threshold=None, predicted_resolvable="")
+            rows_net = net_basis(G.runs(rung, cohort) + G.runs(pr, cohort)) if ax in NET_OF else ""
+            plain = skip or d["status"] == "alias unresolved" or pb == "direct"
+            drows.append([lv["arm"], rung, pr, pbcol, lv["lever"], lv["counterpart"], cohort, ax, SERIES.get(ax, ""),
                           lv["phase"] if ax == "lever_phase_s" else "", a["n"], b["n"], fmt(a["median"]), fmt(b["median"]),
                           fmt(d["delta"]), fmt(a["range"]), fmt(b["range"]), fmt(d["measured_spread"]), fmt(d["q"]),
-                          fmt(d["threshold"]), d["status"] + ("" if pb == "direct" else f" (against the {pb})"),
-                          fmt(d["predicted"]), d["predicted_resolvable"] or ("no prediction" if d["predicted"] is None else "")])
+                          fmt(d["threshold"]), d["status"] + ("" if plain else f" (against the {pb})"),
+                          fmt(d["predicted"]), d["predicted_resolvable"] or ("no prediction" if d["predicted"] is None else ""),
+                          rows_net])
     T["deltas.tsv"] = (dh, drows)
 
     # 5. pairs.tsv
@@ -1106,7 +1283,8 @@ def build(runs, levers, campaign_spend=None, modelled=None):
     erows = []
     for k in sorted(eg, key=lambda k: tuple(str(x) for x in k)):
         rs = eg[k]
-        metrics = ["wall_s", "billed_usd"] + [f"phase.{n}" for n in sorted({n for r in rs for n in r["phases_run"]})]
+        metrics = ["wall_net_s", "wall_s", "billed_net_usd", "billed_usd"] + \
+            [f"phase.{n}" for n in sorted({n for r in rs for n in r["phases_run"]})]
         for m in metrics:
             vals = [(r["phases_run"].get(m[6:]), None) if m.startswith("phase.") else (r[m], None) for r in rs]
             s = stats(vals)
@@ -1164,26 +1342,31 @@ def summary_md(T, defects, notes, excl, runs, commit, findings):
     ix = {k: i for i, k in enumerate(h)}
     blocks, cur = [], []
     for r in rows:
-        if r[ix["axis"]] not in ("wall_s", "billed_usd"):
+        if r[ix["axis"]] not in ("wall_net_s", "wall_s", "billed_net_usd", "billed_usd"):
             continue
         cur.append(r)
         if r[ix["row"]] == "total":
             blocks.append(cur)
             cur = []
     if blocks:
-        L += ["## Pairs (wall_s on the time endpoint, billed_usd on the cost endpoint; every axis is in pairs.tsv)", "",
-              "Each total is followed by its per-lever rows (Law 5).", "",
-              "| pair | cohort | axis | source | target | endpoint basis | row | rung | delta | status | ratio source/target "
-              "| sum of lever deltas | note |", "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
+        L += ["## Pairs (net is the headline, gross beside it: wall on the time endpoint, billed $ on the cost endpoint; "
+              "every axis is in pairs.tsv)", "",
+              "Net = gross - run:identity - run:sha-get - the max over (node, lane) of sample:sha-critical (Scott, "
+              "2026-10-10); net billed is prorated (billed x net/gross). Each total is followed by its per-lever rows "
+              "(Law 5).", "",
+              "| pair | cohort | axis | series | source | target | endpoint basis | row | rung | delta | status | "
+              "ratio source/target | sum of lever deltas | net basis | note |",
+              "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
         for b in blocks:
             t = b[-1]
             g = lambda r, k: r[ix[k]]
-            L.append(f"| {g(t, 'pair')} | {g(t, 'cohort')} | {g(t, 'axis')} | {g(t, 'source')} | {g(t, 'target')} | "
-                     f"{g(t, 'endpoint_basis')} | **total** | | {g(t, 'delta')} | {g(t, 'status')} | "
-                     f"{g(t, 'ratio_source_over_target')} | {g(t, 'sum_of_lever_deltas')} | {g(t, 'note')} |")
+            L.append(f"| {g(t, 'pair')} | {g(t, 'cohort')} | {g(t, 'axis')} | {g(t, 'series')} | {g(t, 'source')} | "
+                     f"{g(t, 'target')} | {g(t, 'endpoint_basis')} | **total** | | {g(t, 'delta')} | {g(t, 'status')} | "
+                     f"{g(t, 'ratio_source_over_target')} | {g(t, 'sum_of_lever_deltas')} | {g(t, 'net_basis')} | "
+                     f"{g(t, 'note')} |")
             for r in b[:-1]:
-                L.append(f"| | | | | | | lever {g(r, 'step')} | {g(r, 'rung')} ({g(r, 'lever')}) | {g(r, 'delta')} | "
-                         f"{g(r, 'status')} | | | |")
+                L.append(f"| | | | | | | | lever {g(r, 'step')} | {g(r, 'rung')} ({g(r, 'lever')}) | {g(r, 'delta')} | "
+                         f"{g(r, 'status')} | | | | {g(r, 'note')} |")
     return "\n".join(L) + "\n"
 
 
@@ -1192,6 +1375,8 @@ def main(argv=None):
     ap.add_argument("--results", default=os.path.join(ROOT, "results"))
     ap.add_argument("--levers", default=os.path.join(ROOT, "scripts", "g3", "ladder.levers.tsv"))
     ap.add_argument("--modelled", default=None, help="modelled values (default <results>/g3/ladder-modelled.tsv)")
+    ap.add_argument("--resolved", default=os.path.join(ROOT, "scripts", "g3", "ladder.resolved.tsv"),
+                    help="alias winners and placeholder resolutions (ladder.resolved.tsv)")
     ap.add_argument("--out", default=os.path.join(ROOT, "results", "g3", "ladder"))
     ap.add_argument("--spend", default=None, help="campaign spend.tsv (default <results>/g3/campaign/spend.tsv)")
     a = ap.parse_args(argv)
@@ -1204,7 +1389,8 @@ def main(argv=None):
     cs = None
     if os.path.exists(spend_p):
         cs = {r.get("run") for r in csv.DictReader(rd.text(spend_p).splitlines(), delimiter="\t")}
-    T, defects, notes, excl, findings = build(runs, levers, cs, modelled)
+    resolved = load_resolved(a.resolved, rd, levers)
+    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved)
     defects += [("modelled", f"refused: {x}") for x in refused]
     if not levers:
         notes.insert(0, f"no lever table at {os.path.relpath(a.levers, ROOT)}: no predecessors, endpoints, deltas or pairs")
@@ -1227,6 +1413,7 @@ def main(argv=None):
            "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
            "lad_sample_contract_v": CONTRACT_V, "levers": rel(os.path.abspath(a.levers)) if levers else None,
            "modelled": rel(os.path.abspath(mpath)) if modelled else None,
+           "resolved": rel(os.path.abspath(a.resolved)) if os.path.exists(a.resolved) else None,
            "runs": [{"run_id": r["run_id"], "dir": rel(os.path.abspath(r["dir"])), "commit": r["commit"],
                      "params": r["params"]} for r in runs],
            "defects": [f"{k}: {v}" for k, v in defects], "findings": findings, "notes": notes,
