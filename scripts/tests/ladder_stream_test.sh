@@ -72,18 +72,19 @@ export PATH="$TD/bin:$PATH"
 
 # The body's functions: its helpers line by line, lad_assign, and the marked block.
 FN="$TD/fn.sh"
-fnof() {  # NAME: one function of the body, one-line or block
-  awk -v n="$1" 'index($0, n "() {") == 1 { if ($0 ~ /}$/) { print; exit } p = 1 } p { print } p && /^}/ { exit }' "$BODY"
+fnof() {  # NAME BODY: one function of the body, one-line or block
+  awk -v n="$1" 'index($0, n "() {") == 1 { if ($0 ~ /}$/) { print; exit } p = 1 } p { print } p && /^}/ { exit }' "$2"
 }
-{
-  for f in now emit emit_sample lad_push lad_assign; do fnof "$f"; done
-  sed -n '/^# ---- load and classify/,/^# ---- end of the functions/p' "$BODY"
-} > "$FN"
+mkfn() {  # BODY: the functions the cases drive
+  for f in now emit emit_sample lad_push lad_assign; do fnof "$f" "$1"; done
+  sed -n '/^# ---- load and classify/,/^# ---- end of the functions/p' "$1"
+}
+mkfn "$BODY" > "$FN"
 check "the body's marked block was found" "grep -q '^lad_watch() {' '$FN' && grep -q '^lad_one() {' '$FN' && grep -q '^lad_assign() {' '$FN'"
 
 # The env a rung gives these functions, plus stand-ins for the preamble's and lever.sh's helpers.
 setup_case() {  # NAME
-  C="$TD/$1"; mkdir -p "$C/sd/done" "$C/sd/ack" "$C/sd/err" "$C/out" "$C/in"
+  C="$TD/$1"; mkdir -p "$C/sd/done" "$C/sd/ack" "$C/sd/err" "$C/sd/start" "$C/out" "$C/in"
   export FAKE_LOG="$C/fake.log" FAKE_OUT="$C/out" FAKE_GZLOG="$C/gz.log"
   : > "$FAKE_LOG"; : > "$FAKE_GZLOG"
 }
@@ -94,7 +95,7 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     : > "$J"; : > "$LS"; : > "$LV_REC"
     AK2_MAIN_PID=$BASHPID; ENGINE=$2; OUT_UPLOAD=$3; UPSERIAL=$4
     RUNG=S9; ARM=S; COHORT=3; CLASSIFIER=upstream; K2=fake-k2; OURS=fake-engine; DECOMP=(); DB_LOAD=mmap; T=2
-    SAMPLES=(A B C); PAIRS=(10 20 30); BYTES=(100 200 300); MINE=(0 1 2); PROCS=2; PLACEMENT=mod
+    SAMPLES=(A B C); PAIRS=(10 20 30); BYTES=(100 200 300); MINE=(0 1 2); PROCS=${CASE_PROCS:-2}; PLACEMENT=mod
     RANK=0; GROUP=0; SHARD=0; NPROC=2; GZMODE=gzip; GZK=""; OUTURL=s3://bucket/x/out/S9; ENGINE_ENV=(X=1)
     declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
     [ "$ENGINE" = 1 ] && { RUNG=O1; ARM=O; CLASSIFIER=ours-engine; MINE=(0 1); }
@@ -103,10 +104,11 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     ak2_err() { echo "ERR $*" >> "$C/errors"; }
     ak2_push() { cp "$1" "$C/pushed-$2"; }
     lv_upload_enqueue() {  # sha256 at enqueue (as lever.sh); a serial session uploads before returning
-      local te sha t1
-      te=$(now); sha=$(sha256sum "$1" | cut -d' ' -f1)
-      printf '{"kind":"upload-enqueue","local":"%s","url":"%s","sha256":"%s","sha256_seconds":0.01}\n' "$1" "$2" "$sha" >> "$LV_REC"
-      sleep 0.5; t1=$(now)
+      local te sha th t1
+      te=$(now); sha=$(sha256sum "$1" | cut -d' ' -f1); sleep 0.1; th=$(now)   # the hash takes 0.1 s
+      printf '{"kind":"upload-enqueue","t":%s,"local":"%s","url":"%s","sha256":"%s","sha256_seconds":%s}\n' "$th" "$1" "$2" "$sha" \
+        "$(awk -v a="$te" -v b="$th" 'BEGIN{printf "%.3f", b - a}')" >> "$LV_REC"
+      sleep 0.4; t1=$(now)
       [ "$UPSERIAL" = 1 ] && printf '{"kind":"upload","local":"%s","t_start":%s,"t_end":%s}\n' "$1" "$te" "$t1" >> "$LV_REC"
       echo "$te $t1 $1" >> "$C/uploads.log"
     }
@@ -123,9 +125,11 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     lad_watch
     lad_push
     echo "case-end CRC=$CRC FAIL=$FAIL NDONE=$NDONE"
+    echo "shacrit-sum=$SHACRIT_S"
   ) > "$C/run.log" 2>&1
 }
 samples() { sed -n 's/^lad-sample //p' "$C/run.log"; }
+samplesof() { sed -n 's/^lad-sample //p' "$1"; }
 
 # ---- A: per-sample path, serial uploads ----
 setup_case A
@@ -160,9 +164,20 @@ check "B: the run ended cleanly" "grep -q 'case-end CRC=0 FAIL=0 NDONE=3' '$C/ru
 a_up_end=$(grep "/out/A/report" "$C/uploads.log" | awk '{print $2}')
 c_start=$(grep "/out/C/output" "$C/fake.log" | awk '{print $1}')
 check "B: overlap: C started ($c_start) before A's uploads ended ($a_up_end)" "awk -v a='$a_up_end' -v c='$c_start' 'BEGIN{exit !(c < a)}'"
-check "A: serial: sha-critical is all of each sample's sha" "[ \$(sed -n 's/^lad-sample //p' '$TD/A/run.log' | jq -s 'map(select(.phases[\"sha-critical\"] == .phases.sha and .phases.sha > 0)) | length') = 3 ]"
-check "B: overlap: a sample hashed while classify carried on has sha-critical 0" "[ \$(samples | jq -s 'map(select(.phases[\"sha-critical\"] == 0 and .phases.sha > 0)) | length') -ge 1 ]"
-check "B: no upload seconds in an overlap lad-sample" "[ \$(samples | jq -s 'map(select(.phases.upload != null)) | length') = 0 ]"
+# sha-critical is the part of a sample's hash that no classify span on the node covers.
+lastcrit() {  # the last-finishing sample: its hash comes after every classify span, so all critical
+  sed -n 's/^lad-sample //p' "$1" | jq -se 'max_by(.t_end) | .phases.sha > 0.15 and .phases["sha-critical"] == .phases.sha' > /dev/null
+}
+check "A: serial, 2 lanes: the last sample's hash is all critical" "lastcrit '$TD/A/run.log'"
+check "B: overlap: the last sample's hash is all critical" "lastcrit '$TD/B/run.log'"
+check "B: overlap: a sample hashed while another classified has sha-critical 0" "[ \$(samplesof '$TD/B/run.log' | jq -s 'map(select(.phases[\"sha-critical\"] == 0 and .phases.sha > 0)) | length') -ge 1 ]"
+# ---- S: one lane, serial: the lane is idle while each sample hashes, so every hash is critical ----
+setup_case S
+CASE_PROCS=1 run_case S 0 awscp-default 1
+check "S: the run ended cleanly" "grep -q 'case-end CRC=0 FAIL=0 NDONE=3' '$C/run.log'"
+check "S: one serial lane: every sample's sha-critical is all of its sha" "[ \$(samples | jq -s 'map(select(.phases[\"sha-critical\"] == .phases.sha and .phases.sha > 0.15)) | length') = 3 ]"
+check "B: the node's sha-critical total (lad-net's share) is the sum of its samples'" "[ \"\$(sed -n 's/^shacrit-sum=//p' '$TD/B/run.log')\" = \"\$(samplesof '$TD/B/run.log' | jq -rs 'map(.phases[\"sha-critical\"]) | add * 1000 | round / 1000 | tostring' | awk '{printf \"%.3f\", \$1}')\" ]"
+check "B: no upload seconds in an overlap lad-sample" "[ \$(samplesof '$TD/B/run.log' | jq -s 'map(select(.phases.upload != null)) | length') = 0 ]"
 
 # ---- C: the engine path ----
 setup_case C
@@ -207,23 +222,43 @@ case $(basename "$a") in
 esac
 EOF
 chmod +x "$TD/bin/fake-rg"
-(
-  W="$C"; SD="$C/sd"; INDIR="$C/in"; J="$C/lad.jsonl"; LS="$C/lad-samples.jsonl"; : > "$J"; : > "$LS"
-  SAMPLES=(A B C); NEED=(0 1 2); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
-  declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
-  ak2_say() { echo "ak2: $*"; }
-  ak2_push() { :; }
-  . "$FN"
-  for s in A B C; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
-  lad_identity; echo "identity-rc=$? bad=$(printf '%s\n' "${!S5BAD[@]}" | sort | tr '\n' ' ')"
-) > "$C/run.log" 2>&1
+identity_run() {  # FN CASEDIR: lad_identity under the node's shell options (pipefail off: spawn's bash -e
+  # payload runs `set +e` and nothing turns pipefail on), its output in CASEDIR/run.log
+  local fn=$1 c=$2
+  (
+    set +o pipefail
+    W="$c"; SD="$c/sd"; INDIR="$c/in"; J="$c/lad.jsonl"; LS="$c/lad-samples.jsonl"; : > "$J"; : > "$LS"
+    SAMPLES=(A B C); NEED=(0 1 2); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
+    declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
+    ak2_say() { echo "ak2: $*"; }
+    ak2_push() { :; }
+    . "$fn"
+    echo "pipefail: $(set -o | awk '$1 == "pipefail" {print $2}')"
+    for s in A B C; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
+    lad_identity; echo "identity-rc=$? bad=$(printf '%s\n' "${!S5BAD[@]}" | sort | tr '\n' ' ')"
+  ) > "$c/run.log" 2>&1
+}
+b1_exit_ok() {  # CASEDIR: B_1's recorded exits are the tools' real ones
+  sed -n 's/^lad-identity //p' "$1/run.log" | jq -e 'select(.file == "B_1.fastq.gz") | .rapidgzip_exit == 3 and .gzip_exit == 0' > /dev/null
+}
+identity_run "$FN" "$C"
 ids() { sed -n 's/^lad-identity //p' "$C/run.log"; }
+check "I: runs with pipefail off, as on the node" "grep -q '^pipefail: off\$' '$C/run.log'"
 check "I: B and C differ, A does not" "grep -q 'identity-rc=0 bad=B C \$' '$C/run.log'"
 check "I: B_1's rapidgzip exit is the tool's real 3, its gzip exit 0" "ids | jq -e 'select(.file == \"B_1.fastq.gz\") | .rapidgzip_exit == 3 and .gzip_exit == 0 and .identical == false' > /dev/null"
 check "I: C_2's empty output differs (exit 0, the empty-stream sha256)" "ids | jq -e 'select(.file == \"C_2.fastq.gz\") | .rapidgzip_exit == 0 and .identical == false
   and .rapidgzip_sha256 == \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\" and (.why | test(\"empty output\"))' > /dev/null"
 check "I: A's mates are identical with both exits 0" "[ \$(ids | jq -s 'map(select((.file | startswith(\"A_\")) and .identical and .gzip_exit == 0 and .rapidgzip_exit == 0)) | length') = 2 ]"
 check "I: the fallback was installed for B and C" "[ -x '$C/s5fb/gzip' ] && [ \$(grep -c . '$C/s5fb/inputs') = 4 ]"
+# Mutation (T1): restore B1's bug (PIPESTATUS read outside the substitution) in a copy of the body;
+# the exit check must then fail, so case I can tell the fix from the bug.
+sed 's/; exit "\${PIPESTATUS\[0\]}"); \([gh]r\)=\$?/); \1=${PIPESTATUS[0]}/' "$BODY" > "$TD/body-b1bug.sh"
+check "I-mut: the mutation restored the old form on both tools' lines" "[ \$(grep -c '); [gh]r=\${PIPESTATUS\[0\]}' '$TD/body-b1bug.sh') = 2 ]"
+mkfn "$TD/body-b1bug.sh" > "$TD/fn-b1bug.sh"
+setup_case Imut
+identity_run "$TD/fn-b1bug.sh" "$C"
+check "I-mut: with the old bug, B_1's exit check fails (the probe resolves it)" "! b1_exit_ok '$C'"
+check "I: with the fix, B_1's exit check passes" "b1_exit_ok '$TD/I'"
 
 # ---- N: negative control ----
 setup_case N

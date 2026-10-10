@@ -129,7 +129,8 @@ lad_build() {
   fi
   make build
 }
-( lad_build ) > "$W/build.out" 2>&1 &
+# The build records when it ended (build.end), so the overlap it bought is in the record.
+( lad_build; rc=$?; now > "$W/build.end"; exit "$rc" ) > "$W/build.out" 2>&1 &
 BUILD_PID=$!
 BUILT=0
 lad_build_wait() {
@@ -150,7 +151,9 @@ lad_build_wait() {
     ak2_say "ours built at $(git rev-parse HEAD); $(go version 2> /dev/null || echo 'go: on PATH in the build only')"
   fi
   emit build "$(jq -nc --arg c "$CLASSIFIER" --arg s "$SETUP" --arg t0 "$t0" --arg t1 "$t1" --arg ph "$(cat "$AK2_STATE/phase" 2> /dev/null)" \
-    '{kind:"build", classifier:$c, setup:$s, waited_in_phase:$ph, wait_s:(($t1|tonumber)-($t0|tonumber))}')"
+    --arg be "$(cat "$W/build.end" 2> /dev/null)" \
+    '{kind:"build", classifier:$c, setup:$s, waited_in_phase:$ph, wait_start:($t0|tonumber), wait_end:($t1|tonumber),
+      wait_s:(($t1|tonumber)-($t0|tonumber)), build_end:(if $be == "" then null else ($be|tonumber) end)}')"
 }
 [ "$SETUP" = serial ] && lad_build_wait
 
@@ -208,7 +211,7 @@ else
   INROOT=$($UC mount inputs "${ING}g" never) || fail "tmpfs for the inputs failed"; MOUNTS+=(inputs)
 fi
 INDIR="$INROOT/in"; OUTD="$INROOT/out"; SD="$W/lad"
-mkdir -p "$INDIR" "$OUTD" "$SD/done" "$SD/ack" "$SD/err" || fail "mkdir under $INROOT"
+mkdir -p "$INDIR" "$OUTD" "$SD/done" "$SD/ack" "$SD/err" "$SD/start" || fail "mkdir under $INROOT"
 
 # The gunzip shim (S5): on PATH only. Pauto: clamp(floor(nproc / (2 x samples at once)), 1, 16)
 # threads per mate (the wrapper opens one gzip -dc per mate).
@@ -305,6 +308,7 @@ lad_one() {
   [ "$CLASSIFIER" != upstream ] && cmd=(env "${DECOMP[@]}" "$OURS")
   local -a mm=(); [ "$DB_LOAD" = mmap ] && mm=(--memory-mapping)
   t0=$(now)
+  printf '%s\n' "$t0" > "$SD/start/$j"   # its classify span starts (lad_crit reads the spans)
   "${cmd[@]}" --db "$DBDIR" "${mm[@]}" --paired --threads "$T" --output "$d/output" --report "$d/report" \
     "$INDIR/${s}_1.fastq.gz" "$INDIR/${s}_2.fastq.gz" 2> >(tee "$SD/err/$j" | sed -u "s/^/[$RUNG $s] /") > /dev/null
   rc=$?
@@ -317,20 +321,21 @@ lad_one() {
   fi
   [ "$rc" = 0 ]
 }
-# lad_enq FILE: "<sha256> <sha256 seconds> <upload seconds or ->" that lever.sh recorded for FILE
-# (the sha256 computed on the node at enqueue, before the upload starts; the upload's seconds only
-# once it has run, i.e. for a serial session).
+# lad_enq FILE: "<sha256> <sha256 seconds> <upload seconds or -> <hash end>" that lever.sh recorded
+# for FILE (the sha256 computed on the node at enqueue, before the upload starts, ending at the
+# record's t; the upload's seconds only once it has run, i.e. for a serial session).
 lad_enq() {
   jq -rs --arg l "$1" '(map(select(.kind == "upload-enqueue" and .local == $l)) | last) as $e
     | (map(select(.kind == "upload" and .local == $l)) | last) as $u
-    | "\($e.sha256 // "-") \($e.sha256_seconds // 0) \(if $u == null then "-" else ($u.t_end - $u.t_start) end)"' "$LV_REC" 2> /dev/null
+    | "\($e.sha256 // "-") \($e.sha256_seconds // 0) \(if $u == null then "-" else ($u.t_end - $u.t_start) end) \($e.t // 0)"' "$LV_REC" 2> /dev/null
 }
 NDONE=0; NFB=0; FAIL=0; PENDING=(); DONEJ=()
+ID_S=0; SHAGET_S=0; SHACRIT_S=0   # the node's measurement-only seconds (lad-net)
 # lad_finish J RC T0 T1 LANE SRC [ENGINE_JSON]: enqueue sample J's outputs (lv_upload_enqueue
 # computes and records their sha256 first) and stream its lad-sample line. Under sdk-stream the
 # engine wrote the outputs to S3 itself: the line waits for their sha256, by GET, in push.
 lad_finish() {
-  local j=$1 rc=$2 t0=$3 t1=$4 lane=$5 src=$6 eng=${7:-} s=${SAMPLES[$1]} f e sha ss us outs='{}' sh=0 up=0 upd=0 cs=""
+  local j=$1 rc=$2 t0=$3 t1=$4 lane=$5 src=$6 eng=${7:-} s=${SAMPLES[$1]} f e sha ss us te outs='{}' sh=0 up=0 upd=0 cs="" hiv=""
   NDONE=$((NDONE + 1)); DONEJ+=("$j")
   [ "$rc" = 0 ] || FAIL=1
   if [ "$OUT_UPLOAD" = sdk-stream ]; then
@@ -340,29 +345,63 @@ lad_finish() {
   for f in output report; do
     [ -f "$OUTD/$s/$f" ] || continue
     lv_upload_enqueue "$OUTD/$s/$f" "$OUTURL/$s/$f" || FAIL=1
-    read -r sha ss us <<< "$(lad_enq "$OUTD/$s/$f")"
+    read -r sha ss us te <<< "$(lad_enq "$OUTD/$s/$f")"
     sh=$(awk -v a="$sh" -v b="$ss" 'BEGIN{printf "%.3f", a + b}')
+    hiv="$hiv $(awk -v t="$te" -v d="$ss" 'BEGIN{printf "%.3f %.3f", t - d, t}')"
     [ "$us" != - ] && { up=$(awk -v a="$up" -v b="$us" 'BEGIN{printf "%.3f", a + b}'); upd=1; }
     [[ $sha =~ ^[0-9a-f]{64}$ ]] &&
       outs=$(jq -c --arg r "$f" --arg h "$sha" --argjson n "$(stat -c%s "$OUTD/$s/$f")" '. + {($r): {bytes:$n, sha256:$h}}' <<< "$outs")
   done
   [ "$UPSERIAL" = 1 ] && [ "$src" = per-sample ] && : > "$SD/ack/$j"
   lad_line "$j" "$rc" "$t0" "$t1" "$lane" "$src" "$eng" "$outs" "$sh" "$([ "$upd" = 1 ] && echo "$up")" \
-    "node, at lv_upload_enqueue before the upload" "$(lad_crit "$sh" "$src")"
+    "node, at lv_upload_enqueue before the upload" "$(lad_crit $hiv)"
 }
-# lad_crit SHA_S SRC: the critical-path share of a sample's output sha256 (measurement only;
-# docs/ladder.md, "Measurement-only phases"): all of it when the sample's lane waits for it
-# (a serial upload mode on the per-sample path) or when no classifier is still running (the
-# tail); none when classification carries on beside it (overlap, the engine).
+# lad_crit H0 H1 [H0 H1 ...]: the critical-path share of a sample's output sha256 (measurement
+# only; docs/ladder.md, "Measurement-only phases"): the seconds of its hash intervals that no
+# classify span on this node covers. Spans: per-sample path, each sample's [start, end] (start
+# from $SD/start, end from $SD/done; a sample still running covers up to now); engine, the
+# engine's classify phase, up to its exit. A hash done after the last classify ended (the tail)
+# is all critical; one done while another sample classifies is not. With one lane under a serial
+# upload mode the lane is idle while it hashes, so its hash is critical; with several such lanes
+# another lane's span can cover a hash that delays its own lane (net is then an upper bound).
 lad_crit() {
-  local p
-  if [ "$UPSERIAL" = 1 ] && [ "$2" = per-sample ]; then echo "$1"; return; fi
-  for p in "${CPIDS[@]}"; do kill -0 "$p" 2> /dev/null && { echo 0; return; }; done
-  echo "$1"
+  local f j a b p alive=0
+  {
+    echo "H $*"
+    if [ "$ENGINE" = 1 ]; then
+      for p in "${CPIDS[@]}"; do kill -0 "$p" 2> /dev/null && alive=1; done
+      [ -n "${CLS_T0:-}" ] && echo "S $CLS_T0 $([ "$alive" = 1 ] && echo 9e18 || echo "${ENG_END:-9e18}")"
+    else
+      for f in "$SD"/start/*; do
+        [ -e "$f" ] || continue
+        j=${f##*/}; read -r a < "$f"
+        b=9e18; [ -e "$SD/done/$j" ] && read -r _ _ b _ < "$SD/done/$j"
+        echo "S $a $b"
+      done
+    fi
+  } | awk '$1 == "H" { for (i = 2; i < NF; i += 2) { n++; h0[n] = $i; h1[n] = $(i+1) } next }
+           $1 == "S" { m++; s0[m] = $2; s1[m] = $3 }
+           END {
+             c = 0
+             for (k = 1; k <= n; k++) {
+               # the part of [h0, h1] outside the union of the spans: walk it in pieces
+               x = h0[k]
+               while (x < h1[k]) {
+                 cov = 0
+                 for (q = 1; q <= m; q++) if (s0[q] <= x && s1[q] > x) { if (s1[q] > cov) cov = s1[q] }
+                 if (cov > x) { x = cov; continue }
+                 nx = h1[k]
+                 for (q = 1; q <= m; q++) if (s0[q] > x && s0[q] < nx) nx = s0[q]
+                 c += nx - x; x = nx
+               }
+             }
+             printf "%.3f", c
+           }'
 }
 # lad_line J RC T0 T1 LANE SRC ENGINE_JSON OUTPUTS SHA_S UPLOAD_S SHA_SOURCE SHA_CRITICAL_S: the line itself.
 lad_line() {
   local j=$1 s=${SAMPLES[$1]} cs="" st=n/a k=0 fb=none
+  SHACRIT_S=$(awk -v a="$SHACRIT_S" -v b="${12:-0}" 'BEGIN{printf "%.3f", a + b}')
   [ "$6" = per-sample ] && cs=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$SD/err/$j" 2> /dev/null | tail -1)
   if [ "$GZMODE" != gzip ]; then st=identical; k=$GZK; [ -n "${S5BAD[$s]:-}" ] && { st=differs; fb=gzip; NFB=$((NFB + 1)); }; fi
   emit_sample "$(jq -nc --arg rung "$RUNG" --arg arm "$ARM" --argjson cohort "$COHORT" --arg s "$s" --argjson pairs "${PAIRS[$j]}" \
@@ -412,7 +451,7 @@ lad_engine() {
 # come from the classifiers' own output; every completed sample is enqueued as it appears.
 ST=load; SEEN=0; LASTPUSH=$(date +%s)
 declare -A GOT=()
-lad_phase_to() { ST=$1; ak2_phase "$1"; emit phase "$(jq -nc --arg p "$1" --arg t "$(now)" --arg how "$2" '{kind:"phase", phase:$p, t:($t|tonumber), how:$how}')"; }
+lad_phase_to() { ST=$1; [ "$1" = classify ] && CLS_T0=$(now); ak2_phase "$1"; emit phase "$(jq -nc --arg p "$1" --arg t "$(now)" --arg how "$2" '{kind:"phase", phase:$p, t:($t|tonumber), how:$how}')"; }
 lad_scan() {
   local f j rc t0 t1 lane line
   if [ "$ENGINE" = 0 ]; then
@@ -460,7 +499,7 @@ lad_watch() {
   while :; do
     alive=0
     for p in "${CPIDS[@]}"; do kill -0 "$p" 2> /dev/null && alive=1; done
-    [ "$alive" = 0 ] && sleep 1   # let the tees drain before the last scan
+    [ "$alive" = 0 ] && { ENG_END=${ENG_END:-$(now)}; sleep 1; }   # the end of the classify spans; let the tees drain
     lad_scan
     [ "$alive" = 0 ] && break
     if [ $(( $(date +%s) - LASTPUSH )) -ge 30 ]; then lad_push; LASTPUSH=$(date +%s); fi
@@ -544,13 +583,19 @@ lad_identity() {
   return 0
 }
 # ---- end of the functions scripts/tests/ladder_stream_test.sh drives ----
+# SETUP=overlap: the build ran beside fetch-db and fetch-inputs; it is waited for in its own phase,
+# build-wait (not measurement-only), before identity, so identity never overlaps the build and
+# subtracting it is exact.
+if [ "$SETUP" = overlap ]; then ak2_phase build-wait; lad_build_wait; fi
 declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
 if [ "$GZMODE" != gzip ]; then
   ak2_phase identity
+  ID_T0=$(now)
   lad_identity || fail "the S5 fallback could not be installed"
+  ID_S=$(awk -v a="$ID_T0" -v b="$(now)" 'BEGIN{printf "%.3f", b - a}')
   lad_push
 fi
-lad_build_wait
+[ "$BUILT" = 1 ] || fail "the build was not waited for before load (SETUP=$SETUP)"
 
 UPSERIAL=0
 case $OUT_UPLOAD in awscp-default|s5cmd-serial) UPSERIAL=1 ;; esac
@@ -627,6 +672,7 @@ if [ "$OUT_UPLOAD" = sdk-stream ]; then
   # its own sequential phase (measurement only, so the tables can subtract it exactly). Each
   # sample's lad-sample line streams, and is pushed, as soon as its GETs finish.
   ak2_phase sha-get
+  SG_T0=$(now)
   for p in "${PENDING[@]}"; do
     IFS='|' read -r j rc t0 t1 lane src eng <<< "$p"
     s=${SAMPLES[$j]}; outs='{}'; sh=0
@@ -647,8 +693,19 @@ if [ "$OUT_UPLOAD" = sdk-stream ]; then
     lad_line "$j" "$rc" "$t0" "$t1" "$lane" "$src" "$eng" "$outs" "$sh" "" "s3 GET after the run (the SDK emitter keeps no local copy)" 0
     lad_push
   done
+  SHAGET_S=$(awk -v a="$SG_T0" -v b="$(now)" 'BEGIN{printf "%.3f", b - a}')
 fi
 ak2_phase push
+# lad-net: the seconds the net rule takes out of this node's gross wall (docs/ladder.md,
+# "Measurement-only phases"): identity (sequential, after build-wait, so all of it) + sha-get
+# (sequential) + the node's sha-critical (its hashes no classify span covered). One line per node.
+NETJ=$(jq -nc --argjson rank "$RANK" --arg id "$ID_S" --arg sg "$SHAGET_S" --arg sc "$SHACRIT_S" '
+  def ms: . * 1000 | round / 1000;
+  {v:1, rank:$rank, critical_measurement_s:((($id|tonumber) + ($sg|tonumber) + ($sc|tonumber)) | ms),
+   identity_s:($id|tonumber|ms), sha_get_s:($sg|tonumber|ms), sha_critical_s:($sc|tonumber|ms)}')
+printf '%s\n' "$NETJ" > "$W/lad-net.jsonl"
+emit net "$NETJ"
+ak2_push "$W/lad-net.jsonl" lad-net.jsonl > /dev/null || FAIL=1
 ht_restore || ak2_say "ht_restore did not restore every knob"
 ht_record end
 lad_push || FAIL=1
