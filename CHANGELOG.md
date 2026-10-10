@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The #25 ladder body, lever table and generator (#51, WP-7; docs/ladder.md).
+  - `scripts/g3/ladder.body.sh`: one body for both arms of both ladders. The lever choices are
+    a PARAMS block in the payload. The phases are the same on both arms, every run is cold
+    (`drop_caches` first and before load), and the ETag is checked on every arm. Each
+    classified sample streams a `lad-sample` line (#52's contract v1) and is appended to
+    `out/lad-samples.jsonl`, with the on-node sha256 of every output. S5 adds an identity
+    phase and falls back to GNU gzip per sample where rapidgzip differs.
+  - `scripts/g3/ladder.levers.tsv`: every rung of both ladders (S2b, S7 and O4 split), with
+    #52's columns plus `status`, `group` and `coupled`. S3 is not run, because the tune probe
+    chose `none`.
+  - `scripts/g3/mkspec-ladder.sh` (`make ladder-spec`) writes `runs/g3-l-<rung>-c<cohort>.json`
+    deterministically. It refuses any rung with an unresolved placeholder.
+  - `scripts/lib/ladder_levers.py` (`make ladder-check`, in `make test`) checks that each rung
+    changes exactly one key-group.
+  - `scripts/tests/ladder_stream_test.sh` (`make ladder-stream-test`, in `make test`) checks the
+    body's streaming, phase boundaries, serial vs overlap uploads, the engine path and the S5
+    fallback by behaviour.
+  - The six rungs fully determined at c1 are committed (S0-T1, S0-Tv, S1, S2b-i, S2b-ii, S2a),
+    and all pass `DRY_RUN=1`.
+  - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and
+    `cohort.json` `params`.
+  - `results/g3/ladder-modelled.tsv` holds the header only.
+
 - `make g3-fit` (`scripts/lib/fit26.py`; #26, WP-10 of the #25 ladder). It fits the registered
   T(N) and cost model to the nine cohort-100 campaign points, from the record only, and writes
   `results/g3/fit26/`:
