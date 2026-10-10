@@ -270,7 +270,18 @@ left, and refuses a resolution when:
 - it resolves S4 with neither THREADS nor PROCS as a `vcpus/<k>` ratio;
 - after resolving, the one-lever check, run again on the resolved values against the resolved
   predecessor, fails: the rung is identical to its predecessor (mark it not-run instead), or it
-  changes another key-group.
+  changes another key-group. THREADS, PROCS and INFLIGHT are compared as numbers, each resolved
+  with `vc()` at its own rung's host (vCPUs from the type's size), so `THREADS=96, PROCS=vcpus/96`
+  on x8g.24xlarge is S2a's `THREADS=vcpus, PROCS=1` and is refused. The same text on two hosts is
+  a derived move with the host's own lever (the `derived` column), not a second lever;
+- an alias's winner is not one of its `alias_of` candidates.
+
+**Not run at some cohorts** (`not_run_cohorts`, `c<cohort>: <reason>;...`): a rung whose selection
+has a single candidate at a cohort, its predecessor's own configuration, is not run there. Its
+tokens then resolve to that predecessor's values, so its descendants stay determined. S4 and S8 are
+not run at c1: P and K are at most the cohort, so P = 1 with T = vcpus (S2a's) and K = 1 (S7b's). At
+c1 S5's run predecessor is therefore S2a, and S9's is S7b. The tables must skip a rung at the
+cohorts it lists, as they skip `status: not-run`.
 
 **Selection rules** (the `select` column, registered before any run; every `@select:<rung>`
 selection has one, and a rule names the candidates, the axis and the ties):
@@ -303,16 +314,46 @@ on every arm):
 
 | name | scope | what | on the critical path |
 |---|---|---|---|
-| `identity` | run phase (`run:identity`) | S5's rapidgzip vs gzip check on every input | strictly sequential, before load: subtract it whole |
-| `sha-get` | run phase (`run:sha-get`, O5 only) | the GET and sha256 of each output the SDK emitter streamed | strictly sequential, after upload-drain: subtract it whole |
-| `sha` | sample phase (`sample:sha`) | the sha256 of a sample's outputs at enqueue (gross) | not necessarily: see `sha-critical` |
-| `sha-critical` | sample phase (`sample:sha-critical`) | the part of `sha` on the critical path | all of it when the sample's lane waits for it (a serial upload mode on the per-sample path) or no classifier is still running; 0 while classification carries on beside it (overlap, the engine) |
+| `identity` | run phase (`run:identity`) | S5's rapidgzip vs gzip check on every input | strictly sequential: after `build-wait`, before `load`; nothing else runs beside it, so all of it |
+| `sha-get` | run phase (`run:sha-get`, O5 and O5-cost only) | the GET and sha256 of each output the SDK emitter streamed | strictly sequential, after `upload-drain`: all of it |
+| `sha` | sample phase (`phases.sha`) | the sha256 of a sample's outputs at enqueue (gross) | informational only; see `sha-critical` |
+| `sha-critical` | sample phase (`phases["sha-critical"]`) | the part of the sample's hash intervals that no classify span on the node covers | as defined |
 
-Net wall = gross − `run:identity` − `run:sha-get` − the maximum, over (node, lane), of the sum of
-`sample:sha-critical`. That is exact for one lane. For several lanes under a serial upload mode it
-is a lower bound, because the main shell hashes one sample at a time. O5's samples carry
-`sha-critical` 0, since `sha-get` holds their cost. `phases.s5-identity` is each sample's share of
-`run:identity`, so do not subtract it as well.
+`build-wait` (SETUP=overlap only) is **not** measurement-only. It is the wait for the build that
+ran beside fetch-db and fetch-inputs, and the `lad-build` line records `build_end`. It comes before
+`identity`, so the build never overlaps identity and identity's saving is exactly its duration.
+
+**sha-critical, by interval overlap.** A sample's hash intervals are `[t − sha256_seconds, t]`
+for each of its outputs, from lever.sh's upload-enqueue records. Its critical part is the seconds
+of those intervals that no classify span on the node covers:
+- per-sample path: each sample's span is `[start, end]`, a running sample covering up to the hash;
+- engine: the engine's classify phase, up to its exit.
+
+So a hash done after the last classify ended is all critical, and the last sample's hash always
+is. A hash done while another sample classifies is not. With one lane under a serial upload mode,
+the lane is idle while it hashes, so each hash is critical.
+
+**The net rule.** Each node writes one `lad-net` line, streamed and the only line of
+`out/lad-net.jsonl`:
+
+    {"v": 1, "rank": <int>, "critical_measurement_s": <s, 3 decimals>,
+     "identity_s": <s>, "sha_get_s": <s>, "sha_critical_s": <s>}
+
+Here `critical_measurement_s` = identity_s + sha_get_s + sha_critical_s, and sha_critical_s is the
+sum of the node's samples' `sha-critical`. A node with nothing to subtract writes 0.
+
+    net wall = max over nodes (node end − critical_measurement_s of that node) − first launch
+
+The node end is its `instance.terminated_at`. Gross wall is the same expression without the
+subtraction.
+
+**Bounds:**
+- Exact for one lane, the engine, and O5.
+- An **upper bound** on the true net wall under a serial upload mode with several lanes. There, a
+  hash covered by another lane's classify span still holds up its own lane, so less is
+  subtracted than the hashes cost.
+
+`phases.s5-identity` is each sample's share of `identity` and is already inside `identity_s`.
 
 The input sha256 against its metadata (NB10) is **not** separated. It runs inside lever.sh's
 `lv_fetch_inputs` (scripts/g3/fetch.sh), in the fetch lanes and overlapped with the other files'
@@ -345,14 +386,15 @@ estimate, and noting that the classic `aws s3 cp` rate is unmeasured. `run.sh` a
 `cohort.json` `params` (`ladder_levers.py spec-params`: lowercase keys, ints for cohort, want_n,
 replicas and shards, `run_kind: ladder`, `state: cold`); other specs get `params: null`.
 
-Generated and committed at c1 (every rung fully determined there): S0-T1, S0-Tv, S1, S2b-i,
-S2b-ii, S2d, S2c, S2a. All eight pass `DRY_RUN=1` (user data, cost and quota checks):
+Generated and committed at c1 (every rung fully determined there, 15): S0-T1, S0-Tv, S1, S2b-i,
+S2b-ii, S2d, S2c, S2a, S5, S6, S7a, S7b, S9, Sstar-r8g, Sstar-r8gd. All of them pass `DRY_RUN=1` (user data, cost and quota checks):
 `results/rehearse/dryrun-userdata-*-<sha7>.tsv`.
 
 ## The body (`scripts/g3/ladder.body.sh`)
 
 Its header lists the phases; they are the same on both arms: setup, fetch-db, etag-hash.k2d,
-fetch-inputs, identity (S5 and later only), load, classify, upload-drain, push. The engine's order
+fetch-inputs, build-wait (SETUP=overlap only), identity (S5 and later only), load, classify,
+upload-drain, sha-get (O5 and O5-cost only), push. The engine's order
 is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table it loaded.
 - **Cold by construction.** `ak2_drop_caches` before anything, and again before `load`.
   `lad-mem` records Cached, Dirty, Writeback and the huge-page counters at load start.

@@ -57,6 +57,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - O5 streams each lad-sample as its GETs finish (NB8).
     - The run order is documented (NB9). The input sha256 is not separated, and the reason is
       recorded (NB10).
+  - The #51 re-review fixes:
+    - B2: under SETUP=overlap the build is waited for in its own `build-wait` phase (not
+      measurement-only), before identity, and its end is recorded.
+    - `sha-critical` is decided by interval overlap with the node's classify spans.
+    - Each node writes one `lad-net` line (`out/lad-net.jsonl`) with the seconds the net rule
+      subtracts. Net wall = max over nodes (node end − critical_measurement_s) − first launch.
+    - T1: the identity case runs with pipefail off, as on the node, and a mutation restoring B1's
+      bug must fail it.
+    - NB3: the one-lever re-check compares THREADS, PROCS and INFLIGHT as numbers at each rung's
+      host. A `not_run_cohorts` column marks S4 and S8 not run at c1, where their only candidate
+      is the predecessor's configuration.
+    - An alias winner must be one of `alias_of`.
+    - S5, S6, S7a, S7b, S9, Sstar-r8g and Sstar-r8gd are now determined at c1, so 15 c1 specs
+      are committed.
   - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and
     `cohort.json` `params`.
   - `results/g3/ladder-modelled.tsv` holds the header only.

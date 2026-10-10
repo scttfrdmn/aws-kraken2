@@ -41,7 +41,7 @@ GROUPS = ["CLASSIFIER", "THREADS+PROCS", "DB_STAGE", "DB_PLACE+DB_LOAD", "HOST_T
           "ETAG_CHECK", "HOST"]
 GROUP = {k: g for g in GROUPS for k in g.split("+")}
 GROUP["instance"] = "HOST"
-COLS = ["rung", "arm", "status", "alias_of", "select", "derived", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
+COLS = ["rung", "arm", "status", "not_run_cohorts", "alias_of", "select", "derived", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
         "pred_wall_s", "pred_usd", "pred_phase_s", "instance", "az", "ttl_min_c1"] + KEYS + ["note"]
 LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S2c": "IN_DEST", "S3": "host-tunes", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
 ENDPOINTS = {"S": ("S*-time", "S*-cost"), "O": ("O*-time", "O*-cost")}
@@ -154,6 +154,11 @@ def check(rows):
         st = r["status"]
         if st != "run" and not re.fullmatch(r"(not-run|alias): .{8,}", st):
             probs.append("%s: status %r (run, not-run: <reason> or alias: <rule>)" % (n, st))
+        for d in [d.strip() for d in r["not_run_cohorts"].split(";") if d.strip()]:
+            if not re.fullmatch(r"c[1-9][0-9]*: .{8,}", d):
+                probs.append("%s: not_run_cohorts entry %r is not c<cohort>: <reason>" % (n, d))
+        if r["not_run_cohorts"] and not r["select"]:
+            probs.append("%s: not run at some cohorts, but it makes no selection there" % n)
         if st.startswith("alias:"):
             cands = [c for c in r["alias_of"].split("|") if c]
             if not cands or any(c not in names or names[c]["status"] != "run" for c in cands):
@@ -287,6 +292,56 @@ def token(v, key):
     return None
 
 
+def not_run_at(row, cohort):
+    """'' if the row runs at COHORT, else why not (status not-run, or a not_run_cohorts entry)."""
+    if row["status"].startswith("not-run"):
+        return row["status"]
+    for d in [d.strip() for d in row.get("not_run_cohorts", "").split(";") if d.strip()]:
+        if d.split(":", 1)[0] == "c%s" % cohort:
+            return "not-run at c%s:%s" % (cohort, d.split(":", 1)[1])
+    return ""
+
+
+def run_pred_at(rows, row, cohort):
+    """The nearest predecessor that runs at COHORT (not-run ones are skipped), or None."""
+    p, seen = pred_of(rows, row), set()
+    while p is not None and not_run_at(p, cohort) and p["rung"] not in seen:
+        seen.add(p["rung"])
+        p = pred_of(rows, p)
+    return p
+
+
+def vcpus_of(itype):
+    """vCPUs of an instance type from its size (Graviton: xlarge = 4 vCPUs): None if unknown."""
+    m = re.fullmatch(r"[a-z0-9-]+\.(?:(\d*)xlarge|(large)|(medium))", itype or "")
+    if not m:
+        return None
+    if m.group(2):
+        return 2
+    if m.group(3):
+        return 1
+    return 4 * int(m.group(1) or 1)
+
+
+VC_KEYS = ("THREADS", "PROCS", "INFLIGHT")
+
+
+def same_value(k, a, ahost, b, bhost):
+    """Whether key K is unchanged between value A on host AHOST and B on BHOST: the same text (a
+    vcpus-derived move with the host is the host's lever, listed in `derived`), or, for THREADS,
+    PROCS and INFLIGHT, the same number once vcpus forms are resolved with vc() at each one's host."""
+    if a == b:
+        return True
+    if k in VC_KEYS and a != "-" and b != "-":
+        va, vb = vcpus_of(ahost), vcpus_of(bhost)
+        if va and vb:
+            try:
+                return vc(a, va) == vc(b, vb)
+            except ValueError:
+                return False
+    return False
+
+
 def _values(rows, r, cohort, res):
     """Every PARAM and the instance of row r at cohort under resolutions res: (values, unresolved)."""
     names = by_name(rows)
@@ -300,8 +355,19 @@ def _values(rows, r, cohort, res):
                 o = names.get(t[0])
                 if k == "instance" and o is not None and o["status"].startswith("alias:"):
                     a = res.get((t[0], str(cohort), "alias"))   # the alias's winner, then its host
-                    if a and a[0] in names:
+                    if a:
+                        cands = [c for c in o["alias_of"].split("|") if c]
+                        if a[0] not in cands:
+                            raise ValueError("alias %s at cohort %s: winner %s is not one of its alias_of (%s)"
+                                             % (t[0], cohort, a[0], ", ".join(cands)))
                         hit = (instance_of(rows, names[a[0]]), a[1])
+                elif o is not None and not_run_at(o, cohort):
+                    # Not run at this cohort: its selection has one candidate, its predecessor's value.
+                    q = run_pred_at(rows, o, cohort)
+                    if q is not None:
+                        qv, qbad = _values(rows, q, cohort, res)
+                        if not qbad:
+                            hit = (qv[t[1]], "not run at c%s: %s's value" % (cohort, q["rung"]))
                 else:
                     hit = res.get((t[0], str(cohort), t[1]))
             if hit is None:
@@ -325,17 +391,25 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
     r = names[rung]
     if r["status"] != "run":
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
+    why = not_run_at(r, cohort)
+    if why:
+        raise Unresolved("%s is %s: no spec is generated for it" % (rung, why))
     res = read_resolved(resolved, root) if resolved is not None else {}
     out, bad = _values(rows, r, cohort, res)
     if bad:
         raise Unresolved("%s at cohort %s has unresolved values: %s" % (rung, cohort, ", ".join(bad)))
-    p = pred_of(rows, r)
+    p = run_pred_at(rows, r, cohort)
+    if p is not None and p["status"].startswith("alias:"):
+        a = res.get((p["rung"], str(cohort), "alias"))
+        p = names[a[0]] if a and a[0] in names else p
     if p is not None:
         pv, pbad = _values(rows, p, cohort, res)
         if pbad:
             raise Unresolved("%s at cohort %s: its predecessor %s is unresolved (%s), so the one-lever check cannot run"
                              % (rung, cohort, p["rung"], ", ".join(pbad)))
-        ch = [k for k in KEYS + ["instance"] if out[k] != pv[k]]
+        ch = [k for k in KEYS if not same_value(k, out[k], out["instance"], pv[k], pv["instance"])]
+        if out["instance"] != pv["instance"]:
+            ch.append("instance")
         free = [k for k in ch if k not in coupled_keys(r)]
         groups = sorted({GROUP[k] for k in free})
         if not ch:
@@ -579,41 +653,52 @@ def _self_test():
             f.write("origin\tcohort\tkey\tvalue\tsource\n" + "".join("\t".join(l) + "\n" for l in lines))
         return p
     try:
-        good = resfile([("S4", "1", "THREADS", "96", src), ("S4", "1", "PROCS", "vcpus/96", src)])
-        assert resolve(rows, "S4", 1, good, root)["params"]["PROCS"] == "vcpus/96"
-        assert resolve(rows, "S5", 1, good, root)["params"]["THREADS"] == "96"   # inherits S4's token
-        for rung, c in (("S4", 10), ("S8", 1)):
+        # c10: P = 12, T = 8 on x8g.24xlarge's 96 vCPUs, as the rule records it (THREADS=T, PROCS=vcpus/T).
+        good = resfile([("S4", "10", "THREADS", "8", src), ("S4", "10", "PROCS", "vcpus/8", src)])
+        assert resolve(rows, "S4", 10, good, root)["params"]["PROCS"] == "vcpus/8"
+        assert resolve(rows, "S5", 10, good, root)["params"]["PROCS"] == "vcpus/8"   # inherits S4's token
+        assert vc("vcpus/8", vcpus_of("x8g.24xlarge")) == 12 and vc("vcpus/8", vcpus_of("r8g.48xlarge")) == 24
+        for rung, c in (("S4", 100), ("S8", 10)):
             try:
                 resolve(rows, rung, c, good, root)
                 raise AssertionError("%s resolved at c%d" % (rung, c))
             except Unresolved:
                 pass
-        for lines, want in (([("S4", "1", "THREADS", "96", "results/g3/nope.tsv"), ("S4", "1", "PROCS", "vcpus/96", src)], "does not exist"),
-                            ([("S4", "1", "THREADS", "96", "results/loose/pxt.tsv"), ("S4", "1", "PROCS", "vcpus/96", src)], "not inside a run"),
-                            ([("S4", "1", "THREADS", "96", "/tmp/x"), ("S4", "1", "PROCS", "vcpus/96", src)], "not a results/"),
-                            ([("S4", "1", "THREADS", "96", src), ("S4", "1", "PROCS", "1", src)], "vcpus ratio")):
+        # c1: S4 and S8 are not run (one candidate each, their predecessor's configuration); their
+        # tokens resolve to that predecessor's values, so S5 ... S9 are determined at c1.
+        for rung in ("S4", "S8"):
             try:
-                resolve(rows, "S4", 1, resfile(lines), root)
+                resolve(rows, rung, 1, good, root)
+                raise AssertionError("%s resolved at c1" % rung)
+            except Unresolved as e:
+                assert "not-run at c1" in str(e), e
+        r5 = resolve(rows, "S5", 1, good, root)["params"]
+        assert (r5["THREADS"], r5["PROCS"]) == ("vcpus", "1"), r5
+        assert resolve(rows, "S9", 1, good, root)["params"]["REPLICAS"] == "1"
+        for lines, want in (([("S4", "10", "THREADS", "8", "results/g3/nope.tsv"), ("S4", "10", "PROCS", "vcpus/8", src)], "does not exist"),
+                            ([("S4", "10", "THREADS", "8", "results/loose/pxt.tsv"), ("S4", "10", "PROCS", "vcpus/8", src)], "not inside a run"),
+                            ([("S4", "10", "THREADS", "8", "/tmp/x"), ("S4", "10", "PROCS", "vcpus/8", src)], "not a results/"),
+                            ([("S4", "10", "THREADS", "8", src), ("S4", "10", "PROCS", "12", src)], "vcpus ratio")):
+            try:
+                resolve(rows, "S4", 10, resfile(lines), root)
                 raise AssertionError("accepted: %s" % lines)
             except ValueError as e:
                 assert want in str(e), (want, e)
-        # THREADS=vcpus with PROCS=vcpus/vcpus... is S2a's own value: identical to the predecessor.
+        # On values, not text: THREADS=96, PROCS=vcpus/96 is 96 threads x 1 process on x8g.24xlarge,
+        # which is S2a's THREADS=vcpus, PROCS=1: identical to the predecessor, so refused.
         try:
-            resolve(rows, "S4", 1, resfile([("S4", "1", "THREADS", "vcpus", src), ("S4", "1", "PROCS", "1", src)]), root)
-            raise AssertionError("an S4 identical to S2a was accepted")
-        except (Unresolved, ValueError) as e:
-            assert "identical to S2a" in str(e) or "vcpus ratio" in str(e), e
-        t = _copy(rows)
-        by_name(t)["S4"]["THREADS"], by_name(t)["S4"]["PROCS"] = "@select:S4", "1"
-        by_name(t)["S4"]["group"] = by_name(t)["S4"]["lever"] = "THREADS+PROCS"
-        try:
-            resolve(t, "S4", 1, resfile([("S4", "1", "THREADS", "vcpus", src)]), root)
-            raise AssertionError("an S4 identical to S2a was accepted")
+            resolve(rows, "S4", 10, resfile([("S4", "10", "THREADS", "96", src), ("S4", "10", "PROCS", "vcpus/96", src)]), root)
+            raise AssertionError("an S4 identical to S2a by value was accepted")
         except Unresolved as e:
             assert "identical to S2a" in str(e), e
-        # An alias predecessor resolves to its winner's host.
+        # An alias's host is its winner's, and the winner must be one of alias_of.
         alias = resfile([("Sstar-time", "1", "alias", "Sstar-r8g", src)])
         assert _values(rows, names["Sstar-time"], 1, read_resolved(alias, root))[0]["instance"] == "r8g.48xlarge"
+        try:
+            _values(rows, names["Sstar-time"], 1, read_resolved(resfile([("Sstar-time", "1", "alias", "S4", src)]), root))
+            raise AssertionError("an alias winner outside alias_of was accepted")
+        except ValueError as e:
+            assert "is not one of its alias_of" in str(e), e
     finally:
         shutil.rmtree(root)
     t = _copy(rows)
