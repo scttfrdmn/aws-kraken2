@@ -53,10 +53,10 @@ for k in RUNG ARM COHORT WANT_N CLASSIFIER THREADS PROCS DB_STAGE DB_PLACE DB_LO
 done
 lad_is() { [[ $2 =~ ^($3)$ ]] || fail "parameter $1=$2 is not one of $3"; }
 lad_is CLASSIFIER "$CLASSIFIER" 'upstream|ours-plain|ours-engine'
-lad_is THREADS "$THREADS" 'vcpus|[1-9][0-9]*'
-lad_is PROCS "$PROCS" '[1-9][0-9]*'
+lad_is THREADS "$THREADS" 'vcpus|vcpus/[1-9][0-9]*|[1-9][0-9]*'
+lad_is PROCS "$PROCS" 'vcpus/[1-9][0-9]*|[1-9][0-9]*'
 lad_is DB_STAGE "$DB_STAGE" 'awscp-default|s5cmd|ranged-get'
-lad_is DB_PLACE "$DB_PLACE" 'nvme|tmpfs|memory'
+lad_is DB_PLACE "$DB_PLACE" 'nvme|tmpfs|tmpfs-huge|memory'
 lad_is DB_LOAD "$DB_LOAD" 'load|mmap|resident'
 lad_is GUNZIP "$GUNZIP" 'gzip|rapidgzip-P([1-9][0-9]*|auto)'
 lad_is IN_FETCH "$IN_FETCH" 'serial|lanes[1-9][0-9]*'
@@ -65,7 +65,7 @@ lad_is OUT_UPLOAD "$OUT_UPLOAD" 'awscp-default|s5cmd-serial|s5cmd-overlap|sdk-st
 lad_is REPLICAS "$REPLICAS" '[1-9][0-9]*'
 lad_is SHARDS "$SHARDS" '[1-9][0-9]*'
 lad_is PLACEMENT "$PLACEMENT" 'mod|lpt'
-lad_is INFLIGHT "$INFLIGHT" '-|[1-9][0-9]*'
+lad_is INFLIGHT "$INFLIGHT" '-|vcpus/[1-9][0-9]*|[1-9][0-9]*'
 lad_is SETUP "$SETUP" 'serial|overlap'
 lad_is ETAG_CHECK "$ETAG_CHECK" 'on'
 [ "$WANT_N" = $((REPLICAS * SHARDS)) ] || fail "WANT_N $WANT_N is not REPLICAS x SHARDS"
@@ -78,7 +78,7 @@ else
   [ "$DB_STAGE" != ranged-get ] && [ "$DB_PLACE" != memory ] && [ "$DB_LOAD" != resident ] || fail "ranged-get/memory/resident is the engine's load"
   [ "$SHARDS" = 1 ] && [ "$INFLIGHT" = - ] || fail "SHARDS and INFLIGHT are the engine's"
   [ "$OUT_UPLOAD" != sdk-stream ] || fail "sdk-stream is the engine's emitter"
-  [ "$DB_PLACE" != tmpfs ] || [ "$DB_LOAD" = mmap ] || fail "a tmpfs table is used with --memory-mapping"
+  case $DB_PLACE in tmpfs*) [ "$DB_LOAD" = mmap ] || fail "a tmpfs table is used with --memory-mapping" ;; esac
 fi
 case $ARM/$CLASSIFIER in S/upstream|O/ours-*) ;; *) fail "ARM $ARM does not run CLASSIFIER $CLASSIFIER (S: upstream; O: ours)" ;; esac
 
@@ -109,7 +109,13 @@ ht_apply "$HOST_TUNES"; HTRC=$?
 ht_record setup
 [ "$HTRC" = 0 ] || fail "host tunes $HOST_TUNES did not read back as wanted (hosttune-apply.tsv)"
 NPROC=$(nproc)
-T=$THREADS; [ "$T" = vcpus ] && T=$NPROC
+# Derived per host (docs/ladder.md, "Derived parameters"): vcpus and vcpus/<k> (at least 1) are
+# resolved here from this host's nproc, so a rung that changes the host carries S4's P x T as a
+# ratio of vCPUs. lad-config records the PARAM and the value used.
+lad_vc() { case $1 in vcpus) echo "$NPROC" ;; vcpus/*) local v=$(( NPROC / ${1#vcpus/} )); echo $(( v < 1 ? 1 : v )) ;; *) echo "$1" ;; esac; }
+THREADS_PARAM=$THREADS PROCS_PARAM=$PROCS INFLIGHT_PARAM=$INFLIGHT
+T=$(lad_vc "$THREADS"); PROCS=$(lad_vc "$PROCS"); [ "$INFLIGHT" != - ] && INFLIGHT=$(lad_vc "$INFLIGHT")
+[ "$ENGINE" = 0 ] || [ "$PROCS" = 1 ] || fail "the engine is one process per node (PROCS resolved to $PROCS)"
 AT_ONCE=$PROCS; [ "$ENGINE" = 1 ] && AT_ONCE=$INFLIGHT
 
 # The classifier, built from source (in the background; SETUP=serial waits for it here, overlap at load).
@@ -186,7 +192,9 @@ MOUNTS=()
 if [ "$DB_PLACE" = nvme ] || [ "$IN_DEST" = nvme ]; then lv_nvme single /mnt/nvme || fail "lv_nvme failed"; fi
 case $DB_PLACE in
   nvme) DBDIR="$LV_NVME/db" ;;
-  tmpfs) DBDIR=$($UC mount roda 1150g) || fail "tmpfs for the table failed"; MOUNTS+=(roda) ;;
+  # tmpfs: huge=never (the tmpfs default; S2b-ii); tmpfs-huge: huge=always (S2d).
+  tmpfs) DBDIR=$($UC mount roda 1150g never) || fail "tmpfs for the table failed"; MOUNTS+=(roda) ;;
+  tmpfs-huge) DBDIR=$($UC mount roda 1150g always) || fail "tmpfs for the table failed"; MOUNTS+=(roda) ;;
   memory) DBDIR="$W/db" ;;
 esac
 mkdir -p "$DBDIR" || fail "mkdir $DBDIR"
@@ -196,7 +204,8 @@ if [ "$IN_DEST" = nvme ]; then INROOT="$LV_NVME/work"; mkdir -p "$INROOT" || fai
 else
   # inputs + outputs (150 B per pair, as the generator's memory check) + 8 GiB, in GiB.
   ING=$(( (INB * 102 / 100 + INP * 150) / 1073741824 + 8 ))
-  INROOT=$($UC mount inputs "${ING}g") || fail "tmpfs for the inputs failed"; MOUNTS+=(inputs)
+  # The inputs tmpfs is huge=never on every rung: S2d turns huge pages on for the table only.
+  INROOT=$($UC mount inputs "${ING}g" never) || fail "tmpfs for the inputs failed"; MOUNTS+=(inputs)
 fi
 INDIR="$INROOT/in"; OUTD="$INROOT/out"; SD="$W/lad"
 mkdir -p "$INDIR" "$OUTD" "$SD/done" "$SD/ack" "$SD/err" || fail "mkdir under $INROOT"
@@ -213,13 +222,15 @@ SHIMGZ=$(command -v gzip)
 DECOMP=(); [ "$GZMODE" != gzip ] && [ "$CLASSIFIER" != upstream ] && DECOMP=(AK2_DECOMPRESS=pipe)
 emit config "$(jq -nc --arg rung "$RUNG" --arg arm "$ARM" --arg cl "$CLASSIFIER" --argjson cohort "$COHORT" --argjson rank "$RANK" \
   --argjson fleet "$FLEET" --argjson group "$GROUP" --argjson shard "$SHARD" --argjson nproc "$NPROC" --argjson t "$T" \
-  --arg params "THREADS=$THREADS PROCS=$PROCS DB_STAGE=$DB_STAGE DB_PLACE=$DB_PLACE DB_LOAD=$DB_LOAD HOST_TUNES=$HOST_TUNES GUNZIP=$GUNZIP IN_FETCH=$IN_FETCH IN_CLIENT=$IN_CLIENT IN_DEST=$IN_DEST OUT_UPLOAD=$OUT_UPLOAD REPLICAS=$REPLICAS SHARDS=$SHARDS PLACEMENT=$PLACEMENT INFLIGHT=$INFLIGHT SETUP=$SETUP ETAG_CHECK=$ETAG_CHECK" \
+  --arg params "THREADS=$THREADS_PARAM PROCS=$PROCS_PARAM DB_STAGE=$DB_STAGE DB_PLACE=$DB_PLACE DB_LOAD=$DB_LOAD HOST_TUNES=$HOST_TUNES GUNZIP=$GUNZIP IN_FETCH=$IN_FETCH IN_CLIENT=$IN_CLIENT IN_DEST=$IN_DEST OUT_UPLOAD=$OUT_UPLOAD REPLICAS=$REPLICAS SHARDS=$SHARDS PLACEMENT=$PLACEMENT INFLIGHT=$INFLIGHT_PARAM SETUP=$SETUP ETAG_CHECK=$ETAG_CHECK" \
   --arg gz "$GZMODE" --arg decomp "${DECOMP[*]:-}" --arg type "${AK2_INSTANCE_TYPE:-}" --arg db "$DBDIR" --arg in "$INROOT" \
   --argjson mine "$(printf '%s\n' "${MINE[@]}" | jq -sc 'map(tonumber)')" --argjson inb "$INB" \
+  --argjson procs "$PROCS" --arg inflight "$INFLIGHT" --arg gzk "$GZK" \
   --arg mem "$(awk '/^MemTotal:/{print $2}' /proc/meminfo 2> /dev/null)" \
   '{kind:"config", rung:$rung, arm:$arm, classifier:$cl, cohort:$cohort, rank:$rank, fleet:$fleet, replica:$group, shard:$shard,
     instance_type:$type, nproc:$nproc, mem_total_kb:$mem, threads:$t, params:$params, gunzip_mode:$gz, ours_decompress:$decomp,
-    db_dir:$db, work_dir:$in, replica_samples:$mine, replica_input_bytes:$inb}')"
+    db_dir:$db, work_dir:$in, replica_samples:$mine, replica_input_bytes:$inb,
+    resolved:{threads:$t, procs:$procs, inflight:$inflight, gunzip_P:(if $gzk == "" then null else ($gzk|tonumber) end), nproc:$nproc}}')"
 lad_push
 
 ak2_phase fetch-db
@@ -251,7 +262,16 @@ if [ "$ENGINE" = 1 ]; then
       "${PAIRS[$j]}" "$T" "$o" "$r" "$INDIR/${s}_1.fastq.gz" "$INDIR/${s}_2.fastq.gz" >> "$M"
   done
   ak2_push "$M" "cohort.tsv" > /dev/null
-  mapfile -t NEEDS < <(python3 scripts/lib/cohort_place.py needs "$SHARDS" "$SHARD" "$M")
+  # What this shard reads must be exactly what the placement homes here; either call failing, or
+  # the two disagreeing (an empty NEED while samples are homed here, say), is fatal.
+  NOUT=$(python3 scripts/lib/cohort_place.py needs "$SHARDS" "$SHARD" "$M") || fail "cohort_place.py needs failed"
+  HOUT=$(python3 scripts/lib/cohort_place.py table "$SHARDS" "$M") || fail "cohort_place.py table failed"
+  NEEDS=(); [ -n "$NOUT" ] && mapfile -t NEEDS <<< "$NOUT"
+  HOMES=(); mapfile -t HOMES < <(awk -F'\t' -v r="$SHARD" 'NR > 1 && $5 == r {print $2}' <<< "$HOUT")
+  [ "$(printf '%s\n' "${NEEDS[@]}" | sort)" = "$(printf '%s\n' "${HOMES[@]}" | sort)" ] ||
+    fail "shard $SHARD would read ${#NEEDS[@]} samples but is home to ${#HOMES[@]} (cohort_place.py needs vs table)"
+  [ "${#MINE[@]}" -gt 0 ] && [ "$SHARDS" = 1 ] && [ "${#NEEDS[@]}" = 0 ] && fail "no inputs to read with ${#MINE[@]} samples planned"
+  ak2_say "placement: shard $SHARD of $SHARDS is home to ${#HOMES[@]} of the replica's ${#MINE[@]} samples"
   NEED=()
   for s in "${NEEDS[@]}"; do for j in "${MINE[@]}"; do [ "${SAMPLES[$j]}" = "$s" ] && NEED+=("$j"); done; done
 fi
@@ -266,7 +286,8 @@ ak2_say "inputs: ${#NEED[@]} samples of ${#MINE[@]} in replica $GROUP, into $IND
 
 
 # ---- load and classify (from here to the end marker: the functions scripts/tests/ladder_stream_test.sh drives) ----
-# lad_mem LABEL: meminfo's page-cache state (a cold rung starts with Cached small, Dirty and Writeback ~0).
+# lad_mem LABEL: meminfo's page-cache state. Cached includes tmpfs (Shmem), so on a tmpfs rung it
+# holds the staged table; the cold check is Cached - Shmem small, and Dirty and Writeback ~0.
 lad_mem() {
   emit mem "$(awk -v l="$1" 'BEGIN{printf "{\"kind\":\"mem\",\"label\":\"%s\"", l}
     /^(MemTotal|MemAvailable|Cached|Dirty|Writeback|Shmem|ShmemHugePages|AnonHugePages):/ {sub(":", "", $1); printf ",\"%s_kb\":%s", $1, $2}
@@ -327,29 +348,39 @@ lad_finish() {
   done
   [ "$UPSERIAL" = 1 ] && [ "$src" = per-sample ] && : > "$SD/ack/$j"
   lad_line "$j" "$rc" "$t0" "$t1" "$lane" "$src" "$eng" "$outs" "$sh" "$([ "$upd" = 1 ] && echo "$up")" \
-    "node, at lv_upload_enqueue before the upload"
+    "node, at lv_upload_enqueue before the upload" "$(lad_crit "$sh" "$src")"
 }
-# lad_line J RC T0 T1 LANE SRC ENGINE_JSON OUTPUTS SHA_S UPLOAD_S SHA_SOURCE: the line itself.
+# lad_crit SHA_S SRC: the critical-path share of a sample's output sha256 (measurement only;
+# docs/ladder.md, "Measurement-only phases"): all of it when the sample's lane waits for it
+# (a serial upload mode on the per-sample path) or when no classifier is still running (the
+# tail); none when classification carries on beside it (overlap, the engine).
+lad_crit() {
+  local p
+  if [ "$UPSERIAL" = 1 ] && [ "$2" = per-sample ]; then echo "$1"; return; fi
+  for p in "${CPIDS[@]}"; do kill -0 "$p" 2> /dev/null && { echo 0; return; }; done
+  echo "$1"
+}
+# lad_line J RC T0 T1 LANE SRC ENGINE_JSON OUTPUTS SHA_S UPLOAD_S SHA_SOURCE SHA_CRITICAL_S: the line itself.
 lad_line() {
   local j=$1 s=${SAMPLES[$1]} cs="" st=n/a k=0 fb=none
   [ "$6" = per-sample ] && cs=$(sed -nE 's/.*processed in ([0-9.]+)s.*/\1/p' "$SD/err/$j" 2> /dev/null | tail -1)
   if [ "$GZMODE" != gzip ]; then st=identical; k=$GZK; [ -n "${S5BAD[$s]:-}" ] && { st=differs; fb=gzip; NFB=$((NFB + 1)); }; fi
   emit_sample "$(jq -nc --arg rung "$RUNG" --arg arm "$ARM" --argjson cohort "$COHORT" --arg s "$s" --argjson pairs "${PAIRS[$j]}" \
     --argjson rc "$2" --arg t0 "$3" --arg t1 "$4" --arg lane "$5" --arg src "$6" --arg eng "$7" --argjson outs "$8" --arg sh "$9" \
-    --arg up "${10}" --arg shsrc "${11}" --arg cs "$cs" --arg st "$st" --argjson k "$k" --argjson nproc "$NPROC" \
+    --arg up "${10}" --arg shsrc "${11}" --arg shc "${12:-}" --arg cs "$cs" --arg st "$st" --argjson k "$k" --argjson nproc "$NPROC" \
     --arg id "${IDSEC[$s]:-}" --argjson rank "$RANK" --argjson idx "$j" --argjson t "$T" --argjson inb "${BYTES[$j]:-0}" \
-    --arg cl "$CLASSIFIER" --argjson group "$GROUP" --arg upm "$OUT_UPLOAD" --arg fb "$fb" --arg g1 "${GZSHA[${s}_1.fastq.gz]:-}" --arg g2 "${GZSHA[${s}_2.fastq.gz]:-}" --arg r1 "${RGSHA[${s}_1.fastq.gz]:-}" --arg r2 "${RGSHA[${s}_2.fastq.gz]:-}" '
+    --arg cl "$CLASSIFIER" --argjson group "$GROUP" --arg upm "$OUT_UPLOAD" --arg fb "$fb" --arg g1 "${GZSHA[${s}_1.fastq.gz]:-}" --arg g2 "${GZSHA[${s}_2.fastq.gz]:-}" --arg r1 "${RGSHA[${s}_1.fastq.gz]:-}" --arg r2 "${RGSHA[${s}_2.fastq.gz]:-}" --arg ge "${GZRC[${s}_1.fastq.gz]:--1} ${GZRC[${s}_2.fastq.gz]:--1}" --arg re "${RGRC[${s}_1.fastq.gz]:--1} ${RGRC[${s}_2.fastq.gz]:--1}" '
     def n($x): if $x == "" or $x == "null" then null else ($x | tonumber) end;
     def ms: . * 1000 | round / 1000;
     ($eng | if . == "" then null else fromjson end) as $e
     | {v:1, arm:$arm, rung:$rung, cohort:$cohort, accession:$s, pairs:$pairs, rc:$rc,
-       phases:(({classify:(n($t1) - n($t0)), sha:n($sh)}
+       phases:(({classify:(n($t1) - n($t0)), sha:n($sh), "sha-critical":n($shc)}
          + (if $up == "" then {} else {upload:n($up)} end)
          + (if $id == "" then {} else {"s5-identity":n($id)} end)
          + (if $cs == "" then {} else {"classify-process":n($cs)} end)
          + (if $e == null then {} else ({"engine-setup":n($e.setup_s), "engine-classify":n($e.classify_s), "engine-close":n($e.close_s),
              "engine-report":n($e.report_s)} | with_entries(select(.value != null))) end)) | map_values(ms)),
-       outputs:$outs, s5:({status:$st, fallback:$fb, P:$k, nproc:$nproc} + (if $st == "n/a" then {} else {gz_sha256:[$g1, $g2], rg_sha256:[$r1, $r2]} end)),
+       outputs:$outs, s5:({status:$st, fallback:$fb, P:$k, nproc:$nproc} + (if $st == "n/a" then {} else {gz_sha256:[$g1, $g2], rg_sha256:[$r1, $r2], gz_exit:($ge | split(" ") | map(tonumber)), rg_exit:($re | split(" ") | map(tonumber))} end)),
        rank:$rank, idx:$idx, t_start:(n($t0) | ms), t_end:(n($t1) | ms), input_bytes:$inb, threads:$t,
        replica:$group, lane:$lane, classifier:$cl, out_upload:$upm, sha256_source:$shsrc,
        s5_verdict:(if $st == "differs" then "S5 not output-preserving on this input" else null end), engine:$e}')"
@@ -463,45 +494,60 @@ LADFB
   emit fallback "$(jq -nc --arg how "per-sample shim behaviour: $FBDIR/gzip ahead of lever.sh's shim on PATH" \
     --argjson n "${#S5BAD[@]}" --arg list "${!S5BAD[*]}" '{kind:"s5-fallback", how:$how, samples:$n, accessions:($list | split(" "))}')"
 }
-# ---- end of the functions scripts/tests/ladder_stream_test.sh drives ----
-# S5: rapidgzip 0.14.5 drops output after trailing bytes, by an amount that depends on -P
-# (docs/oracle.md), so every input is checked at this run's -P on this host before any classify.
-declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=()
-if [ "$GZMODE" != gzip ]; then
-  ak2_phase identity
+# lad_identity (S5): rapidgzip 0.14.5 drops output after trailing bytes, by an amount that
+# depends on -P (docs/oracle.md), so every input this node reads is decompressed by both tools at
+# this run's -P on this host, before any classify; its own phase, measurement only. Each tool's
+# real exit status is taken inside its command substitution (the pipeline's PIPESTATUS is gone
+# once the substitution returns). A sample differs if any mate's sha256 differ, either tool exits
+# non-zero, or either tool's output is empty (the empty-stream sha256): it then falls back to GNU
+# gzip (lad_s5_fallback). Sets S5BAD, IDSEC, GZSHA, RGSHA, GZRC, RGRC.
+EMPTY_SHA=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+lad_identity() {
+  local l i j f g gr h hr t0 t1 ok s p why
+  local -a idf idpids
   IDL=$(( NPROC / (GZK + 2) )); [ "$IDL" -lt 1 ] && IDL=1
-  IDF=()
-  for j in "${NEED[@]}"; do IDF+=("${SAMPLES[$j]}_1.fastq.gz" "${SAMPLES[$j]}_2.fastq.gz"); done
+  for j in "${NEED[@]}"; do idf+=("${SAMPLES[$j]}_1.fastq.gz" "${SAMPLES[$j]}_2.fastq.gz"); done
   mkdir -p "$SD/id"
-  idpids=()
   for ((l = 0; l < IDL; l++)); do
     (
-      for ((i = l; i < ${#IDF[@]}; i += IDL)); do
-        f=${IDF[$i]}; t0=$(now)
-        g=$("$REAL_GZIP" -dc "$INDIR/$f" | sha256sum | cut -d' ' -f1); gr=${PIPESTATUS[0]}
-        h=$("$LV_RG" -d -c -P "$GZK" "$INDIR/$f" | sha256sum | cut -d' ' -f1); hr=${PIPESTATUS[0]}
+      for ((i = l; i < ${#idf[@]}; i += IDL)); do
+        f=${idf[$i]}; t0=$(now)
+        g=$("$REAL_GZIP" -dc "$INDIR/$f" | sha256sum | cut -d' ' -f1; exit "${PIPESTATUS[0]}"); gr=$?
+        h=$("$LV_RG" -d -c -P "$GZK" "$INDIR/$f" | sha256sum | cut -d' ' -f1; exit "${PIPESTATUS[0]}"); hr=$?
         printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$f" "$g" "$gr" "$h" "$hr" "$t0" "$(now)" > "$SD/id/$f"
       done
     ) &
     idpids+=($!)
   done
   for p in "${idpids[@]}"; do wait "$p"; done
-  for f in "${IDF[@]}"; do
-    IFS=$'\t' read -r _ g gr h hr t0 t1 < "$SD/id/$f" 2> /dev/null || { g=missing-gzip; h=missing-rapidgzip; gr=1; hr=1; t0=0; t1=0; }
-    # identical means the two outputs hash the same (the exits are recorded beside them).
-    ok=false; [ "$g" = "$h" ] && [[ $g =~ ^[0-9a-f]{64}$ ]] && ok=true
-    GZSHA[$f]=$g; RGSHA[$f]=$h
+  for f in "${idf[@]}"; do
+    IFS=$'\t' read -r _ g gr h hr t0 t1 < "$SD/id/$f" 2> /dev/null || { g=missing-gzip; h=missing-rapidgzip; gr=-1; hr=-1; t0=0; t1=0; }
+    why=""
+    [[ $g =~ ^[0-9a-f]{64}$ ]] && [[ $h =~ ^[0-9a-f]{64}$ ]] || why="no sha256"
+    [ "$g" = "$h" ] || why="${why:+$why; }sha256 differ"
+    [ "$gr" = 0 ] || why="${why:+$why; }gzip exit $gr"
+    [ "$hr" = 0 ] || why="${why:+$why; }rapidgzip exit $hr"
+    { [ "$g" = "$EMPTY_SHA" ] || [ "$h" = "$EMPTY_SHA" ]; } && why="${why:+$why; }empty output"
+    ok=true; [ -z "$why" ] || ok=false
+    GZSHA[$f]=$g; RGSHA[$f]=$h; GZRC[$f]=$gr; RGRC[$f]=$hr
     s=${f%_[12].fastq.gz}
     [ "$ok" = true ] || S5BAD[$s]=1
     IDSEC[$s]=$(awk -v a="${IDSEC[$s]:-0}" -v b="$t0" -v c="$t1" 'BEGIN{printf "%.3f", a + c - b}')
     emit identity "$(jq -nc --arg f "$f" --arg s "$s" --arg g "$g" --arg h "$h" --argjson gr "$gr" --argjson hr "$hr" --argjson k "$GZK" \
-      --argjson nproc "$NPROC" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" \
+      --argjson nproc "$NPROC" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg why "$why" \
       '{kind:"identity", file:$f, sample:$s, gzip_sha256:$g, gzip_exit:$gr, rapidgzip_sha256:$h, rapidgzip_exit:$hr, rapidgzip_P:$k,
-        nproc:$nproc, identical:$ok, seconds:(($t1|tonumber)-($t0|tonumber)),
+        nproc:$nproc, identical:$ok, why:(if $why == "" then null else $why end), seconds:(($t1|tonumber)-($t0|tonumber)),
         verdict:(if $ok then "output-preserving" else "S5 not output-preserving on this input" end)}')"
   done
-  ak2_say "identity: ${#IDF[@]} inputs at -P $GZK on $NPROC CPUs; ${#S5BAD[@]} samples not output-preserving"
-  [ "${#S5BAD[@]}" -gt 0 ] && { lad_s5_fallback || fail "the S5 fallback could not be installed"; }
+  ak2_say "identity: ${#idf[@]} inputs at -P $GZK on $NPROC CPUs; ${#S5BAD[@]} samples not output-preserving"
+  [ "${#S5BAD[@]}" -gt 0 ] && { lad_s5_fallback || return 1; }
+  return 0
+}
+# ---- end of the functions scripts/tests/ladder_stream_test.sh drives ----
+declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
+if [ "$GZMODE" != gzip ]; then
+  ak2_phase identity
+  lad_identity || fail "the S5 fallback could not be installed"
   lad_push
 fi
 lad_build_wait
@@ -545,6 +591,13 @@ if [ "$ENGINE" = 1 ]; then
   v=$(awk -F'\t' '$1=="ak2-engine" && $2=="rendezvous" {print $4}' "$F" | tail -1); [ -n "$v" ] && ak2_req Rendezvous-PutObject "$v" "$B"
   v=$(awk -F'\t' '$1=="ak2-engine" && $2=="rendezvous" {print $6}' "$F" | tail -1); [ -n "$v" ] && ak2_req Rendezvous-GetObject "$v" "$B"
   grep -qE $'^ak2-engine\tetag\t' "$F" || { FAIL=1; ak2_say "ERROR: no ak2-engine etag line: the in-memory ETag check did not run"; }
+  # Completeness: every sample homed here has its ak2-sample line (and so a lad-sample line).
+  MISSING=()
+  for s in "${HOMES[@]}"; do
+    hit=0; for j in "${DONEJ[@]}"; do [ "${SAMPLES[$j]}" = "$s" ] && hit=1; done
+    [ "$hit" = 1 ] || MISSING+=("$s")
+  done
+  [ "${#MISSING[@]}" = 0 ] || { FAIL=1; ak2_err 1 "engine: ${#MISSING[@]} of ${#HOMES[@]} home samples have no ak2-sample line: ${MISSING[*]:0:10}"; }
   ak2_push "$F" "eng-rank$RANK.stderr" > /dev/null
 fi
 # S5 cannot pass as a no-op: every input this node classified went through rapidgzip, except the
@@ -569,9 +622,11 @@ lad_push
 ak2_phase upload-drain
 if [ "$UPOPEN" = 1 ]; then lv_upload_drain || FAIL=1; fi
 
-ak2_phase push
 if [ "$OUT_UPLOAD" = sdk-stream ]; then
-  # The SDK emitter streamed every output to S3 with no local copy: its sha256 comes from a GET.
+  # The SDK emitter streamed every output to S3 with no local copy: its sha256 comes from a GET, in
+  # its own sequential phase (measurement only, so the tables can subtract it exactly). Each
+  # sample's lad-sample line streams, and is pushed, as soon as its GETs finish.
+  ak2_phase sha-get
   for p in "${PENDING[@]}"; do
     IFS='|' read -r j rc t0 t1 lane src eng <<< "$p"
     s=${SAMPLES[$j]}; outs='{}'; sh=0
@@ -589,9 +644,11 @@ if [ "$OUT_UPLOAD" = sdk-stream ]; then
       sh=$(awk -v a="$sh" -v b="$g0" -v c="$(now)" 'BEGIN{printf "%.3f", a + c - b}')
       rm -f "$g"
     done
-    lad_line "$j" "$rc" "$t0" "$t1" "$lane" "$src" "$eng" "$outs" "$sh" "" "s3 GET after the run (the SDK emitter keeps no local copy)"
+    lad_line "$j" "$rc" "$t0" "$t1" "$lane" "$src" "$eng" "$outs" "$sh" "" "s3 GET after the run (the SDK emitter keeps no local copy)" 0
+    lad_push
   done
 fi
+ak2_phase push
 ht_restore || ak2_say "ht_restore did not restore every knob"
 ht_record end
 lad_push || FAIL=1

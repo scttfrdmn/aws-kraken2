@@ -96,7 +96,7 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     RUNG=S9; ARM=S; COHORT=3; CLASSIFIER=upstream; K2=fake-k2; OURS=fake-engine; DECOMP=(); DB_LOAD=mmap; T=2
     SAMPLES=(A B C); PAIRS=(10 20 30); BYTES=(100 200 300); MINE=(0 1 2); PROCS=2; PLACEMENT=mod
     RANK=0; GROUP=0; SHARD=0; NPROC=2; GZMODE=gzip; GZK=""; OUTURL=s3://bucket/x/out/S9; ENGINE_ENV=(X=1)
-    declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=()
+    declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
     [ "$ENGINE" = 1 ] && { RUNG=O1; ARM=O; CLASSIFIER=ours-engine; MINE=(0 1); }
     ak2_phase() { echo "$1" >> "$C/phases.txt"; printf 'ak2-phase\t%s\n' "$1"; }
     ak2_say() { echo "ak2: $*"; }
@@ -160,6 +160,8 @@ check "B: the run ended cleanly" "grep -q 'case-end CRC=0 FAIL=0 NDONE=3' '$C/ru
 a_up_end=$(grep "/out/A/report" "$C/uploads.log" | awk '{print $2}')
 c_start=$(grep "/out/C/output" "$C/fake.log" | awk '{print $1}')
 check "B: overlap: C started ($c_start) before A's uploads ended ($a_up_end)" "awk -v a='$a_up_end' -v c='$c_start' 'BEGIN{exit !(c < a)}'"
+check "A: serial: sha-critical is all of each sample's sha" "[ \$(sed -n 's/^lad-sample //p' '$TD/A/run.log' | jq -s 'map(select(.phases[\"sha-critical\"] == .phases.sha and .phases.sha > 0)) | length') = 3 ]"
+check "B: overlap: a sample hashed while classify carried on has sha-critical 0" "[ \$(samples | jq -s 'map(select(.phases[\"sha-critical\"] == 0 and .phases.sha > 0)) | length') -ge 1 ]"
 check "B: no upload seconds in an overlap lad-sample" "[ \$(samples | jq -s 'map(select(.phases.upload != null)) | length') = 0 ]"
 
 # ---- C: the engine path ----
@@ -189,6 +191,39 @@ for c in A B C F; do
     and ([.t_start, .t_end] | map(tostring | split(\".\") | (.[1] // \"\") | length <= 3) | all))) | length') = \$(grep -c '^lad-sample ' '$TD/$c/run.log') ]"
 done
 check "F: phase seconds have at most 3 decimals" "samples | jq -se '[.[].phases[] | tostring | split(\".\") | (.[1] // \"\") | length <= 3] | all' > /dev/null"
+
+# ---- I: the identity phase with a failing tool (B1) ----
+# GNU gzip stands in as itself; the rapidgzip stand-in writes the same bytes but exits 3 on B_1,
+# and writes nothing (exit 0) on C_2. A must be identical; B and C must differ and fall back, with
+# the tools' real exit codes recorded.
+setup_case I
+cat > "$TD/bin/fake-rg" << 'EOF'
+#!/usr/bin/env bash
+for a in "$@"; do :; done
+case $(basename "$a") in
+  B_1.fastq.gz) gzip -dc "$a"; exit 3 ;;
+  C_2.fastq.gz) exit 0 ;;
+  *) exec gzip -dc "$a" ;;
+esac
+EOF
+chmod +x "$TD/bin/fake-rg"
+(
+  W="$C"; SD="$C/sd"; INDIR="$C/in"; J="$C/lad.jsonl"; LS="$C/lad-samples.jsonl"; : > "$J"; : > "$LS"
+  SAMPLES=(A B C); NEED=(0 1 2); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
+  declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
+  ak2_say() { echo "ak2: $*"; }
+  ak2_push() { :; }
+  . "$FN"
+  for s in A B C; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
+  lad_identity; echo "identity-rc=$? bad=$(printf '%s\n' "${!S5BAD[@]}" | sort | tr '\n' ' ')"
+) > "$C/run.log" 2>&1
+ids() { sed -n 's/^lad-identity //p' "$C/run.log"; }
+check "I: B and C differ, A does not" "grep -q 'identity-rc=0 bad=B C \$' '$C/run.log'"
+check "I: B_1's rapidgzip exit is the tool's real 3, its gzip exit 0" "ids | jq -e 'select(.file == \"B_1.fastq.gz\") | .rapidgzip_exit == 3 and .gzip_exit == 0 and .identical == false' > /dev/null"
+check "I: C_2's empty output differs (exit 0, the empty-stream sha256)" "ids | jq -e 'select(.file == \"C_2.fastq.gz\") | .rapidgzip_exit == 0 and .identical == false
+  and .rapidgzip_sha256 == \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\" and (.why | test(\"empty output\"))' > /dev/null"
+check "I: A's mates are identical with both exits 0" "[ \$(ids | jq -s 'map(select((.file | startswith(\"A_\")) and .identical and .gzip_exit == 0 and .rapidgzip_exit == 0)) | length') = 2 ]"
+check "I: the fallback was installed for B and C" "[ -x '$C/s5fb/gzip' ] && [ \$(grep -c . '$C/s5fb/inputs') = 4 ]"
 
 # ---- N: negative control ----
 setup_case N
