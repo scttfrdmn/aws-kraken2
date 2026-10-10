@@ -16,9 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     classified sample streams a `lad-sample` line (#52's contract v1) and is appended to
     `out/lad-samples.jsonl`, with the on-node sha256 of every output. S5 adds an identity
     phase and falls back to GNU gzip per sample where rapidgzip differs.
-  - `scripts/g3/ladder.levers.tsv`: every rung of both ladders (S2b, S7 and O4 split), with
-    #52's columns plus `status`, `group` and `coupled`. S3 is not run, because the tune probe
-    chose `none`.
+  - `scripts/g3/ladder.levers.tsv`: every rung of both ladders, with #52's columns plus
+    `status`, `group` and `coupled`.
+    - S2b, S7 and O4 are split. S2c (the inputs onto tmpfs, on r8gd.48xlarge) now comes before
+      S2a, so S2a changes only the host.
+    - Ladder 2 runs twice (Scott, 2026-10-10): O0 … O5 from S\*-time and O0-cost … O5-cost from
+      S\*-cost, each with its own selections. O5 is O\*-time and O5-cost is O\*-cost.
+    - S3 is not run, because the tune probe chose `none`.
   - `scripts/g3/mkspec-ladder.sh` (`make ladder-spec`) writes `runs/g3-l-<rung>-c<cohort>.json`
     deterministically. It refuses any rung with an unresolved placeholder.
   - `scripts/lib/ladder_levers.py` (`make ladder-check`, in `make test`) checks that each rung
@@ -26,8 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `scripts/tests/ladder_stream_test.sh` (`make ladder-stream-test`, in `make test`) checks the
     body's streaming, phase boundaries, serial vs overlap uploads, the engine path and the S5
     fallback by behaviour.
-  - The six rungs fully determined at c1 are committed (S0-T1, S0-Tv, S1, S2b-i, S2b-ii, S2a),
-    and all pass `DRY_RUN=1`.
+  - `scripts/tests/ladder_levers_tables_test.py` (in `make test`) runs the real lever table
+    through #52's `ladder_tables.py`. On a synthetic record, both S\* vs O\* pairs follow their own
+    chain with 8 resolved lever rows each.
+  - The seven rungs fully determined at c1 are committed (S0-T1, S0-Tv, S1, S2b-i, S2b-ii, S2c,
+    S2a), and all pass `DRY_RUN=1`. Each spec's header gives its TTL and notes that the classic
+    `aws s3 cp` rate is unmeasured.
+  - `rapidgzip-Pauto` is a registered rule (accepted 2026-10-10): k = clamp(floor(nproc ÷
+    (2 × samples at once)), 1, 16) threads per mate.
   - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and
     `cohort.json` `params`.
   - `results/g3/ladder-modelled.tsv` holds the header only.

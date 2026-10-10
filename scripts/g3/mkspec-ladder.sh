@@ -44,8 +44,9 @@ fi
 COST=$(awk -v p="$PRICE" -v t="$TTL" 'BEGIN{printf "%.2f", p * t / 60 + 0.005}')
 LOW=$(echo "$RUNG" | tr '[:upper:]' '[:lower:]')
 SPEC="runs/g3-l-$LOW-c$COHORT.json"
-BODY=$(awk -v p="$PARAMS" -v h="# Parameters (scripts/g3/mkspec-ladder.sh $ARM $RUNG $COHORT; manifest.params, by scripts/lib/ladder_levers.py spec-params):" \
-  '$0 == "@PARAMS@" {print h; print p; n++; next} {print} END {exit n != 1}' scripts/g3/ladder.body.sh) ||
+TTLNOTE="# TTL ${TTL}m and cost_limit \$$COST: runaway backstops sized by estimate; the classic aws s3 cp rate is unmeasured, so the staging time of the default client is not known in advance."
+BODY=$(awk -v p="$PARAMS" -v t="$TTLNOTE" -v h="# Parameters (scripts/g3/mkspec-ladder.sh $ARM $RUNG $COHORT; manifest.params, by scripts/lib/ladder_levers.py spec-params):" \
+  '$0 == "@PARAMS@" {print t; print h; print p; n++; next} {print} END {exit n != 1}' scripts/g3/ladder.body.sh) ||
   { echo "mkspec-ladder: scripts/g3/ladder.body.sh has no single @PARAMS@ line" >&2; exit 1; }
 R=s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205
 D=s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data

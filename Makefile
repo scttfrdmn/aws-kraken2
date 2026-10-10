@@ -27,6 +27,7 @@ test:
 	python3 scripts/lib/ladder_levers.py --self-test
 	python3 scripts/lib/ladder_levers.py check
 	bash scripts/tests/ladder_stream_test.sh
+	python3 scripts/tests/ladder_levers_tables_test.py
 
 lint:
 	$(GO) vet $(PKGS)

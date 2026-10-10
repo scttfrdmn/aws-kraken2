@@ -43,7 +43,7 @@ GROUP = {k: g for g in GROUPS for k in g.split("+")}
 GROUP["instance"] = "HOST"
 COLS = ["rung", "arm", "status", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
         "pred_wall_s", "pred_usd", "pred_phase_s", "instance", "az", "ttl_min_c1"] + KEYS + ["note"]
-LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S3": "host-tunes", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
+LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S2c": "IN_DEST", "S3": "host-tunes", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
 ENDPOINTS = {"S": ("S*-time", "S*-cost"), "O": ("O*-time", "O*-cost")}
 COHORTS = (1, 10, 100, 1000)
 SAFE = re.compile(r"^[A-Za-z0-9._-]+$")
@@ -436,12 +436,20 @@ def _self_test():
     by_name(t)["S1"]["GUNZIP"] = "rapidgzip-P16"
     assert any(p.startswith("S1: changes DB_STAGE,GUNZIP") for p in check(t)), check(t)
     t = _copy(rows)
-    by_name(t)["S2a"]["IN_DEST"] = "nvme"
-    by_name(t)["S3"]["IN_DEST"] = "nvme"
-    assert any("S2a: coupled IN_DEST does not change" in p for p in check(t)), check(t)
+    by_name(t)["S4"]["coupled"] = "DB_STAGE: a test reason"
+    assert any("S4: coupled DB_STAGE does not change" in p for p in check(t)), check(t)
     t = _copy(rows)
-    by_name(t)["S2a"]["coupled"] = ""
+    by_name(t)["S2c"]["IN_DEST"] = "nvme"   # S2a would then move the inputs and the host at once
     assert any(p.startswith("S2a: changes IN_DEST,instance") for p in check(t)), check(t)
+    assert not any("S2a" in p for p in check(rows)) and names["S2a"]["coupled"] == ""
+    # Two ladder-2 chains: each O*-endpoint's chain reaches its own S* endpoint.
+    for top, root in (("O5", "Sstar-time"), ("O5-cost", "Sstar-cost")):
+        r, seen = top, []
+        while r != "-" and r not in seen:
+            seen.append(r)
+            r = names[r]["predecessor"]
+        assert root in seen and "S0-T1" in seen, (top, seen)
+    assert names["O3-cost"]["SHARDS"] == "@select:O3-cost" and names["O3"]["SHARDS"] == "@select:O3"
     t = _copy(rows)
     by_name(t)["S6"]["counterpart"] = "O9"
     assert any("S6: counterpart 'O9'" in p for p in check(t)), check(t)
@@ -452,7 +460,7 @@ def _self_test():
     by_name(t)["S1"]["lever"] = "stock"
     assert any("S1: lever stock, want DB_STAGE" in p for p in check(t)), check(t)
     # Resolution: the c1 rungs resolve; S3 does not until a resolution with a source exists.
-    for r in ("S0-T1", "S0-Tv", "S1", "S2b-i", "S2b-ii", "S2a"):
+    for r in ("S0-T1", "S0-Tv", "S1", "S2b-i", "S2b-ii", "S2c", "S2a"):
         resolve(rows, r, 1, None)
     try:
         resolve(rows, "S3", 1, None)
@@ -497,7 +505,7 @@ def _self_test():
     assert token("@select:S8", "REPLICAS") == ("S8", "REPLICAS")
     assert assign([5, 9, 1, 9], 2, "lpt") == [0, 0, 1, 1] and assign([5, 9, 1], 2, "mod") == [0, 1, 0]
     # Memory: the c1 rungs fit their hosts; RODA on tmpfs does not fit 512 GiB.
-    for r in ("S0-T1", "S1", "S2b-i", "S2b-ii", "S2a"):
+    for r in ("S0-T1", "S1", "S2b-i", "S2b-ii", "S2c", "S2a"):
         assert fits(resolve(rows, r, 1, None), 1, 1572864) == [], r
     assert fits(resolve(rows, "S2a", 1, None), 1, 524288)
     # manifest params from a spec's PARAMS block; other specs give none.

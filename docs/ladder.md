@@ -222,10 +222,7 @@ Each of S\*-time, S\*-cost, O\*-time and O\*-cost is declared for cohorts 1, 10,
 exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). The module is importable (`load`,
 `check`, `resolve`, `changed`, `coupled_keys`, `spec_params`) for #53's `ladder_check.py`.
 
-**Rungs that are not one lever, and why** (the `coupled` column):
-- **S2a** (host r8gd.48xlarge → x8g.24xlarge) also moves the inputs to tmpfs (IN_DEST): x8g has no
-  instance store, and Scott ruled that the inputs move at S2a. A separate IN_DEST rung on
-  r8gd.48xlarge before S2a would remove the coupling.
+**The one rung that is not one lever, and why** (the `coupled` column; O0b-cost is its copy):
 - **O0b** (ours' plain path → the engine at N = 1) also changes DB_STAGE/DB_PLACE/DB_LOAD to
   ranged-get/memory/resident and PROCS/INFLIGHT to 1/P. It cannot be split: the engine has no -M,
   so it holds the table resident, and a resident copy beside the staged tmpfs copy is
@@ -233,11 +230,16 @@ exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). The module is importa
   carried into one process.
 
 **Splits made for Law 5:** S2b → S2b-i (`-M` on the same NVMe) then S2b-ii (the table on tmpfs);
-S7 → S7a (tool) then S7b (overlap); O4 → O4a (LPT) then O4b (in flight).
+S2c (the inputs onto tmpfs, on r8gd.48xlarge; lever `IN_DEST`) before S2a, so S2a changes the host
+only (Scott, 2026-10-10); S7 → S7a (tool) then S7b (overlap); O4 → O4a (LPT) then O4b (in flight).
 
 **Endpoints** are rungs declared before any run: `Sstar-time` and `Sstar-cost` are S9 on the host
-whose rung (S9, Sstar-r8g, Sstar-r8gd) has the lowest median wall_s (billed_usd) at that cohort;
-ladder 2 starts from `Sstar-time`; O5, its top, is O\*-time and O\*-cost.
+whose rung (S9, Sstar-r8g, Sstar-r8gd) has the lowest median wall_s (billed_usd) at that cohort.
+**Ladder 2 runs twice** (Scott, 2026-10-10): the time side O0 … O5 from `Sstar-time`, with O3's N
+the fit's time-optimal one, and the cost side O0-cost … O5-cost from `Sstar-cost`, with its own
+selections (`@select:O2-cost`, `@select:O3-cost` at the cost-optimal N, `@select:O4b-cost`). O5 is
+O\*-time and O5-cost is O\*-cost, so each pair's lever rows follow its endpoint's own predecessor
+chain back to S0-T1. The S rungs' counterparts name both sides.
 
 **Not-run rungs** (`status`: `run`, or `not-run: <reason>`): kept for the record, never
 generated, never a predecessor, and they must change nothing against their own predecessor.
@@ -268,12 +270,13 @@ to the cent. It refuses: a table that fails the check; ARM other than the rung's
 a type whose memory (or one NVMe device) cannot hold the rung at that cohort (the table on tmpfs
 or in the process, inputs and outputs at 150 B per pair, 16 GiB of slack; the engine by
 mkspec.sh's rule); a cohort other than 1 without TTL. The same table, cohort and price give the
-same bytes. `run.sh` and `run-multi.sh` write the PARAMS block into `manifest.params` and
+same bytes. Each spec's body opens with a comment giving its TTL and cost_limit as runaway backstops sized by
+estimate, and noting that the classic `aws s3 cp` rate is unmeasured. `run.sh` and `run-multi.sh` write the PARAMS block into `manifest.params` and
 `cohort.json` `params` (`ladder_levers.py spec-params`: lowercase keys, ints for cohort, want_n,
 replicas and shards, `run_kind: ladder`, `state: cold`); other specs get `params: null`.
 
 Generated and committed at c1 (every rung fully determined there): S0-T1, S0-Tv, S1, S2b-i,
-S2b-ii, S2a. All six pass `DRY_RUN=1` (user data, cost and quota checks):
+S2b-ii, S2c, S2a. All seven pass `DRY_RUN=1` (user data, cost and quota checks):
 `results/rehearse/dryrun-userdata-*-<sha7>.tsv`.
 
 ## The body (`scripts/g3/ladder.body.sh`)
@@ -316,7 +319,10 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
   behaviour: a `gzip` ahead of the shim on PATH sends exactly its inputs to GNU gzip, and logs
   them (`out/s5-fallback.calls`). After classify the run fails unless `gzip-shim.calls` has at
   least 2 rapidgzip lines per non-fallback sample, and the fallback log 2 per fallback sample.
-  `rapidgzip-Pauto` is k = clamp(floor(nproc / (2 × samples at once)), 1, 16), resolved on the node.
+  **Registered rule** (accepted, 2026-10-10): `rapidgzip-Pauto` is k = clamp(floor(nproc /
+  (2 × samples at once)), 1, 16) threads per mate, where samples at once is PROCS (per-sample path)
+  or INFLIGHT (engine). It is resolved on the node, recorded in `lad-config` (`gunzip_mode`) and in
+  every lad-sample `s5.P`, and the identity phase runs at that same -P.
 - **Streaming order.** `cmd 2> >(tee FILE | sed …) > /dev/null`: the process substitution forks
   with the stdout in effect at that point, the run log. `make ladder-stream-test` checks this on
   observed output, and shows the reverse order streams nothing.
