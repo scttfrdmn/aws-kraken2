@@ -302,8 +302,10 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
 - **lad-sample** (#52's contract v1): one line per classified sample, streamed into the run log
   and appended to `out/lad-samples.jsonl`. Fields: v, arm, rung, cohort, accession, pairs, rc,
   phases (seconds to the ms: classify, sha, upload when serial, s5-identity, classify-process,
-  engine-*), outputs (output and report: bytes and the sha256 that `lv_upload_enqueue` computed on
-  the node before the upload), s5 {status n/a|identical|differs, fallback none|gzip, P, nproc},
+  engine-*), t_start and t_end (the sample's work interval, epoch seconds to the ms), outputs (output
+  and report: bytes and the sha256 that `lv_upload_enqueue` computed on
+  the node before the upload), s5 {status n/a|identical|differs, fallback none|gzip, gz_sha256 and
+  rg_sha256 (per mate, in mate order, when status is not n/a; identical means they are equal), P, nproc},
   plus rank, idx, t_start, t_end, input_bytes and threads. No classified/unclassified outputs are
   written. Under O5's `sdk-stream` there is no local copy: the line waits for the push phase,
   where each output is fetched by GET and hashed (`sha256_source` says so).

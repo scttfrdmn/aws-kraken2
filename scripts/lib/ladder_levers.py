@@ -462,7 +462,7 @@ def _self_test():
     assert names["S4"]["predecessor"] == "S2a" and names["S3"]["HOST_TUNES"] == "none"
     t = _copy(rows)
     by_name(t)["S3"]["HOST_TUNES"] = "precompact"
-    assert any("S3: is not-run: no parameter change but changes HOST_TUNES" in p for p in check(t)), check(t)
+    assert any("S3: is not-run: no parameter change (the tune probe chose none) but changes HOST_TUNES" in p for p in check(t)), check(t)
     t = _copy(rows)
     by_name(t)["S4"]["predecessor"] = "S3"
     assert any("S4: predecessor S3 is not run" in p for p in check(t)), check(t)

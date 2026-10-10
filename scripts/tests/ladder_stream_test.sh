@@ -96,7 +96,7 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     RUNG=S9; ARM=S; COHORT=3; CLASSIFIER=upstream; K2=fake-k2; OURS=fake-engine; DECOMP=(); DB_LOAD=mmap; T=2
     SAMPLES=(A B C); PAIRS=(10 20 30); BYTES=(100 200 300); MINE=(0 1 2); PROCS=2; PLACEMENT=mod
     RANK=0; GROUP=0; SHARD=0; NPROC=2; GZMODE=gzip; GZK=""; OUTURL=s3://bucket/x/out/S9; ENGINE_ENV=(X=1)
-    declare -A S5BAD=() IDSEC=()
+    declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=()
     [ "$ENGINE" = 1 ] && { RUNG=O1; ARM=O; CLASSIFIER=ours-engine; MINE=(0 1); }
     ak2_phase() { echo "$1" >> "$C/phases.txt"; printf 'ak2-phase\t%s\n' "$1"; }
     ak2_say() { echo "ak2: $*"; }
@@ -113,7 +113,7 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     # shellcheck disable=SC1090
     . "$FN"
     if [ "${5:-}" = s5 ]; then
-      GZMODE=rapidgzip-P2; GZK=2; S5BAD[B]=1; REAL_GZIP="$TD/bin/real-gzip"; SHIMGZ="$TD/bin/shim-gzip"
+      GZMODE=rapidgzip-P2; GZK=2; S5BAD[B]=1; for s in A B C; do for m in 1 2; do GZSHA[${s}_$m.fastq.gz]=$(printf "%064d" $m); RGSHA[${s}_$m.fastq.gz]=$(printf "%064d" $m); done; done; RGSHA[B_2.fastq.gz]=$(printf "%064d" 9); REAL_GZIP="$TD/bin/real-gzip"; SHIMGZ="$TD/bin/shim-gzip"
       for s in A B C; do : > "$INDIR/${s}_1.fastq.gz"; : > "$INDIR/${s}_2.fastq.gz"; done
       lad_s5_fallback || echo "lad_s5_fallback failed"
       export FAKE_GZ=1
@@ -180,6 +180,14 @@ check "F: A's and C's mates went to the shim" "[ \$(grep -c '^shim-gzip [AC]_[12
 check "F: the fallback calls are logged" "[ \$(grep -c gzip-fallback '$C/s5fb/calls') = 2 ]"
 check "F: B's lad-sample says differs, fallback gzip; A's identical at P 2" "samples | jq -se '(map(select(.accession == \"B\"))[0].s5 | .status == \"differs\" and .fallback == \"gzip\" and .P == 2)
   and (map(select(.accession == \"A\"))[0].s5 | .status == \"identical\" and .fallback == \"none\")' > /dev/null"
+check "F: s5 carries both decompressors' per-mate sha256: equal for identical, unequal for differs" "samples | jq -se '
+  (map(select(.accession == \"A\"))[0].s5 | (.gz_sha256 | length) == 2 and .gz_sha256 == .rg_sha256)
+  and (map(select(.accession == \"B\"))[0].s5 | .gz_sha256 != .rg_sha256 and .gz_sha256[0] == .rg_sha256[0])' > /dev/null"
+check "A: s5 is n/a, fallback none, no sha lists, when no shim is in use" "[ \$(sed -n 's/^lad-sample //p' '$TD/A/run.log' | jq -s 'map(select(.s5.status == \"n/a\" and .s5.fallback == \"none\" and .s5.gz_sha256 == null)) | length') = 3 ]"
+for c in A B C F; do
+  check "$c: every lad-sample has t_start <= t_end, epoch seconds to the ms" "[ \$(sed -n 's/^lad-sample //p' '$TD/$c/run.log' | jq -s 'map(select((.t_start | type) == \"number\" and .t_end >= .t_start and .t_start > 1.7e9
+    and ([.t_start, .t_end] | map(tostring | split(\".\") | (.[1] // \"\") | length <= 3) | all))) | length') = \$(grep -c '^lad-sample ' '$TD/$c/run.log') ]"
+done
 check "F: phase seconds have at most 3 decimals" "samples | jq -se '[.[].phases[] | tostring | split(\".\") | (.[1] // \"\") | length <= 3] | all' > /dev/null"
 
 # ---- N: negative control ----

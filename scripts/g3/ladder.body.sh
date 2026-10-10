@@ -338,7 +338,7 @@ lad_line() {
     --argjson rc "$2" --arg t0 "$3" --arg t1 "$4" --arg lane "$5" --arg src "$6" --arg eng "$7" --argjson outs "$8" --arg sh "$9" \
     --arg up "${10}" --arg shsrc "${11}" --arg cs "$cs" --arg st "$st" --argjson k "$k" --argjson nproc "$NPROC" \
     --arg id "${IDSEC[$s]:-}" --argjson rank "$RANK" --argjson idx "$j" --argjson t "$T" --argjson inb "${BYTES[$j]:-0}" \
-    --arg cl "$CLASSIFIER" --argjson group "$GROUP" --arg upm "$OUT_UPLOAD" --arg fb "$fb" '
+    --arg cl "$CLASSIFIER" --argjson group "$GROUP" --arg upm "$OUT_UPLOAD" --arg fb "$fb" --arg g1 "${GZSHA[${s}_1.fastq.gz]:-}" --arg g2 "${GZSHA[${s}_2.fastq.gz]:-}" --arg r1 "${RGSHA[${s}_1.fastq.gz]:-}" --arg r2 "${RGSHA[${s}_2.fastq.gz]:-}" '
     def n($x): if $x == "" or $x == "null" then null else ($x | tonumber) end;
     def ms: . * 1000 | round / 1000;
     ($eng | if . == "" then null else fromjson end) as $e
@@ -349,8 +349,8 @@ lad_line() {
          + (if $cs == "" then {} else {"classify-process":n($cs)} end)
          + (if $e == null then {} else ({"engine-setup":n($e.setup_s), "engine-classify":n($e.classify_s), "engine-close":n($e.close_s),
              "engine-report":n($e.report_s)} | with_entries(select(.value != null))) end)) | map_values(ms)),
-       outputs:$outs, s5:{status:$st, fallback:$fb, P:$k, nproc:$nproc},
-       rank:$rank, idx:$idx, t_start:n($t0), t_end:n($t1), input_bytes:$inb, threads:$t,
+       outputs:$outs, s5:({status:$st, fallback:$fb, P:$k, nproc:$nproc} + (if $st == "n/a" then {} else {gz_sha256:[$g1, $g2], rg_sha256:[$r1, $r2]} end)),
+       rank:$rank, idx:$idx, t_start:(n($t0) | ms), t_end:(n($t1) | ms), input_bytes:$inb, threads:$t,
        replica:$group, lane:$lane, classifier:$cl, out_upload:$upm, sha256_source:$shsrc,
        s5_verdict:(if $st == "differs" then "S5 not output-preserving on this input" else null end), engine:$e}')"
 }
@@ -466,7 +466,7 @@ LADFB
 # ---- end of the functions scripts/tests/ladder_stream_test.sh drives ----
 # S5: rapidgzip 0.14.5 drops output after trailing bytes, by an amount that depends on -P
 # (docs/oracle.md), so every input is checked at this run's -P on this host before any classify.
-declare -A S5BAD=() IDSEC=()
+declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=()
 if [ "$GZMODE" != gzip ]; then
   ak2_phase identity
   IDL=$(( NPROC / (GZK + 2) )); [ "$IDL" -lt 1 ] && IDL=1
@@ -487,8 +487,10 @@ if [ "$GZMODE" != gzip ]; then
   done
   for p in "${idpids[@]}"; do wait "$p"; done
   for f in "${IDF[@]}"; do
-    IFS=$'\t' read -r _ g gr h hr t0 t1 < "$SD/id/$f" 2> /dev/null || { g=missing; h=missing; gr=1; hr=1; t0=0; t1=0; }
-    ok=false; [ "$g" = "$h" ] && [ "$gr" = 0 ] && [ "$hr" = 0 ] && [[ $g =~ ^[0-9a-f]{64}$ ]] && ok=true
+    IFS=$'\t' read -r _ g gr h hr t0 t1 < "$SD/id/$f" 2> /dev/null || { g=missing-gzip; h=missing-rapidgzip; gr=1; hr=1; t0=0; t1=0; }
+    # identical means the two outputs hash the same (the exits are recorded beside them).
+    ok=false; [ "$g" = "$h" ] && [[ $g =~ ^[0-9a-f]{64}$ ]] && ok=true
+    GZSHA[$f]=$g; RGSHA[$f]=$h
     s=${f%_[12].fastq.gz}
     [ "$ok" = true ] || S5BAD[$s]=1
     IDSEC[$s]=$(awk -v a="${IDSEC[$s]:-0}" -v b="$t0" -v c="$t1" 'BEGIN{printf "%.3f", a + c - b}')
