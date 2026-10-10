@@ -315,6 +315,8 @@ that passes validation **and Law 1** (a run with any DEFECT cannot feed the mode
 - P = its pairs, S = its per-sample span (the union of its lad-sample `[t_start, t_end]`
   intervals), and r = P / S, the per-thread rate at T1;
 - the fixed part is F = wall − S. If F < 0 (S > wall) on any run, the model is refused;
+- T1 is serial, so if any run's samples overlap the model is refused: that is, if the union of
+  the spans is less than their sum minus 1 ms per sample. The test case is 10 concurrent samples;
 - wall(c100) = F + P_target / r, where P_target is the `read_count` sum of `@PRJNA398089:1-100`
   in the recorded runs.tsv;
 - billed(c100) = wall × price/h × nodes / 3600.

@@ -80,7 +80,13 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
         if r["wall_s"] is None or r["price"] is None or not r["samples"]:
             continue
         P = sum(s["pairs"] for s in r["samples"])
-        S = union_seconds([(s["t_start"], s["t_end"]) for s in r["samples"]])
+        spans = [(s["t_start"], s["t_end"]) for s in r["samples"]]
+        S = union_seconds(spans)
+        total = sum(b - a for a, b in spans)
+        if S < total - 0.001 * len(spans):
+            # T1 is serial: samples that overlap are not one thread's work, so P / S is no per-thread rate.
+            return [], (f"refused: {r['run_id']}: samples overlap (union of spans {S:.3f} s < their sum {total:.3f} s "
+                        f"- 1 ms x {len(spans)}): not a serial T1 run")
         if S <= 0:
             continue
         F = r["wall_s"] - S

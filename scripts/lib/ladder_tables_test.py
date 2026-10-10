@@ -239,7 +239,7 @@ def record(res, variant=""):
     single(res, "20261010-000020-aaaaaaa", "S", "S0-T1", 1, 3000, cohort=10, accessions=("SRR1", "SRR2"),
            samples=[sample("S", "S0-T1", acc="SRR1", classify=1000.0, cohort=10, t0=T0 + 500),
                     sample("S", "S0-T1", acc="SRR2", classify=1000.0, cohort=10, t0=T0 + 1500)])
-    bspan = [(T0, T0 + 3200), (T0 + 100, T0 + 1000)] if variant == "fneg" else [(T0 + 500, T0 + 1550), (T0 + 1550, T0 + 2600)]
+    bspan = [(T0, T0 + 1600), (T0 + 1600, T0 + 3200)] if variant == "fneg" else [(T0 + 500, T0 + 1550), (T0 + 1550, T0 + 2600)]
     single(res, "20261010-000021-aaaaaaa", "S", "S0-T1", 2, 3100, cohort=10, accessions=("SRR1", "SRR2"),
            samples=[sample("S", "S0-T1", BAD if variant == "c10law1" else GOOD, acc=a, classify=1050.0, cohort=10,
                            t0=t0, t1=t1) for a, (t0, t1) in zip(("SRR1", "SRR2"), bspan)])
@@ -254,6 +254,11 @@ def record(res, variant=""):
         f.write("run\tcost_usd\n20261010-000001-aaaaaaa\t1\n")
     with open(os.path.join(res, "levers.tsv"), "w") as f:
         f.write(LEVERS)
+    if variant == "overlap":
+        # A c10 "T1" run whose 10 samples ran concurrently (each 500-1500): union 1000 s < sum 10000 s - 10 ms.
+        accs = [f"SRR{10 + k}" for k in range(10)]
+        single(res, "20261010-000025-aaaaaaa", "S", "S0-T1", 3, 3000, cohort=10, accessions=accs,
+               samples=[sample("S", "S0-T1", acc=a, classify=1000.0, cohort=10, t0=T0 + 500) for a in accs])
     # Modelled values, by ladder_model.py (make g3-ladder-model): c100 from c10, and c1 from c10 (ignored:
     # c1 is measured). Variant handrow adds a hand-entered row whose source cannot be checked: refused.
     rows, msgs = [], []
@@ -557,6 +562,11 @@ def variants():
     rc, T = run("fneg")
     check("model refused when S > wall (F < 0)", T["model_msgs"][0],
           "refused: 20261010-000021-aaaaaaa: per-sample span S 3200.000 s > wall 3100.0 s (fixed part F = -100.000 s < 0)")
+    check("no modelled c100 row then", [x for x in T["rungs.tsv"] if x["rung"] == "S0-T1" and x["cohort"] == "100"], [])
+    rc, T = run("overlap")
+    check("model refused when 10 samples overlap (not a serial T1 run)", T["model_msgs"][0],
+          "refused: 20261010-000025-aaaaaaa: samples overlap (union of spans 1000.000 s < their sum 10000.000 s - 1 ms x 10): "
+          "not a serial T1 run")
     check("no modelled c100 row then", [x for x in T["rungs.tsv"] if x["rung"] == "S0-T1" and x["cohort"] == "100"], [])
     rc, T = run("c10law1")
     check("a c10 run with a Law 1 DEFECT: exit 1", rc, 1)
