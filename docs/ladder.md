@@ -4,7 +4,7 @@
 shared by both arms (stock and ours). A rung's body sources the library and calls each lever
 with the rung's choice as an argument. Lever choices travel in the payload, never in env.
 Every call records what it did and counts its S3 requests. The ladder body, generator and
-lever table (#51) are built on it. This is a stub runbook: the library and its test only.
+lever table (#51) are built on it. This runbook covers the library and its test, then the ladder tables (`make g3-ladder`, #52) and their input contract.
 
 ```bash
 make lever-test        # AL2023 in podman, under the preamble; record in results/rehearse/
@@ -187,3 +187,272 @@ debugging; `KEEP=1` keeps the work dir.
 - The lane's main-shell check (the body's shell is the test itself).
 
 These are first exercised by the ladder rehearsal and the first ladder run (#53).
+
+## Ladder tables: `make g3-ladder` (#52)
+
+`scripts/lib/ladder_tables.py` builds the ladder's attribution tables from the record only and
+writes them to `results/g3/ladder/`. It launches nothing and costs $0. It writes every table
+first, then exits 1 if there is any DEFECT.
+
+`make test` runs `scripts/lib/ladder_tables_test.py` on a synthetic record whose every expected
+value is worked by hand. It covers:
+- an unresolvable delta, and a delta below instrument granularity;
+- sha and file-set mismatches, which exit 1;
+- incomplete and failed runs (scenario A), excluded with a DEFECT and kept out of the medians;
+- a Law 1 DEFECT, which excludes its run;
+- an accession that appears only on the O arm, which has no upstream reference and is a DEFECT;
+- a cohort member that never launched (DEFECT incomplete), and a cohort whose planned set comes
+  from cohort.json rather than from its members;
+- the S5 cases:
+  - gzip fallback, kept and reported as a finding;
+  - `differs` without a fallback, a contract DEFECT;
+  - S entries that disagree on `rg_sha256`, flagged;
+  - O-arm `differs` entries matched, or not, to an S entry by `rg_sha256`;
+- a rung marked `not-run`, whose successor's delta is taken against the nearest run ancestor;
+- a cold endpoint run on an undeclared rung, which gets a note;
+- a missing util row and a node-only util row, both reported as missing;
+- the fleet cost_usd used as the effective-cost numerator;
+- a 2-node cohort run;
+- per-cohort and duplicate endpoint declarations;
+- an endpoint-run total with a non-zero residual;
+- per-lever decompositions that sum to their totals;
+- modelled rows:
+  - derived by `ladder_model.py` (c10 → c100, worked by hand), and ignored with a note where
+    measured runs exist;
+  - refused when hand-entered (the reviewer's case: 99999 citing a real file and sha256), when
+    stale (a new c10 run since), or when a cited file does not exist;
+  - the model itself is refused when a run's span exceeds its wall (F < 0), and a c10 run with a
+    Law 1 DEFECT cannot feed it;
+- missing terminated_at, a bad PARAMS enum and a bad `v`.
+
+```bash
+make g3-ladder-model  # results/g3/ladder-modelled.tsv: c100 stock T1 from the c10 S0-T1 records (exit 2 if none)
+make g3-ladder        # every ladder run under results/*/2026*; then read results/g3/ladder/summary.md
+python3 scripts/lib/ladder_tables.py --results DIR --levers FILE --modelled FILE --out DIR
+```
+
+### Inputs: the contract with the ladder body (#51)
+
+A **ladder run** is either a run dir `results/<gate>/<run-id>/` (with `manifest.json`) or a
+cohort dir (`cohort.json` plus its members' run dirs) whose PARAMS name a rung. Cohort members
+(`…-nN-rK`) are read only through their cohort.
+
+**PARAMS** live under the `params` key of `manifest.json`. For a cohort they come from
+`params` in `cohort.json`, or failing that from the rank-0 member manifest's `params`. Keys are
+case-insensitive, and a leading `LAD_` or `AK2_` is ignored. A value outside its enum is a
+DEFECT (contract), and the run is excluded.
+
+| key | required | values |
+|---|---|---|
+| `rung` | yes | a rung of ladder.levers.tsv |
+| `arm` | yes | `S` or `O` (must match the rung's arm in ladder.levers.tsv) |
+| `cohort` | yes | integer ≥ 1 |
+| `rep` | no (1) | integer ≥ 1 |
+| `run_kind` | no (`ladder`) | `ladder` or `endpoint` |
+| `state` | no (`cold`) | `cold`, `warm` or `cold-local`. Ladder runs must be cold. |
+| `endpoint` | endpoint runs only | one or more of `S*-time`, `S*-cost`, `O*-time`, `O*-cost` on the run's own arm, separated by `;`. Empty on ladder runs. |
+
+**The planned set.**
+- For a single run, it is the manifest's `sample_accessions`. If that is empty, the manifest's
+  `sample_accessions_ref` (`@project:a-b`) is resolved against the recorded
+  `results/cohort/<project>/runs.tsv`.
+- For a cohort, it is **cohort.json's own `sample_accessions_ref`**, as run-multi writes it, and
+  never the union of whichever members wrote a manifest. Only when the spec used a literal list
+  (cohort.json's ref is null) does it fall back to the first member manifest's
+  `sample_accessions`; every member gets the same spec env.
+
+If a run's set of lad-sample accessions differs from its planned set, that is a DEFECT
+"incomplete" and the run is excluded. A run with no planned set is excluded the same way.
+
+**Cohort members.** Every member of a cohort must have its manifest. A member that run-multi
+recorded as `manifest: "missing"` (it never launched), a member whose manifest file is absent,
+or fewer members than cohort.json's `nodes` is a DEFECT "incomplete: cohort member manifest
+missing", and the cohort is excluded. A partial fleet's wall and bill are not the rung's.
+
+**`lad-sample` lines.** For every classified sample, the body emits `lad-sample {json}` in the
+run log (streamed) and appends the same object as one line of `out/lad-samples.jsonl` (pushed;
+any depth under `out/`). The tables read the pushed file. A difference from the streamed lines
+is recorded as a note. The streamed lines are used only if the file is missing.
+
+Contract version 1:
+
+| field | required | type | meaning |
+|---|---|---|---|
+| `v` | yes | int | exactly `1` |
+| `arm`, `rung`, `cohort` | yes | | must equal the run's PARAMS |
+| `accession` | yes | non-empty str | the run accession |
+| `pairs` | yes | int ≥ 0 | read pairs classified |
+| `rc` | yes | int (not a string) | the classify invocation's exit status; non-zero is a DEFECT "sample failed" and excludes the run |
+| `t_start`, `t_end` | yes | number | epoch seconds (3 decimals) when the sample's work started and ended on the node, with `t_end` ≥ `t_start`. The model's per-sample span is the union of these intervals. |
+| `phases` | yes | object | phase name → seconds, written with 3 decimals (ms granularity). A `sample:` lever phase must use names that appear here. |
+| `outputs` | yes | object | role → `{"bytes": int, "sha256": "<64 lowercase hex, computed on the node>"}`. `output` and `report` are required; add `classified_1`, `classified_2`, `unclassified_1` and `unclassified_2` when they are written. The set of roles is the file set. |
+| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the sha lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, one per input file in mate order (R1, R2). They must be equal-length lists of 64 lowercase hex: `identical` means the lists are equal, `differs` means they are not. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
+| `rank`, `idx`, `input_bytes`, `threads` | no | | node rank, index in the cohort, input bytes, threads |
+
+A missing or ill-typed required field is a DEFECT (contract) and excludes the run.
+
+**`scripts/g3/ladder.levers.tsv`** (#51) is tab-separated with a header row. `#` lines are
+comments. Columns are read by name:
+
+| column | meaning |
+|---|---|
+| `rung`, `arm` | the rung and its arm |
+| `predecessor` | the rung this one changes one lever from (empty or `-` for a root) |
+| `lever` | the lever key-group. `stock` marks only the root S0-T1. S0-Tv's predecessor is S0-T1 and its lever is `threads`. S5's lever is `rapidgzip`, which is how the S5 findings find it. |
+| `counterpart` | the O counterpart of an S lever, or the stated reason there is none |
+| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two. |
+| `endpoint` | the endpoint(s) this rung is, for example `S*-time;S*-cost` (every cohort) or `c1:S*-time;c10:S*-time` (per cohort; a per-cohort declaration wins). Two rungs declaring the same endpoint for the same cohort is a DEFECT (levers). An endpoint that is not declared gives the status "endpoint not declared"; nothing is selected from the data. |
+| `pred_wall_s`, `pred_usd`, `pred_phase_s` (optional) | the predicted delta on each axis, set against the threshold |
+| `status` (optional) | empty for a run rung. `not-run: <reason>` (read from this column only) means the rung is not run, for example `not-run: no parameter change` for S3 when the tune probe chose `none`. It has its own deltas row labelled with that text and no numbers. Its successor's delta is taken against the **nearest run ancestor**, and labelled with that ancestor and with the skipped rung's text (deltas.tsv `predecessor_basis` and status; pairs.tsv lever-row note). The pairs skip the rung. A run on such a rung gets a note. |
+
+The **stock rungs** are the S root whose lever is `stock` (S0-T1) and its `threads` child
+(S0-Tv). They are the sources of pairs 1 and 2, and the candidates for the Law 1 reference.
+
+**Modelled values** go in `results/g3/ladder-modelled.tsv` (`--modelled`), which
+**`make g3-ladder-model`** writes (`scripts/lib/ladder_model.py`). Scott named c100 stock T1 as
+modelled from c10's per-thread rate, and that is the default. For each cold c10 S0-T1 ladder run
+that passes validation **and Law 1** (a run with any DEFECT cannot feed the model):
+- P = its pairs, S = its per-sample span (the union of its lad-sample `[t_start, t_end]`
+  intervals), and r = P / S, the per-thread rate at T1;
+- the fixed part is F = wall − S. If F < 0 (S > wall) on any run, the model is refused;
+- T1 is serial, so if any run's samples overlap the model is refused: that is, if the union of
+  the spans is less than their sum minus 1 ms per sample. The test case is 10 concurrent samples;
+- wall(c100) = F + P_target / r, where P_target is the `read_count` sum of `@PRJNA398089:1-100`
+  in the recorded runs.tsv;
+- billed(c100) = wall × price/h × nodes / 3600.
+
+The value written is the median over those runs. The flags are `--rung`, `--from-cohort`,
+`--to-cohort` and `--target-ref`. It exits 2 and writes nothing if no run qualifies.
+
+The file's columns are `arm`, `rung`, `cohort`, `axis`, `value`, `basis`, `from_cohort`,
+`target_ref`, `runs` (the run IDs used, comma-separated) and `source`. `source` is `<generator,
+commit, run IDs, target> | path=sha256 path=sha256 ...`, covering every file read (each run's
+manifest, lad-samples and util files, the runs.tsv and the lever table), with paths relative to
+the repo.
+
+g3-ladder checks every row in two ways. Any failure **refuses** the row as a DEFECT (modelled):
+1. It re-hashes every cited file. A row that cites nothing, or whose files are missing or
+   changed, fails.
+2. It **re-derives the row**: it runs `ladder_model.model()` on the current record with the
+   row's own rung, `from_cohort`, `cohort` and `target_ref`. The row must reproduce the value
+   (to 1e-6 relative) from exactly the same set of runs. This catches a hand-entered or edited
+   value even when it cites real files, and a stale model (the qualifying runs changed since it
+   was written).
+
+A modelled row is used only where a (rung, cohort) has no measured run on that axis. Where
+measured runs exist, it is ignored and a note says so. A used row appears in rungs.tsv with basis
+`modelled (flagged): …`. Any delta or pair total that uses it is labelled "modelled (flagged):
+not a measurement, not resolvable", and the pair note says the source (or target) is "a modelled
+value (flagged: not a measurement)".
+
+**Utilisation** comes from the **fleet** row of the run's (or cohort's) `tables/util.tsv`, as
+written by `make util` (docs/util.md). If there is no fleet row (a node row alone does not
+count) or no file, the utilisation is reported as missing. It is never imputed, and this target
+never generates it.
+
+### Definitions
+
+- **wall_s**, end to end: from the first `instance.launch_time` to the last
+  `instance.terminated_at` over the run's nodes. If either is missing on any node, wall is
+  missing and a note says so. Manifest `start` and `stop` are not used as a fallback.
+- **billed_usd**: the manifests' `cost_usd`, summed over a cohort. If any node lacks it, billed
+  is missing.
+- **lever_phase_s**: the rung's lever phase, measured the same way on the rung and on its
+  predecessor. For a `run:` phase, each node's entries are summed and the max over nodes is
+  taken.
+- **Median and range** are taken per (arm, rung, cohort) over the runs in the attribution. The
+  median of two runs is their mean. Range = max − min, shown only for n ≥ 2.
+- **Instrument granularity q**, per run:
+  - wall: 2 s (two whole-second timestamps);
+  - billed: price/h × 2 s / 3600 × nodes;
+  - run phase: 1 s × the number of summed manifest phase entries;
+  - sample phase: 0.001 s × the number of summed lad-sample entries;
+  - effective cost: q_billed ÷ U.
+
+  A group's q is the largest of its runs'. If any run's q is unknown (no price, say), the group's
+  q is unknown.
+- **Resolution.** A delta (rung median − predecessor median) is **resolved** only if |Δ| > 2 ×
+  max(range of the rung, range of the predecessor, q). Every other delta is **unresolvable**,
+  with the reason:
+  - "below instrument granularity", when q is the larger term;
+  - "|delta| <= 2 x spread";
+  - "n < 2";
+  - "instrument granularity unknown".
+
+  An unresolvable delta is never reported as a null. `measured_spread`, `granularity_q`,
+  `threshold` and `predicted_delta` sit beside it, together with `predicted_resolvable`, which
+  says whether this probe could have resolved the predicted effect.
+- **Effective cost per resource** = util.tsv's fleet `cost_usd` ÷ U. That cost covers the same
+  node set as U. It is computed for U_cpu, U_mem_mean, U_net at baseline and peak, and U_net for
+  each direction (rx, tx). The resources are never combined. U = 0 gives `inf`. effcost.tsv and
+  pairs.tsv carry util coverage.
+- **The three pairs** are computed per cohort, on the declared endpoints:
+  - S vs S\* and S vs O\*, from each stock rung;
+  - S\* vs O\*.
+
+  The time endpoint is compared on wall_s. The cost endpoint is compared on billed_usd and on
+  each effective cost.
+- **Pair totals and lever rows.** An endpoint's total comes from its cold endpoint runs (those
+  with `run_kind` endpoint, the tag, and the declared rung) where any exist; otherwise from the
+  rung's ladder runs. A cold endpoint run whose rung is not the one declared for its tag and
+  cohort is not used, and a note names it. Each total row carries its resolution label, the source/target ratio and
+  the endpoint basis. Beside it are its lever rows: the rung deltas along the target's
+  predecessor chain back to the source.
+- **The residual** is total − Σ(lever deltas). When both totals are the values the lever rows
+  use (ladder medians, or a flagged modelled value), the lever deltas telescope, so the residual
+  is an identity (0). It checks the arithmetic, not the physics. When a total comes from endpoint runs, the residual is the difference between those
+  runs and the ladder's chain of medians. If the source is not on the chain, the total is
+  labelled "not an attribution".
+- **Excluded from the attribution.** Every run still has a row in runs.tsv, with the reason.
+  The exclusions are:
+  - any DEFECT on the run: contract, PARAMS, incomplete (including a missing cohort member),
+    sample failed, or Law 1 (a mismatch, a missing stock reference on the O arm, or an O-arm
+    `differs` with no matching S `rg_sha256`);
+  - non-cold ladder runs.
+
+  Endpoint runs feed the pair totals (cold) and endpoints.tsv (every state).
+- **Law 1 across arms**, per accession. Each successful, contract-clean sample's role set and
+  sha256 are compared against the **reference**: the first S-arm entry, stock rungs first.
+  - A different role set or sha256 is a **DEFECT**, and the run is excluded.
+  - If the accession has no S-arm entry, the status is "no upstream reference", never
+    "identical".
+  - If an accession appears on the O arm and has no stock reference, that is a DEFECT.
+- **S5's rule.** Under the fallback rule, every `differs` entry carries `fallback: gzip`, so its
+  outputs come from gzip's input and it is compared normally under Law 1. The run stays
+  measurable and in the attribution. A `differs` entry without the fallback is a contract DEFECT.
+  - summary.md reports a finding against each rapidgzip rung (S5 and its descendants on ladder
+    1): "S5 not output-preserving on N of M inputs (fell back to gzip)".
+  - **S entries that disagree** with each other on `rg_sha256` for the same accession (the loss
+    depends on -P) are flagged as a finding. This is not a DEFECT.
+  - **An O-arm `differs` entry** must match an S `differs` entry's `rg_sha256` for the same
+    accession; otherwise it is a DEFECT and the run is excluded.
+
+  Every `differs` entry is a row of s5-nonpreserving.tsv, with its `rg_sha256`, its Law 1
+  status and the S5 check.
+
+### Outputs (`results/g3/ladder/`)
+
+| file | what |
+|---|---|
+| `runs.tsv` | one row per ladder run: PARAMS, type, nodes, commit, price, wall_s, billed_usd, lever phase, planned and emitted samples, U_* (cpu, mem mean and peak, net baseline/peak and each direction), util cost_usd, each effective cost, util coverage, whether it is in the attribution (with the reason if not), notes |
+| `tidy.tsv` | long rows: run-level metrics plus every lad-sample field (pairs, rc, phase.*, output.<role>.bytes and .sha256, s5.status, s5.fallback) |
+| `rungs.tsv` | per (arm, rung, cohort) and axis (wall_s, billed_usd, lever_phase_s): basis (measured or modelled), n, median, min, max, range, granularity_q |
+| `deltas.tsv` | each rung against its predecessor (or its nearest run ancestor, `predecessor_basis`) on the three axes: ranges, measured spread, q, threshold, status, predicted delta and whether it was resolvable; a `not-run` rung's row carries its label |
+| `effcost.tsv` | per (arm, rung, cohort): median and range of each U and each effective cost, with q, util coverage, and any missing util named |
+| `pairs.tsv` | the three pairs × cohort × axis: lever rows, then the total row (sum of lever deltas, residual, ratio, endpoint basis, util coverage) |
+| `law1.tsv`, `law1-detail.tsv` | per accession, and per accession × run × role: the sha256 against what it was compared with, and the status |
+| `s5-nonpreserving.tsv` | every `differs` entry (both arms): fallback, P, nproc, `rg_sha256`, whether its outputs equal the reference, its Law 1 status, and the S5 check (S rapidgzip output, disagreement flag, or the O-arm match) |
+| `endpoints.tsv` | the endpoint runs: per (arm, endpoint, rung, cohort, state = cold, warm or cold-local), with wall, billed and each manifest phase (n, median, range) |
+| `spend.tsv` | every ladder run's billed $, whether `results/g3/campaign/spend.tsv` has it, and the total |
+| `summary.md` | counts, exclusions, DEFECTs, findings against levers, notes, and each pair total (with the endpoint basis) followed by its per-lever rows (rung, delta, status). Generated, and cites only the tables. |
+| `manifest.json` | the generator, its commit and dirty flag, every input with its bytes and sha256 (only ladder runs' files, the lever and modelled tables, and any runs.tsv used), every output's sha256, the runs with their PARAMS, DEFECTs, findings and notes |
+
+**Spend.** `g3_campaign.py` (`make g3-tables`) already counts ladder runs under `results/g3/`:
+single runs, and cohorts through their members' manifests. It also counts ladder dirs under any
+other gate, recognised by a `params` entry that names a rung. In this target's `spend.tsv`, any
+ladder run missing from the campaign total is marked `NO`, and a note is added.
+
+**Failure looks like:** `ladder_tables: DEFECT (<class>): …` on stderr, with exit 1. The classes
+are `Law 1`, `contract`, `incomplete`, `sample failed` and `levers`. For a Law 1 DEFECT,
+law1-detail.tsv has both sha256 values. runs.tsv's `in_attribution` gives the reason for each
+excluded run.
