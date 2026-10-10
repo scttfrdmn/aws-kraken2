@@ -76,6 +76,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     `cohort.json` `params`.
   - `results/g3/ladder-modelled.tsv` holds the header only.
 
+- Ladder tables:
+  - `not_run_cohorts` in ladder.levers.tsv: at the cohorts it lists, a rung is skipped like
+    `status: not-run`, and its successor's delta is taken against the nearest ancestor that ran.
+  - The body's identity line (`lad-identity`, `input_defect: true`) raises an input DEFECT
+    where the sample's own `s5` does not already show one.
+  - `lad-net`'s components `identity_s`, `sha_get_s` and `sha_critical_s` are accepted,
+    shown, and must sum to `critical_measurement_s` within 1 ms.
 - Ladder tables, gross and net (Scott's ruling, 2026-10-10, #25). Every wall delta and pair is
   reported both ways, with net as the headline:
   - net wall is computed per node: the max over nodes of (`terminated_at` −
