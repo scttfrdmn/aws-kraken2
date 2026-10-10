@@ -581,6 +581,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `scripts/lib/util.py`: the fleet row's `allowance_exceeded` was always empty, because the
+  fleet aggregate had no allowance (#58). It now sums each ethtool `*_allowance_exceeded`
+  counter's delta over the fleet's nodes, in the node rows' `name=value;…` form, and coverage
+  names any node that lacks the counters or one of them. Phase rows stay empty: the counters are
+  read only at start and end. `results/g3/20261009-223514-4ee77c3/tables/util.tsv` and its
+  `util.json` were regenerated with the fix.
+
 - Law 1 on RODA v205 (#44). ResolveTree walked the hits in first-hit order, but upstream walks
   its per-thread `std::unordered_map` hit_counts (classify.cc:897-949). When a score tie's
   LowestCommonAncestor is 0, which an orphan taxonomy node produces, the call depends on that

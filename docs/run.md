@@ -420,8 +420,10 @@ Its columns:
   since-boot value goes into the boot window, and coverage says so.
 
 A fleet takes only the nodes that have capacity and a billed window, in both numerators and
-denominators; any other node is excluded and named. A fleet row's coverage also carries its
-nodes' notes. In a cohort's table the node column is the member's run_id. Beside every table,
+denominators; any other node is excluded and named. A fleet row's `allowance_exceeded` is each
+counter's delta summed over those nodes, in the node rows' `name=value;…` form; a node that lacks
+the counters, or one of them, is named in coverage. The counters are read only at start and end,
+so phase rows leave the column empty. A fleet row's coverage also carries its nodes' notes. In a cohort's table the node column is the member's run_id. Beside every table,
 `tables/util.json` records util.py's commit and every input file with its sha256.
 
 **Useful-work CPU.** The definition asks for the workload's CPU in a named cgroup scope

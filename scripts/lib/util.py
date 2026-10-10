@@ -8,7 +8,9 @@ every input file with its sha256). One row per scope:
   node        one instance over its billed window (launch_time -> terminated_at); in a cohort
               the node column is the member's run_id
   fleet       the sum over the nodes that have capacity and a billed window (numerators and
-              denominators over the same nodes; any other node is excluded and named)
+              denominators over the same nodes; any other node is excluded and named). Its
+              allowance_exceeded sums each ethtool counter's delta over those nodes; a node
+              without a counter is named in coverage
   node-phase  per phase of one node (the interval between two ticks belongs to the phase of the
               earlier tick; ak2_phase ticks at each phase start) and the three unobservable
               windows, named in brackets
@@ -280,13 +282,18 @@ def node_util(man, util_path):
     # ethtool allowances: end - start per counter.
     st = {e["name"]: e["value"] for e in eth if e["when"] == "start"}
     en = {e["name"]: e["value"] for e in eth if e["when"] == "end"}
-    parts = []
+    parts, deltas = [], {}
     for k in sorted(set(st) | set(en)):
         if k == "none":
             parts.append(f"{st.get(k) or en.get(k)}")
             continue
         a, b = num(st.get(k)), num(en.get(k))
-        parts.append(f"{k}={int(b - a)}" if a is not None and b is not None else f"{k}=start:{st.get(k, '-')},end:{en.get(k, '-')}")
+        if a is not None and b is not None:
+            deltas[k] = int(b - a)
+            parts.append(f"{k}={deltas[k]}")
+        else:
+            parts.append(f"{k}=start:{st.get(k, '-')},end:{en.get(k, '-')}")
+    out["allowance_deltas"] = deltas   # only the counters with both a start and an end value
     out["allowance"] = ";".join(dict.fromkeys(parts)) if parts else "not recorded"
     if out.get("ncpu") and cap and cap.get("vcpus") and int(out["ncpu"]) != int(cap["vcpus"]):
         notes.append(f"/proc/stat shows {int(out['ncpu'])} CPUs, type_info {cap['vcpus']} vCPUs")
@@ -432,6 +439,21 @@ def fleet_rows(nodes):
                          + (": counted as 0" if len(m) < len(inc) else ""))
     if nocost:
         notes.append(f"cost missing on {len(nocost)} node(s) ({names(nocost)})")
+    # ethtool allowances: each counter's delta summed over the fleet's nodes. A node without a
+    # given counter (no start/end pair) adds nothing to it, and is named.
+    allow = {}
+    for _, n in inc:
+        for k, v in (n.get("allowance_deltas") or {}).items():
+            allow[k] = allow.get(k, 0) + v
+    noallow = [lab for lab, n in inc if not n.get("allowance_deltas")]
+    if noallow:
+        notes.append(f"allowance counters missing on {len(noallow)} of {len(inc)} node(s) ({names(noallow)})"
+                     + (": summed over the rest" if allow else ""))
+    for k in sorted(allow):
+        m = [lab for lab, n in inc if n.get("allowance_deltas") and k not in n["allowance_deltas"]]
+        if m:
+            notes.append(f"allowance counter {k} missing on {len(m)} of {len(inc)} node(s) ({names(m)}): "
+                         "summed over the rest")
     nn = [f"{lab}: {'; '.join(n['notes'])}" for lab, n in nodes if n["notes"]]
     if nn:
         notes.append("node notes: " + " | ".join(nn[:8]) + (f" | ... ({len(nn) - 8} more)" if len(nn) > 8 else ""))
@@ -445,6 +467,7 @@ def fleet_rows(nodes):
     gaps = [n["max_gap_s"] for _, n in inc if n.get("max_gap_s") is not None]
     extra = {"unobs_launch_to_boot_s": tsum("unobs_pre", "s"), "unobs_boot_to_sampler_s": tsum("unobs_boot", "s"),
              "unobs_last_to_term_s": tsum("unobs_post", "s"), "ticks": tsum("ticks", "i"),
+             "allowance_exceeded": ";".join(f"{k}={v}" for k, v in sorted(allow.items())) if allow else "not recorded",
              "max_gap_s": fmt(max(gaps) if gaps else None, "s"),
              "capacity_source": ",".join(sorted({n["cap_src"].split(" (")[0] for _, n in nodes})),
              "coverage": "; ".join(notes) if notes else "full"}
