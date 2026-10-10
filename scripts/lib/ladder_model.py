@@ -15,6 +15,13 @@ validation and Law 1):
   refuses the model.
   wall(TO) = F + P_target / r, where P_target = the read_count sum of TARGET-REF's ranks in the
   recorded runs.tsv; billed(TO) = wall(TO) x price/h x nodes / 3600.
+  Net, from the run's net wall (ladder_tables' per-node lad-net rule): C = wall - net wall; its
+  in-sample share C_in (the samples' phases sha-critical + s5-identity) scales with the samples
+  and the rest is fixed: wall_net(TO) = (net wall - S + C_in) + (S - C_in) x P_target / P;
+  billed_net(TO) = billed(TO) x wall_net(TO) / wall(TO), prorated as the tables prorate. A run
+  whose sample lines carry neither share is labelled "measurement treated as fixed at its c10
+  value". Net rows are written only when every run used has a net wall, C_in <= C, and the fixed
+  part is >= 0.
 The value written is the median over the measured runs. Each row records from_cohort,
 target_ref and the runs used; its source cites this script's commit and every file it read as
 path=sha256. ladder_tables.py re-derives every row with model() on the current record and refuses
@@ -31,6 +38,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ladder_tables as lt  # noqa: E402
 
 HEAD = list(lt.MODEL_COLS)
+IN_SAMPLE = ("sha-critical", "s5-identity")  # the per-sample measurement-only shares the sample lines carry
 
 
 def target_pairs(repo, ref, rd):
@@ -74,7 +82,7 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
     lt.law1(runs, levers, [], [])
     use = [r for r in runs if r["params"]["rung"] == rung and r["params"].get("cohort") == c_from
            and r["params"]["run_kind"] == "ladder" and r["params"]["state"] == "cold" and not r["exclude"]]
-    walls, bills, ids, cite = [], [], [], []
+    walls, bills, ids, cite, nwalls, nbills, nwhy, scaled, fixed = [], [], [], [], [], [], [], [], []
     ptar, runs_tsv = target_pairs(repo, ref, rd)
     for r in sorted(use, key=lambda r: r["run_id"]):
         if r["wall_s"] is None or r["price"] is None or not r["samples"]:
@@ -96,6 +104,28 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
         w = F + ptar / (P / S)
         walls.append(w)
         bills.append(w * r["price"] * r["nodes"] / 3600.0)
+        # Net (ladder_tables' per-node lad-net rule): C = wall - net wall, the run's measurement-only
+        # seconds. Its in-sample share C_in (the samples' own sha-critical and s5-identity, inside their
+        # spans) scales with the samples; the rest, C - C_in, is fixed. So
+        #   wall_net(TO) = (net wall - S + C_in) + (S - C_in) x P_target / P,
+        # which is F_net + P_target / r (F_net = net wall - S) when no sample line carries either share.
+        # billed_net is prorated, billed x net/gross, as the tables prorate.
+        if r["wall_net_s"] is None:
+            nwhy.append(f"{r['run_id']}: no net wall")
+        else:
+            C = r["wall_s"] - r["wall_net_s"]
+            parts = [v for x in r["samples"] for k, v in (x.get("phases") or {}).items() if k in IN_SAMPLE]
+            Cin = float(sum(parts))
+            fixed_part = r["wall_net_s"] - S + Cin
+            if Cin > C + 0.001:
+                nwhy.append(f"{r['run_id']}: in-sample measurement {Cin:.3f} s exceeds the run's {C:.3f} s")
+            elif fixed_part < 0:
+                nwhy.append(f"{r['run_id']}: fixed net part {fixed_part:.3f} s < 0")
+            else:
+                wn = fixed_part + (S - Cin) * ptar / P
+                nwalls.append(wn)
+                nbills.append(bills[-1] * wn / w)
+                (scaled if parts else fixed).append(f"{r['run_id']} ({Cin:.3f} s)" if parts else r["run_id"])
         ids.append(r["run_id"])
         d = os.path.abspath(r["dir"])
         members = [d] + [os.path.join(os.path.dirname(d), x) for x in os.listdir(os.path.dirname(d))
@@ -118,7 +148,22 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
     rows = [[arm, rung, c_to, "wall_s", f"{statistics.median(walls):.3f}", basis, c_from, ref, run_ids, src],
             [arm, rung, c_to, "billed_usd", f"{statistics.median(bills):.6f}", basis + "; x price/h x nodes / 3600",
              c_from, ref, run_ids, src]]
-    return rows, f"{len(walls)} run(s): wall {statistics.median(walls):.1f} s, billed ${statistics.median(bills):.4f}"
+    msg = f"{len(walls)} run(s): wall {statistics.median(walls):.1f} s, billed ${statistics.median(bills):.4f}"
+    if nwhy:
+        # Net rows only when every run used gives one; gross stands alone otherwise.
+        return rows, msg + "; no net rows (" + "; ".join(nwhy) + ")"
+    nbasis = (f"c{c_from} {rung} per-thread rate, net: net wall = (net wall - S + C_in) + (S - C_in) x c{c_to} pairs / "
+              f"c{c_from} pairs, S the per-sample span, C_in the in-sample measurement (sample sha-critical + s5-identity); "
+              f"median of {len(nwalls)} run(s)")
+    if scaled:
+        nbasis += f"; in-sample measurement scaled by P_target/P on {', '.join(scaled)}"
+    if fixed:
+        nbasis += (f"; measurement treated as fixed at its c{c_from} value on {', '.join(fixed)} (no per-sample "
+                   "sha-critical or s5-identity)")
+    rows += [[arm, rung, c_to, "wall_net_s", f"{statistics.median(nwalls):.3f}", nbasis, c_from, ref, run_ids, src],
+             [arm, rung, c_to, "billed_net_usd", f"{statistics.median(nbills):.6f}",
+              nbasis + "; billed prorated x net/gross", c_from, ref, run_ids, src]]
+    return rows, msg + f"; net wall {statistics.median(nwalls):.1f} s, net billed ${statistics.median(nbills):.4f}"
 
 
 def main(argv=None):
