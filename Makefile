@@ -17,6 +17,7 @@ test:
 	env -u AK2_DECOMPRESS $(GO) test $(PKGS)
 	python3 scripts/lib/errexit_check.py --self-test
 	python3 scripts/lib/util_test.py
+	python3 scripts/lib/util_order_test.py
 	python3 scripts/lib/fit26_test.py
 	python3 scripts/lib/ladder_tables_test.py
 	bash scripts/lib/harness_poll_test.sh
