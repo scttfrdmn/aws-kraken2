@@ -27,6 +27,7 @@ import ladder_tables as lt  # noqa: E402
 import ladder_tables_test as T  # noqa: E402
 
 LEV = os.path.join(ROOT, "scripts", "g3", "ladder.levers.tsv")
+ALIASES = ("Sstar-time", "Sstar-cost")
 NF = 0
 
 
@@ -54,7 +55,8 @@ for top, root, other in (("O5", "Sstar-time", "Sstar-cost"), ("O5-cost", "Sstar-
 check("S3 is not run, and S4's run predecessor is S2a", lv["S3"]["not_run"].startswith("not-run") and lt.run_pred(lv, "S4") == ("S2a", []))
 check("rapidgzip from S5 on (S5, Sstar-cost), not before (S4)",
       lt.has_rapidgzip(lv, "S5") and lt.has_rapidgzip(lv, "Sstar-cost") and not lt.has_rapidgzip(lv, "S4"))
-check("S2c moves the inputs; S2a follows it", lv["S2c"]["lever"] == "IN_DEST" and lv["S2a"]["predecessor"] == "S2c")
+check("S2d then S2c then S2a", lv["S2d"]["predecessor"] == "S2b-ii" and lv["S2c"]["predecessor"] == "S2d" and lv["S2c"]["lever"] == "IN_DEST" and lv["S2a"]["predecessor"] == "S2c")
+check("the S* endpoints are alias rows", all(lv[a].get("not_run", "") == "" for a in ALIASES))
 
 tmp = tempfile.mkdtemp(prefix="ak2-lvtables-")
 try:
@@ -76,7 +78,10 @@ try:
             continue
         for rep in (1, 2):
             n += 1
-            wall = 2000 - 10 * d(r) + (0.5 if rep == 2 else 0)
+            # An alias endpoint (Sstar-time, Sstar-cost) has no runs of its own: its runs are its
+            # winner's. Until #52's tables map an alias to its resolved winner, the record stands
+            # in for that with runs equal to the winner's (here S9: its predecessor's depth).
+            wall = 2000 - 10 * (d(lv[r]["predecessor"]) if r in ALIASES else d(r)) + (0.5 if rep == 2 else 0)
             s = T.sample(x["arm"], r, s5="identical" if lt.has_rapidgzip(lv, r) else "n/a")
             T.single(res, "20261010-%06d-aaaaaaa" % n, x["arm"], r, rep, wall, start=n * 3000, samples=[s])
     check("the synthetic record (%d runs) gives no DEFECT" % n, quiet_main(["--results", res, "--levers", LEV, "--out", out]) == 0)

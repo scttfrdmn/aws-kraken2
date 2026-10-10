@@ -2,7 +2,7 @@
 """The #25 ladder lever table (scripts/g3/ladder.levers.tsv; #51, docs/ladder.md): load, check, resolve.
 
   ladder_levers.py check [TSV]                      every rung changes exactly one key-group (Law 5)
-  ladder_levers.py params RUNG COHORT [--mem-mib M] [--tsv TSV] [--resolved RES]
+  ladder_levers.py params RUNG COHORT [--mem-mib M --vcpus V] [--tsv TSV] [--resolved RES]
                                                     the rung's resolved PARAMs as shell-safe lines, for
                                                     scripts/g3/mkspec-ladder.sh; exit 3 if any value is
                                                     still a placeholder, 4 if the type cannot hold it
@@ -41,7 +41,7 @@ GROUPS = ["CLASSIFIER", "THREADS+PROCS", "DB_STAGE", "DB_PLACE+DB_LOAD", "HOST_T
           "ETAG_CHECK", "HOST"]
 GROUP = {k: g for g in GROUPS for k in g.split("+")}
 GROUP["instance"] = "HOST"
-COLS = ["rung", "arm", "status", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
+COLS = ["rung", "arm", "status", "alias_of", "select", "derived", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
         "pred_wall_s", "pred_usd", "pred_phase_s", "instance", "az", "ttl_min_c1"] + KEYS + ["note"]
 LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S2c": "IN_DEST", "S3": "host-tunes", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
 ENDPOINTS = {"S": ("S*-time", "S*-cost"), "O": ("O*-time", "O*-cost")}
@@ -49,12 +49,12 @@ COHORTS = (1, 10, 100, 1000)
 SAFE = re.compile(r"^[A-Za-z0-9._-]+$")
 # Allowed literal values (ladder.body.sh checks the same); placeholders start with @.
 ALLOWED = {
-    "CLASSIFIER": r"upstream|ours-plain|ours-engine", "THREADS": r"vcpus|[1-9][0-9]*", "PROCS": r"[1-9][0-9]*",
-    "DB_STAGE": r"awscp-default|s5cmd|ranged-get", "DB_PLACE": r"nvme|tmpfs|memory", "DB_LOAD": r"load|mmap|resident",
+    "CLASSIFIER": r"upstream|ours-plain|ours-engine", "THREADS": r"vcpus|vcpus/[1-9][0-9]*|[1-9][0-9]*", "PROCS": r"vcpus/[1-9][0-9]*|[1-9][0-9]*",
+    "DB_STAGE": r"awscp-default|s5cmd|ranged-get", "DB_PLACE": r"nvme|tmpfs|tmpfs-huge|memory", "DB_LOAD": r"load|mmap|resident",
     "HOST_TUNES": r"none|precompact|proactive|defer|defermadv|always", "GUNZIP": r"gzip|rapidgzip-P([1-9][0-9]*|auto)",
     "IN_FETCH": r"serial|lanes[1-9][0-9]*", "IN_CLIENT": r"default|classic|crt", "IN_DEST": r"nvme|tmpfs",
     "OUT_UPLOAD": r"awscp-default|s5cmd-serial|s5cmd-overlap|sdk-stream", "REPLICAS": r"[1-9][0-9]*",
-    "SHARDS": r"[1-9][0-9]*", "PLACEMENT": r"mod|lpt", "INFLIGHT": r"-|[1-9][0-9]*", "SETUP": r"serial|overlap",
+    "SHARDS": r"[1-9][0-9]*", "PLACEMENT": r"mod|lpt", "INFLIGHT": r"-|vcpus/[1-9][0-9]*|[1-9][0-9]*", "SETUP": r"serial|overlap",
     "ETAG_CHECK": r"on",
 }
 HASH_BYTES = 1189091671800       # RODA v205 hash.k2d (docs/engine.md)
@@ -152,11 +152,27 @@ def check(rows):
                 if c not in names:
                     probs.append("%s: counterpart %r is neither a rung nor 'none: <reason>'" % (n, c))
         st = r["status"]
-        if st != "run" and not re.fullmatch(r"not-run: .{8,}", st):
-            probs.append("%s: status %r (run, or not-run: <reason>)" % (n, st))
+        if st != "run" and not re.fullmatch(r"(not-run|alias): .{8,}", st):
+            probs.append("%s: status %r (run, not-run: <reason> or alias: <rule>)" % (n, st))
+        if st.startswith("alias:"):
+            cands = [c for c in r["alias_of"].split("|") if c]
+            if not cands or any(c not in names or names[c]["status"] != "run" for c in cands):
+                probs.append("%s: an alias needs alias_of naming run rungs (%r)" % (n, r["alias_of"]))
+            if not r["select"]:
+                probs.append("%s: an alias needs its select rule" % n)
+        elif r["alias_of"]:
+            probs.append("%s: alias_of on a rung that is not an alias" % n)
         pr = names.get(r["predecessor"])
-        if pr is not None and pr["status"] != "run":
+        if pr is not None and pr["status"].startswith("not-run"):
             probs.append("%s: predecessor %s is not run (%s); name the rung before it" % (n, pr["rung"], pr["status"]))
+        # A selection made at this rung needs its registered rule, and a rule needs a selection.
+        own = any((token(r[k], k) or ("", ""))[0] == n for k in KEYS) or (token(r["instance"], "instance") or ("", ""))[0] == n
+        if own and not r["select"]:
+            probs.append("%s: makes a @select:%s selection without a select rule" % (n, n))
+        if r["select"] and not own:
+            probs.append("%s: has a select rule but makes no @select:%s selection" % (n, n))
+        if r["select"] and not all(w in r["select"] for w in ("candidates", "ties")):
+            probs.append("%s: its select rule must name the candidates, the axis and the ties" % n)
         if r["predecessor"] == "-":
             if r["group"] != "-":
                 probs.append("%s: the root changes no key-group (group '-')" % n)
@@ -169,7 +185,7 @@ def check(rows):
         co = coupled_keys(r)
         free = [k for k in ch if k not in co]
         groups = sorted({GROUP[k] for k in free})
-        if st != "run":
+        if st.startswith("not-run"):
             if ch:
                 probs.append("%s: is %s but changes %s against %s" % (n, st, ",".join(ch), p["rung"]))
             continue
@@ -217,8 +233,27 @@ def endpoint_rung(rows, cohort, endpoint):
     return None
 
 
-def read_resolved(path):
-    """(origin, cohort, key) -> (value, source); an absent file: no resolutions."""
+def source_ok(src, root=ROOT):
+    """A resolution's source must be an existing results/... path inside a run or cohort dir (one of
+    its directories, below results/, holds manifest.json or cohort.json): '' if so, else why not."""
+    src = src.strip()
+    if not src.startswith("results/") or ".." in src.split("/"):
+        return "source %r is not a results/... path" % src
+    full = os.path.join(root, src)
+    if not os.path.exists(full):
+        return "source %s does not exist" % src
+    d = full if os.path.isdir(full) else os.path.dirname(full)
+    top = os.path.join(root, "results")
+    while os.path.abspath(d).startswith(os.path.abspath(top)) and os.path.abspath(d) != os.path.abspath(top):
+        if os.path.exists(os.path.join(d, "manifest.json")) or os.path.exists(os.path.join(d, "cohort.json")):
+            return ""
+        d = os.path.dirname(d)
+    return "source %s is not inside a run or cohort dir (no manifest.json or cohort.json)" % src
+
+
+def read_resolved(path, root=ROOT):
+    """(origin, cohort, key) -> (value, source); an absent file: no resolutions. Every source must
+    pass source_ok; an S4 resolution must give THREADS or PROCS as a vcpus ratio (derived per host)."""
     out = {}
     if not path or not os.path.exists(path):
         return out
@@ -229,7 +264,16 @@ def read_resolved(path):
             o, c, k, v, src = (l.rstrip("\n").split("\t") + [""] * 5)[:5]
             if not src.strip():
                 raise ValueError("%s: resolution %s/%s/%s has no source (a results/ path)" % (path, o, c, k))
+            why = source_ok(src, root)
+            if why:
+                raise ValueError("%s: resolution %s/%s/%s: %s" % (path, o, c, k, why))
             out[(o, c, k)] = (v, src)
+    for (o, c, k) in list(out):
+        if o == "S4" and k in ("THREADS", "PROCS"):
+            t, pr = out.get(("S4", c, "THREADS"), ("", ""))[0], out.get(("S4", c, "PROCS"), ("", ""))[0]
+            if not (t.startswith("vcpus") or pr.startswith("vcpus")):
+                raise ValueError("%s: S4 at cohort %s: THREADS=%s PROCS=%s; one must be a vcpus ratio, so a host change "
+                                 "carries P x T with the vCPUs" % (path, c, t or "?", pr or "?"))
     return out
 
 
@@ -243,30 +287,63 @@ def token(v, key):
     return None
 
 
-def resolve(rows, rung, cohort, resolved=None):
-    """{'params': {K: v}, 'instance', 'az', 'ttl_c1', 'arm', 'want_n'}; raises Unresolved."""
+def _values(rows, r, cohort, res):
+    """Every PARAM and the instance of row r at cohort under resolutions res: (values, unresolved)."""
+    names = by_name(rows)
+    bad, out = [], {}
+    for k in KEYS + ["instance"]:
+        v = instance_of(rows, r) if k == "instance" else r[k]
+        if v.startswith("@"):
+            t = token(v, k)
+            hit = None
+            if t:
+                o = names.get(t[0])
+                if k == "instance" and o is not None and o["status"].startswith("alias:"):
+                    a = res.get((t[0], str(cohort), "alias"))   # the alias's winner, then its host
+                    if a and a[0] in names:
+                        hit = (instance_of(rows, names[a[0]]), a[1])
+                else:
+                    hit = res.get((t[0], str(cohort), t[1]))
+            if hit is None:
+                bad.append("%s=%s" % (k, v))
+                continue
+            v = hit[0]
+        if not SAFE.match(v) and not re.fullmatch(r"vcpus/[1-9][0-9]*", v):
+            bad.append("%s=%s (not a shell-safe word)" % (k, v))
+        out[k] = v
+    return out, bad
+
+
+def resolve(rows, rung, cohort, resolved=None, root=ROOT):
+    """{'params': {K: v}, 'instance', 'az', 'ttl_c1', 'arm', 'want_n'}; raises Unresolved. After
+    resolving, the one-lever rule is checked again on the resolved values against the resolved
+    predecessor (an alias predecessor is its winner, a not-run one is skipped): a resolution that
+    makes the rung identical to its predecessor, or changes another key-group, is refused."""
     names = by_name(rows)
     if rung not in names:
         raise KeyError("no rung %s in the table" % rung)
     r = names[rung]
     if r["status"] != "run":
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
-    res = read_resolved(resolved) if resolved is not None else {}
-    bad, out = [], {}
-    for k in KEYS + ["instance"]:
-        v = instance_of(rows, r) if k == "instance" else r[k]
-        if v.startswith("@"):
-            t = token(v, k)
-            hit = res.get((t[0], str(cohort), t[1])) if t else None
-            if hit is None:
-                bad.append("%s=%s" % (k, v))
-                continue
-            v = hit[0]
-        if not SAFE.match(v):
-            bad.append("%s=%s (not a shell-safe word)" % (k, v))
-        out[k] = v
+    res = read_resolved(resolved, root) if resolved is not None else {}
+    out, bad = _values(rows, r, cohort, res)
     if bad:
         raise Unresolved("%s at cohort %s has unresolved values: %s" % (rung, cohort, ", ".join(bad)))
+    p = pred_of(rows, r)
+    if p is not None:
+        pv, pbad = _values(rows, p, cohort, res)
+        if pbad:
+            raise Unresolved("%s at cohort %s: its predecessor %s is unresolved (%s), so the one-lever check cannot run"
+                             % (rung, cohort, p["rung"], ", ".join(pbad)))
+        ch = [k for k in KEYS + ["instance"] if out[k] != pv[k]]
+        free = [k for k in ch if k not in coupled_keys(r)]
+        groups = sorted({GROUP[k] for k in free})
+        if not ch:
+            raise Unresolved("%s at cohort %s: the resolution makes it identical to %s (mark it not-run instead)"
+                             % (rung, cohort, p["rung"]))
+        if groups != [r["group"]]:
+            raise Unresolved("%s at cohort %s: resolved, it changes %s against %s, not just the group %s"
+                             % (rung, cohort, ",".join(ch), p["rung"], r["group"]))
     inst = out.pop("instance")
     want = int(out["REPLICAS"]) * int(out["SHARDS"])
     return {"params": out, "instance": inst, "az": r["az"], "ttl_c1": r["ttl_min_c1"], "arm": r["arm"], "want_n": want}
@@ -298,7 +375,16 @@ def assign(weights, k, mode):
     return out
 
 
-def fits(res, cohort, mem_mib):
+def vc(v, vcpus):
+    """A PARAM value with vcpus or vcpus/<k> resolved for a host of VCPUS (at least 1), as the body does."""
+    if v == "vcpus":
+        return vcpus
+    if v.startswith("vcpus/"):
+        return max(1, vcpus // int(v[6:]))
+    return int(v)
+
+
+def fits(res, cohort, mem_mib, vcpus=96):
     """Memory and NVMe needs of the busiest node; a list of problems (empty: it fits)."""
     p = res["params"]
     runs = cohort_runs(cohort)
@@ -314,10 +400,10 @@ def fits(res, cohort, mem_mib):
     outb = 0 if p["OUT_UPLOAD"] == "sdk-stream" else pairs * OUT_BYTES_PER_PAIR
     ram, nvme, why = OS_SLACK, 0, []
     if p["DB_PLACE"] == "memory":
-        inflight = int(p["INFLIGHT"]) if p["INFLIGHT"] != "-" else 1
+        inflight = vc(p["INFLIGHT"], vcpus) if p["INFLIGHT"] != "-" else 1
         ram += int(1.15 * HASH_BYTES / sh) + 8 * 10 ** 9 + int(7.5 * 10 ** 9) * inflight
         why.append("engine shard 1/%d x 1.15 + 8 GB + 7.5 GB x %d in flight (scripts/g3/mkspec.sh's rule)" % (sh, inflight))
-    elif p["DB_PLACE"] == "tmpfs":
+    elif p["DB_PLACE"] in ("tmpfs", "tmpfs-huge"):
         ram += HASH_BYTES
         why.append("hash.k2d on tmpfs")
     else:
@@ -375,7 +461,7 @@ def spec_params(spec):
 
 
 def _params_main(a):
-    tsv, resd, mem = TSV, RESOLVED, None
+    tsv, resd, mem, vcpus = TSV, RESOLVED, None, 96
     rung, cohort = a[0], a[1]
     rest = a[2:]
     while rest:
@@ -387,6 +473,8 @@ def _params_main(a):
             tsv = v
         elif f == "--resolved":
             resd = v
+        elif f == "--vcpus":
+            vcpus = int(v)
         elif f == "--mem-mib":
             mem = int(v)
         else:
@@ -404,7 +492,7 @@ def _params_main(a):
         print("ladder_levers: refused: %s" % e, file=sys.stderr)
         return 3
     if mem is not None:
-        pr = fits(res, int(cohort), mem)
+        pr = fits(res, int(cohort), mem, vcpus)
         if pr:
             print("ladder_levers: refused: " + "; ".join(pr), file=sys.stderr)
             return 4
@@ -474,20 +562,66 @@ def _self_test():
     t = _copy(rows)
     by_name(t)["S4"]["predecessor"] = "S3"
     assert any("S4: predecessor S3 is not run" in p for p in check(t)), check(t)
-    with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
-        f.write("origin\tcohort\tkey\tvalue\tsource\nS4\t1\tTHREADS\t96\tresults/g3/x/tables/pxt.tsv\n"
-                "S4\t1\tPROCS\t1\tresults/g3/x/tables/pxt.tsv\n")
+    # Resolutions (NB3): a source must be a results/ path inside a run dir; S4 must give a vcpus
+    # ratio; after resolving, a rung identical to its predecessor is refused.
+    import shutil
+    root = tempfile.mkdtemp(prefix="ak2-lv-")
+    os.makedirs(os.path.join(root, "results", "g3", "run1", "tables"))
+    open(os.path.join(root, "results", "g3", "run1", "manifest.json"), "w").write("{}")
+    open(os.path.join(root, "results", "g3", "run1", "tables", "pxt.tsv"), "w").write("x\n")
+    os.makedirs(os.path.join(root, "results", "loose"))
+    open(os.path.join(root, "results", "loose", "pxt.tsv"), "w").write("x\n")
+    src = "results/g3/run1/tables/pxt.tsv"
+
+    def resfile(lines):
+        p = os.path.join(root, "res.tsv")
+        with open(p, "w") as f:
+            f.write("origin\tcohort\tkey\tvalue\tsource\n" + "".join("\t".join(l) + "\n" for l in lines))
+        return p
     try:
-        assert resolve(rows, "S4", 1, f.name)["params"]["THREADS"] == "96"
-        assert resolve(rows, "S5", 1, f.name)["params"]["THREADS"] == "96"   # inherits S4's token
+        good = resfile([("S4", "1", "THREADS", "96", src), ("S4", "1", "PROCS", "vcpus/96", src)])
+        assert resolve(rows, "S4", 1, good, root)["params"]["PROCS"] == "vcpus/96"
+        assert resolve(rows, "S5", 1, good, root)["params"]["THREADS"] == "96"   # inherits S4's token
         for rung, c in (("S4", 10), ("S8", 1)):
             try:
-                resolve(rows, rung, c, f.name)
+                resolve(rows, rung, c, good, root)
                 raise AssertionError("%s resolved at c%d" % (rung, c))
             except Unresolved:
                 pass
+        for lines, want in (([("S4", "1", "THREADS", "96", "results/g3/nope.tsv"), ("S4", "1", "PROCS", "vcpus/96", src)], "does not exist"),
+                            ([("S4", "1", "THREADS", "96", "results/loose/pxt.tsv"), ("S4", "1", "PROCS", "vcpus/96", src)], "not inside a run"),
+                            ([("S4", "1", "THREADS", "96", "/tmp/x"), ("S4", "1", "PROCS", "vcpus/96", src)], "not a results/"),
+                            ([("S4", "1", "THREADS", "96", src), ("S4", "1", "PROCS", "1", src)], "vcpus ratio")):
+            try:
+                resolve(rows, "S4", 1, resfile(lines), root)
+                raise AssertionError("accepted: %s" % lines)
+            except ValueError as e:
+                assert want in str(e), (want, e)
+        # THREADS=vcpus with PROCS=vcpus/vcpus... is S2a's own value: identical to the predecessor.
+        try:
+            resolve(rows, "S4", 1, resfile([("S4", "1", "THREADS", "vcpus", src), ("S4", "1", "PROCS", "1", src)]), root)
+            raise AssertionError("an S4 identical to S2a was accepted")
+        except (Unresolved, ValueError) as e:
+            assert "identical to S2a" in str(e) or "vcpus ratio" in str(e), e
+        t = _copy(rows)
+        by_name(t)["S4"]["THREADS"], by_name(t)["S4"]["PROCS"] = "@select:S4", "1"
+        by_name(t)["S4"]["group"] = by_name(t)["S4"]["lever"] = "THREADS+PROCS"
+        try:
+            resolve(t, "S4", 1, resfile([("S4", "1", "THREADS", "vcpus", src)]), root)
+            raise AssertionError("an S4 identical to S2a was accepted")
+        except Unresolved as e:
+            assert "identical to S2a" in str(e), e
+        # An alias predecessor resolves to its winner's host.
+        alias = resfile([("Sstar-time", "1", "alias", "Sstar-r8g", src)])
+        assert _values(rows, names["Sstar-time"], 1, read_resolved(alias, root))[0]["instance"] == "r8g.48xlarge"
     finally:
-        os.unlink(f.name)
+        shutil.rmtree(root)
+    t = _copy(rows)
+    by_name(t)["S4"]["select"] = ""
+    assert any("S4: makes a @select:S4 selection without a select rule" in p for p in check(t)), check(t)
+    t = _copy(rows)
+    by_name(t)["Sstar-time"]["alias_of"] = "S9|S99"
+    assert any("Sstar-time: an alias needs alias_of" in p for p in check(t)), check(t)
     try:
         resolve(rows, "O0", 1, None)
         raise AssertionError("O0 resolved before S* is chosen")

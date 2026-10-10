@@ -36,7 +36,7 @@ INFO=$(truffle find "$TYPE" --regions us-west-2 --show-price -o json 2>/dev/null
 [ -n "$INFO" ] && [ "$INFO" != null ] || { echo "mkspec-ladder: truffle knows no $TYPE in us-west-2" >&2; exit 1; }
 PRICE=$(echo "$INFO" | jq -r .on_demand_price); MEM=$(echo "$INFO" | jq -r .memory_mib); VCPU=$(echo "$INFO" | jq -r .vcpus)
 [[ "$PRICE" =~ ^[0-9.]+$ ]] && [[ "$MEM" =~ ^[0-9]+$ ]] || { echo "mkspec-ladder: no price or memory for $TYPE" >&2; exit 1; }
-python3 "$L" params "$RUNG" "$COHORT" --mem-mib "$MEM" > /dev/null || { echo "mkspec-ladder: refused $RUNG on $TYPE (above)" >&2; exit 1; }
+python3 "$L" params "$RUNG" "$COHORT" --mem-mib "$MEM" --vcpus "$VCPU" > /dev/null || { echo "mkspec-ladder: refused $RUNG on $TYPE (above)" >&2; exit 1; }
 if [ -z "$TTL" ]; then
   [ "$COHORT" = 1 ] || { echo "mkspec-ladder: cohort $COHORT needs TTL=<minutes> (the table's TTL is cohort 1's)" >&2; exit 2; }
   TTL=$TTL_C1
