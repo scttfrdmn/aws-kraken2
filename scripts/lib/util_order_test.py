@@ -5,22 +5,28 @@ longer exists. Checked statically on the three callers:
 
   scripts/run.sh         every `mset` call and the spec's post script (scripts/post/<spec>.sh,
                          which may write the manifest: g0c-runs.sh does) come before util.py
-  scripts/refinalise.sh  every write into "$M" comes before util.py
+  scripts/refinalise.sh  every write into "$M" comes before util.py; for a cohort member it then
+                         re-derives the cohort's util.tsv (util.py on "$CDIR", from
+                         scripts/lib/cohort_dir.sh, after the member's own); cohort_dir.sh is run
+                         on scratch run dirs (member by .cohort.dir, by .cohort.id, by run id;
+                         not a member; a member without cohort.json)
   scripts/run-multi.sh   cohort.json is written before util.py; the cohort post scripts that run
                          after it (scripts/post/*.cohort.sh) write no manifest.json or cohort.json
 
 The checker is shown to flag the order run.sh had before the fix (a self-test on a synthetic
 script, and on run.sh at e095aa8 if git has it)."""
 import glob
+import json
 import os
 import re
 import subprocess
 import sys
+import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 FAIL = []
 
-UTIL = re.compile(r"^\s*python3\s+scripts/lib/util\.py\b")
+UTIL = re.compile(r"\bpython3\b.*scripts/lib/util\.py")
 # A write into the manifest (or cohort.json): an mset call, or mv / > whose target is one.
 TARGET = r'"?(\$\{?M\}?|\$\{?(M|MAN|MANIFEST)\}?|[^"\s]*(manifest|cohort)\.json)"?'
 WRITES = [re.compile(r"^\s*mset\s"),
@@ -79,6 +85,52 @@ for p in ("scripts/run.sh", "scripts/refinalise.sh", "scripts/run-multi.sh"):
     calls, after = order(read(p))
     check(f"{p} calls util.py", bool(calls), str(calls))
     check(f"{p}: no manifest write after util.py (line {calls[-1] if calls else '-'})", calls and not after, repr(after))
+
+# refinalise.sh: the cohort refresh comes after the member's util.py, from cohort_dir.sh.
+rf = code(read("scripts/refinalise.sh"))
+ucalls = [(i, s) for i, s in rf if UTIL.search(s)]
+mine = [i for i, s in ucalls if '"$D"' in s]
+coh = [i for i, s in ucalls if '"$CDIR"' in s]
+cd = [i for i, s in rf if re.search(r'CDIR=\$\(scripts/lib/cohort_dir\.sh "\$D"\)', s)]
+check("refinalise.sh re-derives the cohort's util.tsv after the member's", bool(mine) and bool(coh) and bool(cd)
+      and max(mine) < min(cd) < min(coh), f"member {mine}, cohort_dir.sh {cd}, cohort {coh}")
+
+# cohort_dir.sh on scratch run dirs.
+with tempfile.TemporaryDirectory() as T:
+    g = os.path.join(T, "results", "g9")
+    cid = "20261010-000000-abcdef0-1234-n2"
+
+    def mk(name, man=None, cohort=None):
+        d = os.path.join(g, name)
+        os.makedirs(d, exist_ok=True)
+        if man is not None:
+            with open(os.path.join(d, "manifest.json"), "w") as f:
+                json.dump(man, f)
+        if cohort is not None:
+            with open(os.path.join(d, "cohort.json"), "w") as f:
+                json.dump({"cohort_id": name, "members": [{"rank": i, "run_id": r} for i, r in enumerate(cohort)]}, f)
+        return d
+
+    def cdir(d):
+        r = subprocess.run(["bash", os.path.join(ROOT, "scripts", "lib", "cohort_dir.sh"), d],
+                           capture_output=True, text=True, timeout=20)
+        return r.returncode, r.stdout.strip()
+    C = mk(cid, cohort=[f"{cid}-r0", f"{cid}-r1"])
+    r0 = mk(f"{cid}-r0", {"run_id": f"{cid}-r0", "cohort": {"id": cid, "dir": f"results/g9/{cid}"}})
+    r1 = mk(f"{cid}-r1", {"run_id": f"{cid}-r1"})
+    check("cohort_dir.sh: a member by .cohort.dir", cdir(r0) == (0, C), repr(cdir(r0)))
+    check("cohort_dir.sh: a member by its run id", cdir(r1) == (0, C), repr(cdir(r1)))
+    with open(os.path.join(r1, "manifest.json"), "w") as f:
+        json.dump({"cohort": {"id": cid}}, f)
+    check("cohort_dir.sh: a member by .cohort.id", cdir(r1) == (0, C), repr(cdir(r1)))
+    solo = mk("20261010-000000-abcdef0", {"run_id": "x"})
+    check("cohort_dir.sh: a single run is not a member", cdir(solo)[0] == 1, repr(cdir(solo)))
+    stray = mk(f"{cid}-r7", {"run_id": f"{cid}-r7"})
+    check("cohort_dir.sh: a run id the cohort.json does not list is not a member", cdir(stray)[0] == 1, repr(cdir(stray)))
+    cid2 = "20261010-000000-abcdef0-5678-n2"
+    lone = mk(f"{cid2}-r0", {"cohort": {"id": cid2, "dir": f"results/g9/{cid2}"}})
+    check("cohort_dir.sh: a member whose cohort has no cohort.json: exit 2, dir printed",
+          cdir(lone) == (2, f"{g}/{cid2}"), repr(cdir(lone)))
 
 rm = read("scripts/run-multi.sh")
 calls = [i for i, s in code(rm) if UTIL.search(s)]

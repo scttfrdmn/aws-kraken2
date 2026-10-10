@@ -282,7 +282,7 @@ def node_util(man, util_path):
     # ethtool allowances: end - start per counter.
     st = {e["name"]: e["value"] for e in eth if e["when"] == "start"}
     en = {e["name"]: e["value"] for e in eth if e["when"] == "end"}
-    parts, deltas = [], {}
+    parts, deltas, unpaired = [], {}, []
     for k in sorted(set(st) | set(en)):
         if k == "none":
             parts.append(f"{st.get(k) or en.get(k)}")
@@ -292,8 +292,10 @@ def node_util(man, util_path):
             deltas[k] = int(b - a)
             parts.append(f"{k}={deltas[k]}")
         else:
+            unpaired.append(k)
             parts.append(f"{k}=start:{st.get(k, '-')},end:{en.get(k, '-')}")
     out["allowance_deltas"] = deltas   # only the counters with both a start and an end value
+    out["allowance_unpaired"] = unpaired
     out["allowance"] = ";".join(dict.fromkeys(parts)) if parts else "not recorded"
     if out.get("ncpu") and cap and cap.get("vcpus") and int(out["ncpu"]) != int(cap["vcpus"]):
         notes.append(f"/proc/stat shows {int(out['ncpu'])} CPUs, type_info {cap['vcpus']} vCPUs")
@@ -440,20 +442,27 @@ def fleet_rows(nodes):
     if nocost:
         notes.append(f"cost missing on {len(nocost)} node(s) ({names(nocost)})")
     # ethtool allowances: each counter's delta summed over the fleet's nodes. A node without a
-    # given counter (no start/end pair) adds nothing to it, and is named.
+    # given counter adds nothing to it, and is named: "unpaired" if it has only a start or only an
+    # end value (no delta), "missing" if it has neither.
     allow = {}
     for _, n in inc:
         for k, v in (n.get("allowance_deltas") or {}).items():
             allow[k] = allow.get(k, 0) + v
-    noallow = [lab for lab, n in inc if not n.get("allowance_deltas")]
+    unp = {}
+    for lab, n in inc:
+        for k in n.get("allowance_unpaired") or []:
+            unp.setdefault(k, []).append(lab)
+    noallow = [lab for lab, n in inc if not n.get("allowance_deltas") and not n.get("allowance_unpaired")]
     if noallow:
         notes.append(f"allowance counters missing on {len(noallow)} of {len(inc)} node(s) ({names(noallow)})"
                      + (": summed over the rest" if allow else ""))
-    for k in sorted(allow):
-        m = [lab for lab, n in inc if n.get("allowance_deltas") and k not in n["allowance_deltas"]]
-        if m:
-            notes.append(f"allowance counter {k} missing on {len(m)} of {len(inc)} node(s) ({names(m)}): "
-                         "summed over the rest")
+    for k in sorted(set(allow) | set(unp)):
+        u = unp.get(k, [])
+        m = [lab for lab, n in inc if lab not in noallow and lab not in u and k not in (n.get("allowance_deltas") or {})]
+        for what, ls in (("unpaired (start or end only)", u), ("missing", m)):
+            if ls:
+                notes.append(f"allowance counter {k} {what} on {len(ls)} of {len(inc)} node(s) ({names(ls)})"
+                             + (": summed over the rest" if k in allow else ""))
     nn = [f"{lab}: {'; '.join(n['notes'])}" for lab, n in nodes if n["notes"]]
     if nn:
         notes.append("node notes: " + " | ".join(nn[:8]) + (f" | ... ({len(nn) - 8} more)" if len(nn) > 8 else ""))

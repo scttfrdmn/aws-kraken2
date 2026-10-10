@@ -10,6 +10,8 @@
 #      ami/az/launch_time/architecture, final state, terminated_at, task (completion record),
 #      preflight, phases, requests, object_tags, stop, billed seconds and cost_usd;
 #   4. records what it did, the object-tag result and every gap in a repair record.
+# Then the scoped orphan check (if none is recorded) and tables/util.tsv; for a cohort member
+# (scripts/lib/cohort_dir.sh), the cohort's tables/util.tsv is re-derived as well.
 # When EC2 has aged the instance out (InvalidInstanceID.NotFound, or a query printing None),
 # final_state becomes "terminated" with instance.final_state_basis "aged_out"; terminated_at
 # stays null; stop and billed_seconds end at the completion record's ended_at (else the last
@@ -115,5 +117,18 @@ if [ "$(jq -r '.orphan_check // empty' "$M")" = "" ]; then
 fi
 # 6. utilisation, as run.sh derives it (docs/run.md, "Utilisation")
 python3 scripts/lib/util.py "$D" > "$D/tables/util.log" 2>&1 || echo "refinalise: util.py failed (see $D/tables/util.log)" >&2
+# 7. a cohort member: the cohort's util.json cites this member's manifest, just changed, so the
+# cohort's tables/util.tsv is re-derived too (#58).
+CDIR=$(scripts/lib/cohort_dir.sh "$D"); CRC=$?
+if [ "$CRC" = 0 ]; then
+  mkdir -p "$CDIR/tables"
+  if python3 scripts/lib/util.py "$CDIR" > "$CDIR/tables/util.log" 2>&1; then
+    echo "refinalise: cohort member: re-derived $CDIR/tables/util.tsv" >&2
+  else
+    echo "refinalise: util.py failed on the cohort $CDIR (see $CDIR/tables/util.log)" >&2
+  fi
+elif [ "$CRC" = 2 ]; then
+  echo "refinalise: cohort member, but $CDIR has no cohort.json: its util.tsv cannot be re-derived" >&2
+fi
 jq -c '{instance, start, stop, stop_basis, billed_seconds, cost_usd, cost_basis, task_exit:.task.exit_code, orphan_check:(.orphan_check | {rc, own_gone}?),
         repair:((.manifest_repairs // [])[-1] // .manifest_repair | {at, forced, gaps, stop_basis})}' "$M"

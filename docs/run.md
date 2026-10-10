@@ -547,6 +547,11 @@ Exit status: the task's exit code, or one of these harness codes:
     the instance (about an hour after termination);
   - applies run.sh's finalisation;
   - runs the scoped orphan check and records `.orphan_check` when the manifest has none;
+  - re-derives `tables/util.tsv` after the last manifest write. If the run is a cohort member
+    (`scripts/lib/cohort_dir.sh`: the manifest's `.cohort.dir` or `.cohort.id`, or a
+    `<cohort>-r<k>` run id, whose sibling cohort dir's cohort.json lists the run), it also
+    re-derives the cohort dir's `tables/util.tsv`, whose util.json cites this member's manifest.
+    A member whose cohort has no cohort.json is reported, not re-derived;
   - writes one repair record, with its gaps, `stop_basis` and object-tag result, to
     `.manifest_repair`.
 

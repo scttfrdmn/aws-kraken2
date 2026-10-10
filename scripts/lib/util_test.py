@@ -181,6 +181,10 @@ with tempfile.TemporaryDirectory() as T:
           "allowance counters missing on 1 of 3 node(s) (coh-al-r2): summed over the rest" in fl["coverage"], fl["coverage"])
     truth("#58: fleet coverage names the node without one counter",
           "allowance counter linklocal_allowance_exceeded missing on 1 of 3 node(s) (coh-al-r0)" in fl["coverage"], fl["coverage"])
+    truth("#58: fleet coverage names a start-only counter as unpaired, not missing",
+          "allowance counter conntrack_allowance_exceeded unpaired (start or end only) on 1 of 3 node(s) (coh-al-r1)"
+          in fl["coverage"] and "conntrack_allowance_exceeded missing on 1 of 3 node(s) (coh-al-r0)" in fl["coverage"]
+          and "(coh-al-r1)" not in fl["coverage"].split("conntrack_allowance_exceeded missing")[1].split(";")[0], fl["coverage"])
     nd = by(rows, "node", "node")
     check("#58: node r1 row unchanged (unpaired counter shown raw)", nd["coh-al-r1"]["allowance_exceeded"],
           "bw_in_allowance_exceeded=10;conntrack_allowance_exceeded=start:0,end:-;linklocal_allowance_exceeded=2;"

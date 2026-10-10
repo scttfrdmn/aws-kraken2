@@ -594,6 +594,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   order statically in run.sh, refinalise.sh and run-multi.sh, and checks that no cohort post
   script writes a manifest or cohort.json. refinalise.sh and run-multi.sh already had the right
   order.
+- `scripts/refinalise.sh` on a cohort member changed the member's manifest but left the cohort's
+  `tables/util.json` citing the old one (#58). It now re-derives the cohort dir's
+  `tables/util.tsv` too. `scripts/lib/cohort_dir.sh` finds the cohort dir from the manifest's
+  `.cohort.dir` or `.cohort.id`, or from a `<cohort>-r<k>` run id, and only when its cohort.json
+  lists the run. A member whose cohort has no cohort.json is reported instead.
+  `util_order_test.py` checks the order and runs cohort_dir.sh on scratch run dirs.
+- util.py's fleet coverage calls a counter with only a start or only an end value "unpaired",
+  not "missing" (#58).
 
 - Law 1 on RODA v205 (#44). ResolveTree walked the hits in first-hit order, but upstream walks
   its per-thread `std::unordered_map` hit_counts (classify.cc:897-949). When a score tie's
