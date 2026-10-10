@@ -542,7 +542,7 @@ LADFB
 # gzip (lad_s5_fallback). Sets S5BAD, IDSEC, GZSHA, RGSHA, GZRC, RGRC.
 EMPTY_SHA=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 lad_identity() {
-  local l i j f g gr h hr t0 t1 ok s p why
+  local l i j f g gr h hr t0 t1 ok s p why idef
   local -a idf idpids
   IDL=$(( NPROC / (GZK + 2) )); [ "$IDL" -lt 1 ] && IDL=1
   for j in "${NEED[@]}"; do idf+=("${SAMPLES[$j]}_1.fastq.gz" "${SAMPLES[$j]}_2.fastq.gz"); done
@@ -568,14 +568,17 @@ lad_identity() {
     [ "$hr" = 0 ] || why="${why:+$why; }rapidgzip exit $hr"
     { [ "$g" = "$EMPTY_SHA" ] || [ "$h" = "$EMPTY_SHA" ]; } && why="${why:+$why; }empty output"
     ok=true; [ -z "$why" ] || ok=false
+    # GNU gzip itself failing, or giving nothing, is an input/staging defect (the input passed its
+    # sha256 against the staged metadata), not an S5 finding: flagged for the tables.
+    idef=false; { [ "$gr" != 0 ] || [ "$g" = "$EMPTY_SHA" ] || ! [[ $g =~ ^[0-9a-f]{64}$ ]]; } && idef=true
     GZSHA[$f]=$g; RGSHA[$f]=$h; GZRC[$f]=$gr; RGRC[$f]=$hr
     s=${f%_[12].fastq.gz}
     [ "$ok" = true ] || S5BAD[$s]=1
     IDSEC[$s]=$(awk -v a="${IDSEC[$s]:-0}" -v b="$t0" -v c="$t1" 'BEGIN{printf "%.3f", a + c - b}')
     emit identity "$(jq -nc --arg f "$f" --arg s "$s" --arg g "$g" --arg h "$h" --argjson gr "$gr" --argjson hr "$hr" --argjson k "$GZK" \
-      --argjson nproc "$NPROC" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg why "$why" \
+      --argjson nproc "$NPROC" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg why "$why" --argjson idef "$idef" \
       '{kind:"identity", file:$f, sample:$s, gzip_sha256:$g, gzip_exit:$gr, rapidgzip_sha256:$h, rapidgzip_exit:$hr, rapidgzip_P:$k,
-        nproc:$nproc, identical:$ok, why:(if $why == "" then null else $why end), seconds:(($t1|tonumber)-($t0|tonumber)),
+        nproc:$nproc, identical:$ok, input_defect:$idef, why:(if $why == "" then null else $why end), seconds:(($t1|tonumber)-($t0|tonumber)),
         verdict:(if $ok then "output-preserving" else "S5 not output-preserving on this input" end)}')"
   done
   ak2_say "identity: ${#idf[@]} inputs at -P $GZK on $NPROC CPUs; ${#S5BAD[@]} samples not output-preserving"

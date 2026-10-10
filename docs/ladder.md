@@ -438,7 +438,10 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
   - either tool exits non-zero;
   - or either output is empty (the empty-stream sha256, e3b0c442…).
 
-  The lad-sample `s5` carries `gz_exit` and `rg_exit` (per mate) beside the sha lists. A sample that differs gets `s5.status: differs`
+  The lad-sample `s5` carries `gz_exit` and `rg_exit`, integer lists per mate, whenever status is not
+  n/a, beside the sha lists. If GNU gzip itself exits non-zero or gives an empty stream, the identity
+  line has `input_defect: true`: that is an input or staging DEFECT, not an S5 finding (the input
+  passed its sha256 against the staged metadata). A sample that differs gets `s5.status: differs`
   ("S5 not output-preserving on this input") and falls back to GNU gzip by per-sample shim
   behaviour: a `gzip` ahead of the shim on PATH sends exactly its inputs to GNU gzip, and logs
   them (`out/s5-fallback.calls`). After classify the run fails unless `gzip-shim.calls` has at

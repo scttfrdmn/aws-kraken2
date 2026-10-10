@@ -68,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - NB3: the one-lever re-check compares THREADS, PROCS and INFLIGHT as numbers at each rung's
       host. A `not_run_cohorts` column marks S4 and S8 not run at c1, where their only candidate
       is the predecessor's configuration.
-    - An alias winner must be one of `alias_of`.
+    - An alias winner must be one of `alias_of`. GNU gzip failing in the identity phase is flagged
+      `input_defect` (an input or staging DEFECT, not an S5 finding).
     - S5, S6, S7a, S7b, S9, Sstar-r8g and Sstar-r8gd are now determined at c1, so 15 c1 specs
       are committed.
   - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and

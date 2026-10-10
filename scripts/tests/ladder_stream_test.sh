@@ -228,13 +228,14 @@ identity_run() {  # FN CASEDIR: lad_identity under the node's shell options (pip
   (
     set +o pipefail
     W="$c"; SD="$c/sd"; INDIR="$c/in"; J="$c/lad.jsonl"; LS="$c/lad-samples.jsonl"; : > "$J"; : > "$LS"
-    SAMPLES=(A B C); NEED=(0 1 2); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
+    SAMPLES=(A B C D); NEED=(0 1 2 3); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
     declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
     ak2_say() { echo "ak2: $*"; }
     ak2_push() { :; }
     . "$fn"
     echo "pipefail: $(set -o | awk '$1 == "pipefail" {print $2}')"
-    for s in A B C; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
+    for s in A B C D; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
+    printf 'not a gzip stream' > "$INDIR/D_1.fastq.gz"   # GNU gzip fails on it: an input defect
     lad_identity; echo "identity-rc=$? bad=$(printf '%s\n' "${!S5BAD[@]}" | sort | tr '\n' ' ')"
   ) > "$c/run.log" 2>&1
 }
@@ -244,12 +245,13 @@ b1_exit_ok() {  # CASEDIR: B_1's recorded exits are the tools' real ones
 identity_run "$FN" "$C"
 ids() { sed -n 's/^lad-identity //p' "$C/run.log"; }
 check "I: runs with pipefail off, as on the node" "grep -q '^pipefail: off\$' '$C/run.log'"
-check "I: B and C differ, A does not" "grep -q 'identity-rc=0 bad=B C \$' '$C/run.log'"
+check "I: B, C and D differ, A does not" "grep -q 'identity-rc=0 bad=B C D \$' '$C/run.log'"
 check "I: B_1's rapidgzip exit is the tool's real 3, its gzip exit 0" "ids | jq -e 'select(.file == \"B_1.fastq.gz\") | .rapidgzip_exit == 3 and .gzip_exit == 0 and .identical == false' > /dev/null"
 check "I: C_2's empty output differs (exit 0, the empty-stream sha256)" "ids | jq -e 'select(.file == \"C_2.fastq.gz\") | .rapidgzip_exit == 0 and .identical == false
   and .rapidgzip_sha256 == \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\" and (.why | test(\"empty output\"))' > /dev/null"
 check "I: A's mates are identical with both exits 0" "[ \$(ids | jq -s 'map(select((.file | startswith(\"A_\")) and .identical and .gzip_exit == 0 and .rapidgzip_exit == 0)) | length') = 2 ]"
-check "I: the fallback was installed for B and C" "[ -x '$C/s5fb/gzip' ] && [ \$(grep -c . '$C/s5fb/inputs') = 4 ]"
+check "I: the fallback was installed for B, C and D" "[ -x '$C/s5fb/gzip' ] && [ \$(grep -c . '$C/s5fb/inputs') = 6 ]"
+check "I: GNU gzip failing on D_1 is an input defect; no other input is" "[ \$(ids | jq -s 'map(select(.input_defect)) | map(.file) | join(\" \")') = '\"D_1.fastq.gz\"' ]"
 # Mutation (T1): restore B1's bug (PIPESTATUS read outside the substitution) in a copy of the body;
 # the exit check must then fail, so case I can tell the fix from the bug.
 sed 's/; exit "\${PIPESTATUS\[0\]}"); \([gh]r\)=\$?/); \1=${PIPESTATUS[0]}/' "$BODY" > "$TD/body-b1bug.sh"
