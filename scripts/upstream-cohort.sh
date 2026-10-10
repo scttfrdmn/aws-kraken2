@@ -11,7 +11,7 @@
 #       mount is owned by the invoking user, mode 0700) and copy SRC's opts.k2d, taxo.k2d and
 #       hash.k2d onto it; checks the copy's sizes; prints the mount point and the copy seconds.
 #       Refuses a mount point that exists already (a mounted or leftover directory).
-#   scripts/upstream-cohort.sh mount NAME SIZE
+#   scripts/upstream-cohort.sh mount NAME SIZE [HUGE]   (HUGE always (the default) or never)
 #       the same tmpfs mount at /mnt/ak2-ramdb/NAME, empty (the caller fills it; e.g. U1 stages
 #       RODA straight onto it, and its inputs and scratch on two more).
 #   scripts/upstream-cohort.sh umount NAME
@@ -51,9 +51,10 @@ ramdb)
   awk -v a="$t0" -v b="$t1" 'BEGIN{printf "upstream-cohort: ramdb copy %.1f s\n", b-a}' >&2
   ;;
 mount)
-  name=$2 size=$3
+  name=$2 size=$3 huge=${4:-always}
   [[ "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]] || { echo "upstream-cohort: mount NAME must be a plain word" >&2; exit 2; }
   [[ "$size" =~ ^[0-9]+[kmgKMG]?$ ]] || { echo "upstream-cohort: mount SIZE $size (e.g. 1150g)" >&2; exit 2; }
+  [[ "$huge" =~ ^(always|never)$ ]] || { echo "upstream-cohort: mount HUGE $huge (always|never)" >&2; exit 2; }
   # make rehearse's seam (AK2_REHEARSE_*, which run.sh never passes to an instance): a plain
   # directory under the given root, without sudo or a mount.
   if [ -n "${AK2_REHEARSE_RAMDB_ROOT:-}" ]; then
@@ -64,7 +65,7 @@ mount)
   dst="/mnt/ak2-ramdb/$name"
   [ ! -e "$dst" ] || { echo "upstream-cohort: $dst exists (mounted or left over); umount it first" >&2; exit 1; }
   sudo -n mkdir -p "$dst" &&
-    sudo -n mount -t tmpfs -o "size=$size,huge=always,mode=0700,uid=$(id -u),gid=$(id -g)" tmpfs "$dst" ||
+    sudo -n mount -t tmpfs -o "size=$size,huge=$huge,mode=0700,uid=$(id -u),gid=$(id -g)" tmpfs "$dst" ||
     { echo "upstream-cohort: tmpfs mount at $dst failed" >&2; sudo -n rmdir "$dst" 2>/dev/null; exit 1; }
   echo "$dst"
   ;;

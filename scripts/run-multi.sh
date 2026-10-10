@@ -262,13 +262,15 @@ finish() {
     MEMBERS=$(jq -c --argjson r "$row" '. + [$r]' <<< "$MEMBERS")
   done
   "$ORPHANS_SH" > "$CDIR/orphans.txt" 2>&1; local ORC=$?
+  # A ladder spec's PARAMS block (#51/#52; docs/ladder.md): cohort.json params, else null.
+  local LADP; LADP=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" 2>/dev/null); [ -n "$LADP" ] || LADP=null
   jq -n --arg id "$COHORT_ID" --arg gate "$GATE" --arg spec "$SPEC" --arg sha "$(git rev-parse HEAD)" \
     --argjson n "$NODES" --arg type "$ITYPE" --arg az "$AZ" --arg region "$REGION" --arg prefix "$CPREFIX" \
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
     --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
-    --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" '{
-      cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, nodes:$n, instance_type:$type, az:$az, region:$region,
+    --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" --argjson params "$LADP" '{
+      cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, params:$params, nodes:$n, instance_type:$type, az:$az, region:$region,
       quota_check:$quota, cost_limit_check:$costchk, sample_accessions_ref:$accrec,
       prefix:$prefix, network:{vpc:$vpc, security_group:$sg, admits:"itself, 22/tcp, ICMP"}, start:$start, stop:$stop,
       ended:$ended, terminated_early:$early, sweep_failures:$sweepfail, members:$members,

@@ -9,6 +9,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The #25 ladder body, lever table and generator (#51, WP-7; docs/ladder.md).
+  - `scripts/g3/ladder.body.sh`: one body for both arms of both ladders. The lever choices are
+    a PARAMS block in the payload. The phases are the same on both arms, every run is cold
+    (`drop_caches` first and before load), and the ETag is checked on every arm. Each
+    classified sample streams a `lad-sample` line (#52's contract v1) and is appended to
+    `out/lad-samples.jsonl`, with the on-node sha256 of every output. S5 adds an identity
+    phase and falls back to GNU gzip per sample where rapidgzip differs.
+  - `scripts/g3/ladder.levers.tsv`: every rung of both ladders, with #52's columns plus
+    `status`, `group` and `coupled`.
+    - S2b, S7 and O4 are split. S2c (the inputs onto tmpfs, on r8gd.48xlarge) now comes before
+      S2a, so S2a changes only the host.
+    - Ladder 2 runs twice (Scott, 2026-10-10): O0 … O5 from S\*-time and O0-cost … O5-cost from
+      S\*-cost, each with its own selections. O5 is O\*-time and O5-cost is O\*-cost.
+    - S3 is not run, because the tune probe chose `none`.
+  - `scripts/g3/mkspec-ladder.sh` (`make ladder-spec`) writes `runs/g3-l-<rung>-c<cohort>.json`
+    deterministically. It refuses any rung with an unresolved placeholder.
+  - `scripts/lib/ladder_levers.py` (`make ladder-check`, in `make test`) checks that each rung
+    changes exactly one key-group.
+  - `scripts/tests/ladder_stream_test.sh` (`make ladder-stream-test`, in `make test`) checks the
+    body's streaming, phase boundaries, serial vs overlap uploads, the engine path and the S5
+    fallback by behaviour.
+  - `scripts/tests/ladder_levers_tables_test.py` (in `make test`) runs the real lever table
+    through #52's `ladder_tables.py`. On a synthetic record, both S\* vs O\* pairs follow their own
+    chain with 8 resolved lever rows each.
+  - The seven rungs fully determined at c1 are committed (S0-T1, S0-Tv, S1, S2b-i, S2b-ii, S2c,
+    S2a), and all pass `DRY_RUN=1`. Each spec's header gives its TTL and notes that the classic
+    `aws s3 cp` rate is unmeasured.
+  - `rapidgzip-Pauto` is a registered rule (accepted 2026-10-10): k = clamp(floor(nproc ÷
+    (2 × samples at once)), 1, 16) threads per mate.
+  - The #51 review fixes:
+    - The S5 identity phase records each tool's real exit status (B1). A non-zero exit or an
+      empty output now differs and falls back to gzip, and the stream test covers a failing tool.
+    - The measurement-only phases have distinct names (`identity`, `sha-get`, `sha`,
+      `sha-critical`), so deltas can be reported gross and net (Scott, 2026-10-10).
+    - S2d (huge=always) comes before S2c, and S2b-ii's tmpfs is huge=never (NB7).
+      `upstream-cohort.sh mount` takes an optional HUGE argument.
+    - The S\* endpoints are aliases of the selected candidate's runs, and S\*-cost and O\*-cost
+      are chosen by lowest median billed $.
+    - Every selection has a registered rule (`select` column, NB4).
+    - A resolution must cite a `results/` run dir, and the one-lever check runs again on the
+      resolved values (NB3).
+    - Derived values: `vcpus/<k>` ratios, a `derived` column, and the values used in `lad-config`
+      (NB1).
+    - Engine runs check completeness of the home samples (NB5), and `needs` must agree with the
+      placement (NB6).
+    - O5 streams each lad-sample as its GETs finish (NB8).
+    - The run order is documented (NB9). The input sha256 is not separated, and the reason is
+      recorded (NB10).
+  - The #51 re-review fixes:
+    - B2: under SETUP=overlap the build is waited for in its own `build-wait` phase (not
+      measurement-only), before identity, and its end is recorded.
+    - `sha-critical` is decided by interval overlap with the node's classify spans.
+    - Each node writes one `lad-net` line (`out/lad-net.jsonl`) with the seconds the net rule
+      subtracts. Net wall = max over nodes (node end − critical_measurement_s) − first launch.
+    - T1: the identity case runs with pipefail off, as on the node, and a mutation restoring B1's
+      bug must fail it.
+    - NB3: the one-lever re-check compares THREADS, PROCS and INFLIGHT as numbers at each rung's
+      host. A `not_run_cohorts` column marks S4 and S8 not run at c1, where their only candidate
+      is the predecessor's configuration.
+    - An alias winner must be one of `alias_of`. GNU gzip failing in the identity phase is flagged
+      `input_defect` (an input or staging DEFECT, not an S5 finding).
+    - S5, S6, S7a, S7b, S9, Sstar-r8g and Sstar-r8gd are now determined at c1, so 15 c1 specs
+      are committed.
+  - The #51 third-review fixes:
+    - `sha-critical` also counts done and in-flight uploads as covering spans (NB1).
+    - The net rule is exact for one lane, O5 and the engine at N = 1. It is an upper bound for the
+      engine at N > 1 and for several serial lanes.
+    - A bad resolution (such as an alias winner outside `alias_of`) is a clean refusal, and a
+      resolution row for a not-run cohort draws a warning.
+    - The tables cross-check uses real alias rows and native not-run handling, with no stand-ins.
+  - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and
+    `cohort.json` `params`.
+  - `results/g3/ladder-modelled.tsv` holds the header only.
+
+- Ladder tables:
+  - `not_run_cohorts` in ladder.levers.tsv: at the cohorts it lists, a rung is skipped like
+    `status: not-run`, and its successor's delta is taken against the nearest ancestor that ran.
+  - The body's identity line (`lad-identity`, `input_defect: true`) raises an input DEFECT
+    where the sample's own `s5` does not already show one.
+  - `lad-net`'s components `identity_s`, `sha_get_s` and `sha_critical_s` are accepted,
+    shown, and must sum to `critical_measurement_s` within 1 ms.
 - Ladder tables, gross and net (Scott's ruling, 2026-10-10, #25). Every wall delta and pair is
   reported both ways, with net as the headline:
   - net wall is computed per node: the max over nodes of (`terminated_at` −
