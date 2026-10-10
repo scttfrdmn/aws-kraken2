@@ -48,7 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     lever. Without the fallback, the sample is a contract DEFECT. rapidgzip's output sha256
     (`rg_sha256`) matches O-arm entries to S entries and flags S entries that disagree.
   - modelled values: `make g3-ladder-model` (`scripts/lib/ladder_model.py`) derives c100 stock
-    T1 from the c10 S0-T1 records' per-thread rate. The per-sample span is the union of the
+    T1 from the c10 S0-T1 records' per-thread rate, gross and net (net from each run's net wall
+    by the same formula, billed prorated). The per-sample span is the union of the
     lad-sample `t_start`/`t_end` intervals. A run with any DEFECT (Law 1 included) cannot feed
     the model, and F < 0 refuses it. Every file is cited with its sha256. g3-ladder re-derives
     every modelled row on the current record and refuses one whose files, runs or value do not

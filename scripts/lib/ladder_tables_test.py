@@ -245,7 +245,7 @@ def record(res, variant=""):
     # Per-sample spans (union of [t_start, t_end]): A 500-1500 + 1500-2500 = 2000 s; B 500-1550 + 1550-2600 =
     # 2100 s (variant fneg: B's span is 0-3200 = 3200 s > its 3100 s wall: the model is refused; variant
     # c10law1: B's output differs from the stock reference: a Law 1 DEFECT, so B cannot feed the model).
-    single(res, "20261010-000020-aaaaaaa", "S", "S0-T1", 1, 3000, cohort=10, accessions=("SRR1", "SRR2"),
+    single(res, "20261010-000020-aaaaaaa", "S", "S0-T1", 1, 3000, cohort=10, accessions=("SRR1", "SRR2"), crit=100.0,
            samples=[sample("S", "S0-T1", acc="SRR1", classify=1000.0, cohort=10, t0=T0 + 500),
                     sample("S", "S0-T1", acc="SRR2", classify=1000.0, cohort=10, t0=T0 + 1500)])
     bspan = [(T0, T0 + 1600), (T0 + 1600, T0 + 3200)] if variant == "fneg" else [(T0 + 500, T0 + 1550), (T0 + 1550, T0 + 2600)]
@@ -381,6 +381,15 @@ def base():
           (g.get("basis", "")[:18], g.get("n"), g.get("median")), ("modelled (flagged)", "1", "5100.000000"))
     g = one(T["rungs.tsv"], rung="S0-T1", axis="billed_usd", cohort=100)
     check("modelled c100 billed (5.0, 5.2)", g.get("median"), 5.1)
+    # Net, the same formula: A's lad-net critical 100 s -> net wall 2900, F_net 900, 900 + 4000 = 4900;
+    # B's 0 -> 5200. Median 5050. Net billed prorated: 5.0 x 4900/5000 = 4.9, 5.2 x 5200/5200 = 5.2 -> 5.05.
+    g = one(T["rungs.tsv"], rung="S0-T1", axis="wall_net_s", cohort=100)
+    check("modelled c100 net wall (4900, 5200)", (g.get("median"), g.get("basis", "")[:18]), ("5050.000000", "modelled (flagged)"))
+    g = one(T["rungs.tsv"], rung="S0-T1", axis="billed_net_usd", cohort=100)
+    check("modelled c100 net billed, prorated (4.9, 5.2)", g.get("median"), 5.05)
+    d = one(T["deltas.tsv"], rung="S0-Tv", axis="wall_net_s", cohort=100)
+    check("net delta on the modelled value (3005 - 5050), flagged", (d.get("delta"), d.get("status")),
+          ("-2045.000000", "modelled (flagged): not a measurement, not resolvable"))
     g = one(T["rungs.tsv"], rung="S0-T1", axis="wall_s", cohort=1)
     check("the c1 model is ignored: c1 stays measured", (g.get("basis"), g.get("median")), ("measured", "1005.000000"))
     check("note: modelled row ignored because measured runs exist",
@@ -586,10 +595,10 @@ def variants():
     check("hand-entered modelled rows: exit 1", rc, 1)
     dd = T["manifest"]["defects"]
     check("the reviewer's case (99999, citing a real file's real sha256) is refused by re-derivation",
-          "modelled: refused: ladder-modelled.tsv row 6 (S0-T1 c100 wall_s): value 99999 but the model gives 5100.000 on "
+          "modelled: refused: ladder-modelled.tsv row 10 (S0-T1 c100 wall_s): value 99999 but the model gives 5100.000 on "
           "the current record" in dd, True)
     check("a row citing a file that does not exist is refused",
-          "modelled: refused: ladder-modelled.tsv row 7 (S0-Tv c10 wall_s): source not checkable: results/g3/x/rates.tsv "
+          "modelled: refused: ladder-modelled.tsv row 11 (S0-Tv c10 wall_s): source not checkable: results/g3/x/rates.tsv "
           "does not exist" in dd, True)
     check("refused rows not used: c100 stays 5100, no S0-Tv c10 row",
           (one(T["rungs.tsv"], rung="S0-T1", axis="wall_s", cohort=100).get("median"),

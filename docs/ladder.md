@@ -336,7 +336,12 @@ that passes validation **and Law 1** (a run with any DEFECT cannot feed the mode
   the spans is less than their sum minus 1 ms per sample. The test case is 10 concurrent samples;
 - wall(c100) = F + P_target / r, where P_target is the `read_count` sum of `@PRJNA398089:1-100`
   in the recorded runs.tsv;
-- billed(c100) = wall × price/h × nodes / 3600.
+- billed(c100) = wall × price/h × nodes / 3600;
+- net, by the same formula from the run's net wall (the per-node lad-net rule): F_net = net wall
+  − S, wall_net(c100) = F_net + P_target / r, and billed_net(c100) = billed(c100) ×
+  wall_net/wall, prorated as the tables prorate. The `wall_net_s` and `billed_net_usd` rows are
+  written only when every run used has a net wall and F_net ≥ 0; otherwise the message names
+  the run and only the gross rows are written.
 
 The value written is the median over those runs. The flags are `--rung`, `--from-cohort`,
 `--to-cohort` and `--target-ref`. It exits 2 and writes nothing if no run qualifies.
@@ -410,7 +415,7 @@ never generates it.
   `eff_*_net_usd`/`eff_*_usd`. The `series` column labels each axis "net (headline)",
   "net (prorated; headline)", "net (prorated)" or "gross", and `net_basis` names the rule. The
   resolution check runs on each series separately. A net wall below 0 gets a note. The modelled
-  rows (`make g3-ladder-model`) are gross wall and billed only.
+  rows (`make g3-ladder-model`) carry both gross and net.
 - **Resolution.** A delta (rung median − predecessor median) is **resolved** only if |Δ| > 2 ×
   max(range of the rung, range of the predecessor, q). Every other delta is **unresolvable**,
   with the reason:

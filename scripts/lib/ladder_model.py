@@ -15,6 +15,10 @@ validation and Law 1):
   refuses the model.
   wall(TO) = F + P_target / r, where P_target = the read_count sum of TARGET-REF's ranks in the
   recorded runs.tsv; billed(TO) = wall(TO) x price/h x nodes / 3600.
+  Net, the same way from the run's net wall (ladder_tables' per-node lad-net rule):
+  F_net = net wall - S; wall_net(TO) = F_net + P_target / r; billed_net(TO) = billed(TO) x
+  wall_net(TO) / wall(TO), prorated as the tables prorate. Net rows are written only when every
+  run used has a net wall and F_net >= 0.
 The value written is the median over the measured runs. Each row records from_cohort,
 target_ref and the runs used; its source cites this script's commit and every file it read as
 path=sha256. ladder_tables.py re-derives every row with model() on the current record and refuses
@@ -74,7 +78,7 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
     lt.law1(runs, levers, [], [])
     use = [r for r in runs if r["params"]["rung"] == rung and r["params"].get("cohort") == c_from
            and r["params"]["run_kind"] == "ladder" and r["params"]["state"] == "cold" and not r["exclude"]]
-    walls, bills, ids, cite = [], [], [], []
+    walls, bills, ids, cite, nwalls, nbills, nwhy = [], [], [], [], [], [], []
     ptar, runs_tsv = target_pairs(repo, ref, rd)
     for r in sorted(use, key=lambda r: r["run_id"]):
         if r["wall_s"] is None or r["price"] is None or not r["samples"]:
@@ -96,6 +100,16 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
         w = F + ptar / (P / S)
         walls.append(w)
         bills.append(w * r["price"] * r["nodes"] / 3600.0)
+        # Net, the same formula on the run's net wall (ladder_tables' per-node lad-net rule):
+        # F_net = net wall - S; wall_net = F_net + P_target / r; billed_net prorated, billed x net/gross.
+        if r["wall_net_s"] is None:
+            nwhy.append(f"{r['run_id']}: no net wall")
+        elif r["wall_net_s"] - S < 0:
+            nwhy.append(f"{r['run_id']}: F_net = {r['wall_net_s'] - S:.3f} s < 0")
+        else:
+            wn = (r["wall_net_s"] - S) + ptar / (P / S)
+            nwalls.append(wn)
+            nbills.append(bills[-1] * wn / w)
         ids.append(r["run_id"])
         d = os.path.abspath(r["dir"])
         members = [d] + [os.path.join(os.path.dirname(d), x) for x in os.listdir(os.path.dirname(d))
@@ -118,7 +132,15 @@ def model(results, levers_path, rung, c_from, c_to, ref, git_commit=None):
     rows = [[arm, rung, c_to, "wall_s", f"{statistics.median(walls):.3f}", basis, c_from, ref, run_ids, src],
             [arm, rung, c_to, "billed_usd", f"{statistics.median(bills):.6f}", basis + "; x price/h x nodes / 3600",
              c_from, ref, run_ids, src]]
-    return rows, f"{len(walls)} run(s): wall {statistics.median(walls):.1f} s, billed ${statistics.median(bills):.4f}"
+    msg = f"{len(walls)} run(s): wall {statistics.median(walls):.1f} s, billed ${statistics.median(bills):.4f}"
+    if nwhy:
+        # Net rows only when every run used gives one; gross stands alone otherwise.
+        return rows, msg + "; no net rows (" + "; ".join(nwhy) + ")"
+    nbasis = basis.replace("wall = (wall - per-sample span)", "net wall = (net wall - per-sample span)")
+    rows += [[arm, rung, c_to, "wall_net_s", f"{statistics.median(nwalls):.3f}", nbasis, c_from, ref, run_ids, src],
+             [arm, rung, c_to, "billed_net_usd", f"{statistics.median(nbills):.6f}",
+              nbasis + "; billed prorated x net/gross", c_from, ref, run_ids, src]]
+    return rows, msg + f"; net wall {statistics.median(nwalls):.1f} s, net billed ${statistics.median(nbills):.4f}"
 
 
 def main(argv=None):
