@@ -72,6 +72,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       `input_defect` (an input or staging DEFECT, not an S5 finding).
     - S5, S6, S7a, S7b, S9, Sstar-r8g and Sstar-r8gd are now determined at c1, so 15 c1 specs
       are committed.
+  - The #51 third-review fixes:
+    - `sha-critical` also counts done and in-flight uploads as covering spans (NB1).
+    - The net rule is exact for one lane, O5 and the engine at N = 1. It is an upper bound for the
+      engine at N > 1 and for several serial lanes.
+    - A bad resolution (such as an alias winner outside `alias_of`) is a clean refusal, and a
+      resolution row for a not-run cohort draws a warning.
+    - The tables cross-check uses real alias rows and native not-run handling, with no stand-ins.
   - `run.sh` and `run-multi.sh` record a ladder spec's PARAMS as `manifest.json` and
     `cohort.json` `params`.
   - `results/g3/ladder-modelled.tsv` holds the header only.

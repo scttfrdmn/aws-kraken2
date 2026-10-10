@@ -13,6 +13,10 @@
 #   C  the engine path: a fake cohort-mode engine; the boundaries load -> etag-hash.k2d (shard-load
 #      line) -> classify (connect line); lad-sample lines only for this rank's home samples; the
 #      engine's ak2 lines streamed;
+#   S  one serial lane: every hash is critical (sha-critical = sha);
+#   U  lad_crit directly: classify spans, a done upload and an upload in flight cover a hash (NB1);
+#   I  the identity phase under pipefail off, as on the node: a failing or empty rapidgzip differs,
+#      a corrupt input is an input_defect; I-mut restores B1's bug and must fail;
 #   N  negative control: the reverse redirection order (> /dev/null 2> >(...)) streams nothing,
 #      while the file still gets every line, so A's streaming check can fail.
 set +e
@@ -206,6 +210,32 @@ for c in A B C F; do
     and ([.t_start, .t_end] | map(tostring | split(\".\") | (.[1] // \"\") | length <= 3) | all))) | length') = \$(grep -c '^lad-sample ' '$TD/$c/run.log') ]"
 done
 check "F: phase seconds have at most 3 decimals" "samples | jq -se '[.[].phases[] | tostring | split(\".\") | (.[1] // \"\") | length <= 3] | all' > /dev/null"
+
+# ---- U: lad_crit's covering spans: classify spans and uploads (NB1) ----
+# One sample classified over [100, 200]; its hash is [250, 260]. Alone, all 10 s are critical.
+# A finished upload over [245, 255] covers 5 s of it; an upload in flight since max(255, its
+# enqueue at 257) covers the rest but 2 s.
+setup_case U
+crit_u() {  # MODE: none | done | inflight -> lad_crit's seconds
+  (
+    SD="$C/sd"; ENGINE=0; CPIDS=(); UPSERIAL=0
+    . "$FN"
+    printf '100\n' > "$SD/start/0"; printf '0 100 200 0\n' > "$SD/done/0"
+    LV_UP_TSV=""; UPENQ_T=()
+    if [ "$1" != none ]; then
+      LV_UP_TSV="$C/uploads.tsv"; LV_UP_T0=0
+      printf 'seq\tmode\tlocal\turl\tbytes\tsha256\tt_enqueue\tt_start\tt_end\trc\n1\ts5cmd-overlap\tx\ts3://b/x\t1\th\t240\t245\t255\t0\n' > "$LV_UP_TSV"
+    fi
+    if [ "$1" = inflight ]; then
+      sleep 30 & LV_UP_PID=$!; LV_UP_LANE=1; LV_UP_N=2; UPENQ_T=(240 257)
+    fi
+    lad_crit 250 260
+    [ -n "${LV_UP_PID:-}" ] && kill "$LV_UP_PID" 2> /dev/null
+  )
+}
+check "U: no uploads: all 10 s of the hash are critical" "[ \"\$(crit_u none)\" = 10.000 ]"
+check "U: a finished upload over [245, 255] leaves 5 s" "[ \"\$(crit_u done)\" = 5.000 ]"
+check "U: plus an upload in flight from 257 leaves 2 s" "[ \"\$(crit_u inflight)\" = 2.000 ]"
 
 # ---- I: the identity phase with a failing tool (B1) ----
 # GNU gzip stands in as itself; the rapidgzip stand-in writes the same bytes but exits 3 on B_1,

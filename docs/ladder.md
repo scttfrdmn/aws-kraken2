@@ -243,8 +243,8 @@ have no runs of their own. Each is the runs of the candidate (S9, Sstar-r8g, Sst
 registered rule selects at that cohort, so nothing is run twice. The selection is a row of
 `ladder.resolved.tsv` (origin `Sstar-time`, the cohort, key `alias`, the winning rung, its source),
 and the alias's host, which O0's `=pred` inherits, is the winner's. The tables must read an alias
-rung as its winner's runs (`scripts/tests/ladder_levers_tables_test.py` stands in for that until
-they do). S\*-cost and O\*-cost are chosen by the **lowest median billed $** (Scott, 2026-10-10);
+rung as its winner's runs, as they do (`scripts/tests/ladder_levers_tables_test.py` checks it with
+real alias rows in a synthetic record). S\*-cost and O\*-cost are chosen by the **lowest median billed $** (Scott, 2026-10-10);
 effective cost per resource is still reported for every endpoint.
 **Ladder 2 runs twice** (Scott, 2026-10-10): the time side O0 … O5 from `Sstar-time`, with O3's N
 the fit's time-optimal one, and the cost side O0-cost … O5-cost from `Sstar-cost`, with its own
@@ -275,6 +275,10 @@ left, and refuses a resolution when:
   on x8g.24xlarge is S2a's `THREADS=vcpus, PROCS=1` and is refused. The same text on two hosts is
   a derived move with the host's own lever (the `derived` column), not a second lever;
 - an alias's winner is not one of its `alias_of` candidates.
+
+Every refusal is a `ladder_levers: refused: …` message with exit 3, never a traceback. A resolution
+row for a rung at a cohort where it is not run (`not_run_cohorts`) is never used, so it draws a
+warning (`ladder_levers: warning: … is ignored`).
 
 **Not run at some cohorts** (`not_run_cohorts`, `c<cohort>: <reason>;...`): a rung whose selection
 has a single candidate at a cohort, its predecessor's own configuration, is not run there. Its
@@ -329,9 +333,18 @@ of those intervals that no classify span on the node covers:
 - per-sample path: each sample's span is `[start, end]`, a running sample covering up to the hash;
 - engine: the engine's classify phase, up to its exit.
 
-So a hash done after the last classify ended is all critical, and the last sample's hash always
-is. A hash done while another sample classifies is not. With one lane under a serial upload mode,
-the lane is idle while it hashes, so each hash is critical.
+**Uploads cover too (NB1).** The node's end waits for its uploads either way, so an upload cannot
+leave the hash critical either. The covering spans therefore also include:
+- each done upload of the session: a row of lever.sh's `uploads.tsv`, `[t_start, t_end]`;
+- in an overlap session, the one upload in flight: from the later of the last row's end and its own
+  enqueue, exact to the lane's 0.2 s poll.
+
+A hash is critical only if neither a classify span nor an upload covers it. So:
+- a hash done after the last classify ended, with no upload in flight, is all critical, and the
+  last sample's hash is unless an upload covers it;
+- a hash done while another sample classifies, or while an upload is in flight, is not;
+- with one lane under a serial upload mode, the lane is idle and nothing is uploading while it
+  hashes (the upload follows the hash in the same shell), so each hash is critical.
 
 **The net rule.** Each node writes one `lad-net` line, streamed and the only line of
 `out/lad-net.jsonl`:
@@ -348,10 +361,14 @@ The node end is its `instance.terminated_at`. Gross wall is the same expression 
 subtraction.
 
 **Bounds:**
-- Exact for one lane, the engine, and O5.
-- An **upper bound** on the true net wall under a serial upload mode with several lanes. There, a
-  hash covered by another lane's classify span still holds up its own lane, so less is
-  subtracted than the hashes cost.
+- **Exact** for the per-sample path with one lane (serial or overlap upload), for O5, and for the
+  engine at N = 1.
+- **Conservative: an upper bound on the true net wall** in two cases, both subtracting less than
+  the hashes cost:
+  - the engine at N > 1, where a node's hash can hold up the fleet while only its own classify
+    span is counted as covering;
+  - a serial upload mode with several lanes, where a hash covered by another lane's classify span
+    still holds up its own lane.
 
 `phases.s5-identity` is each sample's share of `identity` and is already inside `identity_s`.
 

@@ -380,6 +380,17 @@ def _values(rows, r, cohort, res):
     return out, bad
 
 
+def notrun_resolution_warnings(rows, res):
+    """Warnings for resolution rows given for a rung at a cohort where it is not run: at such a
+    cohort its tokens resolve to its predecessor's values, so the row is never used."""
+    names, out = by_name(rows), []
+    for (o, c, k), (v, src) in sorted(res.items()):
+        r = names.get(o)
+        if r is not None and not_run_at(r, c):
+            out.append("ladder.resolved.tsv: %s at c%s (%s=%s, from %s) is ignored: %s" % (o, c, k, v, src, not_run_at(r, c)))
+    return out
+
+
 def resolve(rows, rung, cohort, resolved=None, root=ROOT):
     """{'params': {K: v}, 'instance', 'az', 'ttl_c1', 'arm', 'want_n'}; raises Unresolved. After
     resolving, the one-lever rule is checked again on the resolved values against the resolved
@@ -561,8 +572,12 @@ def _params_main(a):
         print("ladder_levers: the table fails its check:\n  " + "\n  ".join(probs), file=sys.stderr)
         return 1
     try:
+        for w in notrun_resolution_warnings(rows, read_resolved(resd)):
+            print("ladder_levers: warning: %s" % w, file=sys.stderr)
         res = resolve(rows, rung, int(cohort), resd)
-    except Unresolved as e:
+    except (Unresolved, ValueError) as e:
+        # A bad resolution (an alias winner outside alias_of, a source that is not a run dir, ...)
+        # is a refusal like any other, not a traceback.
         print("ladder_levers: refused: %s" % e, file=sys.stderr)
         return 3
     if mem is not None:
@@ -699,8 +714,26 @@ def _self_test():
             raise AssertionError("an alias winner outside alias_of was accepted")
         except ValueError as e:
             assert "is not one of its alias_of" in str(e), e
+        # A row for a cohort where the rung is not run is warned about (it is never used).
+        w = notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "1", "THREADS", "8", src), ("S4", "1", "PROCS", "vcpus/8", src)]), root))
+        assert len(w) == 2 and all("S4 at c1" in x and "ignored" in x for x in w), w
+        assert notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "10", "THREADS", "8", src), ("S4", "10", "PROCS", "vcpus/8", src)]), root)) == []
     finally:
         shutil.rmtree(root)
+    # The command line refuses a bad alias winner cleanly (exit 3, a message), never a traceback.
+    import contextlib
+    import io
+    real = "results/g3/20261009-060042-b6e1265/tables/phases.tsv"   # a committed run dir's file
+    if os.path.exists(os.path.join(ROOT, real)):
+        with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
+            f.write("origin\tcohort\tkey\tvalue\tsource\nSstar-time\t1\talias\tS4\t%s\n" % real)
+        err = io.StringIO()
+        try:
+            with contextlib.redirect_stderr(err):
+                rc = main(["params", "O0", "1", "--resolved", f.name])
+        finally:
+            os.unlink(f.name)
+        assert rc == 3 and "refused" in err.getvalue() and "not one of its alias_of" in err.getvalue(), (rc, err.getvalue())
     t = _copy(rows)
     by_name(t)["S4"]["select"] = ""
     assert any("S4: makes a @select:S4 selection without a select rule" in p for p in check(t)), check(t)

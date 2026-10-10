@@ -329,7 +329,7 @@ lad_enq() {
     | (map(select(.kind == "upload" and .local == $l)) | last) as $u
     | "\($e.sha256 // "-") \($e.sha256_seconds // 0) \(if $u == null then "-" else ($u.t_end - $u.t_start) end) \($e.t // 0)"' "$LV_REC" 2> /dev/null
 }
-NDONE=0; NFB=0; FAIL=0; PENDING=(); DONEJ=()
+NDONE=0; NFB=0; FAIL=0; PENDING=(); DONEJ=(); UPENQ_T=()
 ID_S=0; SHAGET_S=0; SHACRIT_S=0   # the node's measurement-only seconds (lad-net)
 # lad_finish J RC T0 T1 LANE SRC [ENGINE_JSON]: enqueue sample J's outputs (lv_upload_enqueue
 # computes and records their sha256 first) and stream its lad-sample line. Under sdk-stream the
@@ -346,6 +346,7 @@ lad_finish() {
     [ -f "$OUTD/$s/$f" ] || continue
     lv_upload_enqueue "$OUTD/$s/$f" "$OUTURL/$s/$f" || FAIL=1
     read -r sha ss us te <<< "$(lad_enq "$OUTD/$s/$f")"
+    UPENQ_T+=("$te")   # the upload's enqueue time, by sequence (lad_crit's in-flight span)
     sh=$(awk -v a="$sh" -v b="$ss" 'BEGIN{printf "%.3f", a + b}')
     hiv="$hiv $(awk -v t="$te" -v d="$ss" 'BEGIN{printf "%.3f %.3f", t - d, t}')"
     [ "$us" != - ] && { up=$(awk -v a="$up" -v b="$us" 'BEGIN{printf "%.3f", a + b}'); upd=1; }
@@ -361,9 +362,10 @@ lad_finish() {
 # classify span on this node covers. Spans: per-sample path, each sample's [start, end] (start
 # from $SD/start, end from $SD/done; a sample still running covers up to now); engine, the
 # engine's classify phase, up to its exit. A hash done after the last classify ended (the tail)
-# is all critical; one done while another sample classifies is not. With one lane under a serial
-# upload mode the lane is idle while it hashes, so its hash is critical; with several such lanes
-# another lane's span can cover a hash that delays its own lane (net is then an upper bound).
+# is all critical; one done while another sample classifies, or while an upload is in flight, is
+# not. With one lane under a serial upload mode the lane is idle while it hashes, so its hash is
+# critical; with several such lanes another lane's span can cover a hash that delays its own lane,
+# and on the engine at N > 1 a peer's work is not a span here (net is then an upper bound).
 lad_crit() {
   local f j a b p alive=0
   {
@@ -378,6 +380,21 @@ lad_crit() {
         b=9e18; [ -e "$SD/done/$j" ] && read -r _ _ b _ < "$SD/done/$j"
         echo "S $a $b"
       done
+    fi
+    # Uploads cover too (NB1): a hash is critical only if neither a classify span nor an upload in
+    # flight covers it, since the node's end waits for the upload lane either way. Done uploads are
+    # rows of lever.sh's uploads.tsv (t_start, t_end); the one in flight, in an overlap session,
+    # started at the later of the last row's end and its own enqueue (to the lane's 0.2 s poll).
+    if [ -n "${LV_UP_TSV:-}" ] && [ -f "$LV_UP_TSV" ]; then
+      awk -F'\t' -v t0="${LV_UP_T0:-0}" 'NR > 1 && $7 >= t0 {print "S", $8, $9}' "$LV_UP_TSV"
+      if [ "${LV_UP_LANE:-0}" = 1 ] && [ -n "${LV_UP_PID:-}" ] && kill -0 "$LV_UP_PID" 2> /dev/null; then
+        local done_n last
+        done_n=$(awk -F'\t' -v t0="${LV_UP_T0:-0}" 'NR > 1 && $7 >= t0' "$LV_UP_TSV" | wc -l | tr -d ' ')
+        last=$(awk -F'\t' -v t0="${LV_UP_T0:-0}" 'NR > 1 && $7 >= t0 && $9 > m {m = $9} END {print m + 0}' "$LV_UP_TSV")
+        if [ "${LV_UP_N:-0}" -gt "$done_n" ] && [ "${#UPENQ_T[@]}" -gt "$done_n" ]; then
+          echo "S $(awk -v a="$last" -v b="${UPENQ_T[$done_n]}" 'BEGIN{printf "%.3f", (a > b ? a : b)}') 9e18"
+        fi
+      fi
     fi
   } | awk '$1 == "H" { for (i = 2; i < NF; i += 2) { n++; h0[n] = $i; h1[n] = $(i+1) } next }
            $1 == "S" { m++; s0[m] = $2; s1[m] = $3 }

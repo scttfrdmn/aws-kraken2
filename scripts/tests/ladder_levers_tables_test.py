@@ -56,7 +56,8 @@ check("S3 is not run, and S4's run predecessor is S2a", lv["S3"]["not_run"].star
 check("rapidgzip from S5 on (S5, Sstar-cost), not before (S4)",
       lt.has_rapidgzip(lv, "S5") and lt.has_rapidgzip(lv, "Sstar-cost") and not lt.has_rapidgzip(lv, "S4"))
 check("S2d then S2c then S2a", lv["S2d"]["predecessor"] == "S2b-ii" and lv["S2c"]["predecessor"] == "S2d" and lv["S2c"]["lever"] == "IN_DEST" and lv["S2a"]["predecessor"] == "S2c")
-check("the S* endpoints are alias rows", all(lv[a].get("not_run", "") == "" for a in ALIASES))
+check("the S* endpoints are aliases (read natively by the tables)", all(lv[a].get("alias") and not lv[a].get("not_run") for a in ALIASES))
+check("S4 and S8 are not run at c1", all(1 in (lv[r].get("not_run_cohorts") or {}) for r in ("S4", "S8")))
 
 tmp = tempfile.mkdtemp(prefix="ak2-lvtables-")
 try:
@@ -64,27 +65,38 @@ try:
     os.makedirs(res)
     check("the generator on an empty record exits 0", quiet_main(["--results", res, "--levers", LEV, "--out", out]) == 0)
 
+    # Every rung that runs at c1 gets 2 runs, each rung 10 s faster than its run predecessor.
+    # Nothing stands in for the tables: S3 (not-run), S4 and S8 (not run at c1) and the alias
+    # endpoints get no runs. The aliases resolve through a real ladder.resolved.tsv: Sstar-time to
+    # Sstar-r8g, Sstar-cost to Sstar-r8gd, so the two ladder-2 chains start from different winners.
+    WIN = {"Sstar-time": "Sstar-r8g", "Sstar-cost": "Sstar-r8gd"}
     depth = {}
 
     def d(r):
         if r not in depth:
-            p, _ = lt.run_pred(lv, r)
-            depth[r] = 0 if not p else d(p) + 1
+            if r in WIN:
+                depth[r] = d(WIN[r])
+            else:
+                p, _ = lt.run_pred(lv, r, 1)
+                depth[r] = 0 if not p else d(p) + 1
         return depth[r]
 
     res, out, n = os.path.join(tmp, "synthetic"), os.path.join(tmp, "out1"), 0
     for r, x in lv.items():
-        if x.get("not_run"):
+        if x.get("not_run") or x.get("alias") or 1 in (x.get("not_run_cohorts") or {}):
             continue
         for rep in (1, 2):
             n += 1
-            # An alias endpoint (Sstar-time, Sstar-cost) has no runs of its own: its runs are its
-            # winner's. Until #52's tables map an alias to its resolved winner, the record stands
-            # in for that with runs equal to the winner's (here S9: its predecessor's depth).
-            wall = 2000 - 10 * (d(lv[r]["predecessor"]) if r in ALIASES else d(r)) + (0.5 if rep == 2 else 0)
+            wall = 2000 - 10 * d(r) + (0.5 if rep == 2 else 0)
             s = T.sample(x["arm"], r, s5="identical" if lt.has_rapidgzip(lv, r) else "n/a")
             T.single(res, "20261010-%06d-aaaaaaa" % n, x["arm"], r, rep, wall, start=n * 3000, samples=[s])
-    check("the synthetic record (%d runs) gives no DEFECT" % n, quiet_main(["--results", res, "--levers", LEV, "--out", out]) == 0)
+    resd = os.path.join(tmp, "ladder.resolved.tsv")
+    with open(resd, "w") as f:
+        f.write("origin\tcohort\tkey\tvalue\tsource\n")
+        for a, w in WIN.items():
+            f.write("%s\t1\talias\t%s\tresults/g3/synthetic/tables/rungs.tsv\n" % (a, w))
+    check("the synthetic record (%d runs; no runs for S3, S4 and S8 at c1, or the aliases) gives no DEFECT" % n,
+          quiet_main(["--results", res, "--levers", LEV, "--resolved", resd, "--out", out]) == 0)
     rows = list(csv.DictReader(open(os.path.join(out, "pairs.tsv")), delimiter="\t"))
     for fam, ax, src, tgt in (("time", "wall_s", "Sstar-time", "O5"), ("cost", "billed_usd", "Sstar-cost", "O5-cost")):
         rs = [r for r in rows if r["pair"] == "S* vs O*" and r["endpoint_axis"] == fam and r["axis"] == ax and r["cohort"] == "1"]
