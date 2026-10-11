@@ -227,6 +227,23 @@ try:
             ok = True
         check("a rule with %s is refused" % what, ok)
 
+    # 10b. N5: the rule's candidate list must be alias_of exactly (a rung named as a candidate but not in
+    # alias_of is refused, as is one in alias_of the rule does not name).
+    r9 = mkroot(W, C)
+    roots.append(r9)
+    lev9 = os.path.join(r9, "scripts", "g3", "ladder.levers.tsv")
+    txt = open(lev9).read()
+    old = LL.by_name(LL.load(lev9))["Sstar-time"]["select"]
+    with open(lev9, "w") as f:
+        f.write(txt.replace(old, old.replace("candidates: S9, Sstar-r8g, Sstar-r8gd;", "candidates: S9, S7b, Sstar-r8g, Sstar-r8gd;"), 1))
+    rc, out = sel(r9, "--rung", "Sstar-time")
+    check("N5: a rule naming a rung outside alias_of (S7b) is refused (exit 3)", rc == 3 and "not exactly its alias_of" in out
+          and "extra S7b" in out, (rc, out))
+    with open(lev9, "w") as f:
+        f.write(txt.replace(old, old.replace("candidates: S9, Sstar-r8g, Sstar-r8gd;", "candidates: S9, Sstar-r8g;"), 1))
+    rc, out = sel(r9, "--rung", "Sstar-time")
+    check("N5: a rule that leaves out an alias_of rung (Sstar-r8gd) is refused (exit 3)", rc == 3 and "missing Sstar-r8gd" in out, (rc, out))
+
     # 11. The rule changed since the selection: ladder_levers refuses the row, and so does ladder-select.
     r6 = mkroot(W, C)
     roots.append(r6)
@@ -289,7 +306,7 @@ try:
           "not selected: O3 at c1" in out and "O3-n2 has n = 0" in out, out)
     lev8 = os.path.join(r8, "scripts", "g3", "ladder.levers.tsv")
     o3 = LL.resolve(LL.load(lev8), "O3-n2", 1, resd(r8), r8)
-    check("O3-n2 at c1 is generated on O2's winner's type, N = 2", (o3["instance"], o3["want_n"]) == ("r8g.48xlarge", 2), o3)
+    check("O3-n2 at c1 is generated on the smallest type of O2's winning family (r8g) that holds table/2: r8g.24xlarge", (o3["instance"], o3["want_n"]) == ("r8g.24xlarge", 2), o3)
     try:
         LL.resolve(LL.load(lev8), "O3-cost-n2", 1, resd(r8), r8)
         ok = "generated"

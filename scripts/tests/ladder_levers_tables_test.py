@@ -144,6 +144,37 @@ try:
     check("S4 (an alias over candidate rungs) is not run at c1, and S5 is measured against S2a",
           any(r["rung"] == "S5" and r["predecessor"] == "S2a" and r["cohort"] == "1"
               for r in csv.DictReader(open(os.path.join(out, "deltas.tsv")), delimiter="\t")))
+    # N1: the tables verify an alias_cohorts pair before reading its target's runs. With S*-cost
+    # resolved to Sstar-r8gd instead, O0-cost (declared an alias of O0 at c1) is on another host:
+    # a DEFECT (levers), and O0-cost reads nothing.
+    resd2 = os.path.join(tmp, "ladder.resolved.false.tsv")
+    with open(resd2, "w") as f:
+        f.write("origin\tcohort\tkey\tvalue\tsource\n")
+        for a, w in dict(WIN, **{"Sstar-cost": "Sstar-r8gd"}).items():
+            f.write("%s\t1\talias\t%s\tresults/g3/synthetic/tables/rungs.tsv\n" % (a, w))
+    out2 = os.path.join(tmp, "out2")
+    err = io.StringIO()
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(err):
+        rc2 = lt.main(["--results", res_dir, "--levers", lev2, "--resolved", resd2, "--out", out2])
+    rr2 = {(r["rung"], r["axis"]): r for r in csv.DictReader(open(os.path.join(out2, "rungs.tsv")), delimiter="\t") if r["cohort"] == "1"}
+    check("N1: a declared alias_cohorts pair whose configurations differ is a DEFECT (levers) and is not read",
+          rc2 == 1 and "DEFECT (levers): ladder.levers.tsv: O0-cost at c1 is declared an alias of O0" in err.getvalue()
+          and rr2[("O0-cost", "wall_s")]["n"] == "0" and "does not verify" in rr2[("O0-cost", "wall_s")]["basis"])
+    # N2: ladder_levers.py check verifies any table it is given against --resolved (here with a real
+    # results/ source so the citation check passes): the same false declaration is a problem (exit 1).
+    src = "results/g3/fit26/manifest.json"
+    if os.path.exists(os.path.join(ROOT, src)):
+        resd3 = os.path.join(tmp, "ladder.resolved.check.tsv")
+        for name, sc, want in (("true", "Sstar-r8g", 0), ("false", "Sstar-r8gd", 1)):
+            with open(resd3, "w") as f:
+                f.write("origin\tcohort\tkey\tvalue\tsource\n")
+                for a, w in dict(WIN, **{"Sstar-cost": sc}).items():
+                    f.write("%s\t1\talias\t%s\t%s\n" % (a, w, src))
+            e3 = io.StringIO()
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(e3):
+                rc3 = LL.main(["check", lev2, "--resolved", resd3])
+            check("N2: ladder_levers check <a given table> --resolved verifies its alias_cohorts (%s declarations: exit %d)" % (name, want),
+                  rc3 == want and (want == 0 or "O0-cost at c1 is declared an alias of O0" in e3.getvalue()))
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 print("ladder_levers_tables_test: %d failure(s)" % NF)

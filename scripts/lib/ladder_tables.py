@@ -258,6 +258,48 @@ def cite_problem(cites, rd, repo):
     return ""
 
 
+def alias_cohort_checks(levers_path, resolved_path, levers):
+    """((rung, cohort) -> why the alias_cohorts pair does not verify, or ''), DEFECTs): each
+    declaration is checked by the generator's own rule (ladder_levers.alias_cohort_problems, on
+    the lever table's resolved values under ladder.resolved.tsv's rows) before its target's runs
+    are read. A pair whose configurations differ is a DEFECT (levers); one that cannot be resolved
+    is not verified. Either way the rung reads no runs there."""
+    out, defects = {}, []
+    pairs = [(r, c, t) for r, lv in sorted(levers.items()) for c, t in sorted((lv.get("alias_cohorts") or {}).items())]
+    if not pairs:
+        return out, defects
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import ladder_levers as LL
+        rows = LL.load(levers_path)
+        res = {}
+        if resolved_path and os.path.exists(resolved_path):
+            for f in LL.resolved_rows(resolved_path):
+                res[(f.get("origin", ""), (f.get("cohort") or "").lstrip("c"), f.get("key", ""))] = (f.get("value", ""), f.get("source", ""))
+        names = LL.by_name(rows)
+    except (ValueError, OSError, KeyError) as e:
+        for r, c, t in pairs:
+            out[(r, c)] = f"not verified: the lever table cannot be resolved ({e})"
+        return out, defects
+    for r, c, t in pairs:
+        try:
+            a, abad = LL._values(rows, names[r], c, res)
+            b, bbad = LL._values(rows, names[t], c, res)
+        except (ValueError, KeyError) as e:
+            out[(r, c)] = f"not verified: {e}"
+            continue
+        if abad or bbad:
+            out[(r, c)] = f"not verified: unresolved at c{c} ({', '.join(abad + bbad)})"
+        elif not LL.same_config(a, b):
+            diff = [k for k in LL.KEYS + ["instance"] if a[k] != b[k]]
+            out[(r, c)] = f"its configuration differs from {t}'s in {','.join(diff)}"
+            defects.append(("levers", f"ladder.levers.tsv: {r} at c{c} is declared an alias of {t} (alias_cohorts), but their "
+                                      f"configurations differ in {','.join(diff)}"))
+        else:
+            out[(r, c)] = ""
+    return out, defects
+
+
 def load_resolved(path, rd, levers, repo=ROOT):
     """((alias rung, cohort) -> (winner or None, note), errors), from ladder.resolved.tsv rows with
     key `alias` (columns origin, cohort, key, value, source, and cites when make ladder-select wrote
@@ -1034,8 +1076,10 @@ class Groups:
     """The runs entering the attribution, by (rung, cohort), and the cold endpoint runs by
     (tag, rung, cohort); modelled values fill a (rung, cohort, axis) with no measured run."""
 
-    def __init__(self, runs, levers, modelled, emap, notes, resolved=None):
+    def __init__(self, runs, levers, modelled, emap, notes, resolved=None, pair_checks=None):
         self.levers, self.modelled, self.resolved = levers, modelled, resolved or {}
+        # (rung, cohort) -> '' when its alias_cohorts pair verified, else why not (alias_cohort_checks).
+        self.pair_checks = pair_checks or {}
         self.g, self.e = {}, {}
         for r in runs:
             if r["exclude"]:
@@ -1069,6 +1113,9 @@ class Groups:
             seen.append(r)
             if cohort in (lv.get("alias_cohorts") or {}):
                 t = lv["alias_cohorts"][cohort]
+                why = self.pair_checks.get((r, cohort), "not verified")
+                if why:
+                    return None, f"alias unresolved: {r}'s alias_cohorts pair with {t} at c{cohort} does not verify: {why}"
                 notes.append(f"alias: same configuration as {t} at c{cohort} (alias_cohorts)")
                 r = t
                 continue
@@ -1319,7 +1366,7 @@ def s5_findings(runs, levers):
     return out
 
 
-def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
+def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_checks=None):
     modelled = modelled or {}
     T, defects, notes = {}, [], []
     emap, eerr = declared_endpoints(levers)
@@ -1335,7 +1382,7 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
                 notes.append(f"gz_warning: {r['run_id']} {s.get('accession')}: GNU gzip exited 2 (its warning: trailing data "
                              f"ignored, the output complete) on {', '.join(w)}; the input is kept, not an input defect")
     l1, det, s5rows, s5flags = law1(runs, levers, defects, notes)
-    G = Groups(runs, levers, modelled, emap, notes, resolved)
+    G = Groups(runs, levers, modelled, emap, notes, resolved, pair_checks)
 
     # 1. runs.tsv and tidy.tsv
     rh = ["run_id", "gate", "kind", "arm", "rung", "cohort", "rep", "run_kind", "endpoint", "state", "type", "nodes", "az",
@@ -1610,7 +1657,10 @@ def main(argv=None):
     if os.path.exists(spend_p):
         cs = {r.get("run") for r in csv.DictReader(rd.text(spend_p).splitlines(), delimiter="\t")}
     resolved, rerrs = load_resolved(a.resolved, rd, levers, os.path.dirname(os.path.abspath(a.results)))
-    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved)
+    pchk, pdef = alias_cohort_checks(a.levers, a.resolved, levers)
+    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved, pchk)
+    defects += pdef
+    notes += [f"{r} at c{c}: alias_cohorts pair not used: {why}" for (r, c), why in sorted(pchk.items()) if why]
     notes += [f"{r} at c{c}: {note}" for (r, c), (w, note) in sorted(resolved.items()) if w is None and "cites do not verify" in note]
     defects += [("modelled", f"refused: {x}") for x in refused] + [("resolved", x) for x in rerrs]
     if not levers:

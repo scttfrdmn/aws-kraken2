@@ -178,7 +178,9 @@ TIES = {"vCPUs", "processes", "nodes", "fleet vCPUs", "in flight"}
 
 
 def named(text, name):
-    return re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(name), text) is not None
+    """NAME appears in TEXT as a rung (a whole word, not in the possessive: "O2's family" names O2's
+    family, not O2 as a candidate)."""
+    return re.search(r"(?<![\w-])%s(?![\w-])(?!'s)" % re.escape(name), text) is not None
 
 
 def select_alias(rows, row, cohort, rungs, runs, man, root, res):
@@ -192,9 +194,12 @@ def select_alias(rows, row, cohort, rungs, runs, man, root, res):
     names = LL.by_name(rows)
     rule = parse_rule(row["select"])
     allc = [c for c in row["alias_of"].split("|") if c]
-    missing = [c for c in allc if not named(rule["candidates"], c)]
-    if missing:
-        raise Refused("%s: the rule's candidates do not name its alias_of %s" % (row["rung"], ", ".join(missing)))
+    # The rule's candidate list must be alias_of exactly: every rung it names as a candidate, and no other.
+    listed = [r["rung"] for r in rows if named(rule["candidates"], r["rung"])]
+    if set(listed) != set(allc):
+        raise Refused("%s: the rule's candidates (%s) are not exactly its alias_of (%s): missing %s, extra %s"
+                      % (row["rung"], ", ".join(listed), ", ".join(allc), ", ".join(c for c in allc if c not in listed) or "none",
+                         ", ".join(c for c in listed if c not in allc) or "none"))
     axis = rule["axis"]
     if axis.startswith("fit:"):
         raise Refused("%s: an alias selected by the #26 fit is not read here (the rule must give a measured axis)" % row["rung"])
