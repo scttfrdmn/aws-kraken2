@@ -264,23 +264,62 @@ def source_ok(src, root=ROOT):
     return "source %s is not inside a run or cohort dir (no manifest.json or cohort.json)" % src
 
 
+SHA_RE = re.compile(r"[0-9a-f]{64}")
+
+
+def cites_ok(cites, root=ROOT):
+    """A resolution's `cites` column (make ladder-select writes it): space-separated `path=sha256`,
+    each path a results/... file that exists and hashes to its sha256. '' if every one holds (or
+    there are none), else why not."""
+    import hashlib
+    for c in cites.split():
+        p, _, h = c.rpartition("=")
+        if not p or not SHA_RE.fullmatch(h):
+            return "cite %r is not path=<sha256>" % c
+        if not p.startswith("results/") or ".." in p.split("/"):
+            return "cite %s is not a results/... path" % p
+        full = os.path.join(root, p)
+        if not os.path.isfile(full):
+            return "cited %s does not exist" % p
+        with open(full, "rb") as f:
+            got = hashlib.sha256(f.read()).hexdigest()
+        if got != h:
+            return "cited %s has sha256 %s, not the cited %s (changed since the selection)" % (p, got, h)
+    return ""
+
+
+def resolved_rows(path):
+    """The rows of ladder.resolved.tsv as dicts, read by the header's column names (origin, cohort,
+    key, value, source, and the optional cites, margin and note that make ladder-select writes); a
+    file without a header row is read as the first five columns."""
+    rows, head = [], ["origin", "cohort", "key", "value", "source"]
+    with open(path) as f:
+        for l in f:
+            if l.startswith("#") or not l.strip():
+                continue
+            cells = l.rstrip("\n").split("\t")
+            if cells[0] == "origin":
+                head = cells
+                continue
+            rows.append(dict(zip(head, cells + [""] * max(0, len(head) - len(cells)))))
+    return rows
+
+
 def read_resolved(path, root=ROOT):
     """(origin, cohort, key) -> (value, source); an absent file: no resolutions. Every source must
-    pass source_ok; an S4 resolution must give THREADS or PROCS as a vcpus ratio (derived per host)."""
+    pass source_ok, and every cite (the `cites` column) cites_ok; an S4 resolution must give
+    THREADS or PROCS as a vcpus ratio (derived per host)."""
     out = {}
     if not path or not os.path.exists(path):
         return out
-    with open(path) as f:
-        for l in f:
-            if l.startswith("#") or not l.strip() or l.startswith("origin\t"):
-                continue
-            o, c, k, v, src = (l.rstrip("\n").split("\t") + [""] * 5)[:5]
-            if not src.strip():
-                raise ValueError("%s: resolution %s/%s/%s has no source (a results/ path)" % (path, o, c, k))
-            why = source_ok(src, root)
-            if why:
-                raise ValueError("%s: resolution %s/%s/%s: %s" % (path, o, c, k, why))
-            out[(o, c, k)] = (v, src)
+    for r in resolved_rows(path):
+        o, c, k, v, src = (r.get(x, "") for x in ("origin", "cohort", "key", "value", "source"))
+        if not src.strip():
+            raise ValueError("%s: resolution %s/%s/%s has no source (a results/ path)" % (path, o, c, k))
+        why = source_ok(src, root) or cites_ok(r.get("cites", ""), root)
+        if why:
+            raise ValueError("%s: resolution %s/%s/%s: %s" % (path, o, c, k, why))
+        out[(o, c, k)] = (v, src)
     for (o, c, k) in list(out):
         if o == "S4" and k in ("THREADS", "PROCS"):
             t, pr = out.get(("S4", c, "THREADS"), ("", ""))[0], out.get(("S4", c, "PROCS"), ("", ""))[0]
@@ -766,6 +805,20 @@ def _self_test():
                 raise AssertionError("accepted: %s" % lines)
             except ValueError as e:
                 assert want in str(e), (want, e)
+        # The cites column (make ladder-select): each path=sha256 must exist under results/ and hash to it.
+        import hashlib
+        h = hashlib.sha256(b"x\n").hexdigest()
+        p = os.path.join(root, "res7.tsv")
+        for cite, want in (("%s=%s" % (src, h), None), ("%s=%s" % (src, "0" * 64), "changed since the selection"),
+                           ("results/g3/run1/nope=%s" % h, "does not exist"), ("%s" % src, "not path=<sha256>"),
+                           ("scripts/x=%s" % h, "not a results/")):
+            with open(p, "w") as f:
+                f.write("origin\tcohort\tkey\tvalue\tsource\tcites\tmargin\tnote\n"
+                        "Sstar-time\t1\talias\tS9\t%s\t%s\tresolved\tn\n" % (src, cite))
+            try:
+                assert read_resolved(p, root)[("Sstar-time", "1", "alias")][0] == "S9" and want is None, (cite, want)
+            except ValueError as e:
+                assert want and want in str(e), (want, e)
         # On values, not text: THREADS=96, PROCS=vcpus/96 is 96 threads x 1 process on x8g.24xlarge,
         # which is S2a's THREADS=vcpus, PROCS=1: identical to the predecessor, so refused.
         try:
