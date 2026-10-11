@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-stream-test
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-stream-test rehearse-ladder
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -153,7 +153,15 @@ rehearse: util-stream-test
 	  runs/g3-u2-*) scripts/lib/u2_rehearse.sh $(SPEC) ;; \
 	  runs/g3-diag44-*) scripts/lib/diag44_rehearse.sh $(SPEC) ;; \
 	  runs/g3-probe-*) scripts/lib/probe_rehearse.sh $(SPEC) ;; \
+	  runs/g3-l-*) scripts/lib/ladder_rehearse.sh spec $(SPEC) ;; \
 	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
+
+# #53: the ladder body end to end on AL2023 aarch64 nodes (rootful podman), every arm, S5 with
+# real rapidgzip, the negative tests, phases and net accounting, the resolver, every committed c1
+# spec and make g3-ladder on their record, a TTL kill; each check with its negative control
+# (docs/ladder.md, "The rehearsal"). After make util-stream-test, as make rehearse.
+rehearse-ladder: util-stream-test
+	scripts/lib/ladder_rehearse.sh all
 
 # Host tunes (docs/probes.md, "Host tunes"): scripts/g3/hosttune.sh on an AL2023 container (podman):
 # ht_apply none changes nothing, ht_record streams, a set that cannot be written fails loudly.

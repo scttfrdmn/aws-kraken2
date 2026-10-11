@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The ladder rehearsal (#53; docs/ladder.md, "The rehearsal"): `make rehearse-ladder`, and
+  `make rehearse SPEC=runs/g3-l-*` for one committed c1 spec, both after `make util-stream-test`
+  (`scripts/lib/ladder_rehearse.sh`, `scripts/lib/ladder_rehearse_check.py`).
+  - The ladder body runs end to end on AL2023 aarch64 containers (rootful podman: the VM's real
+    `drop_caches`, tmpfs mounts with `huge=`, the THP knobs), under the preamble as `bash -e -c`.
+    It clones and builds the committed tree on the node, and uses the viral database as RODA
+    and real read sets.
+  - It covers every arm:
+    - upstream with serial and overlap uploads, 1 and 2 lanes;
+    - ours-plain;
+    - the engine at K = 2 and at N = 2 over TCP;
+    - O5's sdk-stream emitter;
+    - S5 with real rapidgzip 0.14.5 on an input with trailing bytes and on a corrupt one;
+    - the negative tests;
+    - phases and net accounting, including a slow SETUP=overlap build and tail uploads lagging
+      the hashes;
+    - the resolver;
+    - every committed c1 spec, then `ladder_tables.py` on their record (0 DEFECTs, aliases
+      read as their winners);
+    - a TTL kill (KILL and TERM) mid-classify.
+  - Every on-node sha256 is checked against upstream at the pin. The Law 1, S5 fallback,
+    net-accounting, TTL and tables checks each fail under a planted defect.
+
 - The #25 ladder body, lever table and generator (#51, WP-7; docs/ladder.md).
   - `scripts/g3/ladder.body.sh`: one body for both arms of both ladders. The lever choices are
     a PARAMS block in the payload. The phases are the same on both arms, every run is cold
