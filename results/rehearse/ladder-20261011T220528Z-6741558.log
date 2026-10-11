@@ -1,0 +1,25 @@
+ladder-rehearse: mode only at 6741558 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-20261011T220528Z-6741558.log
+ladder-rehearse: disk at start: 95Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-68759 (10.157.101.0/24); infra 10.157.101.2: hash.k2d at http://10.157.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.157.101.2:8003
+ladder-rehearse: ---- resolver (5)
+ok   resolver: a resolution with no citation is refused (exit 3: ladder_levers: refused: /Users/scttfrdmn/.ak2-ladreh.7lxIlu/resolver/nosource.tsv: resolution S4/10/alias has no source )
+ok   resolver: an alias winner not run at the cohort (S4-t8: 12 processes > c10) is refused (exit 3: ladder_levers: refused: alias S4 at cohort 10: winner S4-t8 is not a candidate there (not-run at c10: P = 96/8 = 12 processes > cohort 10))
+ok   resolver: positive control: S4 at c10 resolved to its candidate S4-t12 (12 x 8 on 96 vCPUs) reaches S5 (exit 0)
+ok   resolver: an alias winner outside alias_of is refused (exit 3: ladder_levers: refused: alias Sstar-time at cohort 1: winner S7b is not one of its alias_of (S9, Sstar-r8g, Sstar-r8gd))
+ok   resolver: S4 is not run at c1 (exit 3: ladder_levers: refused: S4 is not-run at c1: the only candidate (P <= cohort, so P = 1 and T = vcpus) is S2a's)
+ok   resolver: S8 is not run at c1 (exit 3: ladder_levers: refused: S8 is not-run at c1: the only candidate (K <= cohort, so K = 1) is S7b's own configura)
+ok   resolver: at c1, S5 inherits S4's tokens as S2a's values (THREADS=vcpus; PROCS=1)
+ok   resolver: at c1, S9 inherits S8's K as S7b's (REPLICAS=1)
+ok   resolver: a resolution row for S4 at c1 (not run there) is ignored with a warning; S5 is unchanged (exit 0)
+ok   resolver: the 18 committed c1 specs' parameter blocks are the resolver's
+ladder-rehearse: disk: 95Gi free
+ladder-rehearse: summary (only at 6741558):
+item | case                       | what                                                       | checks |   failed | result
+5    | resolver                   | the generator's resolver refusals and c1 fallbacks         |  10 ok |   0 FAIL | PASS
+ladder-rehearse: disk at end: 95Gi free
+ladder-rehearse: ok (1 cases)

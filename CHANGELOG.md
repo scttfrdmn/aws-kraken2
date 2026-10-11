@@ -9,6 +9,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Candidate rungs for every selection** (docs/ladder.md, "Candidate rungs"). S4, S8, O2,
+  O2-cost, O3 and O3-cost are aliases over candidate rungs named `<rung>-<short value>`. Each
+  candidate changes only its selecting rung's key-group, the predecessor counts as a candidate, and
+  `not_run_cohorts` handles cohort-dependent sets. The candidates are:
+  - `S4-t48` … `S4-t1` (P × T on x8g.24xlarge, P ≤ cohort);
+  - `S8-k2` (the X quota holds 2 nodes);
+  - `O2-r8g` and `O2-x8g`, and their `-cost` copies: one per family, its smallest type holding the
+    table at N = 1;
+  - `O3-n2` … `O3-n32`, and their `-cost` copies.
+
+  O3's rule now selects by measured median (wall_s, or billed_usd for O3-cost) over candidates
+  bracketed per cohort around fit R's prediction for O2's type. The bracket widens to every
+  candidate where the prediction is not within data.
+
+  `@select:<alias>[:KEY]` resolves any key to the winner's value. A winner that is not a candidate
+  at the cohort is refused. The table goes from 36 to 62 rows.
+- **`alias_cohorts`** (ladder.levers.tsv, ladder_levers.py, ladder_tables.py). At a cohort where a
+  cost-chain rung's resolved configuration equals its time counterpart's, it is `alias: same
+  configuration as <rung> at c<C>` and reads that rung's runs. At c1 this covers O0-cost → O0,
+  O0b-cost → O0b and O2-cost-r8g → O2-r8g. The generator refuses an aliased rung, a declaration
+  whose two rungs differ, and an undeclared coincidence. `make ladder-check` verifies the
+  declarations against the committed `ladder.resolved.tsv`.
+- **`not_run_cohorts` c1** for O1, O1-cost, O4b and O4b-cost. Each one's only c1 candidate is its
+  predecessor's configuration.
+- **c1 O-arm specs:** `runs/g3-l-o0-c1.json`, `runs/g3-l-o0b-c1.json` and `runs/g3-l-o2-r8g-c1.json`.
+- **Review items from ladder-select:**
+  - `parse_rule` refuses duplicate axis and ties clauses.
+  - `ladder_levers` refuses a resolution whose note's rule sha256 no longer matches the rule text.
+  - `ladder_tables.load_resolved` checks cites, and a row whose cites fail leaves the alias
+    unresolved, with a note.
+  - There is a stub test of the missing-summary-line refusal (`AK2_SELECT_TABLES` seam).
+- **`make ladder-select` without `RUNG=`** writes every rule that selects and lists the others as
+  `not selected`. With `RUNG=` it is all or nothing.
+
 - Ladder selection (docs/ladder.md, "Selection"): `make ladder-select COHORT=<c> [RUNG=…]
   [DRY_RUN=1]` (`scripts/g3/ladder-select.sh`, `scripts/lib/ladder_select.py`), and its stub
   test `make ladder-select-test` (in `make test`).
@@ -781,6 +815,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `scripts/lib/abort_uploads.sh` (#25).
 
 ### Changed
+
+- `ladder_tables.py`'s successor-phase contract check skips successors that are not run at the
+  run's cohort. The c1 record's DEFECTs on the refused S2a launch drop from 5 to 3.
+- The rehearsal's resolver case uses the alias model (S4 → S4-t12 at c10).
 
 - Classification speed (#39, #36). `mmscan.Scanner.AppendMinimizers` runs the scanner loop over
   a whole sequence with its state in locals, and `classify.Tokens.Scan` uses it, with

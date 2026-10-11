@@ -708,15 +708,15 @@ case_resolver() {
   res() { local f=$1; shift; printf 'origin\tcohort\tkey\tvalue\tsource\n' > "$R/$f.tsv"; for l in "$@"; do printf '%s\n' "$l" >> "$R/$f.tsv"; done; }
   chk() { if [ "$2" = 0 ]; then echo "ok   $c: $1"; else echo "FAIL $c: $1"; rc=1; fi; }
   lp() { python3 scripts/lib/ladder_levers.py params "$@"; }
-  res nosource $'S4\t10\tTHREADS\tvcpus/8\t' $'S4\t10\tPROCS\t8\t'
+  res nosource $'S4\t10\talias\tS4-t12\t'
   out=$(lp S5 10 --resolved "$R/nosource.tsv" 2>&1); r=$?
   [ "$r" = 3 ] && grep -q 'refused: .*has no source' <<< "$out"; chk "a resolution with no citation is refused (exit $r: $(tail -1 <<< "$out" | cut -c1-120))" $?
-  res same "S4"$'\t'"10"$'\tTHREADS\t96\t'"$src" "S4"$'\t'"10"$'\tPROCS\tvcpus/96\t'"$src"
-  out=$(lp S4 10 --resolved "$R/same.tsv" 2>&1); r=$?
-  [ "$r" = 3 ] && grep -q 'identical to S2a' <<< "$out"; chk "a resolution identical by value to its predecessor (THREADS=96 PROCS=vcpus/96 = S2a's vcpus/1 on x8g.24xlarge) is refused (exit $r: $(tail -1 <<< "$out" | cut -c1-140))" $?
-  res good "S4"$'\t'"10"$'\tTHREADS\t12\t'"$src" "S4"$'\t'"10"$'\tPROCS\tvcpus/12\t'"$src"
-  out=$(lp S4 10 --resolved "$R/good.tsv" 2>&1); r=$?
-  [ "$r" = 0 ] && grep -q 'THREADS=12; PROCS=vcpus/12' <<< "$out"; chk "positive control: a real one-lever resolution of S4 at c10 (12 x 8 on 96 vCPUs) is accepted (exit $r)" $?
+  res same "S4"$'\t'"10"$'\talias\tS4-t8\t'"$src"
+  out=$(lp S5 10 --resolved "$R/same.tsv" 2>&1); r=$?
+  [ "$r" = 3 ] && grep -q 'winner S4-t8 is not a candidate there' <<< "$out"; chk "an alias winner not run at the cohort (S4-t8: 12 processes > c10) is refused (exit $r: $(tail -1 <<< "$out" | cut -c1-140))" $?
+  res good "S4"$'\t'"10"$'\talias\tS4-t12\t'"$src"
+  out=$(lp S5 10 --resolved "$R/good.tsv" 2>&1); r=$?
+  [ "$r" = 0 ] && grep -q 'THREADS=12; PROCS=vcpus/12' <<< "$out"; chk "positive control: S4 at c10 resolved to its candidate S4-t12 (12 x 8 on 96 vCPUs) reaches S5 (exit $r)" $?
   res alias "Sstar-time"$'\t'"1"$'\talias\tS7b\t'"$src"
   out=$(lp O0 1 --resolved "$R/alias.tsv" 2>&1); r=$?
   [ "$r" = 3 ] && grep -q 'winner S7b is not one of its alias_of' <<< "$out"; chk "an alias winner outside alias_of is refused (exit $r: $(tail -1 <<< "$out" | cut -c1-120))" $?
@@ -731,7 +731,7 @@ case_resolver() {
   p9=$(lp S9 1 | sed -n "s/^PARAMS='\(.*\)'$/\1/p"); p7b=$(lp S7b 1 | sed -n "s/^PARAMS='\(.*\)'$/\1/p")
   [ -n "$p9" ] && [ "$(grep -o 'REPLICAS=[^;]*' <<< "$p9")" = "$(grep -o 'REPLICAS=[^;]*' <<< "$p7b")" ]
   chk "at c1, S9 inherits S8's K as S7b's ($(grep -o 'REPLICAS=[^;]*' <<< "$p9"))" $?
-  res notrun "S4"$'\t'"1"$'\tTHREADS\t12\t'"$src" "S4"$'\t'"1"$'\tPROCS\tvcpus/12\t'"$src"
+  res notrun "S4"$'\t'"1"$'\talias\tS4-t12\t'"$src"
   out=$(lp S5 1 --resolved "$R/notrun.tsv" 2>&1); r=$?
   [ "$r" = 0 ] && grep -q 'warning: .*S4 at c1.*is ignored' <<< "$out" && [ "$(sed -n "s/^PARAMS='\(.*\)'$/\1/p" <<< "$out")" = "$p5" ]
   chk "a resolution row for S4 at c1 (not run there) is ignored with a warning; S5 is unchanged (exit $r)" $?
@@ -742,7 +742,7 @@ case_resolver() {
     want=$(lp "$(sed -n 's/^RUNG=\([^;]*\);.*/\1/p' <<< "$line")" 1 | sed -n "s/^PARAMS='\(.*\)'$/\1/p")
     n=$((n + 1)); [ "$line" = "$want" ] || bad="$bad $s"
   done
-  [ -z "$bad" ] && [ "$n" = 15 ]; chk "the $n committed c1 specs' parameter blocks are the resolver's${bad:+ (not:$bad)}" $?
+  [ -z "$bad" ] && [ "$n" -gt 0 ] && [ "$n" = "$(git ls-files 'runs/g3-l-*-c1.json' | wc -l | tr -d ' ')" ]; chk "the $n committed c1 specs' parameter blocks are the resolver's${bad:+ (not:$bad)}" $?
   return $rc
 }
 

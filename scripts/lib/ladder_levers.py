@@ -49,7 +49,7 @@ GROUPS = ["CLASSIFIER", "THREADS+PROCS", "DB_STAGE", "DB_PLACE+DB_LOAD", "HOST_T
           "ETAG_CHECK", "HOST"]
 GROUP = {k: g for g in GROUPS for k in g.split("+")}
 GROUP["instance"] = "HOST"
-COLS = ["rung", "arm", "status", "not_run_cohorts", "alias_of", "select", "derived", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
+COLS = ["rung", "arm", "status", "not_run_cohorts", "alias_cohorts", "alias_of", "select", "derived", "predecessor", "lever", "group", "coupled", "counterpart", "phase", "endpoint",
         "pred_wall_s", "pred_usd", "pred_phase_s", "instance", "az", "ttl_min_c1"] + KEYS + ["note"]
 LABELS = {"S0-T1": "stock", "S0-Tv": "threads", "S2c": "IN_DEST", "S3": "host-tunes", "S5": "rapidgzip"}   # lever labels #52's tables read; others: the group
 ENDPOINTS = {"S": ("S*-time", "S*-cost"), "O": ("O*-time", "O*-cost")}
@@ -129,9 +129,25 @@ def changed(rows, row, pred):
     return keys
 
 
+def candidates_of(rows):
+    """candidate rung -> the alias rung whose alias_of names it (the S* endpoints, and every selection's
+    candidate rungs)."""
+    return {c: r["rung"] for r in rows if r["status"].startswith("alias:") for c in r["alias_of"].split("|") if c}
+
+
+def alias_at(row, cohort):
+    """The rung whose runs ROW reads at COHORT (`alias_cohorts`: c<C>: <rung>), or ''."""
+    for d in [d.strip() for d in row.get("alias_cohorts", "").split(";") if d.strip()]:
+        c, _, t = d.partition(":")
+        if c.strip() == "c%s" % cohort:
+            return t.strip()
+    return ""
+
+
 def check(rows):
     probs = []
     names = by_name(rows)
+    candidate_of = candidates_of(rows)
     if len(names) != len(rows):
         probs.append("duplicate rung names")
     for r in rows:
@@ -165,12 +181,34 @@ def check(rows):
         for d in [d.strip() for d in r["not_run_cohorts"].split(";") if d.strip()]:
             if not re.fullmatch(r"c[1-9][0-9]*: .{8,}", d):
                 probs.append("%s: not_run_cohorts entry %r is not c<cohort>: <reason>" % (n, d))
-        if r["not_run_cohorts"] and not r["select"]:
-            probs.append("%s: not run at some cohorts, but it makes no selection there" % n)
+        # not_run_cohorts: a selecting rung, a selection's candidate, or a rung whose values derive
+        # from a selection (an @select token), each where its selection leaves its predecessor's configuration.
+        derives = any(r[k].startswith("@select:") for k in KEYS) or r["instance"].startswith("@select:")
+        if r["not_run_cohorts"] and not (r["select"] or n in candidate_of or derives):
+            probs.append("%s: not run at some cohorts, but it makes, is or derives from no selection there" % n)
+        for d in [d.strip() for d in r.get("alias_cohorts", "").split(";") if d.strip()]:
+            m = re.fullmatch(r"c([1-9][0-9]*): (\S+)", d)
+            if not m:
+                probs.append("%s: alias_cohorts entry %r is not c<cohort>: <rung>" % (n, d))
+                continue
+            t = names.get(m.group(2))
+            if t is None or t["rung"] == n or t["arm"] != r["arm"] or t["status"].startswith("not-run"):
+                probs.append("%s: alias_cohorts c%s names %s, not another rung of arm %s that is run" % (n, m.group(1), m.group(2), r["arm"]))
+            if st != "run":
+                probs.append("%s: alias_cohorts on a rung whose status is %r (want run)" % (n, st))
+            if m.group(1) in [x.split(":")[0].strip().lstrip("c") for x in r["not_run_cohorts"].split(";") if x.strip()]:
+                probs.append("%s: c%s is both in not_run_cohorts and alias_cohorts" % (n, m.group(1)))
         if st.startswith("alias:"):
             cands = [c for c in r["alias_of"].split("|") if c]
-            if not cands or any(c not in names or names[c]["status"] != "run" for c in cands):
-                probs.append("%s: an alias needs alias_of naming run rungs (%r)" % (n, r["alias_of"]))
+            if not cands or any(c not in names or not (names[c]["status"] == "run" or names[c]["status"].startswith("alias:"))
+                                for c in cands):
+                probs.append("%s: an alias needs alias_of naming run or alias rungs (%r)" % (n, r["alias_of"]))
+            for c in cands:
+                if c in names and c != r["predecessor"] and names[c]["predecessor"] != r["predecessor"]:
+                    probs.append("%s: candidate %s's predecessor is %s, not the alias's predecessor %s"
+                                 % (n, c, names[c]["predecessor"], r["predecessor"]))
+                if c in names and c != r["predecessor"] and names[c]["group"] != r["group"]:
+                    probs.append("%s: candidate %s changes %s, not the alias's group %s" % (n, c, names[c]["group"], r["group"]))
             if not r["select"]:
                 probs.append("%s: an alias needs its select rule" % n)
         elif r["alias_of"]:
@@ -305,18 +343,29 @@ def resolved_rows(path):
     return rows
 
 
-def read_resolved(path, root=ROOT):
+def read_resolved(path, root=ROOT, rows=None):
     """(origin, cohort, key) -> (value, source); an absent file: no resolutions. Every source must
     pass source_ok, and every cite (the `cites` column) cites_ok; an S4 resolution must give
-    THREADS or PROCS as a vcpus ratio (derived per host)."""
+    THREADS or PROCS as a vcpus ratio (derived per host). With ROWS (the lever table), a row whose
+    note names its rule's sha256 (`rule sha256 <hex>`, as make ladder-select writes it) is refused
+    when the rung's select rule text no longer hashes to it: the rule changed since the selection."""
+    import hashlib
     out = {}
     if not path or not os.path.exists(path):
         return out
+    names = by_name(rows) if rows else {}
     for r in resolved_rows(path):
         o, c, k, v, src = (r.get(x, "") for x in ("origin", "cohort", "key", "value", "source"))
         if not src.strip():
             raise ValueError("%s: resolution %s/%s/%s has no source (a results/ path)" % (path, o, c, k))
         why = source_ok(src, root) or cites_ok(r.get("cites", ""), root)
+        m = re.search(r"\brule sha256 ([0-9a-f]{64})\b", r.get("note", ""))
+        if not why and m and names:
+            if o not in names:
+                why = "its rung %s is not in the lever table" % o
+            elif hashlib.sha256(names[o]["select"].encode()).hexdigest() != m.group(1):
+                why = ("its rule sha256 %s is not that of %s's select rule now (%s): the rule changed since the selection"
+                       % (m.group(1), o, hashlib.sha256(names[o]["select"].encode()).hexdigest()))
         if why:
             raise ValueError("%s: resolution %s/%s/%s: %s" % (path, o, c, k, why))
         out[(o, c, k)] = (v, src)
@@ -389,8 +438,48 @@ def same_value(k, a, ahost, b, bhost):
     return False
 
 
-def _values(rows, r, cohort, res):
-    """Every PARAM and the instance of row r at cohort under resolutions res: (values, unresolved)."""
+def alias_winner(rows, o, cohort, res):
+    """The winner of alias rung O at COHORT from RES, or None; ValueError if it is not one of its alias_of."""
+    a = res.get((o["rung"], str(cohort), "alias"))
+    if not a:
+        return None
+    cands = [c for c in o["alias_of"].split("|") if c]
+    if a[0] not in cands:
+        raise ValueError("alias %s at cohort %s: winner %s is not one of its alias_of (%s)"
+                         % (o["rung"], cohort, a[0], ", ".join(cands)))
+    w = by_name(rows).get(a[0])
+    if w is not None and a[0] != o["predecessor"] and not_run_at(w, cohort):
+        raise ValueError("alias %s at cohort %s: winner %s is not a candidate there (%s)" % (o["rung"], cohort, a[0], not_run_at(w, cohort)))
+    return a
+
+
+def config_row(rows, row, cohort, res, seen=None):
+    """The rung whose runs give ROW's configuration at COHORT: ROW itself or, following each in turn,
+    its run predecessor if it is not run there, its alias_cohorts target, or its alias winner (RES).
+    None if an alias on the way is unresolved."""
+    names, seen = by_name(rows), seen or []
+    if row is None or row["rung"] in seen:
+        return None
+    seen = seen + [row["rung"]]
+    if not_run_at(row, cohort):
+        return config_row(rows, run_pred_at(rows, row, cohort), cohort, res, seen)
+    t = alias_at(row, cohort)
+    if t:
+        return config_row(rows, names.get(t), cohort, res, seen)
+    if row["status"].startswith("alias:"):
+        a = alias_winner(rows, row, cohort, res)
+        return config_row(rows, names.get(a[0]), cohort, res, seen) if a else None
+    return row
+
+
+def _values(rows, r, cohort, res, depth=0):
+    """Every PARAM and the instance of row r at cohort under resolutions res: (values, unresolved).
+    A token @select:<origin>[:KEY] resolves, in this order: an origin not run at the cohort to its
+    run predecessor's value; an origin aliased there (alias_cohorts) to its target's; an alias origin
+    (status alias) to its winner's value of that key, the winner named in res; any other origin to
+    res's (origin, cohort, KEY) row."""
+    if depth > 40:
+        raise ValueError("%s: the @select tokens form a loop" % r["rung"])
     names = by_name(rows)
     bad, out = [], {}
     for k in KEYS + ["instance"]:
@@ -400,23 +489,25 @@ def _values(rows, r, cohort, res):
             hit = None
             if t:
                 o = names.get(t[0])
-                if k == "instance" and o is not None and o["status"].startswith("alias:"):
-                    a = res.get((t[0], str(cohort), "alias"))   # the alias's winner, then its host
-                    if a:
-                        cands = [c for c in o["alias_of"].split("|") if c]
-                        if a[0] not in cands:
-                            raise ValueError("alias %s at cohort %s: winner %s is not one of its alias_of (%s)"
-                                             % (t[0], cohort, a[0], ", ".join(cands)))
-                        hit = (instance_of(rows, names[a[0]]), a[1])
-                elif o is not None and not_run_at(o, cohort):
+                src, how = None, ""
+                if o is not None and not_run_at(o, cohort):
                     # Not run at this cohort: its selection has one candidate, its predecessor's value.
-                    q = run_pred_at(rows, o, cohort)
-                    if q is not None:
-                        qv, qbad = _values(rows, q, cohort, res)
-                        if not qbad:
-                            hit = (qv[t[1]], "not run at c%s: %s's value" % (cohort, q["rung"]))
+                    src = run_pred_at(rows, o, cohort)
+                    how = "not run at c%s: %s's value" % (cohort, src["rung"] if src else "-")
+                elif o is not None and alias_at(o, cohort):
+                    src, how = names.get(alias_at(o, cohort)), "alias at c%s of %s" % (cohort, alias_at(o, cohort))
+                elif o is not None and o["status"].startswith("alias:"):
+                    a = alias_winner(rows, o, cohort, res)   # the alias's winner, then its value of the key
+                    if a:
+                        src, how = names[a[0]], a[1]
                 else:
                     hit = res.get((t[0], str(cohort), t[1]))
+                if src is not None:
+                    if src is o:
+                        raise ValueError("%s: %s at cohort %s resolves to itself" % (r["rung"], o["rung"], cohort))
+                    sv, _ = _values(rows, src, cohort, res, depth + 1)
+                    if t[1] in sv:
+                        hit = (sv[t[1]], how)
             if hit is None:
                 bad.append("%s=%s" % (k, v))
                 continue
@@ -425,6 +516,85 @@ def _values(rows, r, cohort, res):
             bad.append("%s=%s (not a shell-safe word)" % (k, v))
         out[k] = v
     return out, bad
+
+
+def same_config(a, b):
+    """Two _values results describe one configuration (vcpus forms compared at each one's host)."""
+    if a["instance"] != b["instance"]:
+        return False
+    return all(same_value(k, a[k], a["instance"], b[k], b["instance"]) for k in KEYS)
+
+
+def time_counterpart(rows, rung):
+    """The time-chain rung of a cost-chain rung (its name without '-cost'), or None."""
+    if "-cost" not in rung:
+        return None
+    t = rung.replace("-cost", "", 1)
+    return t if t in by_name(rows) else None
+
+
+def alias_cohort_problems(rows, cohort, res):
+    """Each alias_cohorts declaration at COHORT must name a rung whose resolved configuration equals
+    the declaring rung's. One that cannot be resolved yet is not a problem here (the generator
+    refuses either rung until it is)."""
+    names, out = by_name(rows), []
+    for r in rows:
+        t = alias_at(r, cohort)
+        if not t or t not in names:
+            continue
+        a, abad = _values(rows, r, cohort, res)
+        b, bbad = _values(rows, names[t], cohort, res)
+        if abad or bbad:
+            continue
+        if not same_config(a, b):
+            diff = [k for k in KEYS + ["instance"] if a[k] != b[k]]
+            out.append("%s at c%s is declared an alias of %s (alias_cohorts), but their configurations differ in %s"
+                       % (r["rung"], cohort, t, ",".join(diff)))
+    return out
+
+
+def bracket(rows, alias_row, cohort, res, root=ROOT):
+    """For an alias whose select rule has a `bracket:` clause on the #26 fit ("... within a factor 2
+    of fit <F>'s time|cost-optimal N over {1, 2, ...} for ... type ..., widened to every candidate
+    where that prediction is extrapolated or the type has none"): (the candidate names inside the
+    bracket at COHORT, how, [cited files]). None if the rule has no bracket. Raises Unresolved while
+    the candidates' type is not resolved."""
+    m = re.search(r"bracket: .*?fit (\S+)'s (time|cost)-optimal N over \{([0-9, ]+)\}", alias_row["select"])
+    if not m:
+        return None
+    fit, obj, grid = m.group(1), m.group(2), [int(x) for x in m.group(3).split(",")]
+    names = by_name(rows)
+    cands = [c for c in alias_row["alias_of"].split("|") if c]
+    vals = {}
+    for c in cands:
+        v, bad = _values(rows, names[c], cohort, res)
+        if bad:
+            raise Unresolved("%s at c%s: candidate %s is unresolved (%s), so its bracket cannot be computed"
+                             % (alias_row["rung"], cohort, c, ", ".join(bad)))
+        vals[c] = v
+    types = {v["instance"] for v in vals.values()}
+    if len(types) != 1:
+        raise Unresolved("%s at c%s: its candidates are on more than one type (%s)" % (alias_row["rung"], cohort, ", ".join(sorted(types))))
+    itype = types.pop()
+    path = os.path.join("results", "g3", "fit26", "predictions.tsv")
+    full = os.path.join(root, path)
+    best = None
+    if os.path.isfile(full):
+        import csv
+        with open(full) as f:
+            for p in csv.DictReader(f, delimiter="\t"):
+                if p["fit"] == fit and p["type"] == itype and p["cohort"] == str(cohort) and int(p["N"]) in grid:
+                    y = float(p["T_pred_s"] if obj == "time" else p["usd_run_NpT"])
+                    if best is None or (y, int(p["N"])) < (best[0], best[1]):
+                        best = (y, int(p["N"]), p["status"])
+    cited = [path] if os.path.isfile(full) else []
+    if best is None:
+        return set(cands), "widened: fit %s has no %s prediction for %s at c%s" % (fit, obj, itype, cohort), cited
+    if best[2] != "within data":
+        return set(cands), "widened: fit %s's %s-optimal N for %s at c%s is %d, %s" % (fit, obj, itype, cohort, best[1], best[2]), cited
+    inside = {c for c in cands if best[1] / 2 <= int(vals[c]["SHARDS"]) <= 2 * best[1]}
+    return inside, "fit %s's %s-optimal N for %s at c%s is %d (within data): N in [%g, %d]" % (
+        fit, obj, itype, cohort, best[1], best[1] / 2, 2 * best[1]), cited
 
 
 def notrun_resolution_warnings(rows, res):
@@ -447,19 +617,38 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
     if rung not in names:
         raise KeyError("no rung %s in the table" % rung)
     r = names[rung]
-    if r["status"] != "run":
-        raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
     why = not_run_at(r, cohort)
     if why:
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, why))
-    res = read_resolved(resolved, root) if resolved is not None else {}
+    if r["status"] != "run":
+        raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
+    if alias_at(r, cohort):
+        raise Unresolved("%s is alias: same configuration as %s at c%s (alias_cohorts): no spec is generated for it; "
+                         "%s's runs are read" % (rung, alias_at(r, cohort), cohort, alias_at(r, cohort)))
+    res = read_resolved(resolved, root, rows) if resolved is not None else {}
+    probs = alias_cohort_problems(rows, cohort, res)
+    if probs:
+        raise Unresolved("; ".join(probs))
     out, bad = _values(rows, r, cohort, res)
     if bad:
         raise Unresolved("%s at cohort %s has unresolved values: %s" % (rung, cohort, ", ".join(bad)))
+    # The cost chain reads the time chain where the two coincide (alias_cohorts), so a cost rung
+    # equal to its time counterpart must be declared there, not run twice.
+    tc = time_counterpart(rows, rung)
+    if tc is not None and names[tc]["status"] == "run" and not not_run_at(names[tc], cohort) and not alias_at(names[tc], cohort):
+        tv, tbad = _values(rows, names[tc], cohort, res)
+        if not tbad and same_config(dict(out), tv):
+            raise Unresolved("%s at cohort %s has the configuration of its time counterpart %s: declare alias_cohorts "
+                             "'c%s: %s' (it reads %s's runs) instead of running it" % (rung, cohort, tc, cohort, tc, tc))
+    # A candidate outside its alias's bracket at this cohort (O3's N around the #26 fit) is not run.
+    al = candidates_of(rows).get(rung)
+    if al is not None:
+        b = bracket(rows, names[al], cohort, res, root)
+        if b is not None and rung not in b[0]:
+            raise Unresolved("%s at cohort %s is outside %s's bracket (%s): not a candidate there" % (rung, cohort, al, b[1]))
     p = run_pred_at(rows, r, cohort)
-    if p is not None and p["status"].startswith("alias:"):
-        a = res.get((p["rung"], str(cohort), "alias"))
-        p = names[a[0]] if a and a[0] in names else p
+    if p is not None and (p["status"].startswith("alias:") or alias_at(p, cohort)):
+        p = config_row(rows, p, cohort, res) or p
     if p is not None:
         pv, pbad = _values(rows, p, cohort, res)
         if pbad:
@@ -678,7 +867,7 @@ def _params_main(a):
         print("ladder_levers: the table fails its check:\n  " + "\n  ".join(probs), file=sys.stderr)
         return 1
     try:
-        for w in notrun_resolution_warnings(rows, read_resolved(resd)):
+        for w in notrun_resolution_warnings(rows, read_resolved(resd, ROOT, rows)):
             print("ladder_levers: warning: %s" % w, file=sys.stderr)
         res = resolve(rows, rung, int(cohort), resd)
     except (Unresolved, ValueError) as e:
@@ -774,17 +963,40 @@ def _self_test():
             f.write("origin\tcohort\tkey\tvalue\tsource\n" + "".join("\t".join(l) + "\n" for l in lines))
         return p
     try:
-        # c10: P = 12, T = 8 on x8g.24xlarge's 96 vCPUs, as the rule records it (THREADS=T, PROCS=vcpus/T).
-        good = resfile([("S4", "10", "THREADS", "8", src), ("S4", "10", "PROCS", "vcpus/8", src)])
-        assert resolve(rows, "S4", 10, good, root)["params"]["PROCS"] == "vcpus/8"
-        assert resolve(rows, "S5", 10, good, root)["params"]["PROCS"] == "vcpus/8"   # inherits S4's token
+        # S4 is an alias over candidate rungs (S2a, S4-t48 ... S4-t1). c10: the winner S4-t8 (T = 8,
+        # P = vcpus/8) would be refused there (P = 12 > 10), so take S4-t12 (P = 8); its THREADS and
+        # PROCS reach S5 through the alias (any key resolves to the winner's value).
+        good = resfile([("S4", "10", "alias", "S4-t12", src)])
+        try:
+            resolve(rows, "S4", 10, good, root)
+            raise AssertionError("the alias S4 was generated")
+        except Unresolved as e:
+            assert "alias:" in str(e), e
+        r5 = resolve(rows, "S5", 10, good, root)["params"]
+        assert (r5["THREADS"], r5["PROCS"]) == ("12", "vcpus/12"), r5   # inherits S4's winner's values
+        assert resolve(rows, "S4-t12", 10, good, root)["params"]["PROCS"] == "vcpus/12"
         assert vc("vcpus/8", vcpus_of("x8g.24xlarge")) == 12 and vc("vcpus/8", vcpus_of("r8g.48xlarge")) == 24
-        for rung, c in (("S4", 100), ("S8", 10)):
+        for rung, c in (("S4-t8", 10), ("S4-t48", 1), ("S8-k2", 1)):
             try:
                 resolve(rows, rung, c, good, root)
                 raise AssertionError("%s resolved at c%d" % (rung, c))
-            except Unresolved:
-                pass
+            except Unresolved as e:
+                assert "not-run at c%d" % c in str(e), e
+        try:   # S8's winner is not resolved at c10, so S9 is not determined there.
+            resolve(rows, "S9", 10, good, root)
+            raise AssertionError("S9 resolved at c10 without S8")
+        except Unresolved as e:
+            assert "REPLICAS=@select:S8" in str(e), e
+        r9 = resolve(rows, "S9", 10, resfile([("S4", "10", "alias", "S4-t12", src), ("S8", "10", "alias", "S8-k2", src)]), root)
+        assert (r9["params"]["REPLICAS"], r9["want_n"], r9["params"]["PROCS"]) == ("2", 2, "vcpus/12"), r9
+        # The alias's own predecessor is a candidate: S4 -> S2a at c10 makes S5 take S2a's values.
+        r5 = resolve(rows, "S5", 10, resfile([("S4", "10", "alias", "S2a", src)]), root)["params"]
+        assert (r5["THREADS"], r5["PROCS"]) == ("vcpus", "1"), r5
+        try:   # a winner that is not a candidate at the cohort (S4-t8: 12 processes > 10)
+            resolve(rows, "S5", 10, resfile([("S4", "10", "alias", "S4-t8", src)]), root)
+            raise AssertionError("a winner not run at c10 was accepted")
+        except ValueError as e:
+            assert "is not a candidate there" in str(e), e
         # c1: S4 and S8 are not run (one candidate each, their predecessor's configuration); their
         # tokens resolve to that predecessor's values, so S5 ... S9 are determined at c1.
         for rung in ("S4", "S8"):
@@ -792,16 +1004,16 @@ def _self_test():
                 resolve(rows, rung, 1, good, root)
                 raise AssertionError("%s resolved at c1" % rung)
             except Unresolved as e:
-                assert "not-run at c1" in str(e), e
+                assert "alias:" in str(e) or "not-run at c1" in str(e), e
         r5 = resolve(rows, "S5", 1, good, root)["params"]
         assert (r5["THREADS"], r5["PROCS"]) == ("vcpus", "1"), r5
         assert resolve(rows, "S9", 1, good, root)["params"]["REPLICAS"] == "1"
-        for lines, want in (([("S4", "10", "THREADS", "8", "results/g3/nope.tsv"), ("S4", "10", "PROCS", "vcpus/8", src)], "does not exist"),
-                            ([("S4", "10", "THREADS", "8", "results/loose/pxt.tsv"), ("S4", "10", "PROCS", "vcpus/8", src)], "not inside a run"),
-                            ([("S4", "10", "THREADS", "8", "/tmp/x"), ("S4", "10", "PROCS", "vcpus/8", src)], "not a results/"),
+        for lines, want in (([("S4", "10", "alias", "S4-t12", "results/g3/nope.tsv")], "does not exist"),
+                            ([("S4", "10", "alias", "S4-t12", "results/loose/pxt.tsv")], "not inside a run"),
+                            ([("S4", "10", "alias", "S4-t12", "/tmp/x")], "not a results/"),
                             ([("S4", "10", "THREADS", "8", src), ("S4", "10", "PROCS", "12", src)], "vcpus ratio")):
             try:
-                resolve(rows, "S4", 10, resfile(lines), root)
+                resolve(rows, "S5", 10, resfile(lines), root)
                 raise AssertionError("accepted: %s" % lines)
             except ValueError as e:
                 assert want in str(e), (want, e)
@@ -819,13 +1031,77 @@ def _self_test():
                 assert read_resolved(p, root)[("Sstar-time", "1", "alias")][0] == "S9" and want is None, (cite, want)
             except ValueError as e:
                 assert want and want in str(e), (want, e)
-        # On values, not text: THREADS=96, PROCS=vcpus/96 is 96 threads x 1 process on x8g.24xlarge,
-        # which is S2a's THREADS=vcpus, PROCS=1: identical to the predecessor, so refused.
+        # The note's rule sha256: equal to the rule text's now, accepted; another, refused (the rule changed).
+        ok = hashlib.sha256(names["Sstar-time"]["select"].encode()).hexdigest()
+        for rs, want in ((ok, None), ("1" * 64, "the rule changed since the selection")):
+            with open(p, "w") as f:
+                f.write("origin\tcohort\tkey\tvalue\tsource\tcites\tmargin\tnote\n"
+                        "Sstar-time\t1\talias\tS9\t%s\t\tresolved\trule sha256 %s: x\n" % (src, rs))
+            try:
+                assert read_resolved(p, root, rows)[("Sstar-time", "1", "alias")][0] == "S9" and want is None, (rs, want)
+            except ValueError as e:
+                assert want and want in str(e), (want, e)
+        assert read_resolved(p, root)[("Sstar-time", "1", "alias")][0] == "S9"   # without the table: not checked
+        # On values, not text: a candidate equal by value to its predecessor is refused. S4-t96 with
+        # THREADS=96, PROCS=vcpus/96 is 96 threads x 1 process on x8g.24xlarge, S2a's THREADS=vcpus, PROCS=1.
+        t = _copy(rows)
+        x = collections.OrderedDict(by_name(t)["S4-t48"])
+        x.update(rung="S4-t96", THREADS="96", PROCS="vcpus/96", not_run_cohorts="")
+        t.append(x)
         try:
-            resolve(rows, "S4", 10, resfile([("S4", "10", "THREADS", "96", src), ("S4", "10", "PROCS", "vcpus/96", src)]), root)
-            raise AssertionError("an S4 identical to S2a by value was accepted")
+            resolve(t, "S4-t96", 10, None, root)
+            raise AssertionError("a candidate identical to S2a by value was accepted")
         except Unresolved as e:
             assert "identical to S2a" in str(e), e
+        # alias_cohorts: O0-cost reads O0's runs at c1 and is never generated there; a declaration whose
+        # two rungs differ is refused; a cost rung equal to its time counterpart must be declared.
+        al = resfile([("Sstar-time", "1", "alias", "S9", src), ("Sstar-cost", "1", "alias", "S9", src)])
+        try:
+            resolve(rows, "O0-cost", 1, al, root)
+            raise AssertionError("O0-cost generated at c1")
+        except Unresolved as e:
+            assert "same configuration as O0 at c1" in str(e), e
+        assert resolve(rows, "O0", 1, al, root)["instance"] == "x8g.24xlarge"
+        assert alias_cohort_problems(rows, 1, read_resolved(al, root)) == []
+        bad = resfile([("Sstar-time", "1", "alias", "S9", src), ("Sstar-cost", "1", "alias", "Sstar-r8gd", src)])
+        pr = alias_cohort_problems(rows, 1, read_resolved(bad, root))
+        assert any("O0-cost at c1 is declared an alias of O0" in x and "instance" in x for x in pr), pr
+        try:
+            resolve(rows, "O0", 1, bad, root)
+            raise AssertionError("generated under a false alias_cohorts declaration")
+        except Unresolved as e:
+            assert "declared an alias of O0" in str(e), e
+        t = _copy(rows)
+        by_name(t)["O0b-cost"]["alias_cohorts"] = ""
+        al = resfile([("Sstar-time", "1", "alias", "S9", src), ("Sstar-cost", "1", "alias", "S9", src)])
+        try:
+            resolve(t, "O0b-cost", 1, al, root)
+            raise AssertionError("an undeclared coincidence was generated")
+        except Unresolved as e:
+            assert "declare alias_cohorts 'c1: O0b'" in str(e), e
+        t = _copy(rows)
+        by_name(t)["O0-cost"]["alias_cohorts"] = "c1: O9"
+        assert any("alias_cohorts c1 names O9" in x for x in check(t)), check(t)
+        # O2 at c1: O1 is not run (O0b's configuration), O2-x8g is O1's own type (not run), O2-r8g runs.
+        o2 = resolve(rows, "O2-r8g", 1, al, root)
+        assert (o2["instance"], o2["params"]["SHARDS"], o2["params"]["INFLIGHT"]) == ("r8g.48xlarge", "1", "1"), o2
+        # O3's candidates take O2's winner's type; the bracket on the #26 fit (none in this root: widened).
+        o3res = read_resolved(resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O2-r8g", src)]), root)
+        b = bracket(rows, names["O3"], 1, o3res, root)
+        assert b[0] == set(names["O3"]["alias_of"].split("|")) and "widened" in b[1], b
+        os.makedirs(os.path.join(root, "results", "g3", "fit26"))
+        with open(os.path.join(root, "results", "g3", "fit26", "predictions.tsv"), "w") as f:
+            f.write("fit\tfamily\ttype\tcohort\tN\tT_pred_s\tusd_run_NpT\tstatus\n")
+            for n, tp in ((1, 500), (2, 400), (4, 300), (8, 310), (16, 320), (32, 330), (64, 340)):
+                f.write("R\tr8g\tr8g.48xlarge\t1\t%d\t%d\t%d\twithin data\n" % (n, tp, n))
+        b = bracket(rows, names["O3"], 1, o3res, root)
+        assert b[0] == {"O3-n2", "O3-n4", "O3-n8"}, b
+        try:
+            resolve(rows, "O3-n16", 1, resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O2-r8g", src)]), root)
+            raise AssertionError("a candidate outside the bracket was generated")
+        except Unresolved as e:
+            assert "outside O3's bracket" in str(e), e
+        assert resolve(rows, "O3-n4", 1, resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O2-r8g", src)]), root)["want_n"] == 4
         # An alias's host is its winner's, and the winner must be one of alias_of.
         alias = resfile([("Sstar-time", "1", "alias", "Sstar-r8g", src)])
         assert _values(rows, names["Sstar-time"], 1, read_resolved(alias, root))[0]["instance"] == "r8g.48xlarge"
@@ -835,9 +1111,9 @@ def _self_test():
         except ValueError as e:
             assert "is not one of its alias_of" in str(e), e
         # A row for a cohort where the rung is not run is warned about (it is never used).
-        w = notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "1", "THREADS", "8", src), ("S4", "1", "PROCS", "vcpus/8", src)]), root))
-        assert len(w) == 2 and all("S4 at c1" in x and "ignored" in x for x in w), w
-        assert notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "10", "THREADS", "8", src), ("S4", "10", "PROCS", "vcpus/8", src)]), root)) == []
+        w = notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "1", "alias", "S4-t12", src)]), root))
+        assert len(w) == 1 and all("S4 at c1" in x and "ignored" in x for x in w), w
+        assert notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "10", "alias", "S4-t12", src)]), root)) == []
     finally:
         shutil.rmtree(root)
     # The command line refuses a bad alias winner cleanly (exit 3, a message), never a traceback.
@@ -946,10 +1222,21 @@ def main(a):
             co = coupled_keys(r)
             print("%-11s %-26s from %-11s %s" % (r["rung"], r["group"], r["predecessor"],
                                                  "coupled: " + "+".join(sorted(co)) if co else ""))
+        # Every alias_cohorts declaration whose two rungs resolve (with the committed ladder.resolved.tsv,
+        # for the committed table only) must be the same configuration.
+        if len(a) == 1 and not probs:
+            try:
+                res = read_resolved(RESOLVED, ROOT, rows)
+                for c in sorted({int(d.split(":")[0].strip().lstrip("c")) for r in rows
+                                 for d in r["alias_cohorts"].split(";") if d.strip()}):
+                    probs += alias_cohort_problems(rows, c, res)
+            except ValueError as e:
+                probs.append("scripts/g3/ladder.resolved.tsv: %s" % e)
         if probs:
             print("ladder_levers: %d problem(s):\n  %s" % (len(probs), "\n  ".join(probs)), file=sys.stderr)
             return 1
-        print("ladder_levers: %d rungs; every rung changes exactly one key-group" % len(rows))
+        print("ladder_levers: %d rungs; every rung changes exactly one key-group; every alias_cohorts pair that resolves "
+              "is one configuration" % len(rows))
         return 0
     if a and a[0] == "spec-params" and (len(a) == 2 or (len(a) == 4 and a[2] == "--rep")):
         with open(a[1]) as f:
