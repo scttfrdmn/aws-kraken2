@@ -16,7 +16,7 @@
 #   S  one serial lane: every hash is critical (sha-critical = sha);
 #   U  lad_crit directly: classify spans, a done upload and an upload in flight cover a hash (NB1);
 #   I  the identity phase under pipefail off, as on the node: a failing or empty rapidgzip differs,
-#      a corrupt input is an input_defect; I-mut restores B1's bug and must fail;
+#      a corrupt input is an input_defect, a garbage tail (gzip exit 2) a gz_warning only; I-mut restores B1's bug and must fail;
 #   N  negative control: the reverse redirection order (> /dev/null 2> >(...)) streams nothing,
 #      while the file still gets every line, so A's streaming check can fail.
 set +e
@@ -240,6 +240,22 @@ crit_u() {  # MODE: none | done | inflight -> lad_crit's seconds
 check "U: no uploads: all 10 s of the hash are critical" "[ \"\$(crit_u none)\" = 10.000 ]"
 check "U: a finished upload over [245, 255] leaves 5 s" "[ \"\$(crit_u done)\" = 5.000 ]"
 check "U: plus an upload in flight from 257 leaves 2 s" "[ \"\$(crit_u inflight)\" = 2.000 ]"
+# The engine path: its classify span is [CLS_T0, the exit lad_engine recorded in eng.end]. A hash
+# after the recorded exit is critical even before the watch loop notices; with no eng.end yet the
+# engine is running and covers it.
+crit_e() {  # EXIT_T or "": lad_crit 250 260 on the engine path, classify from 100
+  (
+    W="$C"; SD="$C/sd"; ENGINE=1; CPIDS=(); CLS_T0=100; LV_UP_TSV=""; UPENQ_T=()
+    . "$FN"
+    rm -f "$W/eng.end"; [ -n "$1" ] && echo "$1" > "$W/eng.end"
+    lad_crit 250 260
+  )
+}
+check "U: engine exited at 200 (eng.end): a hash over [250, 260] is all critical" "[ \"\$(crit_e 200)\" = 10.000 ]"
+check "U: engine exited at 255: 5 s critical" "[ \"\$(crit_e 255)\" = 5.000 ]"
+check "U: engine still running (no eng.end): covered" "[ \"\$(crit_e '')\" = 0.000 ]"
+check "C: lad_engine recorded the engine's exit (eng.end) after its last sample line" \
+  "[ -s '$TD/C/eng.end' ] && awk -v e=\"\$(cat '$TD/C/eng.end')\" -v s=\"\$(sed -n 's/^lad-sample //p' '$TD/C/run.log' | jq -r .t_end)\" 'BEGIN{exit !(e >= s)}'"
 
 # ---- I: the identity phase with a failing tool (B1) ----
 # GNU gzip stands in as itself; the rapidgzip stand-in writes the same bytes but exits 3 on B_1,
@@ -252,6 +268,7 @@ for a in "$@"; do :; done
 case $(basename "$a") in
   B_1.fastq.gz) gzip -dc "$a"; exit 3 ;;
   C_2.fastq.gz) exit 0 ;;
+  F_1.fastq.gz) gzip -dc "$a" 2> /dev/null; exit 0 ;;   # the full stream, exit 0, past F_1's garbage tail
   *) exec gzip -dc "$a" ;;
 esac
 EOF
@@ -262,14 +279,17 @@ identity_run() {  # FN CASEDIR: lad_identity under the node's shell options (pip
   (
     set +o pipefail
     W="$c"; SD="$c/sd"; INDIR="$c/in"; J="$c/lad.jsonl"; LS="$c/lad-samples.jsonl"; : > "$J"; : > "$LS"
-    SAMPLES=(A B C D); NEED=(0 1 2 3); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
+    SAMPLES=(A B C D E F); NEED=(0 1 2 3 4 5); NPROC=4; GZK=2; REAL_GZIP=$(command -v gzip); LV_RG="$TD/bin/fake-rg"; SHIMGZ="$TD/bin/shim-gzip"
     declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
     ak2_say() { echo "ak2: $*"; }
     ak2_push() { :; }
     . "$fn"
     echo "pipefail: $(set -o | awk '$1 == "pipefail" {print $2}')"
-    for s in A B C D; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
+    for s in A B C D E F; do for m in 1 2; do printf '@r%s\nACGT\n+\nIIII\n' "$s$m" | gzip -c > "$INDIR/${s}_$m.fastq.gz"; done; done
     printf 'not a gzip stream' > "$INDIR/D_1.fastq.gz"   # GNU gzip fails on it: an input defect
+    # A garbage tail: gzip warns (exit 2, the stream complete). E: the rapidgzip stand-in passes gzip's
+    # exit 2 on (differs); F: it exits 0 with the same bytes (identical: gzip's warning alone is no difference).
+    for s in E F; do printf 'trailing garbage\n' >> "$INDIR/${s}_1.fastq.gz"; done
     lad_identity; echo "identity-rc=$? bad=$(printf '%s\n' "${!S5BAD[@]}" | sort | tr '\n' ' ')"
   ) > "$c/run.log" 2>&1
 }
@@ -279,12 +299,16 @@ b1_exit_ok() {  # CASEDIR: B_1's recorded exits are the tools' real ones
 identity_run "$FN" "$C"
 ids() { sed -n 's/^lad-identity //p' "$C/run.log"; }
 check "I: runs with pipefail off, as on the node" "grep -q '^pipefail: off\$' '$C/run.log'"
-check "I: B, C and D differ, A does not" "grep -q 'identity-rc=0 bad=B C D \$' '$C/run.log'"
+check "I: B, C, D and E differ, A and F do not" "grep -q 'identity-rc=0 bad=B C D E \$' '$C/run.log'"
+check "I: E_1's garbage tail: gzip exit 2 is a warning (gz_warning), not an input defect; rapidgzip's exit 2 differs" \
+  "ids | jq -e 'select(.file == \"E_1.fastq.gz\") | .gzip_exit == 2 and .gz_warning == true and .input_defect == false and .identical == false and .rapidgzip_exit == 2' > /dev/null"
+check "I: F_1: gzip exit 2 with rapidgzip's equal stream and exit 0 is identical" \
+  "ids | jq -e 'select(.file == \"F_1.fastq.gz\") | .gzip_exit == 2 and .gz_warning == true and .input_defect == false and .identical == true' > /dev/null"
 check "I: B_1's rapidgzip exit is the tool's real 3, its gzip exit 0" "ids | jq -e 'select(.file == \"B_1.fastq.gz\") | .rapidgzip_exit == 3 and .gzip_exit == 0 and .identical == false' > /dev/null"
 check "I: C_2's empty output differs (exit 0, the empty-stream sha256)" "ids | jq -e 'select(.file == \"C_2.fastq.gz\") | .rapidgzip_exit == 0 and .identical == false
   and .rapidgzip_sha256 == \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\" and (.why | test(\"empty output\"))' > /dev/null"
 check "I: A's mates are identical with both exits 0" "[ \$(ids | jq -s 'map(select((.file | startswith(\"A_\")) and .identical and .gzip_exit == 0 and .rapidgzip_exit == 0)) | length') = 2 ]"
-check "I: the fallback was installed for B, C and D" "[ -x '$C/s5fb/gzip' ] && [ \$(grep -c . '$C/s5fb/inputs') = 6 ]"
+check "I: the fallback was installed for B, C, D and E" "[ -x '$C/s5fb/gzip' ] && [ \$(grep -c . '$C/s5fb/inputs') = 8 ]"
 check "I: GNU gzip failing on D_1 is an input defect; no other input is" "[ \$(ids | jq -s 'map(select(.input_defect)) | map(.file) | join(\" \")') = '\"D_1.fastq.gz\"' ]"
 # Mutation (T1): restore B1's bug (PIPESTATUS read outside the substitution) in a copy of the body;
 # the exit check must then fail, so case I can tell the fix from the bug.

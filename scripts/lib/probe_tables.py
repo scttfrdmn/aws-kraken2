@@ -4,6 +4,7 @@
   probe_tables.py decomp RUN_DIR   -> tables/probe-decomp.tsv (mode seq), probe-decomp-conc.tsv
   probe_tables.py stage  RUN_DIR   -> tables/probe-staging.tsv
   probe_tables.py cont   COHORT_DIR -> tables/probe-contention.tsv, probe-contention-nodes.tsv
+  probe_tables.py awscp  RUN_DIR   -> tables/probe-awscp.tsv, probe-awscp-progress.tsv (the classic aws s3 cp rate)
 
 decomp: per tool and mode, the median seconds over repetitions and the per-sample GB/s of fq
 written; identical = yes when both mates' output sha256 equals gzip -dc's. stage: one row per
@@ -101,5 +102,31 @@ elif mode == "cont":
           ["N", "label", "bytes", "elapsed_s", "gbps", "retries", "error", "start_unix_s"], nodes)
     if any(int(r[1]) != int(r[0]) for r in rows):
         sys.exit(1)
+elif mode == "awscp":
+    # The classic aws s3 cp rate (probe-awscp.body.sh): one summary row, and the 10 s progress series.
+    L = lines(os.path.join(d, "out", "awscp.jsonl"))
+    cl = next((x for x in L if x["kind"] == "client"), {})
+    cf = next((x for x in L if x["kind"] == "config"), {})
+    dn = [x for x in L if x["kind"] == "done"]
+    pr = [x for x in L if x["kind"] == "progress"]
+    if not dn or not pr:
+        sys.exit("probe_tables: no awscp done line or no progress lines")
+    x = dn[-1]
+    fmt = lambda v, nd=3: "-" if v is None else (f"{v:.{nd}f}" if isinstance(v, float) else str(v))
+    ttl_s = 360 * 60   # S0-T1 and S0-Tv's TTL (ladder.levers.tsv ttl_min_c1), which this rate is to size
+    est = x.get("est_object_s_steady") or x.get("est_object_s")
+    write(os.path.join(d, "tables", "probe-awscp.tsv"),
+          ["instance_type", "client", "resolved", "cli_version", "signing", "stopped_by", "s", "bytes", "bytes_basis", "gbps",
+           "gb_per_s", "steady_gbps", "object_bytes", "est_object_s", "est_object_s_steady", "s0_ttl_s", "est_over_s0_ttl"],
+          [[cf.get("instance_type", "-"), cl.get("client", "-"), cl.get("resolved", "-"), cl.get("cli_version", "-"),
+            cf.get("signing", "-"), x["stopped_by"], fmt(x["s"]), x["bytes"], pr[-1].get("bytes_basis", "-"), fmt(x.get("gbps")),
+            fmt(x.get("gb_per_s")), fmt(x.get("steady_gbps")), x["object_bytes"], fmt(x.get("est_object_s")),
+            fmt(x.get("est_object_s_steady")), ttl_s, "-" if not est else f"{est / ttl_s:.3f}"]])
+    write(os.path.join(d, "tables", "probe-awscp-progress.tsv"),
+          ["s", "bytes", "bytes_basis", "allocated_bytes", "gbps", "interval_gbps", "gb_per_s", "dirty_kb", "writeback_kb"],
+          [[fmt(p["s"]), p["bytes"], p["bytes_basis"], p["allocated_bytes"], fmt(p.get("gbps")), fmt(p.get("interval_gbps")),
+            fmt(p.get("gb_per_s")), fmt(p.get("dirty_kb")), fmt(p.get("writeback_kb"))] for p in pr])
+    if x["stopped_by"] not in ("time", "bytes", "complete"):
+        sys.exit(1)
 else:
-    sys.exit("usage: probe_tables.py decomp|stage|cont DIR")
+    sys.exit("usage: probe_tables.py decomp|stage|cont|awscp DIR")

@@ -51,7 +51,21 @@ if len(pos) >= 3 and pos[0] == "s3" and pos[1] == "cp":
         if not os.path.exists(f):
             print(f"fatal error: An error occurred (404) when calling the HeadObject operation: Key \"{k}\" does not exist", file=sys.stderr)
             sys.exit(1)
-        shutil.copyfile(f, dst)
+        if os.path.isdir(dst):
+            dst = os.path.join(dst, os.path.basename(k))
+        bps = int(os.environ.get("AK2T_COPY_BPS", "0") or 0)
+        if os.environ.get("AK2T_IGNORE_TERM"):   # a copy that ignores TERM (a stop must then KILL it)
+            import signal
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        if bps > 0:
+            # A throttled download (AK2T_COPY_BPS bytes/s, written as it arrives), so a rate probe sees progress.
+            with open(f, "rb") as fi, open(dst, "wb") as fo:
+                for blk in iter(lambda: fi.read(bps // 4 or 1), b""):
+                    fo.write(blk)
+                    fo.flush()
+                    time.sleep(0.25)
+        else:
+            shutil.copyfile(f, dst)
     else:
         b, k = split(dst)
         os.makedirs(os.path.dirname(os.path.join(root, b, k)), exist_ok=True)
@@ -94,6 +108,8 @@ if op == "head-object":
         print(h["ETag"])
     elif opt("--query") == "ContentLength":
         print(h["ContentLength"])
+    elif opt("--query") == "[ETag,ContentLength]":   # --output text, as lever.sh's lv__head asks
+        print(f'{h["ETag"]}\t{h["ContentLength"]}')
     else:
         print(json.dumps(h))
 elif op == "put-object":

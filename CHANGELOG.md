@@ -9,6 +9,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The ladder rehearsal (#53; docs/ladder.md, "The rehearsal"): `make rehearse-ladder`, and
+  `make rehearse SPEC=runs/g3-l-*` for one committed c1 spec, both after `make util-stream-test`
+  (`scripts/lib/ladder_rehearse.sh`, `scripts/lib/ladder_rehearse_check.py`).
+  - The ladder body runs end to end on AL2023 aarch64 containers (rootful podman: the VM's real
+    `drop_caches`, tmpfs mounts with `huge=`, the THP knobs), under the preamble as `bash -e -c`.
+    It clones and builds the committed tree on the node, and uses the viral database as RODA
+    and real read sets.
+  - It covers every arm:
+    - upstream with serial and overlap uploads, 1 and 2 lanes;
+    - ours-plain;
+    - the engine at K = 2 and at N = 2 over TCP;
+    - O5's sdk-stream emitter;
+    - S5 with real rapidgzip 0.14.5 on an input with trailing bytes and on a corrupt one;
+    - the negative tests;
+    - phases and net accounting, including a slow SETUP=overlap build and tail uploads lagging
+      the hashes;
+    - the resolver;
+    - every committed c1 spec, then `ladder_tables.py` on their record (0 DEFECTs, aliases
+      read as their winners);
+    - a TTL kill (KILL and TERM) mid-classify.
+  - Every on-node sha256 is checked against upstream at the pin. The Law 1, S5 fallback,
+    net-accounting, TTL and tables checks each fail under a planted defect.
+- A pre-launch probe of the classic `aws s3 cp` rate (docs/probes.md, probe f):
+  `runs/g3-probe-awscp-r8gd.48xlarge.json` (`scripts/g3/probe-awscp.body.sh`; TTL 40 min,
+  cost_limit $9.41).
+  - It stages hash.k2d onto r8gd.48xlarge's single NVMe device exactly as S0's fetch-db does
+    (`lv_nvme single`, lv_stage_db awscp-default's client and command line), for 20 min or
+    300 GiB.
+  - It streams `probe-awscp` progress every 10 s and records the resolved client. The tables
+    are `probe_tables.py awscp` (post script).
+  - Rehearsed with `probe_rehearse.sh` (kind awscp: stopped by bytes, by time, and complete);
+    DRY_RUN passes. Not launched.
+
+### Fixed
+
+- Found by the ladder rehearsal (#53):
+  - `ladder_tables.py`: a compound lever phase (`run:A+run:B`, as `ladder.levers.tsv` writes
+    it) was read as missing, because only the first term's scope was stripped. Each term now has
+    its own scope. A run's own lever phase that matches nothing is a DEFECT (contract), not a
+    silently missing value. Unit tests are in `ladder_tables_test.py`.
+  - The ladder body's S5 identity rule (Scott, 2026-10-11): GNU gzip's exit 2 is a warning (for
+    example "trailing garbage ignored": the output is complete, and upstream's wrapper ignores the
+    status). It is recorded as `gz_warning` (identity line and `s5`) and is neither a difference
+    nor an input defect. An input defect is a gzip exit other than 0 or 2, or an empty stream. Any
+    non-zero rapidgzip exit still differs. The tables' B1 rule and `input` DEFECT follow. The
+    rehearsal case `s5-garbage` and a ladder-stream-test case cover it. The 15 c1 specs are
+    regenerated with the body.
+  - `ladder_tables.py` (#53 review):
+    - A successor's lever phase term missing on its predecessor run is a DEFECT (contract) when
+      the body marks it on every run, and a note only for identity, build-wait and sha-get.
+    - `gz_warning` is named per sample in tidy.tsv (`s5.gz_warning`) and in a summary.md note.
+  - The rehearsal's tail check has its own id, `tail-resolve`. A negative control of `tail`
+    counts only if `tail-resolve` passes on the same run, and an unresolved try is a RETRY row.
+    The rehearsal log records each spec's sha256.
+  - The ladder body's `lad_crit` on the engine path: the engine's exit time is recorded as the
+    engine exits (`eng.end`, from `lad_engine`'s subshell). Previously a hash made after the exit,
+    but before the watch loop noticed, counted as covered.
+
 - The #25 ladder body, lever table and generator (#51, WP-7; docs/ladder.md).
   - `scripts/g3/ladder.body.sh`: one body for both arms of both ladders. The lever choices are
     a PARAMS block in the payload. The phases are the same on both arms, every run is cold

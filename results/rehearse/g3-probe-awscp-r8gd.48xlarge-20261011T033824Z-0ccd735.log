@@ -1,0 +1,32 @@
+rehearse: record results/rehearse/g3-probe-awscp-r8gd.48xlarge-20261011T033824Z-0ccd735.log
+rehearse: runs/g3-probe-awscp-r8gd.48xlarge.json (awscp) at 0ccd735, work /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9
+rehearse: stand-in hash.k2d 335544320 bytes, ETag 9261ccc6d31b4ea82c0aa476ca973951-3, at http://127.0.0.1:55805/Kraken2_RefSeqCompleteV205/hash.k2d
+rehearse: awscp (bytes): killed_hard false (want false), body 12 s; every progress line has dirty_kb and writeback_kb: true
+rehearse: awscp (bytes) body exit 0
+rehearse: awscp (bytes): streamed 7 lines, awscp.jsonl 7; 4 progress (want >= 2); stopped_by bytes (want bytes), 69206016 bytes of 335544320; client 'default unknown'; GetObject 9; 0 files left on the NVMe (want 0)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-bytes/tables/probe-awscp.tsv (1 rows)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-bytes/tables/probe-awscp-progress.tsv (4 rows)
+instance_type  client   resolved  cli_version            signing  stopped_by  s      bytes     bytes_basis  gbps   gb_per_s  steady_gbps  object_bytes  est_object_s  est_object_s_steady  s0_ttl_s  est_over_s0_ttl
+r8gd.48xlarge  default  unknown   aws-cli/rehearse-stub  signed   bytes       8.388  69206016  allocated    0.066  0.008     -            335544320     41            -                    21600     0.002
+rehearse: awscp (time): killed_hard false (want false), body 10 s; every progress line has dirty_kb and writeback_kb: true
+rehearse: awscp (time) body exit 0
+rehearse: awscp (time): streamed 7 lines, awscp.jsonl 7; 4 progress (want >= 2); stopped_by time (want time), 34603008 bytes of 335544320; client 'default unknown'; GetObject 5; 0 files left on the NVMe (want 0)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-time/tables/probe-awscp.tsv (1 rows)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-time/tables/probe-awscp-progress.tsv (4 rows)
+instance_type  client   resolved  cli_version            signing  stopped_by  s      bytes     bytes_basis  gbps   gb_per_s  steady_gbps  object_bytes  est_object_s  est_object_s_steady  s0_ttl_s  est_over_s0_ttl
+r8gd.48xlarge  default  unknown   aws-cli/rehearse-stub  signed   time        8.412  34603008  allocated    0.033  0.004     -            335544320     82            -                    21600     0.004
+rehearse: awscp (hard): killed_hard true (want true), body 41 s; every progress line has dirty_kb and writeback_kb: true
+rehearse: awscp (hard) body exit 0
+rehearse: awscp (hard): streamed 7 lines, awscp.jsonl 7; 4 progress (want >= 2); stopped_by time (want time), 34603008 bytes of 335544320; client 'default unknown'; GetObject 5; 0 files left on the NVMe (want 0)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-hard/tables/probe-awscp.tsv (1 rows)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-hard/tables/probe-awscp-progress.tsv (4 rows)
+instance_type  client   resolved  cli_version            signing  stopped_by  s       bytes     bytes_basis  gbps   gb_per_s  steady_gbps  object_bytes  est_object_s  est_object_s_steady  s0_ttl_s  est_over_s0_ttl
+r8gd.48xlarge  default  unknown   aws-cli/rehearse-stub  signed   time        38.882  34603008  allocated    0.007  0.001     -            335544320     377           -                    21600     0.017
+rehearse: awscp (complete): killed_hard false (want false), body 4 s; every progress line has dirty_kb and writeback_kb: true
+rehearse: awscp (complete) body exit 0
+rehearse: awscp (complete): streamed 4 lines, awscp.jsonl 4; 1 progress (want >= 1); stopped_by complete (want complete), 335544320 bytes of 335544320; client 'default unknown'; GetObject 40; 0 files left on the NVMe (want 0)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-complete/tables/probe-awscp.tsv (1 rows)
+probe_tables: /var/folders/x5/_jwxtjjx347635h39vn8hcxm0000gn/T//ak2-prehearse.lixXK9/run-complete/tables/probe-awscp-progress.tsv (1 rows)
+instance_type  client   resolved  cli_version            signing  stopped_by  s      bytes      bytes_basis  gbps   gb_per_s  steady_gbps  object_bytes  est_object_s  est_object_s_steady  s0_ttl_s  est_over_s0_ttl
+r8gd.48xlarge  default  unknown   aws-cli/rehearse-stub  signed   complete    1.096  335544320  allocated    2.449  0.306     -            335544320     1             -                    21600     0.000
+rehearse: ok

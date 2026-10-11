@@ -331,7 +331,9 @@ ran beside fetch-db and fetch-inputs, and the `lad-build` line records `build_en
 for each of its outputs, from lever.sh's upload-enqueue records. Its critical part is the seconds
 of those intervals that no classify span on the node covers:
 - per-sample path: each sample's span is `[start, end]`, a running sample covering up to the hash;
-- engine: the engine's classify phase, up to its exit.
+- engine: the engine's classify phase, up to its exit. The exit time is recorded by `lad_engine`'s
+  subshell as the engine exits (`eng.end`), not when the watch loop next notices. A hash made
+  after the exit is therefore uncovered, to within the few ms that writing the file takes.
 
 **Uploads cover too (NB1).** The node's end waits for its uploads either way, so an upload cannot
 leave the hash critical either. The covering spans therefore also include:
@@ -452,13 +454,19 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
   the tool's own command substitution, because the pipeline's PIPESTATUS is gone once the
   substitution returns. A mate differs if:
   - the two sha256 differ;
-  - either tool exits non-zero;
+  - rapidgzip exits non-zero;
+  - GNU gzip exits other than 0 or 2;
   - or either output is empty (the empty-stream sha256, e3b0c442…).
 
-  The lad-sample `s5` carries `gz_exit` and `rg_exit`, integer lists per mate, whenever status is not
-  n/a, beside the sha lists. If GNU gzip itself exits non-zero or gives an empty stream, the identity
-  line has `input_defect: true`: that is an input or staging DEFECT, not an S5 finding (the input
-  passed its sha256 against the staged metadata). A sample that differs gets `s5.status: differs`
+  **GNU gzip's exit 2 is a warning** (Scott, 2026-10-11), for example "trailing garbage ignored":
+  its output is complete, and upstream's wrapper ignores the status, so stock reads the full
+  stream. By itself it is neither a difference nor an input defect. It is recorded as
+  `gz_warning: true` in the identity line, and as `s5.gz_warning`, a boolean list per mate.
+
+  The lad-sample `s5` carries `gz_exit`, `gz_warning` and `rg_exit`, lists per mate, whenever status
+  is not n/a, beside the sha lists. If GNU gzip itself exits other than 0 or 2, or gives an empty
+  stream, the identity line has `input_defect: true`. That is an input or staging DEFECT, not an S5
+  finding (the input passed its sha256 against the staged metadata). A sample that differs gets `s5.status: differs`
   ("S5 not output-preserving on this input") and falls back to GNU gzip by per-sample shim
   behaviour: a `gzip` ahead of the shim on PATH sends exactly its inputs to GNU gzip, and logs
   them (`out/s5-fallback.calls`). After classify the run fails unless `gzip-shim.calls` has at
@@ -474,11 +482,130 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
 **Rehearsal seams** (`AK2_REHEARSE_*`, which run.sh refuses in a spec's env): lever.sh's (NVME,
 S5CMD, S5CMD_TGZ, RAPIDGZIP, WHEELS), upstream-cohort.sh's RAMDB_ROOT, and the body's GO,
 HT_ROOT, HASH_URL, SAMPLES and WEIGHTS, as probe_rehearse.sh and cohort_rehearse.sh use them.
-The full local rehearsal (Standard-8 served as RODA, K = 2 replicas, N = 2 shards, end-to-end
-Law 1) is #53.
+The full local rehearsal is #53 ("The rehearsal", below).
 
-**Not covered locally:** the body end to end (#53); real NVMe, tmpfs and drop_caches; the
-identity phase on real rapidgzip (lever-test covers the shim).
+**Not covered locally:** real NVMe devices (`lv_nvme` uses its seam), real S3 and RODA, and an
+instance's CPU count and memory (the rehearsal's VM has 8 vCPUs and 8 GiB).
+
+## The rehearsal (#53): `make rehearse-ladder`
+
+**What:** the ladder body end to end before any rung launches on AWS, on every arm, checked on
+observed output only. Each check has been shown to fail under a planted defect (a negative
+control). It launches nothing and costs $0.
+
+```bash
+make rehearse-ladder                                   # everything below; after make util-stream-test
+make rehearse SPEC=runs/g3-l-s5-c1.json                # one committed c1 spec (after util-stream-test)
+LADREH_RECORD=DIR make rehearse SPEC=runs/g3-l-s5-c1.json   # ...and keep its run record in DIR
+scripts/lib/ladder_rehearse.sh tables DIR              # make g3-ladder's program on that record
+scripts/lib/ladder_rehearse.sh only arms s5            # development: some groups (arms s5 law1 neg net resolver ttl specs)
+```
+
+Record: `results/rehearse/ladder-<UTC>-<sha7>.log` (one spec: `ladder-<rung>-<UTC>-<sha7>.log`),
+ending in a summary table, one row per case. `make rehearse-ladder` also keeps the tables it
+made from the rehearsal record in `results/rehearse/ladder-<UTC>-<sha7>-tables/`. `KEEP=1` keeps
+the scratch dir. The tree must be committed: the nodes clone HEAD.
+
+**The nodes.** Each node is an Amazon Linux 2023 aarch64 container, running exactly what run.sh
+launches: `scripts/preamble.sh` followed by the body, as `bash -e -c` (spawn's `$-` has `e`). The
+rehearsal adds one line between them, which logs pipefail's state. The node runs as ec2-user with
+sudo, on rootful podman with `--privileged`. That gives it the VM's real `drop_caches`, real
+tmpfs mounts with `huge=`, and the real THP knobs. The members of a cohort are containers on one
+podman network, so the engine's shards connect over TCP to each other's addresses. The home dir,
+`/tmp` and the NVMe stand-in are tmpfs, so nothing is written to the VM's disk.
+
+The committed tree is cloned from a git bundle of HEAD and built on the node:
+- upstream at the pin by `scripts/oracle-build.sh`, from a clone of the shared upstream checkout;
+- ours by `make build` (Go in the image, the host's module cache).
+
+`scripts/lib/ladder_rehearse_check.py` makes the checks; the driver is `scripts/lib/ladder_rehearse.sh`.
+
+**Stand-ins, only at the edges:**
+- **RODA is the viral database** (`k2_viral_20260626`, real), with a real 16 MiB-part multipart
+  ETag. The engine's ranged GETs go to `k2probe serve-file` (Range, If-Match) on an infra
+  container. Standard-8 cannot be used: its hash.k2d is 8.0 GB and the podman VM has 8 GiB, so
+  neither a resident table (upstream without `-M`, the engine) nor two shards of it fit.
+- **S3 is one directory on the host.** `aws` and `s5cmd` are stubs over it, and every call is
+  logged. Uploads under a cohort's `out/` can be made slow (`AK2T_UP_SLEEP`), so overlap is
+  visible. The engine's SDK talks to `k2probe fakes3` over the same directory. The staged
+  cohort objects carry `Metadata.sha256`.
+- `curl` answers IMDS (the spec's instance type, the container's own address) and the
+  bucket-region HEAD. `sudo` answers `dnf install` with `rpm -q`, since the image has the
+  packages.
+- **The samples are real public read sets** (200,000 pairs from `.cache/reads`), named by their
+  run accessions through the body's `AK2_REHEARSE_SAMPLES`/`WEIGHTS` seam. `rapidgzip` is the
+  real 0.14.5 wheel, installed by lever.sh with `pip --require-hashes` (`AK2_REHEARSE_WHEELS`).
+- **The oracle** is upstream at the pin (`scripts/oracle-build.sh`, the `make oracle` build), run
+  on the host on the same reads uncompressed. A precondition checks that each `.fq.gz`
+  decompresses to its `.fq`.
+
+**What every passing case checks** (per node, on the pushed `log/run.log` and `out/`, the
+container's stdout and the bucket):
+- **Exits and shell:** the body exits 0, under `bash -e -c` and the preamble's `set +e`.
+- **Streaming:**
+  - the `lad-sample` lines streamed equal `out/lad-samples.jsonl` and the container's own stdout;
+  - one `lad-net` line, streamed and pushed;
+  - the `lever` lines equal `out/lever.jsonl`.
+- **Samples:** every planned sample has exactly one line across the fleet, with rc 0 and contract v1.
+- **Law 1:** every output's and report's on-node sha256 equals the oracle's, and the uploaded
+  object's sha256 equals the recorded one. There are 2 objects per sample.
+- **Phases:** every phase is present, in the body's order for the arm. The cold markers are
+  exactly `setup` and `load`, and the log shows 2 `drop_caches`.
+- **lad-net:**
+  - `critical_measurement_s` = identity + sha_get + sha_critical;
+  - `sha_critical_s` = the sum of the samples' `sha-critical`;
+  - `identity_s` and `sha_get_s` equal their phases (within the whole-second markers).
+- **Requests:**
+  - PutObject + CompleteMultipartUpload − Rendezvous-PutObject = the objects;
+  - fetch.sh's HeadObject = the input files;
+  - the database staging is counted (a ranged load on the engine).
+- **Build:** under SETUP=serial the build is waited for in setup. Under overlap it is waited for
+  in build-wait, with `build_end` recorded before identity (or load).
+- **Engine:**
+  - the `ak2-engine etag` line has etag = computed;
+  - each replica has its own rendezvous;
+  - the shard addresses are the nodes' own;
+  - at N > 1, every shard homes samples.
+- **S5:**
+  - one identity line per input, at the run's -P;
+  - `input_defect` as expected;
+  - `s5` status and fallback per sample;
+  - `gzip-shim.calls` has 2 rapidgzip calls per non-fallback sample, and `s5-fallback.calls` 2
+    GNU gzip calls per fallback sample.
+
+**Cases** (the record's summary table names each):
+
+| item | cases | what |
+|---|---|---|
+| 1 | `u-serial-1lane`, `u-overlap-1lane`, `u-serial-2lanes`, `u-overlap-2lanes` | upstream per-sample: s5cmd-serial and s5cmd-overlap, awscp-default (stock) on NVMe with load, 1 and 2 lanes; serial blocks the lane, overlap does not (uploads take 2 s), the lanes run at once |
+| 1 | `ours-plain` | ours' plain path under rapidgzip (`AK2_DECOMPRESS=pipe`) |
+| 1 | `engine-k2`, `engine-n2`, `o5-sdk` | the engine at K = 2 replicas, at N = 2 shards (lpt) over TCP, and O5's sdk-stream emitter at N = 2, with sha256 by GET |
+| 1 | `law1-across-arms` | each sample's sha256 is one value across every passing arm, the oracle's |
+| 2 | `s5-trailing` | real rapidgzip on SRR28305653 with 4096 zero bytes after mate 1 (the oracle's zeropad variant). Only that sample differs and falls back. The recorded exits and sha256 equal an independent run of the same tools at the same -P |
+| 2 | `s5-garbage` | ERR478965 with a garbage line after mate 1 (the oracle's garbage variant). GNU gzip exits 2, its warning, so the input is kept: `gz_warning`, no `input_defect`. rapidgzip differs, so the sample falls back, and Law 1 holds. The recorded exits equal an independent run |
+| 2 | `s5-corrupt` | mate 1 cut at half its bytes. `input_defect` is set on that file only, with GNU gzip's real exit, and the run fails (the classifier sees a short mate) |
+| 3 | `neg-*` | each fails the run, for its stated reason (the message is checked): a gzip, and a bzip2, in KRAKEN2_DIR (the upstream build mutated); an ETag mismatch via lv_etag and via the engine; a classifier exiting non-zero (a truncated mate; its rc is in the lad-sample line); an engine home sample with no ak2-sample line; `cohort_place.py needs` failing, `table` failing, the two disagreeing, and an empty NEED that the table agrees with |
+| 4 | `overlap-slow-build` | SETUP=overlap with a build 20 s slower: build-wait, identity, load, and the wait observed |
+| 4 | `tail-crit-*` | 3 lanes over 3 identical 1M-pair samples end together and uploads take 4 s. At least 2 output hashes fall after the last classify span (check `tail-resolve`; otherwise it is run again, up to 3 times, and the unresolved try is a RETRY row). sha_critical is about one hash, not the tail's sum |
+| 5 | `resolver` | the generator's resolver refuses a resolution with no citation, one identical by value to its predecessor, and an alias winner outside alias_of. A one-lever resolution is accepted (positive control). S4 and S8 are not run at c1, and S5 and S9 take S2a's and S7b's values. A c1 row for S4 is ignored with a warning. The committed specs' parameter blocks are the resolver's |
+| 6 | `spec-<rung>` × 15 | every committed `runs/g3-l-*-c1.json`, its body being the committed body plus its parameter block |
+| 6 | `tables`, `tables-lever-phase` | `ladder_tables.py` on their record, with a rehearsal-only `ladder.resolved.tsv` (Sstar-time → S9, Sstar-cost → Sstar-r8gd) in the record dir, never in `scripts/g3/`. It must give 15 runs and 0 DEFECTs, law1.tsv all identical, and each alias's rows equal to its winner's on an axis where the three candidates differ. Every rung's lever phase must be measured |
+| 7 | `ttl-kill`, `ttl-term` | the node killed while the second sample (8M pairs) classifies. KILL: every line streamed 7 s before is in the pushed log, from the 5 s pusher. TERM: every line up to the kill is there, and the finish ran |
+
+**Negative controls** (each case passes only if its named check fails):
+
+| case | planted defect | check that must fail |
+|---|---|---|
+| `law1-mut` | the classifier called with `--minimum-hit-groups 3` | law1 |
+| `s5-mut-nofallback` | no sample marked as differing (the fallback never installs) | s5 and law1 |
+| `s5-mut-net` | identity left out of lad-net's sum | net |
+| `tail-mut-*` | lad_crit without NB1 (uploads do not cover a hash) | tail, with `tail-resolve` passing on the same run (the probe resolved) |
+| `ttl-kill-nopush` | the preamble's 5 s pusher removed | the kill check |
+| `spec-s1-law1mut`, `tables-neg` | an S1 run with the Law 1 mutation added to a copy of the record; an alias winner outside alias_of | Law 1 DEFECT; DEFECT (resolved) |
+
+**Failure looks like:** a `FAIL <case>: <check>: …` line, the tail of each node's output, and
+`FAIL` in that case's summary row. Exit 1.
+
 ## Ladder tables: `make g3-ladder` (#52)
 
 `scripts/lib/ladder_tables.py` builds the ladder's attribution tables from the record only and
@@ -577,7 +704,7 @@ Contract version 1:
 | `t_start`, `t_end` | yes | number | epoch seconds (3 decimals) when the sample's work started and ended on the node, with `t_end` ≥ `t_start`. The model's per-sample span is the union of these intervals. |
 | `phases` | yes | object | phase name → seconds, written with 3 decimals (ms granularity). A `sample:` lever phase must use names that appear here. |
 | `outputs` | yes | object | role → `{"bytes": int, "sha256": "<64 lowercase hex, computed on the node>"}`. `output` and `report` are required; add `classified_1`, `classified_2`, `unclassified_1` and `unclassified_2` when they are written. The set of roles is the file set. |
-| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "gz_exit": [int, ...], "rg_exit": [int, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, with `gz_exit` and `rg_exit` each tool's real exit status, one per input file in mate order (R1, R2). The four lists must have the same length: the shas 64 lowercase hex, the exits integers. **The body's B1 rule** decides `differs`: the sha lists differ, **or** any exit is non-zero, **or** either list holds the empty-stream sha256 (`e3b0c442…b855`). `differs` must satisfy it and `identical` must not; so `identical` with a non-zero exit, or with an empty output, is a contract DEFECT. **A non-zero `gz_exit`, or an empty gzip stream** (`e3b0c442…` in `gz_sha256`), is a DEFECT of its own, of class `input`: an input or staging failure, not an S5 finding. The same DEFECT is raised from the body's **identity line** (`lad-identity {json}`, kind `identity`, in `out/lad.jsonl`) when it carries `input_defect: true`, for an input whose sample's `s5` does not already show it. A sample flagged both ways gets one DEFECT. The run is excluded, and the sample is not counted in the S5 fallback finding. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
+| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "gz_exit": [int, ...], "gz_warning": [bool, ...], "rg_exit": [int, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, with `gz_exit` and `rg_exit` each tool's real exit status, one per input file in mate order (R1, R2). The four lists must have the same length: the shas 64 lowercase hex, the exits integers. **The body's B1 rule** decides `differs`: the sha lists differ, **or** any `rg_exit` is non-zero, **or** any `gz_exit` is other than 0 or 2, **or** either list holds the empty-stream sha256 (`e3b0c442…b855`). `differs` must satisfy it and `identical` must not; so `identical` with a non-zero rapidgzip exit, a gzip exit other than 0 or 2, or an empty output, is a contract DEFECT. GNU gzip's exit 2 is its warning (output complete; upstream's wrapper ignores it): `gz_warning`, when present, must be `gz_exit == 2` per mate, or it is a contract DEFECT. **A `gz_exit` other than 0 or 2, or an empty gzip stream** (`e3b0c442…` in `gz_sha256`), is a DEFECT of its own, of class `input`: an input or staging failure, not an S5 finding. The same DEFECT is raised from the body's **identity line** (`lad-identity {json}`, kind `identity`, in `out/lad.jsonl`) when it carries `input_defect: true`, for an input whose sample's `s5` does not already show it. A sample flagged both ways gets one DEFECT. The run is excluded, and the sample is not counted in the S5 fallback finding. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
 | `rank`, `idx`, `input_bytes`, `threads` | no | | node rank, index in the cohort, input bytes, threads |
 
 A missing or ill-typed required field is a DEFECT (contract) and excludes the run.
@@ -611,7 +738,7 @@ comments. Columns are read by name:
 | `predecessor` | the rung this one changes one lever from (empty or `-` for a root) |
 | `lever` | the lever key-group. `stock` marks only the root S0-T1. S0-Tv's predecessor is S0-T1 and its lever is `threads`. S5's lever is `rapidgzip`, which is how the S5 findings find it. |
 | `counterpart` | the O counterpart of an S lever, or the stated reason there is none |
-| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two. |
+| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two, each term with its own scope (`run:fetch-db+run:load+run:classify`, as this table writes a compound phase; `sample:A+run:B` alike). A term of a run's own lever phase that matches nothing (no such manifest phase, no lad-sample with it) is a DEFECT (contract), and the run is excluded. A run successor's phase term that the predecessor run lacks is a DEFECT (contract) too if the body marks that phase on every run (setup, fetch-db, etag-hash.k2d, fetch-inputs, load, classify, upload-drain), and a note if it is a conditional one (identity, build-wait, sha-get), which the successor's lever may be what adds. |
 | `endpoint` | the endpoint(s) this rung is, for example `S*-time;S*-cost` (every cohort) or `c1:S*-time;c10:S*-time` (per cohort; a per-cohort declaration wins). Two rungs declaring the same endpoint for the same cohort is a DEFECT (levers). An endpoint that is not declared gives the status "endpoint not declared"; nothing is selected from the data. |
 | `pred_wall_s`, `pred_usd`, `pred_phase_s` (optional) | the predicted delta on each axis, set against the threshold |
 | `alias_of` | for an alias rung, its candidates separated by `\|` (e.g. `S9\|Sstar-r8g\|Sstar-r8gd`) |
@@ -784,7 +911,7 @@ never generates it.
 | file | what |
 |---|---|
 | `runs.tsv` | one row per ladder run: PARAMS, type, nodes, commit, price, wall_s and wall_net_s with critical_measurement_s per rank (`r0=…;r1=…`) and net_basis, billed_usd and billed_net_usd, each effective cost gross and net, lever phase, planned and emitted samples, U_* (cpu, mem mean and peak, net baseline/peak and each direction), util cost_usd, each effective cost, util coverage, whether it is in the attribution (with the reason if not), notes |
-| `tidy.tsv` | long rows: run-level metrics plus every lad-sample field (pairs, rc, phase.*, output.<role>.bytes and .sha256, s5.status, s5.fallback) |
+| `tidy.tsv` | long rows: run-level metrics plus every lad-sample field (pairs, rc, phase.*, output.<role>.bytes and .sha256, s5.status, s5.fallback, and s5.gz_warning: the mates on which GNU gzip exited 2, or none). summary.md has a `gz_warning:` note for each such sample |
 | `rungs.tsv` | per (arm, rung, cohort) and axis (wall_s, billed_usd, lever_phase_s): basis (measured or modelled), n, median, min, max, range, granularity_q |
 | `deltas.tsv` | each rung against its predecessor (or its nearest run ancestor, or an alias's winner: `predecessor_basis`) on wall net and gross, billed net and gross, and the lever phase (`series`, `net_basis`): ranges, measured spread, q, threshold, status, predicted delta and whether it was resolvable; a `not-run` rung's row carries its label |
 | `effcost.tsv` | per (arm, rung, cohort): median and range of each U and each effective cost, with q, util coverage, and any missing util named |
