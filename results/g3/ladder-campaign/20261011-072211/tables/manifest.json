@@ -1,0 +1,2275 @@
+{
+  "generator": "scripts/lib/ladder_tables.py",
+  "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+  "generator_dirty": false,
+  "generated_at": "2026-10-11T16:39:03Z",
+  "lad_sample_contract_v": 1,
+  "levers": "scripts/g3/ladder.levers.tsv",
+  "modelled": null,
+  "resolved": null,
+  "runs": [
+    {
+      "run_id": "20261011-041927-a959453",
+      "dir": "results/g3/20261011-041927-a959453",
+      "commit": "a959453b81076afe09ff6207c8b641ad316e3b48",
+      "params": {
+        "rung": "S2a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-042400-f72142e-34a4-n1",
+      "dir": "results/g3/20261011-042400-f72142e-34a4-n1",
+      "commit": "f72142e25878e70cae50f2fbd7074742fb82cbfd",
+      "params": {
+        "rung": "S2a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-072219-4f40ed3-9d46-n1",
+      "dir": "results/g3/20261011-072219-4f40ed3-9d46-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S5",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-073312-4f40ed3-e170-n1",
+      "dir": "results/g3/20261011-073312-4f40ed3-e170-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S6",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-074247-4f40ed3-8e25-n1",
+      "dir": "results/g3/20261011-074247-4f40ed3-8e25-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S7a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-serial",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-075320-4f40ed3-3458-n1",
+      "dir": "results/g3/20261011-075320-4f40ed3-3458-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S7b",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-080254-4f40ed3-c4dd-n1",
+      "dir": "results/g3/20261011-080254-4f40ed3-c4dd-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S9",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-081231-4f40ed3-fd4a-n1",
+      "dir": "results/g3/20261011-081231-4f40ed3-fd4a-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "Sstar-r8g",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-082155-4f40ed3-6f18-n1",
+      "dir": "results/g3/20261011-082155-4f40ed3-6f18-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2b-ii",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-083840-4f40ed3-2f49-n1",
+      "dir": "results/g3/20261011-083840-4f40ed3-2f49-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2d",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-084915-4f40ed3-1a15-n1",
+      "dir": "results/g3/20261011-084915-4f40ed3-1a15-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2c",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-085849-4f40ed3-f9d5-n1",
+      "dir": "results/g3/20261011-085849-4f40ed3-f9d5-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "Sstar-r8gd",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-090843-4f40ed3-5451-n1",
+      "dir": "results/g3/20261011-090843-4f40ed3-5451-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-093338-4f40ed3-9f51-n1",
+      "dir": "results/g3/20261011-093338-4f40ed3-9f51-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2b-i",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-095853-4f40ed3-10f4-n1",
+      "dir": "results/g3/20261011-095853-4f40ed3-10f4-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S0-T1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "1",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-105849-4f40ed3-69ea-n1",
+      "dir": "results/g3/20261011-105849-4f40ed3-69ea-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S0-Tv",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-115635-4f40ed3-e8da-n1",
+      "dir": "results/g3/20261011-115635-4f40ed3-e8da-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S0-Tv",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-125422-4f40ed3-c53e-n1",
+      "dir": "results/g3/20261011-125422-4f40ed3-c53e-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S0-T1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "1",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-135418-4f40ed3-f5f3-n1",
+      "dir": "results/g3/20261011-135418-4f40ed3-f5f3-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2b-i",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-142024-4f40ed3-c5dd-n1",
+      "dir": "results/g3/20261011-142024-4f40ed3-c5dd-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-144528-4f40ed3-6caf-n1",
+      "dir": "results/g3/20261011-144528-4f40ed3-6caf-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "Sstar-r8gd",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-145503-4f40ed3-4b94-n1",
+      "dir": "results/g3/20261011-145503-4f40ed3-4b94-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2c",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-150437-4f40ed3-3bb1-n1",
+      "dir": "results/g3/20261011-150437-4f40ed3-3bb1-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2d",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-151422-4f40ed3-2181-n1",
+      "dir": "results/g3/20261011-151422-4f40ed3-2181-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2b-ii",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-153046-4f40ed3-5127-n1",
+      "dir": "results/g3/20261011-153046-4f40ed3-5127-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "Sstar-r8g",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-154020-4f40ed3-3c2f-n1",
+      "dir": "results/g3/20261011-154020-4f40ed3-3c2f-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S9",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-154955-4f40ed3-e37a-n1",
+      "dir": "results/g3/20261011-154955-4f40ed3-e37a-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S7b",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-155929-4f40ed3-1195-n1",
+      "dir": "results/g3/20261011-155929-4f40ed3-1195-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S7a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-serial",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-160904-4f40ed3-9df7-n1",
+      "dir": "results/g3/20261011-160904-4f40ed3-9df7-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S6",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-161738-4f40ed3-8d62-n1",
+      "dir": "results/g3/20261011-161738-4f40ed3-8d62-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S5",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-162822-4f40ed3-fd5a-n1",
+      "dir": "results/g3/20261011-162822-4f40ed3-fd5a-n1",
+      "commit": "4f40ed318ec0dd5dfcbe540e944315922e645e77",
+      "params": {
+        "rung": "S2a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 2,
+        "rep_source": "AK2_LADDER_REP at launch (make ladder-campaign)",
+        "endpoint": ""
+      }
+    }
+  ],
+  "defects": [
+    "incomplete: 20261011-041927-a959453: 0 of 1 planned samples; missing SRR5935740",
+    "contract: 20261011-041927-a959453: its lever phase run:fetch-db+run:load+run:classify: run:fetch-db, run:load, run:classify match(es) no manifest phase or lad-sample phase",
+    "contract: 20261011-041927-a959453: S3's lever phase run:fetch-db+run:load+run:classify: run:fetch-db, run:load, run:classify not in this run (its predecessor run), though the body marks it on every run",
+    "contract: 20261011-041927-a959453: S4's lever phase run:classify: run:classify not in this run (its predecessor run), though the body marks it on every run",
+    "contract: 20261011-041927-a959453: S5's lever phase run:classify: run:classify not in this run (its predecessor run), though the body marks it on every run"
+  ],
+  "findings": [],
+  "notes": [
+    "Sstar-cost is unresolved at c1 although its candidates S9, Sstar-r8g, Sstar-r8gd have runs there (alias unresolved: no ladder.resolved.tsv row (key alias))",
+    "Sstar-time is unresolved at c1 although its candidates S9, Sstar-r8g, Sstar-r8gd have runs there (alias unresolved: no ladder.resolved.tsv row (key alias))",
+    "20261011-041927-a959453: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-042400-f72142e-34a4-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-072219-4f40ed3-9d46-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-073312-4f40ed3-e170-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-074247-4f40ed3-8e25-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-075320-4f40ed3-3458-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-080254-4f40ed3-c4dd-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-081231-4f40ed3-fd4a-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-082155-4f40ed3-6f18-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-083840-4f40ed3-2f49-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-084915-4f40ed3-1a15-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-085849-4f40ed3-f9d5-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-090843-4f40ed3-5451-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-093338-4f40ed3-9f51-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-095853-4f40ed3-10f4-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-105849-4f40ed3-69ea-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-115635-4f40ed3-e8da-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-125422-4f40ed3-c53e-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-135418-4f40ed3-f5f3-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-142024-4f40ed3-c5dd-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-144528-4f40ed3-6caf-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-145503-4f40ed3-4b94-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-150437-4f40ed3-3bb1-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-151422-4f40ed3-2181-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-153046-4f40ed3-5127-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-154020-4f40ed3-3c2f-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-154955-4f40ed3-e37a-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-155929-4f40ed3-1195-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-160904-4f40ed3-9df7-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-161738-4f40ed3-8d62-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)",
+    "20261011-162822-4f40ed3-fd5a-n1: not in results/g3/campaign/spend.tsv (rerun make g3-tables)"
+  ],
+  "inputs": [
+    {
+      "path": "results/cohort/PRJNA398089/runs.tsv",
+      "bytes": 295311,
+      "sha256": "fb2957ae8202c18be05641e85b0e9fcfdba7ecfe6b0f93d6349287c99422bd96"
+    },
+    {
+      "path": "results/g3/20261011-041927-a959453/log/run.log",
+      "bytes": 1545,
+      "sha256": "8c20bf01b5840c44ac8201c5beeb6eec513c9e1968f4084c66938c2863e9b7e8"
+    },
+    {
+      "path": "results/g3/20261011-041927-a959453/manifest.json",
+      "bytes": 8703,
+      "sha256": "0bb31f63704b342646b91d9fa4464efbef787bc825fd303121bcf2ac15116134"
+    },
+    {
+      "path": "results/g3/20261011-041927-a959453/tables/util.tsv",
+      "bytes": 3441,
+      "sha256": "a96ef2f7702fcf61cc5c6ab90772ff7e88fb001e78b0478135eb4d4ff67eb2b0"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1-r0/log/run.log",
+      "bytes": 16978,
+      "sha256": "c8412ebb4d0abbf4c1ab73062770353e2409bc8286494be5ead8080794052a4b"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1-r0/manifest.json",
+      "bytes": 13154,
+      "sha256": "165022d7e7383af70523e822ade87819505756618ea0c766bc62330dec018f87"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "d8913ed8727eb5214b6042ac2d901d078ae3ecd6952dc5b649b7fdafe08430d4"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1-r0/out/lad-samples.jsonl",
+      "bytes": 743,
+      "sha256": "bbd083e82c7b325b48fee0a8bfa3ad3151826ae45a75de187551152f36a4dd3a"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1-r0/out/lad.jsonl",
+      "bytes": 2054,
+      "sha256": "5be3d7f25fef471e7658a754e5f21b73e19b7e4d50fea99a2c81600f77673ecd"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1/cohort.json",
+      "bytes": 2888,
+      "sha256": "1cd56dadd17ca9832ed47dcbfcdbc77064c1ed48d87b2aa0f41a62ac99ec1a34"
+    },
+    {
+      "path": "results/g3/20261011-042400-f72142e-34a4-n1/tables/util.tsv",
+      "bytes": 5129,
+      "sha256": "5615578db1d574a621adf20644b88601ece09a915284e33dfb2b935cda60891e"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1-r0/log/run.log",
+      "bytes": 19813,
+      "sha256": "02586fdae0111345e4b1464368321cf088eb29f8f1a95e8645d4ea9889e49061"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1-r0/manifest.json",
+      "bytes": 13071,
+      "sha256": "8a6e475f925d80747d018a72c2c6f832cb4dd0cd3af0e22ce0df5e6c41776a89"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "1ab0ad1659c278e3aed953dc89ef706d19bf2b68362b71ec5c2ea222f7338800"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1124,
+      "sha256": "6645c9319227a058127a6cf3b298500027cb5a2810fec650f3d959a4aa639baa"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1-r0/out/lad.jsonl",
+      "bytes": 3447,
+      "sha256": "5935a13d5780c6f7d7be437c6d9222440bdbc3d3cadf0c157ab65cad5f990227"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1/cohort.json",
+      "bytes": 3059,
+      "sha256": "98b602dab0125f679d9b057be92dcb32358439d3cf8ba46fdffda29e6f904b35"
+    },
+    {
+      "path": "results/g3/20261011-072219-4f40ed3-9d46-n1/tables/util.tsv",
+      "bytes": 5156,
+      "sha256": "02ce57eafb870c20745aa5ba0e11b943d15f0e817be6100bdf4b9b6f88168230"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1-r0/log/run.log",
+      "bytes": 19819,
+      "sha256": "90a8d9788054e6a091006b030990deb9095659d76217e61c2c5d43bd9495ce06"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1-r0/manifest.json",
+      "bytes": 13072,
+      "sha256": "1967d321b55a9425517b96465bdb2f88ef42be8552ebaf0adc79e6100ad0947d"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "787aa7af34b65317f5b2b4d7d5b3a7ac57bfad660c3de8acf3fc99b07376a5f2"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1124,
+      "sha256": "6d70aa4240aa23b5631b9d8ef0efbbefd143bc8e8901bb7c3ea584238dc9c9ab"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1-r0/out/lad.jsonl",
+      "bytes": 3449,
+      "sha256": "c82a7e1a5974d8b735c75ea6be28ac9654208412f9c1fa0fe7bb809356125f95"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1/cohort.json",
+      "bytes": 3060,
+      "sha256": "c10d99355832549a2ebfc473a39a4bf307c9da6febcb2e092b4e6e467a345017"
+    },
+    {
+      "path": "results/g3/20261011-073312-4f40ed3-e170-n1/tables/util.tsv",
+      "bytes": 5367,
+      "sha256": "f57f41802d0c17e281b70590833ab3b981eed1efaa1f1610e69287cda6253ace"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1-r0/log/run.log",
+      "bytes": 20926,
+      "sha256": "de562e1fee003514f4f5cbbd13c066855b3f847e91b8beb86b0d25e40a0ba7b6"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1-r0/manifest.json",
+      "bytes": 13071,
+      "sha256": "b6b3f6b1bc1ab600819abbdfec4f86d160bd0150173c291ac54c2502364fe939"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "6df6f2b1f98dfc4e69d1e6ef2ff677d7ad54f751d0c903493e282b53075ac485"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1123,
+      "sha256": "568208c86ccf24ee6b52382db506f5d05c20ad1fd7e45ea24f090e47c34e504b"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1-r0/out/lad.jsonl",
+      "bytes": 3448,
+      "sha256": "37dcf5486cfdf5f21981abdc95cee9ce8a7a364e6c77b37af3cf5da4d4a48308"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1/cohort.json",
+      "bytes": 3061,
+      "sha256": "8dde1e60379ed23ef6a5e2f0a13c4d81b6ae1c3deeef067fe9dbda711e4452a6"
+    },
+    {
+      "path": "results/g3/20261011-074247-4f40ed3-8e25-n1/tables/util.tsv",
+      "bytes": 5380,
+      "sha256": "89ad991fd962258a95edd0c2a6e8d44f3a247ecb35dc3fcfe1efdf8d71f440c2"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1-r0/log/run.log",
+      "bytes": 20929,
+      "sha256": "c4da083964a1d0dcababae78d5c3453a79373712f88820cc7b03f628c77bcbda"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1-r0/manifest.json",
+      "bytes": 13088,
+      "sha256": "59bf6cb32a458dcc51471dee833790343c77adb5c25a7eb16dcf3dc94ec1529d"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "b8b66a6dd9152677f4b007db70f09d11aa79f2e1011d7fee5377f56362bd360b"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1109,
+      "sha256": "4de0b4d2cef720dfb4a5a21f0f23a5723c26353a361eb59c4ed1a2d62513f864"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1-r0/out/lad.jsonl",
+      "bytes": 3435,
+      "sha256": "124e3d88fafac1950bf795b5e37e2da1ae058227d6647e85a773887160f9ab3f"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1/cohort.json",
+      "bytes": 3062,
+      "sha256": "42167d91012db679663a4636e17a1f9bb0ac997f714c6d91de83d15f29c8b3e6"
+    },
+    {
+      "path": "results/g3/20261011-075320-4f40ed3-3458-n1/tables/util.tsv",
+      "bytes": 5376,
+      "sha256": "321c78bc9339e5dafab4ebd5ee174daaf6188b75d88168b515515c1c57e212e7"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1-r0/log/run.log",
+      "bytes": 20978,
+      "sha256": "50dbd47c44373f3d3f5349fdf4c4b0c14cbc611a615883ab00c68c4b055d3193"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1-r0/manifest.json",
+      "bytes": 13208,
+      "sha256": "b67f95f3b3226326f8e8cdf535de75e64ba71e8e9b6854098b982a1cbdc8ef98"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "c7a02ef1624022cfcb4f32e176178aecb8e3cd99d7e1bdd9d3f649b2e99e0030"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1109,
+      "sha256": "67843edbd12634607bfd0b07f6762183a5647a14bcdeac702cf5181935fcb09b"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1-r0/out/lad.jsonl",
+      "bytes": 3443,
+      "sha256": "6404ca355ab48a25ef190f89d3223738f82fd9956f615ed7b16bc8d0dc269561"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1/cohort.json",
+      "bytes": 3061,
+      "sha256": "3012dd99612390c313499684a4919b3c64f83b78938784ebcbae4104d0cba3a3"
+    },
+    {
+      "path": "results/g3/20261011-080254-4f40ed3-c4dd-n1/tables/util.tsv",
+      "bytes": 5619,
+      "sha256": "c8e0548286c9599865cf6c40278bcb53df66869cecc71f42106cf6c77770d012"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1-r0/log/run.log",
+      "bytes": 21178,
+      "sha256": "27500d508001ae426f18897cc41df91f0c81706cf18ceabe29b8a3dc2a8b148b"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1-r0/manifest.json",
+      "bytes": 13257,
+      "sha256": "446056659cb0621df0ad3ddd4bfc4a4f07526034104a898c9ef0bc441e510d8f"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "62de3d81bc1bba7040efa79a659cbc506118d20ef3cecd1c701735d196f1308f"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1117,
+      "sha256": "4870b07f7aa649e72d8d442c1d55bfca04ddf820cd5567c2a95cefc64a920408"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1-r0/out/lad.jsonl",
+      "bytes": 3463,
+      "sha256": "79d7c1d5500b10ae4164acd341691c1641cf0522732dfd0c9dc551a9e430fd4f"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1/cohort.json",
+      "bytes": 3105,
+      "sha256": "b3c9565885bab9e4d45d00017d9c5ab688bc05ac7a937db7602520cea505a548"
+    },
+    {
+      "path": "results/g3/20261011-081231-4f40ed3-fd4a-n1/tables/util.tsv",
+      "bytes": 5605,
+      "sha256": "1f4e55354f9e665766269c06ccee30236c81a7b27687fc9ad3f98cfbe5ab9c3a"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1-r0/log/run.log",
+      "bytes": 17311,
+      "sha256": "aa20d2b1af39d37b471cf0865a54b7741f934a5e1165850b9db478c0c12bd984"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1-r0/manifest.json",
+      "bytes": 12982,
+      "sha256": "55465e529d10d49f0fa71d1b9f6e2491e08af7b6766962bdcd318bd9f0fb1156"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "816f6a594734ac4e238e1ee421374f39bfaba81eaddd78938104a79b3f31cb62"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1-r0/out/lad-samples.jsonl",
+      "bytes": 749,
+      "sha256": "58c64139dcc149f0767e63b5ea1f7d83b336c6536779e71249a19aabb8193fb1"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1-r0/out/lad.jsonl",
+      "bytes": 2047,
+      "sha256": "f52525f4f4754a00e922b61349a871d2d69ab4506cf9edc6902b0751b83ab1ad"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1/cohort.json",
+      "bytes": 3084,
+      "sha256": "c5ac99955cb359e9f8cdae3bdd538d8425ddb367382a042107f4818693bcdc36"
+    },
+    {
+      "path": "results/g3/20261011-082155-4f40ed3-6f18-n1/tables/util.tsv",
+      "bytes": 4963,
+      "sha256": "04e225495618b24bf3e595ff825602f7fad9c82eeae60f6967db9e7212653d7c"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1-r0/log/run.log",
+      "bytes": 17342,
+      "sha256": "c86e3e7f2c412bde50ebff7d60354770960140e5c2c2c9860c56e4e84cfd8181"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1-r0/manifest.json",
+      "bytes": 12979,
+      "sha256": "c2e7b9eb940094920fb19a61692464dc4122de2f2de1f6d5e67945f064fe71de"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "c78711a088b273f738bc31d7e45079dfccccbe5417305bf4cc1439e95e1f9ac7"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1-r0/out/lad-samples.jsonl",
+      "bytes": 746,
+      "sha256": "77cd3a2f5043615a60480bd5d2e988969b1509c6fb56c37cf213ced311b32c59"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1-r0/out/lad.jsonl",
+      "bytes": 2055,
+      "sha256": "1b97652fbab91356d7c319035e98fe643a9fa1351262b69ef65fd2e04918574d"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1/cohort.json",
+      "bytes": 3083,
+      "sha256": "b323a6d63fdbad327e12f3fdd8d58fbe921618eca22f1274ff95053f6a6664a5"
+    },
+    {
+      "path": "results/g3/20261011-083840-4f40ed3-2f49-n1/tables/util.tsv",
+      "bytes": 4931,
+      "sha256": "d690e4057b0a405050fc8a65a3c04f55bafde496d566e87e5e9a2be0950aa0df"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1-r0/log/run.log",
+      "bytes": 17066,
+      "sha256": "11fb9945f74be2a1ca7bac0c12eec3e13b83eb91533754902f732064ebc63379"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1-r0/manifest.json",
+      "bytes": 12980,
+      "sha256": "643fb393d59c86065126a604d13b553e0c953eeb0ed1fc5255311d853be4e4b7"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "1f0a81d25773e1a0bc449313e50e765ccef6cbbcf6839acd6de393d2b880f487"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1-r0/out/lad-samples.jsonl",
+      "bytes": 746,
+      "sha256": "e18bb025ec6032ed42931931c142f9edabdc8089a148804b39e02a0e4613b51d"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1-r0/out/lad.jsonl",
+      "bytes": 2061,
+      "sha256": "ef1993dc0e60b3595d0f50c1d0b60a8cb89e73470bf5dd8736a81fd68249d32c"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1/cohort.json",
+      "bytes": 3084,
+      "sha256": "afce0f09327e42bce4b74d176fbc9313a7e2e4971d576b189af6c58b398bbb4a"
+    },
+    {
+      "path": "results/g3/20261011-084915-4f40ed3-1a15-n1/tables/util.tsv",
+      "bytes": 4929,
+      "sha256": "4de39ca541d68de00ff6c60978a5135c83e3174f44ca32352be17318a91270c8"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1-r0/log/run.log",
+      "bytes": 21190,
+      "sha256": "49469e515b6a5f444d29e785aa219e094164971091274d0a30db845f1921605d"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1-r0/manifest.json",
+      "bytes": 13260,
+      "sha256": "ca612965420515c1874403cdd57dc2d846bb8dd0bf93ab610804c402d85c5c3c"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "4ee56b92d5f86690dc0bcb791265c0363441ef14ff7938733db2062e80a2a7dc"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1119,
+      "sha256": "371078f839f132ce4eb48b40cd96fc0611f5b93edf6c0693c2590620466195af"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1-r0/out/lad.jsonl",
+      "bytes": 3467,
+      "sha256": "b8607aeff05d6975a6f78d3a2719997265589f8259e62d73bfe7a845ffa813af"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1/cohort.json",
+      "bytes": 3109,
+      "sha256": "e0e23d37d9a1cdb85e5ad3f61c2065e675ad730811f49323607fd4b42a4d27c8"
+    },
+    {
+      "path": "results/g3/20261011-085849-4f40ed3-f9d5-n1/tables/util.tsv",
+      "bytes": 5382,
+      "sha256": "d7097ab36ce9abf47d05645ec48520910e36d9f9f07d835a853f90913aa2298b"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1-r0/log/run.log",
+      "bytes": 17149,
+      "sha256": "5482b34b2612d503e54c8b80ae28e11ccaf164255eb874306555b5b06a5aef75"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1-r0/manifest.json",
+      "bytes": 12977,
+      "sha256": "65a7addb833288c0ff037036989e388cfbb26ff5a544e4006fd95b1c926f3080"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "1f7003bac6b1978fb835531c34d355e61edb3d89d63167f09f398045d5e59cc9"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1-r0/out/lad-samples.jsonl",
+      "bytes": 746,
+      "sha256": "c70c19d9074bc4ba407349d2abdf0598baec05e8b2ff1e791bb38a1785a42a2f"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1-r0/out/lad.jsonl",
+      "bytes": 2022,
+      "sha256": "00550b32af2ddb0d344762af01c092c222bc1dac0883f005fcd8637302afde2f"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1/cohort.json",
+      "bytes": 3077,
+      "sha256": "d50f40f2202d18e470b7ca222e0c8f0416abc060a61cccec446862832cf18149"
+    },
+    {
+      "path": "results/g3/20261011-090843-4f40ed3-5451-n1/tables/util.tsv",
+      "bytes": 4938,
+      "sha256": "8ff2770a520196ef321c844af65f25245397cfb916291309345484a25df80db7"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1-r0/log/run.log",
+      "bytes": 17145,
+      "sha256": "6a03c4536a8c11782894809b45de86fe96485ca92eb4bc1d50f42c1fdb3c2721"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1-r0/manifest.json",
+      "bytes": 12983,
+      "sha256": "52e169106e4a97fb89b4414fa832fccda0c0c19dc3a38ba96d6bb2623655f025"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "7eade8fae39d8a6a952e5e61ad382768cc27bc606cdeda93eff8be2b4115c97b"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1-r0/out/lad-samples.jsonl",
+      "bytes": 750,
+      "sha256": "a185752e4539931fb557e8d2e71aeaedd9b763c8f092fa29057d48925180fed4"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1-r0/out/lad.jsonl",
+      "bytes": 2030,
+      "sha256": "f166f8b64d11f23900200b6b795c2c508a4bdf1e4cb2a587738c4511bd968e2d"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1/cohort.json",
+      "bytes": 3084,
+      "sha256": "c0cb7b632a339d3ad6d51d8734f16da310b98226df4ddfcd7500a5f62f40109b"
+    },
+    {
+      "path": "results/g3/20261011-093338-4f40ed3-9f51-n1/tables/util.tsv",
+      "bytes": 4943,
+      "sha256": "69ef102fd6ea92d1caabad9335e53edb4e76961fb8be42cfd186924d273ab3d7"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1-r0/log/run.log",
+      "bytes": 15407,
+      "sha256": "4f3f15905bbbe6e8a6669fcf8e27627e3e43fb1758a0a72edcf8dee1fab76bcf"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1-r0/manifest.json",
+      "bytes": 12993,
+      "sha256": "1918c5c4b9608f110b1d40dec3e79258fdb4e784b849765b176ba9175eabac56"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "bba01c88406bf74b722c4c63e3d6c5d672d9d859cd3da986e3e60e3456971f2c"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1-r0/out/lad-samples.jsonl",
+      "bytes": 748,
+      "sha256": "1d978436a8406e36cc02659e640691cffb55989a240cbdecfc0176bea78ac2a5"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1-r0/out/lad.jsonl",
+      "bytes": 2027,
+      "sha256": "4ce01a130bf8b7a9c9fdd5be1a0853adfee0a11395ef802bd3aabef4992426a8"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1/cohort.json",
+      "bytes": 3087,
+      "sha256": "16c0d759b20ec0774578ef5eecca42a3e17781b827013b96223bd2942d2bcaf0"
+    },
+    {
+      "path": "results/g3/20261011-095853-4f40ed3-10f4-n1/tables/util.tsv",
+      "bytes": 4945,
+      "sha256": "82b5ef66fcb507b82b9f83c8fe1f6711135424356acfcdd71562d88f6baf5e4f"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1-r0/log/run.log",
+      "bytes": 15417,
+      "sha256": "0f55d25bc8651e20f40fe2d753e513573cac7889e80207556c626ad034e2762a"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1-r0/manifest.json",
+      "bytes": 12996,
+      "sha256": "6cc456f836565ce47a9f61dede7d463816af451f71defd142d858338e3f642f0"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "bba01c88406bf74b722c4c63e3d6c5d672d9d859cd3da986e3e60e3456971f2c"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1-r0/out/lad-samples.jsonl",
+      "bytes": 749,
+      "sha256": "d2683abc4b206d937d08eaefb4a119dfda435b53651335cb62477b599f0a02df"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1-r0/out/lad.jsonl",
+      "bytes": 2036,
+      "sha256": "1953e7665e9c430415e6d992c08f3e644b035d361d5535340114df4a1a4c31e3"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1/cohort.json",
+      "bytes": 3093,
+      "sha256": "ab7c036078fb55afb3d6fabaf73e9b4b9e05f4c17bdafc181329b363cdb7f9d6"
+    },
+    {
+      "path": "results/g3/20261011-105849-4f40ed3-69ea-n1/tables/util.tsv",
+      "bytes": 4965,
+      "sha256": "3f4011fb9fedf6f0c1701e6c7085980f19ec2e1ed0caec78a9c1630e549a3b9f"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1-r0/log/run.log",
+      "bytes": 15417,
+      "sha256": "d988ed55cb285d838e53ee97ff1103ec932848f6d5e0d80c89795bc5b0e62b7e"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1-r0/manifest.json",
+      "bytes": 12996,
+      "sha256": "a48865114b0e55c7523467c3142755bf896af851b0ef424446b1046130c18f2d"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "f16deff8781d5595de79d443f480e88f40ec7187196488f159d11f40a1937c88"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1-r0/out/lad-samples.jsonl",
+      "bytes": 748,
+      "sha256": "187364b574f88be9fdac06ec640c4e24aadf8e0fbafce71afc6548f246ce0358"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1-r0/out/lad.jsonl",
+      "bytes": 2035,
+      "sha256": "82b92b99d8d38719f81593079bb77ce3a9b8208b05f361405dada1417bd5ecbd"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1/cohort.json",
+      "bytes": 3093,
+      "sha256": "42bd34486da87bfac2f6d9ae3a45f426e95fb9fdc9d7a7428dd6f06fcdc5ebb1"
+    },
+    {
+      "path": "results/g3/20261011-115635-4f40ed3-e8da-n1/tables/util.tsv",
+      "bytes": 4942,
+      "sha256": "cddaccab68ed4d26df90e72c5e0860d556172f8e3c108a4bdee630200c7595a7"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1-r0/log/run.log",
+      "bytes": 15412,
+      "sha256": "48ff1a5b9accac92c25ac0833ff1edaccbf59f4680b5c890bd6095582fd1cb62"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1-r0/manifest.json",
+      "bytes": 12992,
+      "sha256": "0122d99a24adfae9ac9f653de0ba682796dbddd0352df978c63e24c6dadb0c7f"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "aad619b2150ccb31d6d7c30d3bd21dc8721b3cef559212df5d714775854f8be2"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1-r0/out/lad-samples.jsonl",
+      "bytes": 748,
+      "sha256": "801abd8f4da41616bfa1c33cfa94032154412b3ddf686ac0edb0a8af334b63e8"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1-r0/out/lad.jsonl",
+      "bytes": 2029,
+      "sha256": "7ff6b6611caaf1f476fd45dc00efed2d12df1292b3675ccdca7ae7123415138c"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1/cohort.json",
+      "bytes": 3087,
+      "sha256": "af2298bad9688968b7367e029664ae5e0ea4ba140d7b1e818cd26fa34b343cb1"
+    },
+    {
+      "path": "results/g3/20261011-125422-4f40ed3-c53e-n1/tables/util.tsv",
+      "bytes": 4940,
+      "sha256": "f9b24c826272c528ba95eca25dbee34b23a837ad992f1c3a4b72f2430424b1fa"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1-r0/log/run.log",
+      "bytes": 17147,
+      "sha256": "24189e0981897802bdf0c16cf2d4d353d3f95f410584892f618040d9dcdaa40c"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1-r0/manifest.json",
+      "bytes": 12984,
+      "sha256": "1f2916528948e2ef7a2faab53b15b13e785dc1e465ded02c5072eac4bf7428bb"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "c8a1a95f02090d3aff7e9c83a040b55f47bdcaf229e1948ad16f5ccd91c4d7c8"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1-r0/out/lad-samples.jsonl",
+      "bytes": 749,
+      "sha256": "8e3fd00c0e06e0f22ef4cd467ff8bc362e632c421a0789fba77dcdf66b40e3fd"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1-r0/out/lad.jsonl",
+      "bytes": 2028,
+      "sha256": "b86a5b165cd90e2e6c45c0fb1f925a38623f9be516bf379d2ae1865d2f9aa870"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1/cohort.json",
+      "bytes": 3084,
+      "sha256": "82dd3920bc18f11dad790816e40a23ff648e4243653923b44ce31910ff68d06e"
+    },
+    {
+      "path": "results/g3/20261011-135418-4f40ed3-f5f3-n1/tables/util.tsv",
+      "bytes": 4950,
+      "sha256": "b75220c71c4819ca0431e39fc06d683639301fb763f07a5daf128bb566f27d7e"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1-r0/log/run.log",
+      "bytes": 17152,
+      "sha256": "7ea5b019c5ccef68293c2709f1358fdfce30454b92b24e2cd6cd0f47a16fa24f"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1-r0/manifest.json",
+      "bytes": 12977,
+      "sha256": "473e18babc740c9220c25692edff82ff1b3d69b53ca5046b9b234f2614269315"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1-r0/out/lad-net.jsonl",
+      "bytes": 98,
+      "sha256": "8b2dd9aef97838a42567b4e18e290d1d9e9bed370b50be2f0029bdb69a4b9286"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1-r0/out/lad-samples.jsonl",
+      "bytes": 744,
+      "sha256": "f8ea250597b680e26d13c2f00b890fa34c4c70ed1258366a764fee6d0d20978d"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1-r0/out/lad.jsonl",
+      "bytes": 2018,
+      "sha256": "21e316ef901434c95da18bcfc904569b67521925dbb1f30d430d8940b20997f6"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1/cohort.json",
+      "bytes": 3077,
+      "sha256": "a623eed2d48d416712aea5868fb19b273cb52063c661f04cc24363eda695705f"
+    },
+    {
+      "path": "results/g3/20261011-142024-4f40ed3-c5dd-n1/tables/util.tsv",
+      "bytes": 5179,
+      "sha256": "0e60166fcefd3acc37c9c3ea1e3d5dfaf9183d1d44675a7cd53f48db970d3ee5"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1-r0/log/run.log",
+      "bytes": 21203,
+      "sha256": "4837d6e13f01957082bc7b660e735226b2060e216a40ee12fb881cd1c56506db"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1-r0/manifest.json",
+      "bytes": 13252,
+      "sha256": "61693d55995e2ddf85f51526ce9429d58c984089511851ef1e3a5d84d463f146"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "c5c03c9150349a316e4d0f68f019113069b44899a2a32576eba4768b126d990f"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1119,
+      "sha256": "f33693ebc4456e9e485c22d084eedc3550095e3f18e4491a1d7dc8407767858f"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1-r0/out/lad.jsonl",
+      "bytes": 3468,
+      "sha256": "f6d1139c7a8439d9d172c689c4d4fa321f6b5181d23a6320916c81db33e267d3"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1/cohort.json",
+      "bytes": 3109,
+      "sha256": "5f3dbf0327d4f74837eaa0333710d7aece07e78ede8688462550017436b2fd4e"
+    },
+    {
+      "path": "results/g3/20261011-144528-4f40ed3-6caf-n1/tables/util.tsv",
+      "bytes": 5381,
+      "sha256": "0c58f0844be5d97b5d41417a017707b1ad7acee6a2562ba77c0be7c5af3e6197"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1-r0/log/run.log",
+      "bytes": 17067,
+      "sha256": "792d0e8e20161535651216ee9f0c56df9e2b7bfd9092dc14d9a24040592eb7db"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1-r0/manifest.json",
+      "bytes": 12980,
+      "sha256": "00715bb44b1cbde2d28d1b819f9da324b5af121e02b91ff00f6da762d0a3f374"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "1f444a993fffaa31fb956b796ec8d1ac0f35c149d9035fdb84aa743906e6f0ea"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1-r0/out/lad-samples.jsonl",
+      "bytes": 746,
+      "sha256": "d6b8752e8f66ee3fe6358db7a13d7ad3da00db6cee3e23199527a32dca431004"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1-r0/out/lad.jsonl",
+      "bytes": 2063,
+      "sha256": "e9c541fcaaef2a96073434370b94f084eb83585b4d9e779b3dffba4d8623cea1"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1/cohort.json",
+      "bytes": 3084,
+      "sha256": "8e3d43b1dad6cb865fe5b248f0b2521c48121d86f84e3444417660fa79b3e9ff"
+    },
+    {
+      "path": "results/g3/20261011-145503-4f40ed3-4b94-n1/tables/util.tsv",
+      "bytes": 4931,
+      "sha256": "a6b2754b1ca8f819d6993fdc0a05645c820cddf7a1501b730d6fcff958ad52b8"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1-r0/log/run.log",
+      "bytes": 17337,
+      "sha256": "6dc46cce3e9880a7bf470d8c15b39ca36fd766cad39c541b36038551f1cab63f"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1-r0/manifest.json",
+      "bytes": 12979,
+      "sha256": "c19c702dda9922a8ee4d8d76446ea22bddb2d61be2352dc06504c1e2cf371fcb"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "97fde586929413aead3b5e9dbb6c51831ee1aafdde83ae840d7ff45fde5f13cd"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1-r0/out/lad-samples.jsonl",
+      "bytes": 745,
+      "sha256": "45ef191ccd52a0925d956f3e9dcbb39f9af18cbef01718ca73abb9e7dff194b4"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1-r0/out/lad.jsonl",
+      "bytes": 2053,
+      "sha256": "1d60bea702968eff131c40612daffc50d0937ec1c2a243ff6a17b15e18b685fd"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1/cohort.json",
+      "bytes": 3083,
+      "sha256": "78ba843d36affd2ee09bc9dcc7b4b7fa4eef092cef26c1b6452d0f186614a2e2"
+    },
+    {
+      "path": "results/g3/20261011-150437-4f40ed3-3bb1-n1/tables/util.tsv",
+      "bytes": 5124,
+      "sha256": "dddda6e018569cfd8b74ce0f3b9d16965dcd7df3a77200a7df306db5edadbc1b"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1-r0/log/run.log",
+      "bytes": 17308,
+      "sha256": "aaf30e93b202e6713eecc753ec32608c546f0fd9c296afdd2073975c8b8363fa"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1-r0/manifest.json",
+      "bytes": 12982,
+      "sha256": "6c3f21601716a93064daf2d4a86056e89f22d1b81d1b4943d022d1b7e14d48c3"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "0567d595f907190a5ec81cf717209cb9179c7171979487f70a565e304e31c135"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1-r0/out/lad-samples.jsonl",
+      "bytes": 749,
+      "sha256": "8ee9e8a6887fcbdc7323d1d929eaa57f5a1185afa2b1958b9b37693975617701"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1-r0/out/lad.jsonl",
+      "bytes": 2047,
+      "sha256": "727a9bfe7e914456da17d3fb4b7df5b4914e32c5f872910cf9e04cd6aab56f03"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1/cohort.json",
+      "bytes": 3084,
+      "sha256": "5115c5e28c652344d641b91488b8aa3ba024117842dfc06a9f5f0bf108d56ef9"
+    },
+    {
+      "path": "results/g3/20261011-151422-4f40ed3-2181-n1/tables/util.tsv",
+      "bytes": 4939,
+      "sha256": "b7aeb1d48942d3c8a25abb8a3b2ff567f0fb11acd8e365dcf56aed40d4beb7e1"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1-r0/log/run.log",
+      "bytes": 21181,
+      "sha256": "bebb465fd218cb231a6b76e7ecb5766898367f544e07c0de6e53cdf0e5fc4795"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1-r0/manifest.json",
+      "bytes": 13257,
+      "sha256": "64bd81a5439a1d4048d3814855a7ff16aa20a373d976e9fc37bf757722ba9a73"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "035b4bb63dae77f9e0c2e38d90cb2772a1f0cf18a4bc08531cf6824c95c4d60f"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1117,
+      "sha256": "4ea20a1112b87b888904d339cd4b1314d4393f71b49514906a46fbe21441c5df"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1-r0/out/lad.jsonl",
+      "bytes": 3464,
+      "sha256": "d31074784261dc76b51993dda9f8e5f1e5f80b35f4ed0cde99a6691122eb0e4f"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1/cohort.json",
+      "bytes": 3107,
+      "sha256": "8151cf935f9f2878a954de3664988552cca8dfcff815d2d3d4e2abede10a38a7"
+    },
+    {
+      "path": "results/g3/20261011-153046-4f40ed3-5127-n1/tables/util.tsv",
+      "bytes": 5407,
+      "sha256": "965c194fc420e454cf41f1516023fe1b809f5362fe65e07345aa1e7f897b96bd"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1-r0/log/run.log",
+      "bytes": 20980,
+      "sha256": "49f2f047c8d1e24f26b1ec3578ad659d1ddda92b1f677039666c49c041e05985"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1-r0/manifest.json",
+      "bytes": 13208,
+      "sha256": "dbf84fe124bd56988b742e3041230e2182f5fa4b6f192dc1c54ff49abe85c0ac"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "d4722debb18fe326e12ac8a7e3772a59e598a9a3642a98da758565295d848eed"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1109,
+      "sha256": "31ffa634988e06d4b17dec3298305be05872753a6748e76d696e11b24f6ec95b"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1-r0/out/lad.jsonl",
+      "bytes": 3443,
+      "sha256": "1624353530d235e94b5e781d9f88c05916ddcd6e068d48822ae22d8b357a7542"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1/cohort.json",
+      "bytes": 3061,
+      "sha256": "4d37309fbe7f8d6b9780d3200a3c62c125bcbf6c17543c10c35b4e024b77a83a"
+    },
+    {
+      "path": "results/g3/20261011-154020-4f40ed3-3c2f-n1/tables/util.tsv",
+      "bytes": 5605,
+      "sha256": "638f517193ee6e2c2b766ff1a9727d46e966195974f451f7c5bf0068627a5730"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1-r0/log/run.log",
+      "bytes": 20925,
+      "sha256": "0e0403c7f9e5c1ea0911b4abcf22050052e612de62216bddb329ea5b1f5ab063"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1-r0/manifest.json",
+      "bytes": 13088,
+      "sha256": "2d1f78f08843e2164e3bb0ac2f71e48ea3c59775597ef5037d4ce2d62631893e"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1-r0/out/lad-net.jsonl",
+      "bytes": 105,
+      "sha256": "9a8f8243984cc88fbd203eb20a403ec38bd675e8c9ea9cc4493016d85856298a"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1109,
+      "sha256": "83be9f7bc4315033e3283e8e6aa4f382a03ef99ce5190826e4e71bbb2fb2ea26"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1-r0/out/lad.jsonl",
+      "bytes": 3432,
+      "sha256": "05b71293a246c6cd3af25d821acc585b97843337aea961849402afb3d845209b"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1/cohort.json",
+      "bytes": 3062,
+      "sha256": "4037db11f0de83aae14afa81594be10c72cb2b7710778f49dc0c19e8192eb46e"
+    },
+    {
+      "path": "results/g3/20261011-154955-4f40ed3-e37a-n1/tables/util.tsv",
+      "bytes": 5376,
+      "sha256": "4d831fbefdfd41a391812376961255d7db1a20031a1618e098ace1b104c83f1a"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1-r0/log/run.log",
+      "bytes": 20927,
+      "sha256": "fe4d379b1eb54126b00b33a87625876ef37dd7643e8b341f9d470d70a4e95c75"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1-r0/manifest.json",
+      "bytes": 13071,
+      "sha256": "b5ab3e82a78785f82152c5f0e3bb2354b36f0bc89ee0a83cc8ee91701642dfa8"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "67734856177cb82bae326df5942032491ba39ad4d04d93c162f886f89ac44b26"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1123,
+      "sha256": "81e0b3f68823fe04943f0b00c9342616247f8757e22efd591b7f9e0b4e74ea87"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1-r0/out/lad.jsonl",
+      "bytes": 3448,
+      "sha256": "5fe54d6151c9f9a1c8ebd1e5856b718f5205d5c5261b5e02e4366378954e38ce"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1/cohort.json",
+      "bytes": 3061,
+      "sha256": "903e52267729bcc5fe3f5f43f6d0d1a75c1209d831227f7cb04d5fd49de65cd3"
+    },
+    {
+      "path": "results/g3/20261011-155929-4f40ed3-1195-n1/tables/util.tsv",
+      "bytes": 5369,
+      "sha256": "8150c2db6fb45a7d4041a136f3bad801af692a4d00807a1fd4dd640ea5711526"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1-r0/log/run.log",
+      "bytes": 19810,
+      "sha256": "b2bdad4f086929eeaea96e855143c3d05141aa2139fb3e7ab4f5dedca0f49e64"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1-r0/manifest.json",
+      "bytes": 13072,
+      "sha256": "fea37cfd3122942659fb4e183ffa8c46bb635563fdbffcf6273b0e5a67721ed0"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1-r0/out/lad-net.jsonl",
+      "bytes": 105,
+      "sha256": "718dd2f71fc94598293b6381888157a34e5d3ace12f2865c7d1b2f0c4fc64be1"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1120,
+      "sha256": "af51d3cc0e0d3f85b1ab2daab98986dc2fe661b7f4e5b0139d907529800d4ee5"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1-r0/out/lad.jsonl",
+      "bytes": 3442,
+      "sha256": "55c8c47fcb942b7fc576d975df2685b964368a7de33e481eb5e4a9bfb864ab0b"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1/cohort.json",
+      "bytes": 3060,
+      "sha256": "74458ea2263ca5db3040460247b7d8334819a17718eb74865eaa9aaf88f8341e"
+    },
+    {
+      "path": "results/g3/20261011-160904-4f40ed3-9df7-n1/tables/util.tsv",
+      "bytes": 5363,
+      "sha256": "707a6fe448424dbed010f28eee41b1d00a6d3d65b2bed3e7ad8cc763bdc73f7d"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1-r0/log/run.log",
+      "bytes": 19816,
+      "sha256": "9ff6bf28cfa8048f4e468a3d57e16eb8fd6eacf6768bad29d4bad003afc79831"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1-r0/manifest.json",
+      "bytes": 13071,
+      "sha256": "bcea926c61610a1e4a5888d74abc1e3f9e6a766b6b8b522e519c0b71ed92af70"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1-r0/out/lad-net.jsonl",
+      "bytes": 106,
+      "sha256": "a8c16b2bd6019bbec26909a03d8aa7e40a809e2797f5bbb933c288e0b0f37cfa"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1124,
+      "sha256": "5397351c043fe2dde48d1b99569e80bf95910bc3f0801349819c8e56e775c698"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1-r0/out/lad.jsonl",
+      "bytes": 3448,
+      "sha256": "b889b9b2d5650242960af282829bb6b02c9e943e967e8aff30f7fa64c0a78b55"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1/cohort.json",
+      "bytes": 3059,
+      "sha256": "2b7671e3fae98b527e1e60c9f553d661d5f147f4cee82acc6bb2b4c8a56c8d92"
+    },
+    {
+      "path": "results/g3/20261011-161738-4f40ed3-8d62-n1/tables/util.tsv",
+      "bytes": 5368,
+      "sha256": "1294118293e2b1e0657f60a07d44fff612cffc6898e2cab329a7fa19a6289102"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1-r0/log/run.log",
+      "bytes": 16978,
+      "sha256": "a24fc7c2b7c146b290881f841d2d49dcd7201f427d8096aeb745320df1396519"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1-r0/manifest.json",
+      "bytes": 12943,
+      "sha256": "835c1ec3b654cbc62bb7c31b6bef8e302276a987d393ddb998714592fb230b42"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "cd44e2e2abc7adf85f15d4b79c1cdd9ab1481486f5debf5e421b0a402dc7ec29"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 744,
+      "sha256": "3523ad520f7e50409af9f18aba20eb1b0ff487d4337d8dd68b4de264bc4619ce"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1-r0/out/lad.jsonl",
+      "bytes": 2056,
+      "sha256": "790331f4360130bb68a1361220333caf0c7e445ea0152a2893d5aa3abb7d6fa5"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1/cohort.json",
+      "bytes": 3050,
+      "sha256": "d5d8318e8910b6593c7d99bef5411f2f0a8253a735422024ae97c41d1caa1c42"
+    },
+    {
+      "path": "results/g3/20261011-162822-4f40ed3-fd5a-n1/tables/util.tsv",
+      "bytes": 5155,
+      "sha256": "902707e52f18c139e5e7e8fafe7a156b6e99f6728146ba06b513a4fdba6bbd37"
+    },
+    {
+      "path": "results/g3/campaign/spend.tsv",
+      "bytes": 7985,
+      "sha256": "3bc542beae9469fd294f5ff71963d7a38426edd6c6671346be8b8f63a4544ddd"
+    },
+    {
+      "path": "results/g3/ladder-modelled.tsv",
+      "bytes": 40,
+      "sha256": "adb668f7470d3809949a21e1677252d115f45363a8c541a28c686653f16d6867"
+    },
+    {
+      "path": "scripts/g3/ladder.levers.tsv",
+      "bytes": 19106,
+      "sha256": "23f8d6090ff5ef8e6955d63552e3c2587484a16073bc0139b0e441a84ee63630"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "runs.tsv",
+      "sha256": "0446efb2a38ae572e9be8f4d39d9e55049fb6d7c60a434e0547e0b1d54f45522"
+    },
+    {
+      "path": "tidy.tsv",
+      "sha256": "eef7345db7266be829620493966c6982efeedc1aca23662d023b961addf9fca8"
+    },
+    {
+      "path": "rungs.tsv",
+      "sha256": "4795c7c0dbf0e75d15e3b81e0f05e5f2acc25e79aad5acb19d8951b44dd4ba81"
+    },
+    {
+      "path": "effcost.tsv",
+      "sha256": "f64f14c3471b06a7de4d45f2f0bc99725bc0dc1cf768c907970bcd5b3105cf95"
+    },
+    {
+      "path": "deltas.tsv",
+      "sha256": "6e1ecea78df6a5f6e772675b92de5c36a9796dbed1375a781a045ac981798f66"
+    },
+    {
+      "path": "pairs.tsv",
+      "sha256": "1bd8d2e7b9b7aa2a1d846440237ac3c8c974ca564fe74181e3e9000bf969c2f3"
+    },
+    {
+      "path": "law1.tsv",
+      "sha256": "6bd8e9903ea74e4e62101f725ac3aaea50751d3a8e76f2ee085da8027183852e"
+    },
+    {
+      "path": "law1-detail.tsv",
+      "sha256": "b8859b380b782a0983cf59505f9987527227161e1a11749b3bab6a4a0e23bb8e"
+    },
+    {
+      "path": "s5-nonpreserving.tsv",
+      "sha256": "ad0ba07442a8eef5c6a9a686fb01a0e94341735e6d8966c44aa80ea82ebbdae8"
+    },
+    {
+      "path": "endpoints.tsv",
+      "sha256": "c89258aa96a51faa28619ca7b03c0e903353d6994eb8b62211f294d5af2f24db"
+    },
+    {
+      "path": "spend.tsv",
+      "sha256": "74cad4b25a9f05f5b21f9a5f6dc89383a0dad0f2426dac4775f720926f139dea"
+    },
+    {
+      "path": "summary.md",
+      "sha256": "091521dfa25eba6cbc79404bcacc778d9b61e4bfab745add45cb0b4ce5d2f09d"
+    }
+  ]
+}

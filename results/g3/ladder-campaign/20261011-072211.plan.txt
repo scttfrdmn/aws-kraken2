@@ -1,0 +1,37 @@
+ladder-campaign: cohort 1, REPS=2: 15 committed spec(s) runs/g3-l-*-c1.json; rep 1 cheapest first (measured billed $ where a done run exists, else cost_limit x nodes), ties in ladder order; rep 2 reversed
+ladder-campaign: CONCURRENCY=1 (runs in flight at once); quota_check.sh before every launch
+order rep rung        spec                           nodes type           az         family     cost_usd  basis                                          action
+1     1   S2a         runs/g3-l-s2a-c1.json          1     x8g.24xlarge   us-west-2b X              1.24  measured: median billed $ of 1 run(s)          skip: done: results/g3/20261011-042400-f72142e-34a4-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, rep 1 by default (no params.rep))
+2     1   S5          runs/g3-l-s5-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+3     1   S6          runs/g3-l-s6-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+4     1   S7a         runs/g3-l-s7a-c1.json          1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+5     1   S7b         runs/g3-l-s7b-c1.json          1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+6     1   S9          runs/g3-l-s9-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+7     1   Sstar-r8g   runs/g3-l-sstar-r8g-c1.json    1     r8g.48xlarge   us-west-2b Standard      22.63  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+8     1   S2b-ii      runs/g3-l-s2b-ii-c1.json       1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+9     1   S2d         runs/g3-l-s2d-c1.json          1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+10    1   S2c         runs/g3-l-s2c-c1.json          1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+11    1   Sstar-r8gd  runs/g3-l-sstar-r8gd-c1.json   1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+12    1   S1          runs/g3-l-s1-c1.json           1     r8gd.48xlarge  us-west-2b Standard      35.28  estimate: cost_limit x 1 node(s) (TTL 150m x price) launch
+13    1   S2b-i       runs/g3-l-s2b-i-c1.json        1     r8gd.48xlarge  us-west-2b Standard      56.44  estimate: cost_limit x 1 node(s) (TTL 240m x price) launch
+14    1   S0-T1       runs/g3-l-s0-t1-c1.json        1     r8gd.48xlarge  us-west-2b Standard      84.65  estimate: cost_limit x 1 node(s) (TTL 360m x price) launch
+15    1   S0-Tv       runs/g3-l-s0-tv-c1.json        1     r8gd.48xlarge  us-west-2b Standard      84.65  estimate: cost_limit x 1 node(s) (TTL 360m x price) launch
+16    2   S0-Tv       runs/g3-l-s0-tv-c1.json        1     r8gd.48xlarge  us-west-2b Standard      84.65  estimate: cost_limit x 1 node(s) (TTL 360m x price) launch
+17    2   S0-T1       runs/g3-l-s0-t1-c1.json        1     r8gd.48xlarge  us-west-2b Standard      84.65  estimate: cost_limit x 1 node(s) (TTL 360m x price) launch
+18    2   S2b-i       runs/g3-l-s2b-i-c1.json        1     r8gd.48xlarge  us-west-2b Standard      56.44  estimate: cost_limit x 1 node(s) (TTL 240m x price) launch
+19    2   S1          runs/g3-l-s1-c1.json           1     r8gd.48xlarge  us-west-2b Standard      35.28  estimate: cost_limit x 1 node(s) (TTL 150m x price) launch
+20    2   Sstar-r8gd  runs/g3-l-sstar-r8gd-c1.json   1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+21    2   S2c         runs/g3-l-s2c-c1.json          1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+22    2   S2d         runs/g3-l-s2d-c1.json          1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+23    2   S2b-ii      runs/g3-l-s2b-ii-c1.json       1     r8gd.48xlarge  us-west-2b Standard      28.22  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+24    2   Sstar-r8g   runs/g3-l-sstar-r8g-c1.json    1     r8g.48xlarge   us-west-2b Standard      22.63  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+25    2   S9          runs/g3-l-s9-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+26    2   S7b         runs/g3-l-s7b-c1.json          1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+27    2   S7a         runs/g3-l-s7a-c1.json          1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+28    2   S6          runs/g3-l-s6-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+29    2   S5          runs/g3-l-s5-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+30    2   S2a         runs/g3-l-s2a-c1.json          1     x8g.24xlarge   us-west-2b X              1.24  measured: median billed $ of 1 run(s)          launch
+ladder-campaign: the record, ladder runs of these rungs at c1:
+  results/g3/20261011-041927-a959453                   S2a        rep 1 (rep 1 by default (no params.rep)): not counted: task exit 1; recorded defect (g3_defects.tsv 20261011-041927-a959453: defect: launched without NODES=1 (operator error); the body refused before any I/O); excluded by ladder_tables: no: DEFECT (incomplete): 0 of 1 planned samples; missing SRR5935740; DEFECT (contract): its lever phase run:fetch-db+run:load+run:classify: run:fetch-db, run:lo
+  results/g3/20261011-042400-f72142e-34a4-n1           S2a        rep 1 (rep 1 by default (no params.rep)): counted
+ladder-campaign: 29 launch(es), 1 skipped; cost basis of the launches $981.90 (an upper bound where estimated)

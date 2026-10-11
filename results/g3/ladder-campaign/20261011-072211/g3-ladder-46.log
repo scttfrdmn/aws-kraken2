@@ -1,0 +1,8 @@
+python3 scripts/lib/ladder_tables.py --out "/Users/scttfrdmn/src/aws-kraken2/results/g3/ladder-campaign/20261011-072211/tables"
+ladder_tables: DEFECT (incomplete): 20261011-041927-a959453: 0 of 1 planned samples; missing SRR5935740
+ladder_tables: DEFECT (contract): 20261011-041927-a959453: its lever phase run:fetch-db+run:load+run:classify: run:fetch-db, run:load, run:classify match(es) no manifest phase or lad-sample phase
+ladder_tables: DEFECT (contract): 20261011-041927-a959453: S3's lever phase run:fetch-db+run:load+run:classify: run:fetch-db, run:load, run:classify not in this run (its predecessor run), though the body marks it on every run
+ladder_tables: DEFECT (contract): 20261011-041927-a959453: S4's lever phase run:classify: run:classify not in this run (its predecessor run), though the body marks it on every run
+ladder_tables: DEFECT (contract): 20261011-041927-a959453: S5's lever phase run:classify: run:classify not in this run (its predecessor run), though the body marks it on every run
+ladder_tables: 24 ladder run(s), 36 lever row(s), 5 DEFECT(s) -> /Users/scttfrdmn/src/aws-kraken2/results/g3/ladder-campaign/20261011-072211/tables/
+make: *** [g3-ladder] Error 1
