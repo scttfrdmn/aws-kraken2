@@ -68,6 +68,10 @@ EFF = [("eff_cpu_usd", "U_cpu"), ("eff_mem_usd", "U_mem_mean"), ("eff_net_baseli
 EFF_U = dict(EFF)
 EMPTY_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"  # sha256 of an empty stream
 GZ_WARNING = 2   # GNU gzip's exit for a warning (e.g. "trailing garbage ignored"): the output is complete
+# The run phases ladder.body.sh marks on every run, and those it marks only on some (SETUP=overlap,
+# a rapidgzip GUNZIP, sdk-stream).
+BODY_PHASES = ("setup", "fetch-db", "etag-hash.k2d", "fetch-inputs", "load", "classify", "upload-drain")
+COND_PHASES = ("identity", "build-wait", "sha-get")
 # Gross and net (Scott, 2026-10-10, #25): every wall delta and pair is reported gross and net of the
 # measurement-only work, net the headline. The tables do not re-derive that work: each node emits one
 # `lad-net {"v": 1, "rank", "critical_measurement_s"}` line (#51 computes the number under its rule),
@@ -753,6 +757,14 @@ def sample_errors(run, s):
     return errs
 
 
+def gz_warned(s):
+    """The mates (R1, R2, ...) on which GNU gzip exited 2, its warning, in the identity phase; [] if none."""
+    x = s.get("s5") if isinstance(s.get("s5"), dict) else {}
+    if x.get("status") in (None, "n/a") or not isinstance(x.get("gz_exit"), list):
+        return []
+    return [f"R{i + 1}" for i, e in enumerate(x["gz_exit"]) if e == GZ_WARNING]
+
+
 def gzip_failed(s):
     """The reason, if the identity phase's gzip run failed on this input (a gz_exit other than 0 or 2,
     or an empty gzip stream); "" otherwise. Exit 2 is GNU gzip's warning (e.g. trailing garbage
@@ -842,7 +854,9 @@ def validate(runs, levers, defects):
             r["exclude"].append(f"state {r['params']['state']}: ladder runs are cold")
         # The run's own lever phase: a term that matches nothing is a contract DEFECT, never a silently
         # missing value. A run successor's phase (its delta is taken against this run) that this run
-        # lacks is a note: the successor's lever may be what adds that phase.
+        # lacks is a DEFECT too when the body marks that phase on every run (BODY_PHASES); only a
+        # conditional phase (COND_PHASES: identity, build-wait, sha-get), which the successor's own
+        # lever may be what adds, is a note.
         rung, coh = r["params"]["rung"], r["params"].get("cohort")
         spec = (levers.get(rung) or {}).get("phase")
         miss = phase_missing(r, spec) if spec else []
@@ -851,9 +865,19 @@ def validate(runs, levers, defects):
             defects.append(("contract", f"{rid}: {e}"))
             r["exclude"].append(f"DEFECT (contract): {e}")
         for x, lv in sorted(levers.items()):
-            if lv.get("phase") and run_pred(levers, x, coh)[0] == rung and phase_missing(r, lv["phase"]):
-                r["notes"].append(f"{x}'s lever phase {lv['phase']}: {', '.join(phase_missing(r, lv['phase']))} not in this run "
-                                  f"(its predecessor run), so that delta's phase axis is missing here")
+            if not lv.get("phase") or run_pred(levers, x, coh)[0] != rung:
+                continue
+            sm = phase_missing(r, lv["phase"])
+            cond = [t for t in sm if t.split(":")[-1] in COND_PHASES]
+            hard = [t for t in sm if t not in cond]
+            if hard:
+                e = (f"{x}'s lever phase {lv['phase']}: {', '.join(hard)} not in this run (its predecessor run), "
+                     "though the body marks it on every run")
+                defects.append(("contract", f"{rid}: {e}"))
+                r["exclude"].append(f"DEFECT (contract): {e}")
+            if cond:
+                r["notes"].append(f"{x}'s lever phase {lv['phase']}: {', '.join(cond)} not in this run (its predecessor run; "
+                                  f"a conditional phase), so that delta's phase axis is missing here")
         if r["params"]["rung"] not in levers:
             r["notes"].append(f"rung {r['params']['rung']} is not in ladder.levers.tsv")
         elif not_run(levers[r["params"]["rung"]], r["params"].get("cohort")):
@@ -1251,6 +1275,14 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
     for e in eerr:
         defects.append(("levers", e))
     validate(runs, levers, defects)
+    # GNU gzip's warning (exit 2: trailing data ignored, the output complete): kept, never an input
+    # defect, but named, sample by sample (tidy.tsv s5.gz_warning and here).
+    for r in runs:
+        for s in r["samples"]:
+            w = gz_warned(s)
+            if w:
+                notes.append(f"gz_warning: {r['run_id']} {s.get('accession')}: GNU gzip exited 2 (its warning: trailing data "
+                             f"ignored, the output complete) on {', '.join(w)}; the input is kept, not an input defect")
     l1, det, s5rows, s5flags = law1(runs, levers, defects, notes)
     G = Groups(runs, levers, modelled, emap, notes, resolved)
 
@@ -1309,6 +1341,7 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
             st, fb = s5_of(s)
             tidy.append(sb + ["s5.status", st or ""])
             tidy.append(sb + ["s5.fallback", fb or ""])
+            tidy.append(sb + ["s5.gz_warning", ";".join(gz_warned(s)) or "none"])
     T["runs.tsv"] = (rh, rows)
     T["tidy.tsv"] = (["run_id", "arm", "rung", "cohort", "rep", "run_kind", "state", "node", "accession", "idx", "metric",
                       "value"], tidy)

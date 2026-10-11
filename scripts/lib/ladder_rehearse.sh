@@ -503,6 +503,7 @@ spec_case() {   # SPEC [SUFFIX]; MUTF and EXPECTFAIL as for arm (a negative cont
   if [ -n "${MUTF:-}" ]; then "$MUTF" "$T/cases/$c/body.sh" || { say "$c: mutation $MUTF did not apply"; verdict "$c" 6 "$spec, mutated" 1; return 1; }; fi
   payload "$T/cases/$c/payload.sh" "$T/cases/$c/body.sh"
   say "---- $c (6): $spec ($type, WANT_N $wn); its body is the committed body plus its parameters: $same"
+  say "$c: $spec sha256 $(git show "HEAD:$spec" | shasum -a 256 | cut -d' ' -f1) (HEAD $SHA)"
   say "$c: $line"
   ex=$EX_OK; [[ $line == *GUNZIP=rapidgzip* ]] && ex=$(ex '{"s5":{}}')
   launch "$c" "$T/cases/$c/payload.sh" "$wn" "$type" 1 cohort "${SRC[0]}" "${WEIGHTS[0]}"
@@ -675,16 +676,26 @@ case_net() {
     arm "tail-crit-$i" 4 "tail uploads lag the hashes (try $i)" S7b S 1 x8g.24xlarge "$PT" "$(ex '{"tail":true,"lanes":3}')" \
       cohort-tail "SRR062634a SRR062634b SRR062634c" "1000000 1000000 1000000" "$tailmap" -- AK2T_UP_SLEEP=4 AK2T_UP_MATCH=/out/S7b/
     rc=$?
-    grep -q '^FAIL tail-crit-[0-9]: tail: r0: the probe resolves' "$T/cases/tail-crit-$i/check.txt" || break
+    grep -q '^FAIL tail-crit-[0-9]: tail-resolve: ' "$T/cases/tail-crit-$i/check.txt" || break
     say "tail-crit-$i: the lanes did not end together; the probe could not resolve, so it is run again"
+    unresolved_retry "$i"
   done
   # Negative control: NB1 removed (uploads do not cover a hash); the tail's hashes are all critical.
   for i in 1 2 3; do
     MUTF=mut_nb1 EXPECTFAIL=tail \
       arm "tail-mut-$i" 4 "negative control: NB1 (uploads cover) removed (try $i)" S7b S 1 x8g.24xlarge "$PT" "$(ex '{"tail":true,"lanes":3}')" \
       cohort-tail "SRR062634a SRR062634b SRR062634c" "1000000 1000000 1000000" "$tailmap" -- AK2T_UP_SLEEP=4 AK2T_UP_MATCH=/out/S7b/
-    grep -q '^FAIL tail-mut-[0-9]: tail: r0: the probe resolves' "$T/cases/tail-mut-$i/check.txt" || break
+    grep -q '^FAIL tail-mut-[0-9]: tail-resolve: ' "$T/cases/tail-mut-$i/check.txt" || break
+    say "tail-mut-$i: the probe could not resolve (tail-resolve failed), so it is run again"
+    unresolved_retry "$i"
   done
+}
+# unresolved_retry TRY: a try whose probe could not resolve, with another try to come, is a retry,
+# not a failure (its summary row says so); the last try's verdict stands.
+unresolved_retry() {
+  [ "$1" -lt 3 ] || return 0
+  SUMMARY[${#SUMMARY[@]} - 1]="${SUMMARY[${#SUMMARY[@]} - 1]% FAIL} RETRY (the probe did not resolve)"
+  NFAIL=$((NFAIL - 1))
 }
 
 case_resolver() {

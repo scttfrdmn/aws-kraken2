@@ -565,7 +565,7 @@ LADFB
 # gzip (lad_s5_fallback). Sets S5BAD, IDSEC, GZSHA, RGSHA, GZRC, RGRC.
 EMPTY_SHA=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 lad_identity() {
-  local l i j f g gr h hr t0 t1 ok s p why idef
+  local l i j f g gr h hr t0 t1 ok s p why idef gw
   local -a idf idpids
   IDL=$(( NPROC / (GZK + 2) )); [ "$IDL" -lt 1 ] && IDL=1
   for j in "${NEED[@]}"; do idf+=("${SAMPLES[$j]}_1.fastq.gz" "${SAMPLES[$j]}_2.fastq.gz"); done

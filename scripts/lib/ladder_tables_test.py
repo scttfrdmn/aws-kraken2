@@ -250,11 +250,11 @@ def record(res, variant=""):
            LAD_ENDPOINT="S*-time", LAD_STATE="warm")
     if variant == "incomplete":
         # S1 rep 3 planned SRR1 and SRR2 but emitted SRR1 only: DEFECT incomplete, excluded (S1's median stays 580).
-        single(res, "20261010-000017-aaaaaaa", "S", "S1", 3, 10, {"fetch-db": 1}, accessions=("SRR1", "SRR2"))
+        single(res, "20261010-000017-aaaaaaa", "S", "S1", 3, 10, {"fetch-db": 1, "classify": 1}, accessions=("SRR1", "SRR2"))
     if variant == "rcfail":
         # S1 rep 3's sample failed (rc 2), and rep 4's rc is a string: both DEFECTs, both excluded.
-        single(res, "20261010-000017-aaaaaaa", "S", "S1", 3, 10, {"fetch-db": 1}, samples=[sample("S", "S1", rc=2)])
-        single(res, "20261010-000018-aaaaaaa", "S", "S1", 4, 10, {"fetch-db": 1}, samples=[sample("S", "S1", rc="0")])
+        single(res, "20261010-000017-aaaaaaa", "S", "S1", 3, 10, {"fetch-db": 1, "classify": 1}, samples=[sample("S", "S1", rc=2)])
+        single(res, "20261010-000018-aaaaaaa", "S", "S1", 4, 10, {"fetch-db": 1, "classify": 1}, samples=[sample("S", "S1", rc="0")])
     if variant == "noref":
         # SRR9 only on the O arm: no upstream reference, a DEFECT.
         single(res, "20261010-000017-aaaaaaa", "O", "O0", 3, 301, accessions=("SRR9",),
@@ -263,10 +263,10 @@ def record(res, variant=""):
         single(res, "20261010-000017-aaaaaaa", "S", "S2", 9, 405, term=False, LAD_RUN_KIND="endpoint",
                LAD_ENDPOINT="S*-cost", LAD_STATE="warm")
     if variant == "badparams":
-        single(res, "20261010-000017-aaaaaaa", "S", "S1", 3, 10, {"fetch-db": 1}, LAD_STATE="hot")
+        single(res, "20261010-000017-aaaaaaa", "S", "S1", 3, 10, {"fetch-db": 1, "classify": 1}, LAD_STATE="hot")
         x = sample("S", "S1")
         x["v"] = 2
-        single(res, "20261010-000018-aaaaaaa", "S", "S1", 4, 10, {"fetch-db": 1}, samples=[x])
+        single(res, "20261010-000018-aaaaaaa", "S", "S1", 4, 10, {"fetch-db": 1, "classify": 1}, samples=[x])
     # A cold endpoint run on a rung that is not the declared S*-time (S2): a note, not used.
     single(res, "20261010-000019-aaaaaaa", "S", "S1", 1, 333, {"setup": 5, "fetch-db": 1, "classify": 50}, LAD_RUN_KIND="endpoint", LAD_ENDPOINT="S*-time",
            LAD_STATE="cold")
@@ -281,9 +281,9 @@ def record(res, variant=""):
     single(res, "20261010-000021-aaaaaaa", "S", "S0-T1", 2, 3100, cohort=10, accessions=("SRR1", "SRR2"),
            samples=[sample("S", "S0-T1", BAD if variant == "c10law1" else GOOD, acc=a, classify=1050.0, cohort=10,
                            t0=t0, t1=t1) for a, (t0, t1) in zip(("SRR1", "SRR2"), bspan)])
-    single(res, "20261010-000022-aaaaaaa", "S", "S0-Tv", 1, 3000, cohort=100,
+    single(res, "20261010-000022-aaaaaaa", "S", "S0-Tv", 1, 3000, {"setup": 5, "fetch-db": 1, "classify": 50}, cohort=100,
            samples=[sample("S", "S0-Tv", cohort=100)])
-    single(res, "20261010-000023-aaaaaaa", "S", "S0-Tv", 2, 3010, cohort=100,
+    single(res, "20261010-000023-aaaaaaa", "S", "S0-Tv", 2, 3010, {"setup": 5, "fetch-db": 1, "classify": 50}, cohort=100,
            samples=[sample("S", "S0-Tv", cohort=100)])
     # A run that is not a ladder run (no params): ignored.
     manifest(os.path.join(res, "g3", "20261010-000016-aaaaaaa"), "x", {}, T0, T0 + 5, {}, put_params=False)
@@ -933,6 +933,48 @@ def units():
           [d for d in defects if "lever phase" in d[1]],
           [("contract", "20261010-000002-aaaaaaa: its lever phase run:fetch-db: run:fetch-db match(es) no manifest phase or lad-sample phase")])
     check("... and the run is excluded", any("lever phase" in e for r in runs if r["run_id"].endswith("02-aaaaaaa") for e in r["exclude"]), True)
+    # A successor's phase on its predecessor run (NB1): an unconditional body phase missing there is a
+    # DEFECT; a conditional one (identity, build-wait, sha-get), which the successor's lever may add, a note.
+    tmp = tempfile.mkdtemp()
+    res = os.path.join(tmp, "results")
+    single(res, "20261010-000001-aaaaaaa", "S", "S0-T1", 1, 1000, {"setup": 5, "classify": 50})   # no fetch-db
+    single(res, "20261010-000002-aaaaaaa", "S", "S0-Tv", 1, 900, {"setup": 5, "fetch-db": 9, "classify": 40})
+    with open(os.path.join(tmp, "l.tsv"), "w") as f:
+        f.write(LEVERS.replace("S0-Tv\tS\tS0-T1\tthreads\tO0\trun:classify", "S0-Tv\tS\tS0-T1\tthreads\tO0\trun:fetch-db+run:classify")
+                .replace("S1\tS\tS0-Tv\ts5cmd-staging\tO0b\trun:fetch-db", "S1\tS\tS0-Tv\ts5cmd-staging\tO0b\trun:identity+run:fetch-db"))
+    rd = lt.Reader()
+    lv = lt.load_levers(os.path.join(tmp, "l.tsv"), rd)
+    runs = lt.discover(res, rd)
+    defects = []
+    lt.validate(runs, lv, defects)
+    shutil.rmtree(tmp)
+    check("NB1: a successor's unconditional phase (fetch-db) missing on its predecessor run: a DEFECT",
+          [d for d in defects if "predecessor run" in d[1]],
+          [("contract", "20261010-000001-aaaaaaa: S0-Tv's lever phase run:fetch-db+run:classify: run:fetch-db not in this run "
+                        "(its predecessor run), though the body marks it on every run")])
+    # gz_warning (NB2): GNU gzip's exit 2 on S2's SRR1 mate 1: a summary note and tidy.tsv's s5.gz_warning name it.
+    tmp2 = tempfile.mkdtemp()
+    res2 = os.path.join(tmp2, "results")
+    single(res2, "20261010-000001-aaaaaaa", "S", "S0-T1", 1, 1000, {"setup": 5, "classify": 50})
+    gw = sample("S", "S2", s5="differs", fallback="gzip")
+    gw["s5"]["gz_exit"], gw["s5"]["rg_exit"], gw["s5"]["gz_warning"] = [2], [1], [True]
+    single(res2, "20261010-000002-aaaaaaa", "S", "S2", 1, 400, {"setup": 5, "classify": 50}, samples=[gw])
+    with open(os.path.join(tmp2, "l.tsv"), "w") as f:
+        f.write(LEVERS)
+    rd2 = lt.Reader()
+    T2, d2, notes2, _, _ = lt.build(lt.discover(res2, rd2), lt.load_levers(os.path.join(tmp2, "l.tsv"), rd2))
+    shutil.rmtree(tmp2)
+    th, trows = T2["tidy.tsv"]
+    gwv = sorted((r[th.index("run_id")], r[th.index("value")]) for r in trows if r[th.index("metric")] == "s5.gz_warning")
+    check("NB2: tidy.tsv s5.gz_warning names the mate (R1) on S2's sample, none on S0-T1's",
+          gwv, [("20261010-000001-aaaaaaa", "none"), ("20261010-000002-aaaaaaa", "R1")])
+    check("NB2: a summary note names it, and it is no input DEFECT",
+          ([n for n in notes2 if n.startswith("gz_warning: ")], [d for d in d2 if d[0] == "input"]),
+          (["gz_warning: 20261010-000002-aaaaaaa SRR1: GNU gzip exited 2 (its warning: trailing data ignored, the output "
+            "complete) on R1; the input is kept, not an input defect"], []))
+    n2 = [n for r in runs if r["run_id"].endswith("02-aaaaaaa") for n in r["notes"] if "conditional phase" in n]
+    check("NB1: a conditional phase (identity) missing on the predecessor run: a note, not a DEFECT",
+          (len(n2), any("20261010-000002" in d[1] for d in defects)), (1, False))
 
 
 def main():

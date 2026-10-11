@@ -586,7 +586,7 @@ container's stdout and the bucket):
 | 2 | `s5-corrupt` | mate 1 cut at half its bytes. `input_defect` is set on that file only, with GNU gzip's real exit, and the run fails (the classifier sees a short mate) |
 | 3 | `neg-*` | each fails the run, for its stated reason (the message is checked): a gzip, and a bzip2, in KRAKEN2_DIR (the upstream build mutated); an ETag mismatch via lv_etag and via the engine; a classifier exiting non-zero (a truncated mate; its rc is in the lad-sample line); an engine home sample with no ak2-sample line; `cohort_place.py needs` failing, `table` failing, the two disagreeing, and an empty NEED that the table agrees with |
 | 4 | `overlap-slow-build` | SETUP=overlap with a build 20 s slower: build-wait, identity, load, and the wait observed |
-| 4 | `tail-crit-*` | 3 lanes over 3 identical 1M-pair samples end together and uploads take 4 s. At least 2 output hashes fall after the last classify span (the probe resolves; otherwise it is run again, up to 3 times). sha_critical is about one hash, not the tail's sum |
+| 4 | `tail-crit-*` | 3 lanes over 3 identical 1M-pair samples end together and uploads take 4 s. At least 2 output hashes fall after the last classify span (check `tail-resolve`; otherwise it is run again, up to 3 times, and the unresolved try is a RETRY row). sha_critical is about one hash, not the tail's sum |
 | 5 | `resolver` | the generator's resolver refuses a resolution with no citation, one identical by value to its predecessor, and an alias winner outside alias_of. A one-lever resolution is accepted (positive control). S4 and S8 are not run at c1, and S5 and S9 take S2a's and S7b's values. A c1 row for S4 is ignored with a warning. The committed specs' parameter blocks are the resolver's |
 | 6 | `spec-<rung>` × 15 | every committed `runs/g3-l-*-c1.json`, its body being the committed body plus its parameter block |
 | 6 | `tables`, `tables-lever-phase` | `ladder_tables.py` on their record, with a rehearsal-only `ladder.resolved.tsv` (Sstar-time → S9, Sstar-cost → Sstar-r8gd) in the record dir, never in `scripts/g3/`. It must give 15 runs and 0 DEFECTs, law1.tsv all identical, and each alias's rows equal to its winner's on an axis where the three candidates differ. Every rung's lever phase must be measured |
@@ -599,7 +599,7 @@ container's stdout and the bucket):
 | `law1-mut` | the classifier called with `--minimum-hit-groups 3` | law1 |
 | `s5-mut-nofallback` | no sample marked as differing (the fallback never installs) | s5 and law1 |
 | `s5-mut-net` | identity left out of lad-net's sum | net |
-| `tail-mut-*` | lad_crit without NB1 (uploads do not cover a hash) | tail |
+| `tail-mut-*` | lad_crit without NB1 (uploads do not cover a hash) | tail, with `tail-resolve` passing on the same run (the probe resolved) |
 | `ttl-kill-nopush` | the preamble's 5 s pusher removed | the kill check |
 | `spec-s1-law1mut`, `tables-neg` | an S1 run with the Law 1 mutation added to a copy of the record; an alias winner outside alias_of | Law 1 DEFECT; DEFECT (resolved) |
 
@@ -738,7 +738,7 @@ comments. Columns are read by name:
 | `predecessor` | the rung this one changes one lever from (empty or `-` for a root) |
 | `lever` | the lever key-group. `stock` marks only the root S0-T1. S0-Tv's predecessor is S0-T1 and its lever is `threads`. S5's lever is `rapidgzip`, which is how the S5 findings find it. |
 | `counterpart` | the O counterpart of an S lever, or the stated reason there is none |
-| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two, each term with its own scope (`run:fetch-db+run:load+run:classify`, as this table writes a compound phase; `sample:A+run:B` alike). A term of a run's own lever phase that matches nothing (no such manifest phase, no lad-sample with it) is a DEFECT (contract), and the run is excluded. A run successor's phase that the predecessor run lacks is a note. |
+| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two, each term with its own scope (`run:fetch-db+run:load+run:classify`, as this table writes a compound phase; `sample:A+run:B` alike). A term of a run's own lever phase that matches nothing (no such manifest phase, no lad-sample with it) is a DEFECT (contract), and the run is excluded. A run successor's phase term that the predecessor run lacks is a DEFECT (contract) too if the body marks that phase on every run (setup, fetch-db, etag-hash.k2d, fetch-inputs, load, classify, upload-drain), and a note if it is a conditional one (identity, build-wait, sha-get), which the successor's lever may be what adds. |
 | `endpoint` | the endpoint(s) this rung is, for example `S*-time;S*-cost` (every cohort) or `c1:S*-time;c10:S*-time` (per cohort; a per-cohort declaration wins). Two rungs declaring the same endpoint for the same cohort is a DEFECT (levers). An endpoint that is not declared gives the status "endpoint not declared"; nothing is selected from the data. |
 | `pred_wall_s`, `pred_usd`, `pred_phase_s` (optional) | the predicted delta on each axis, set against the threshold |
 | `alias_of` | for an alias rung, its candidates separated by `\|` (e.g. `S9\|Sstar-r8g\|Sstar-r8gd`) |
@@ -911,7 +911,7 @@ never generates it.
 | file | what |
 |---|---|
 | `runs.tsv` | one row per ladder run: PARAMS, type, nodes, commit, price, wall_s and wall_net_s with critical_measurement_s per rank (`r0=…;r1=…`) and net_basis, billed_usd and billed_net_usd, each effective cost gross and net, lever phase, planned and emitted samples, U_* (cpu, mem mean and peak, net baseline/peak and each direction), util cost_usd, each effective cost, util coverage, whether it is in the attribution (with the reason if not), notes |
-| `tidy.tsv` | long rows: run-level metrics plus every lad-sample field (pairs, rc, phase.*, output.<role>.bytes and .sha256, s5.status, s5.fallback) |
+| `tidy.tsv` | long rows: run-level metrics plus every lad-sample field (pairs, rc, phase.*, output.<role>.bytes and .sha256, s5.status, s5.fallback, and s5.gz_warning: the mates on which GNU gzip exited 2, or none). summary.md has a `gz_warning:` note for each such sample |
 | `rungs.tsv` | per (arm, rung, cohort) and axis (wall_s, billed_usd, lever_phase_s): basis (measured or modelled), n, median, min, max, range, granularity_q |
 | `deltas.tsv` | each rung against its predecessor (or its nearest run ancestor, or an alias's winner: `predecessor_basis`) on wall net and gross, billed net and gross, and the lever phase (`series`, `net_basis`): ranges, measured spread, q, threshold, status, predicted delta and whether it was resolvable; a `not-run` rung's row carries its label |
 | `effcost.tsv` | per (arm, rung, cohort): median and range of each U and each effective cost, with q, util coverage, and any missing util named |

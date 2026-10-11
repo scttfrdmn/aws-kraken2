@@ -46,6 +46,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     non-zero rapidgzip exit still differs. The tables' B1 rule and `input` DEFECT follow. The
     rehearsal case `s5-garbage` and a ladder-stream-test case cover it. The 15 c1 specs are
     regenerated with the body.
+  - `ladder_tables.py` (#53 review):
+    - A successor's lever phase term missing on its predecessor run is a DEFECT (contract) when
+      the body marks it on every run, and a note only for identity, build-wait and sha-get.
+    - `gz_warning` is named per sample in tidy.tsv (`s5.gz_warning`) and in a summary.md note.
+  - The rehearsal's tail check has its own id, `tail-resolve`. A negative control of `tail`
+    counts only if `tail-resolve` passes on the same run, and an unresolved try is a RETRY row.
+    The rehearsal log records each spec's sha256.
   - The ladder body's `lad_crit` on the engine path: the engine's exit time is recorded as the
     engine exits (`eng.end`, from `lad_engine`'s subshell). Previously a hash made after the exit,
     but before the watch loop noticed, counted as covered.

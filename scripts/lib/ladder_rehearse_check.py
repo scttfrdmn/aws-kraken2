@@ -121,6 +121,10 @@ def read_tsv(p):
     return [dict(zip(h, l.split("\t"))) for l in ls[1:] if l.strip()]
 
 
+# A negative control of check ID counts only if these checks pass on the same run (its probe resolves).
+MUST_PASS = {"tail": ("tail-resolve",)}
+
+
 def check(c, expect_fail):
     K = Checks(c["name"])
     p, ex = c["params"], c.get("expect", {})
@@ -383,18 +387,24 @@ def check(c, expect_fail):
             first = round(min(tail)[1] - min(tail)[0], 3) if tail else 0
             mx = max((t[1] - t[0] for t in tail), default=0)
             crit = net.get("sha_critical_s")
-            K.need("tail", len(big) >= 2, f"r{r}: the probe resolves: {len(big)} output hashes ({len(tail)} files) after the last classify span ended (want >= 2)")
+            K.need("tail-resolve", len(big) >= 2, f"r{r}: the probe resolves: {len(big)} output hashes ({len(tail)} files) after the last classify span ended (want >= 2)")
             K.need("tail", crit is not None and crit <= 1.2 * mx + 0.01 and naive >= 1.8 * max(crit, 0.001),
                    f"r{r}: sha_critical_s {crit} is about one hash (the first, {first}; the largest {round(mx, 3)}), not the tail's {len(tail)} hashes ({naive})")
-    return finish(K, expect_fail)
+    return finish(K, expect_fail, [p for i in expect_fail for p in MUST_PASS.get(i, ())])
 
 
-def finish(K, expect_fail):
+def finish(K, expect_fail, must_pass=()):
     if expect_fail:
         bad = [i for i in expect_fail if K.res.get(i, True)]
         for i in expect_fail:
             print(f"{'ok  ' if not K.res.get(i, True) else 'FAIL'} {K.case}: negative control: check {i} "
                   f"{'FAILED, as the mutation must make it' if not K.res.get(i, True) else 'did not fail: it cannot see the planted defect'}")
+        # A negative control counts only where its probe could resolve the effect (e.g. tail-resolve).
+        for i in must_pass:
+            ok = K.res.get(i) is True
+            print(f"{'ok  ' if ok else 'FAIL'} {K.case}: negative control: check {i} "
+                  f"{'passed: the probe resolves, so the failure above is the defect' if ok else 'did not pass: the probe could not resolve the effect'}")
+            bad += [] if ok else [i]
         return 1 if bad else 0
     return 0 if all(K.res.values()) else 1
 
