@@ -1,0 +1,1037 @@
+{
+  "generator": "scripts/lib/ladder_tables.py",
+  "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+  "generator_dirty": false,
+  "generated_at": "2026-10-11T02:17:51Z",
+  "lad_sample_contract_v": 1,
+  "levers": "scripts/g3/ladder.levers.tsv",
+  "modelled": null,
+  "resolved": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/ladder.resolved.tsv",
+  "runs": [
+    {
+      "run_id": "20261011-021307-2d5d719-7d64-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S0-T1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "1",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021327-2d5d719-4228-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S0-Tv",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021345-2d5d719-4c7b-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021403-2d5d719-173d-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S2a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021422-2d5d719-fdba-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S2b-i",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021440-2d5d719-78b3-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S2b-ii",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021458-2d5d719-fd9a-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S2c",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021517-2d5d719-e019-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S2d",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021535-2d5d719-61c1-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S5",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021556-2d5d719-a45d-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S6",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021616-2d5d719-0640-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S7a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-serial",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021635-2d5d719-5087-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S7b",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021656-2d5d719-15b1-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "S9",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021714-2d5d719-7550-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "Sstar-r8g",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-021733-2d5d719-8ae6-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1",
+      "commit": "2d5d719a544d6dcdb419631b0ddd21d8bbcb3233",
+      "params": {
+        "rung": "Sstar-r8gd",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    }
+  ],
+  "defects": [],
+  "findings": [],
+  "notes": [],
+  "inputs": [
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/ladder.resolved.tsv",
+      "bytes": 153,
+      "sha256": "4f7ac56578a80e08e11fc7022661432aeabb0473c02988ab8b65957bfd8531a5"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1-r0/log/run.log",
+      "bytes": 15487,
+      "sha256": "54d940811b81f0779106b12cc08c6e33c88b749e5d4eb39492c372553c0955b2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1-r0/manifest.json",
+      "bytes": 2218,
+      "sha256": "6ed9b655a2dd71dcb5860ba0a1b0a11d69f961657e4e375434100db464a5fee0"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "6c3a3f663ea196ee6735216dcc76bb2db2ad5c051cb918b1a3a545409145e4c6"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1-r0/out/lad-samples.jsonl",
+      "bytes": 726,
+      "sha256": "ca6ac52898d29dece0610d4ae9b48194865947ef7b616f3dfa2f75be7153f42f"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1-r0/out/lad.jsonl",
+      "bytes": 2009,
+      "sha256": "e657de4e0d5fe71d1e8bd27fffac530738054dd5d98d0234fc7619e39191d76d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021307-2d5d719-7d64-n1/cohort.json",
+      "bytes": 1060,
+      "sha256": "f6443029fda85aa0ac71a50e57104623ac8d95437879acd1c01352b0bf110716"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1-r0/log/run.log",
+      "bytes": 15491,
+      "sha256": "c768d163d1479f69061280f8917681acd270763c1e22b730acf72021e31547c6"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1-r0/manifest.json",
+      "bytes": 2222,
+      "sha256": "1558ac99049878dbf1f4b881681dba6b2784b236f373bc94bdc3ea6f7bc34d43"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "c172dfd5696d038f296c49471479dcedd6e20a3190341e2e991cee0f8f71a20e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1-r0/out/lad-samples.jsonl",
+      "bytes": 726,
+      "sha256": "a0d8defa2bb3766c9399836f34d1caa7365f28b88eb4dcb11623d833bd65672e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1-r0/out/lad.jsonl",
+      "bytes": 2014,
+      "sha256": "aec8da3c83c2829edf7eda54655eb84e39acad1a916f8553df44f389962565bc"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021327-2d5d719-4228-n1/cohort.json",
+      "bytes": 1064,
+      "sha256": "95bd9352fb9beb66834ff288fd5e8e242b71f6d0ea453678a0870bc34faf459b"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1-r0/log/run.log",
+      "bytes": 16651,
+      "sha256": "0eca33093784fde769c9ffa1c68932b8250fb80d7908e5852299a9bfc9761b51"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1-r0/manifest.json",
+      "bytes": 2208,
+      "sha256": "1c34eba762832e0b8deb25c9efb781b0b94fd051bb2b7b7605cebd36772c63d2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "c0cf5ddb6c6850cc328cd86f765dc3fd07beb0da5b5276eca421a608a10e3efc"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1-r0/out/lad-samples.jsonl",
+      "bytes": 723,
+      "sha256": "72c2d123bea20ff8f21b2328577a0a3f34fb26a5639e0e634df21aee92d2e66d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1-r0/out/lad.jsonl",
+      "bytes": 2000,
+      "sha256": "d7dc2265cdb7d9129dc84453d8100f4a0bfcfb1b58d6eb6540f0a89c663b63bf"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021345-2d5d719-4c7b-n1/cohort.json",
+      "bytes": 1050,
+      "sha256": "5c1138d7f2636b020e8ed258e791779b5975508fa86ee0c1f02aa16049f0fc1d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1-r0/log/run.log",
+      "bytes": 16619,
+      "sha256": "8eb393015cfa3796fe05c81f6c6d68507f725cb4c594a9dec240d2f8d5e3bcbb"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1-r0/manifest.json",
+      "bytes": 2216,
+      "sha256": "d3b374e89679b4ca2145d88687c6634a954ac1ebfa90ceaf581ca256acd7c177"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "b772b8d924b7e7841a80f49d6be9507988f910c19a746026188fea03347922ec"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1-r0/out/lad-samples.jsonl",
+      "bytes": 724,
+      "sha256": "023aed0c2756ef66a41d72a093ae69ed6423369370b709150dfd31c111a3f21b"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1-r0/out/lad.jsonl",
+      "bytes": 2009,
+      "sha256": "6ec7eb63352f757b2a451fe727a89d8762aa82360246bb78b2f5318724131177"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021403-2d5d719-173d-n1/cohort.json",
+      "bytes": 1058,
+      "sha256": "aa31b59963c107580beedcb6830db8ad7bb3d66dc89df4a2c2e5c5ef316c0868"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1-r0/log/run.log",
+      "bytes": 16688,
+      "sha256": "4bebc613104bfb1ffec7abd9b386aeb9c0b3299df7de7e1df79ca84201694a2d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1-r0/manifest.json",
+      "bytes": 2214,
+      "sha256": "ec06cd6689c8d8b19e2c0b45703749ed2f304bef31b3de1735588d5dba0c73a2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "8167a2aecfb3f010e3aa5501253883007251ca82296d1853db4d08d4453256bd"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1-r0/out/lad-samples.jsonl",
+      "bytes": 725,
+      "sha256": "3946e114f5a84e454cb78ce5b2106a4ca795289a7bf63c44abb52fd84f831962"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1-r0/out/lad.jsonl",
+      "bytes": 2003,
+      "sha256": "71cfc3d4a7705da8c0bcd52ca1e6db9cb7891bfd0f0e7faeae4ed759b17ea0ba"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021422-2d5d719-fdba-n1/cohort.json",
+      "bytes": 1056,
+      "sha256": "cf210af458110dd38c0e33acfe26f4dac25fbac7c894bd789aa41cc183a6bdc8"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1-r0/log/run.log",
+      "bytes": 16752,
+      "sha256": "c93899f31b406f6be2c558f6aec3b60e606b3bbdeb06bbb2856c18c1d5ece6d2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1-r0/manifest.json",
+      "bytes": 2217,
+      "sha256": "2a0c6f620f550165ec126488d0f4c76390f6c0582215c2054e1ac8db824f1b55"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "42cfdf0253d1c9efe1f6c3fdb2bb658403dee4abb827690373aed99f5ddadaa4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1-r0/out/lad-samples.jsonl",
+      "bytes": 727,
+      "sha256": "5f7121a925e87863587426b59b173c992b34ad85b5dfd5041c7cf8306900e7eb"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1-r0/out/lad.jsonl",
+      "bytes": 2007,
+      "sha256": "dd6916390d0dda2862ab86373852ef036c1da69e98ace6b596682c7205eee045"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021440-2d5d719-78b3-n1/cohort.json",
+      "bytes": 1059,
+      "sha256": "32d2bd71d10791fc1eb6a2865a91594c0b9d16985cee854cbd4ce296d6b1e91e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1-r0/log/run.log",
+      "bytes": 16621,
+      "sha256": "8d37955bda3cb2474f7f1eeb15284d27bd197bc35e0fee45fa17e3f41cb41516"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1-r0/manifest.json",
+      "bytes": 2217,
+      "sha256": "8e14d5519a2ff638ceb3e51f0335073d079d9eb08fa266e0c5dbab243a7ffd36"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "8167a2aecfb3f010e3aa5501253883007251ca82296d1853db4d08d4453256bd"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 724,
+      "sha256": "ba93e2604c182aa6bbde7f66e4d1c4d9974d06e6a765ecb692c8065dc7efa6a5"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1-r0/out/lad.jsonl",
+      "bytes": 2009,
+      "sha256": "e6ab252e00c5411cde3d4d01dfb480e68ab52fd7982e605b728ccbbe665ae79a"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021458-2d5d719-fd9a-n1/cohort.json",
+      "bytes": 1059,
+      "sha256": "4fb5ef5944d14927c3e9140b039d612030846ade320487ba48aa7cfc63fd858e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1-r0/log/run.log",
+      "bytes": 16732,
+      "sha256": "9d1640366503ae54fcdda50b5126dfea73abf870e5565cf6de9516ef77ccdc42"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1-r0/manifest.json",
+      "bytes": 2216,
+      "sha256": "8441a54c0b888797851e4c58e5453b56544932f2fa8698f1901a4e509b7dd257"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "f960058ee339f3b5808bbb82152ea1f7d3672eba8efd8913fbb043b89118e049"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1-r0/out/lad-samples.jsonl",
+      "bytes": 722,
+      "sha256": "6e63150c570f9a5c9577da5a8cd458619d9bc1e31017ef6b0bb872e40bf1205c"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1-r0/out/lad.jsonl",
+      "bytes": 2009,
+      "sha256": "ec91287fcf660648f302f7982b4f18549569488af6658e387626e5c308b81bb3"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021517-2d5d719-e019-n1/cohort.json",
+      "bytes": 1058,
+      "sha256": "7b7e917c36cdaf964f0446f87ffdc741c59a5ac3e06e9669061820b232debdd3"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1-r0/log/run.log",
+      "bytes": 19469,
+      "sha256": "a8c748cebbc733b1a69a634c0ba486623a9c53a2b7a9255f088c60a03e34ca56"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1-r0/manifest.json",
+      "bytes": 2305,
+      "sha256": "39a1a7ec23cddb3f797606295d130e779ff0483b4bfb111404d8ef4743d88d6e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "dab037dfdcb19deba2ebfc3eecd76d0f660478cf7ba4c7b7aed9c344a77c019c"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1103,
+      "sha256": "f0ffbd9aed7fde993e122631fcd73deb9e9739360eb431cd1c7a4890fa722c16"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1-r0/out/lad.jsonl",
+      "bytes": 3389,
+      "sha256": "bed1620c3deff332c418bb6867152f9f07b9c246334eeaf7fed39675e6eb1e00"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021535-2d5d719-61c1-n1/cohort.json",
+      "bytes": 1067,
+      "sha256": "f9003fbdce7aa24d5e2355c3f2bb4ab3bfb613f178e03b49c8e28609b17b85e7"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1-r0/log/run.log",
+      "bytes": 19467,
+      "sha256": "51ecebbe28a15146a16283550c889a7047e080c12e82cea42af74062f1926381"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1-r0/manifest.json",
+      "bytes": 2306,
+      "sha256": "88c26faa46e13693424857055effc2227f37cb45e683f022b6c45e5e62ca551d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1-r0/out/lad-net.jsonl",
+      "bytes": 103,
+      "sha256": "4f24737719491c4a61ba2587631be8c9b8334cb9e000c03c6a8c4df6378f0a50"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1103,
+      "sha256": "dd387d600bf3fe9373ab8764773f1dde13ec118d8fc4020c71601120b6427ba6"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1-r0/out/lad.jsonl",
+      "bytes": 3386,
+      "sha256": "5590155d87ef6a4d54cc94d1ae7b36ef9ac73ebc692a00e0fce8ca4e8ed0233f"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021556-2d5d719-a45d-n1/cohort.json",
+      "bytes": 1068,
+      "sha256": "517aec0f697ee31d68b898ba8b610cb5bc76e59ca677a9d82a409ae3346030ff"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1-r0/log/run.log",
+      "bytes": 20082,
+      "sha256": "e0fbf672f4c20235ffc9d571ceb9a111a9cdf78927a473674289ad233d6c45fd"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1-r0/manifest.json",
+      "bytes": 2307,
+      "sha256": "bf6c02e9077c06140019fdc3baba0fc6db791641cde188c5fc582d7da0bfe75a"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "55fdfe67429ecffdd4f7bafc7e5ccfae148bb938500f4af753410d1dbe59d5ba"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1103,
+      "sha256": "1e35fd62dbc53806903affede2a93a31e993bd627648967dc4d54fb63856907b"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1-r0/out/lad.jsonl",
+      "bytes": 3388,
+      "sha256": "45a0c44ba486da672a12604f876bfe663637ef2a8af89f7c9b957e8a84d93512"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021616-2d5d719-0640-n1/cohort.json",
+      "bytes": 1069,
+      "sha256": "28cf37ce10e6d5df5a7022b27f2eef77d556023c5af6ff948fab8a7bfcb32dba"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1-r0/log/run.log",
+      "bytes": 20084,
+      "sha256": "5a0ed843e9bb432f0989ab45355f9fd12626d74cc8e1510c7dd8b6ccb2ebf999"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1-r0/manifest.json",
+      "bytes": 2308,
+      "sha256": "47e44ede66ecdc6802aa0b6020760b675ca0e866fbee398baaa28800ec43920d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "95bb5285219d6b2065d77981c8fdad011c629b8daccd03195853305daa46e7b2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1090,
+      "sha256": "1d29324f801a2d72cf28e14ff0364180085332ae7c0a0c3eed59ca77c230565c"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1-r0/out/lad.jsonl",
+      "bytes": 3376,
+      "sha256": "b499ec1bf2174f5d0d9360a165716aee411bf797afd336cdef2a86c7f583edd4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021635-2d5d719-5087-n1/cohort.json",
+      "bytes": 1070,
+      "sha256": "c35e7b27a5131c3111bb3bfd70ac89ae38b7143e30c935d30f8994a64a0b2a10"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1-r0/log/run.log",
+      "bytes": 20133,
+      "sha256": "426b390f445f4f3333e8e16ea83d5146bfa36a7ce479961a9a96e1f30f9c9c2b"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1-r0/manifest.json",
+      "bytes": 2388,
+      "sha256": "026e8d8f2e2172ead3b61a5ca4e9a31e134130d7120fe0617f7cf64fbfa273b4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1-r0/out/lad-net.jsonl",
+      "bytes": 103,
+      "sha256": "8a7953f1e711c8c72570e903f85dff6df785b6051d872f741a0622908ecc70da"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1089,
+      "sha256": "ae042061453d1b965b01d8f2f9942d57036b3ff759e0d2ac119b715045846b82"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1-r0/out/lad.jsonl",
+      "bytes": 3380,
+      "sha256": "d59ecc3aee6160f48f3cfaab27e1fa1990dec5c422a69bacff0d842810d969a7"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021656-2d5d719-15b1-n1/cohort.json",
+      "bytes": 1069,
+      "sha256": "e74538d3af1e6229d2b4b42a8b2ab4a086d78e0b2112257a9b59f3ca2a0eaed4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1-r0/log/run.log",
+      "bytes": 20239,
+      "sha256": "72cc79f5a392435e078df35df10e3d539bb48732645ab865f942de9abb11b116"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1-r0/manifest.json",
+      "bytes": 2402,
+      "sha256": "41455c9c0e2d8169dede09897f808f5902f75be7ca839c65aad3f9a12ffc5d5e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "3f8d7e51a3a4c193be9c03ce92ddb6fa89711b8cbbbe883ab6efc955d9b41ed4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1095,
+      "sha256": "270e668e1a59d37d287f2efedd6e1cb6c3f8872e31f7f651180447394ee3ecea"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1-r0/out/lad.jsonl",
+      "bytes": 3393,
+      "sha256": "f8a458500863c70305e43f8f0883ac3ca4926761657d35a3c8df8c826686e8c1"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021714-2d5d719-7550-n1/cohort.json",
+      "bytes": 1083,
+      "sha256": "c73e015216f57056492dfb0c576a5176c8f2160e14b93e7fc879e30d4ba5da81"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1-r0/log/run.log",
+      "bytes": 20260,
+      "sha256": "bdb653d26a4f3e73d99fdfbdbbf6f7232b25f432b073010c504dbade125c4ea4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1-r0/manifest.json",
+      "bytes": 2405,
+      "sha256": "689ce1d710e5199a00669f2c69b6f9f0ec405bcfa6fd01d6f44dd6c32e098522"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "83246669fcdfd7df7fe9bd796ef3e5e49f5b94b30460e620c4341deb9be7faea"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1097,
+      "sha256": "9b5d36943406e6f1371da03aa09f2ef7c946623df74fec6670038b2eb126baed"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1-r0/out/lad.jsonl",
+      "bytes": 3399,
+      "sha256": "fec11fc0c376517acd9eddcde196b7b0ac090be43a4d28f4b3e18bb47f5641a5"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.JrTUhN/record/results/g3/20261011-021733-2d5d719-8ae6-n1/cohort.json",
+      "bytes": 1086,
+      "sha256": "9bd114360f32e8c4c40f54f1aea6e089f6675360003bc0e2ea4b7e78e79ad1b9"
+    },
+    {
+      "path": "scripts/g3/ladder.levers.tsv",
+      "bytes": 19106,
+      "sha256": "23f8d6090ff5ef8e6955d63552e3c2587484a16073bc0139b0e441a84ee63630"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "runs.tsv",
+      "sha256": "824f8317b44e5649b21a0b2e476e41e74ef70535b0b71816550e7fe6e8c0e7b8"
+    },
+    {
+      "path": "tidy.tsv",
+      "sha256": "9ec0e979f0eddfeb5c4075dd802e459413039fb3d81f78ac991534ff7ab44de5"
+    },
+    {
+      "path": "rungs.tsv",
+      "sha256": "460e8b53f1a2d6381341bf23df3e709920d4318ea19f666b5cafa2e72042c307"
+    },
+    {
+      "path": "effcost.tsv",
+      "sha256": "803f8c8fb2351c503aaf1310094f167a1015c01c1bf56fdeee22edce574e2295"
+    },
+    {
+      "path": "deltas.tsv",
+      "sha256": "1c78bc82085dafaa3b7fa86a87137c6ecda0b9e90ef483b9b35aef16932b1211"
+    },
+    {
+      "path": "pairs.tsv",
+      "sha256": "03ae4215b81071e4ddd4932acde0b4975765363752e04e826a2cca96ddcde039"
+    },
+    {
+      "path": "law1.tsv",
+      "sha256": "f230d1f638253385d696da479dde6d8062e2c15c7cb57c9804276b2f2d162dc9"
+    },
+    {
+      "path": "law1-detail.tsv",
+      "sha256": "a66574c714f575aa643177e03e0b7dae7a612f2f8ef6443ff3b0af2f0d88f021"
+    },
+    {
+      "path": "s5-nonpreserving.tsv",
+      "sha256": "ad0ba07442a8eef5c6a9a686fb01a0e94341735e6d8966c44aa80ea82ebbdae8"
+    },
+    {
+      "path": "endpoints.tsv",
+      "sha256": "c89258aa96a51faa28619ca7b03c0e903353d6994eb8b62211f294d5af2f24db"
+    },
+    {
+      "path": "spend.tsv",
+      "sha256": "03215e0e328e95988388cda4a9fe0e9ba6a1f7b5280bf68c44d37d42947b17df"
+    },
+    {
+      "path": "summary.md",
+      "sha256": "3ea6a70ac77a8b679b0e3deea962b10e914252b1cc2fd78108bf02c968ea92ec"
+    }
+  ]
+}
