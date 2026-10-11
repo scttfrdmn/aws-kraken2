@@ -82,9 +82,19 @@ local $SIG{ALRM} = sub { kill 'TERM', $pid; waitpid($pid, 0); exit 124; };
 alarm $lim; waitpid($pid, 0); exit($? >> 8);
 EOF
 printf '#!/usr/bin/env bash\nexec python3 %q "$@"\n' "$ROOT/scripts/lib/rehearse_aws.py" > "$BIN/aws"
+# GNU date's %N (lever.sh's timestamps), which macOS date lacks; everything else is the real date.
+cat > "$BIN/date" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  "+%s.%3N") exec perl -MTime::HiRes=time -e 'printf "%.3f\n", time' ;;
+  "+%s%N") exec perl -MTime::HiRes=time -e 'printf "%d\n", time * 1e9' ;;
+esac
+exec /bin/date "$@"
+EOF
 chmod +x "$BIN"/*
 cat > "$T/helpers.sh" <<'EOF'
 ak2_say() { echo "ak2: [$(date -u +%FT%TZ)] $*"; }
+ak2_err() { printf '%s\t%s\n' "$1" "$2" >> "$AK2T_OUT/helper-errors.tsv"; ak2_say "ERROR: $2"; }
 ak2_phase() { echo "ak2-phase $(date -u +%FT%TZ) $1"; }
 ak2_req() { printf '%s\t%s\t%s\n' "$1" "$2" "${3:-}" >> "$AK2T_OUT/requests.tsv"; }
 ak2_push() { mkdir -p "$AK2T_OUT" && cp "$1" "$AK2T_OUT/${2:-$(basename "$1")}"; }
@@ -259,6 +269,40 @@ tune)
   echo "rehearse: $np trials with a predecessor (want 37); trial order $([ "$ran" = "$want" ] && echo "is" || echo "is NOT") warm-up + SCHED"
   [ "$np" = 37 ] && [ "$ran" = "$want" ] || { echo "rehearse: prev_regime column or trial order wrong" >&2; RC=1; }
   cat "$T/run/tables/probe-tune-selection.tsv"
+  ;;
+awscp)
+  # Three runs of the body on the 320 MiB stand-in: a throttled copy (8 MiB/s) stopped by the bytes
+  # limit (64 MiB), one (4 MiB/s) stopped by the time limit (7 s), and an unthrottled one that
+  # completes. Each: exit 0; the progress lines streamed equal the pushed awscp.jsonl; at least 2
+  # progress lines for the limited runs; the done line's stopped_by; the client recorded with its
+  # resolved value; GetObject counted; the partial file removed; probe_tables.py awscp makes both tables.
+  SZ=$(wc -c < "$T/hash.k2d" | tr -d ' ')
+  for v in bytes:8388608:67108864:60 time:4194304:999999999999:7 complete:0:999999999999:60; do
+    IFS=: read -r want bps lb ls <<< "$v"
+    mkdir -p "$T/run-$want/out" "$T/home-$want"
+    env -i "${ENVV[@]}" HOME="$T/home-$want" AK2T_OUT="$T/run-$want/out" AK2_RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$SHA" \
+      AK2_INSTANCE_TYPE=r8gd.48xlarge AK2_ALLOWED_BUCKETS="$RB $B" AK2_REHEARSE_NVME="$T/nvme-$want" AK2T_COPY_BPS="$bps" \
+      AK2_REHEARSE_AWSCP_BYTES="$lb" AK2_REHEARSE_AWSCP_S="$ls" AK2_REHEARSE_AWSCP_EVERY=2 \
+      bash -c "cd \$HOME; $(cat "$T/node.sh")" > "$T/body-$want.log" 2>&1
+    b=$?; echo "rehearse: awscp ($want) body exit $b"; [ "$b" = 0 ] || { tail -25 "$T/body-$want.log" | sed 's/^/  body | /'; RC=1; }
+    J="$T/run-$want/out/awscp.jsonl"
+    st=$(grep -c '^probe-awscp ' "$T/body-$want.log"); jl=$(grep -c . "$J" 2>/dev/null)
+    np=$(grep -c '"kind":"progress"' "$J" 2>/dev/null)
+    sb=$(jq -r 'select(.kind == "done") | .stopped_by' "$J" 2>/dev/null); by=$(jq -r 'select(.kind == "done") | .bytes' "$J" 2>/dev/null)
+    cl=$(jq -r 'select(.kind == "client") | "\(.client) \(.resolved)"' "$J" 2>/dev/null)
+    ge=$(awk -F'\t' '$1 ~ /^GetObject/ {s += $2} END {print s + 0}' "$T/run-$want/out/requests.tsv" 2>/dev/null)
+    left=$(find "$T/nvme-$want" -type f 2>/dev/null | wc -l | tr -d ' ')
+    minp=2; [ "$want" = complete ] && minp=1
+    echo "rehearse: awscp ($want): streamed $st lines, awscp.jsonl $jl; $np progress (want >= $minp); stopped_by $sb (want $want), $by bytes of $SZ; client '$cl'; GetObject $ge; $left files left on the NVMe (want 0)"
+    [ "$st" = "$jl" ] && [ "$np" -ge "$minp" ] && [ "$sb" = "$want" ] && [[ $cl == "default "* ]] && [ "${cl#default }" != null ] \
+      && [ "${ge:-0}" -gt 0 ] && [ "$left" = 0 ] || { echo "rehearse: awscp ($want) results wrong" >&2; RC=1; }
+    case $want in
+      bytes) [ "$by" -ge "$lb" ] && [ "$by" -lt "$SZ" ] || { echo "rehearse: awscp (bytes) stopped at $by, not past $lb short of $SZ" >&2; RC=1; } ;;
+      complete) [ "$by" = "$SZ" ] || { echo "rehearse: awscp (complete) $by != $SZ" >&2; RC=1; } ;;
+    esac
+    python3 scripts/lib/probe_tables.py awscp "$T/run-$want" || RC=1
+    [ -s "$T/run-$want/tables/probe-awscp.tsv" ] && column -t -s$'\t' "$T/run-$want/tables/probe-awscp.tsv" | cut -c1-220
+  done
   ;;
 *) echo "rehearse: unknown probe kind $KIND" >&2; exit 2 ;;
 esac

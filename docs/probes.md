@@ -10,6 +10,7 @@ validation run.
 | (a) staging | `runs/g3-probe-stage-x8g.24xlarge.json` (`scripts/g3/probe-stage.body.sh`) | 1 × x8g.24xlarge | RODA hash.k2d onto tmpfs: rget sweep, whole-object rget and s5cmd writes, each ETag check timed separately, an aws s3 cp (CRT) rate sample |
 | (b) contention | `runs/g3-probe-cont-c8gn.4xlarge.json` (`scripts/g3/probe-cont.body.sh`) | 64 × c8gn.4xlarge, one cohort | concurrent ranged GETs of hash.k2d to /dev/null at N = 1, 16, 32, 64, 60 s each |
 | (d) #44 fix speed | `scripts/g3/hitbench.sh [PRE] [POST]` | local | our classifier before the fix (3201a75) and after, SRR062634 8M pairs against Standard-8, warm, alternating |
+| (f) classic `aws s3 cp` rate | `runs/g3-probe-awscp-r8gd.48xlarge.json` (`scripts/g3/probe-awscp.body.sh`) | 1 × r8gd.48xlarge | S0's staging of hash.k2d with the AMI's aws CLI as shipped onto one NVMe device, for 20 min or 300 GiB; sizes S0-T1 and S0-Tv's TTL ("The classic aws s3 cp rate" below) |
 | (e) host tunes (#41) | `runs/g3-probe-tune-x8g.24xlarge.json` (`scripts/g3/probe-tune.body.sh`, `scripts/g3/hosttune.sh`) | 1 × x8g.24xlarge | load and classify time under each candidate host-tune set, upstream `-M` on tmpfs and ours' engine N = 1, with fragmentation counters; fixes S3's set ("Host tunes" below) |
 
 ## Running them
@@ -41,6 +42,68 @@ make g3-frontier
   assertions in the script's header hold.
 - **Tables:** the post scripts run `scripts/lib/probe_tables.py`, writing
   `tables/probe-{decomp,decomp-conc,staging,contention,contention-nodes}.tsv`.
+
+## The classic `aws s3 cp` rate (probe f, before the ladder)
+
+**Why:** S0-T1 and S0-Tv stage RODA's 1.19 TB hash.k2d with the AMI's aws CLI as shipped
+(`awscp-default`), which resolves to the classic transfer client on r8gd.48xlarge (lever.sh's
+auto rule). That rate has never been measured, so their 360 min TTL is a guess. This probe
+measures it first, for at most 40 min.
+
+```bash
+make rehearse SPEC=runs/g3-probe-awscp-r8gd.48xlarge.json
+DRY_RUN=1 make run GATE=g3 SPEC=runs/g3-probe-awscp-r8gd.48xlarge.json
+make run GATE=g3 SPEC=runs/g3-probe-awscp-r8gd.48xlarge.json      # Scott's call
+make orphans
+```
+
+**What it does, as S0 does it:**
+- `lv_nvme single` mounts the first instance-store device.
+- It uses lever.sh's `default` client, recorded as kind `client` with `resolved` and `how`.
+- It runs `lv_stage_db awscp-default`'s own command line: a signed, then anonymous, head-object,
+  then `aws s3 cp --only-show-errors` of hash.k2d.
+
+`drop_caches` runs before the copy. The copy runs until 20 min or 300 GiB received, whichever
+comes first (or the object completes). Then it is stopped and the partial file is removed.
+
+**Lines** (streamed as `probe-awscp {json}` and in `out/awscp.jsonl`, pushed every 30 s):
+- `client` and `config`;
+- `progress` every 10 s:
+  - `bytes`: received on the default-route NIC since the copy started; `bytes_basis` says so;
+  - `allocated_bytes`: what the NVMe holds;
+  - `s`;
+  - `gbps`: gigabits/s, cumulative;
+  - `interval_gbps`: since the last line;
+  - `gb_per_s`: GB/s.
+- `done`:
+  - `stopped_by`: time, bytes, complete or failed;
+  - `steady_gbps`: from the first line past 60 s to the end;
+  - `est_object_s` and `est_object_s_steady`: the whole object at those rates.
+
+**Tables** (`scripts/post/g3-probe-awscp-r8gd.48xlarge.sh` → `probe_tables.py awscp`):
+- `tables/probe-awscp.tsv`: one row, with the resolved client, the rates, the estimates, and
+  `est_over_s0_ttl` (the estimate over S0's 360 min TTL);
+- `tables/probe-awscp-progress.tsv`: the series.
+
+**Cost:** TTL 40 min, `cost_limit` = TTL × the on-demand price ($14.11/h: $9.41).
+
+**Rehearsal** (`probe_rehearse.sh`, kind awscp): three runs on the 320 MiB stand-in:
+- a throttled copy stopped by the bytes limit;
+- one stopped by the time limit;
+- one that completes.
+
+The seams are `AK2_REHEARSE_AWSCP_S`, `_BYTES`, `_EVERY` and lever.sh's `NVME`, plus the stub
+aws's `AK2T_COPY_BPS`. Each run must:
+- stream lines equal to the pushed ones;
+- have at least 2 progress lines (1 for the complete run) and the right `stopped_by`;
+- record the client;
+- count GetObject;
+- leave nothing on the NVMe;
+- give both tables.
+
+**Not covered locally:** the real CLI's rate and its client resolution on r8gd.48xlarge (the
+stub resolves to `unknown`), and the NIC counter (the host has no /proc; `bytes_basis` is then
+`allocated`).
 
 ## How the frontier uses them
 
