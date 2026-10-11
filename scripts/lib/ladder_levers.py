@@ -617,11 +617,11 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
     if rung not in names:
         raise KeyError("no rung %s in the table" % rung)
     r = names[rung]
-    if r["status"] != "run":
-        raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
     why = not_run_at(r, cohort)
     if why:
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, why))
+    if r["status"] != "run":
+        raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
     if alias_at(r, cohort):
         raise Unresolved("%s is alias: same configuration as %s at c%s (alias_cohorts): no spec is generated for it; "
                          "%s's runs are read" % (rung, alias_at(r, cohort), cohort, alias_at(r, cohort)))

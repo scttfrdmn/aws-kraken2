@@ -742,7 +742,7 @@ case_resolver() {
     want=$(lp "$(sed -n 's/^RUNG=\([^;]*\);.*/\1/p' <<< "$line")" 1 | sed -n "s/^PARAMS='\(.*\)'$/\1/p")
     n=$((n + 1)); [ "$line" = "$want" ] || bad="$bad $s"
   done
-  [ -z "$bad" ] && [ "$n" = 15 ]; chk "the $n committed c1 specs' parameter blocks are the resolver's${bad:+ (not:$bad)}" $?
+  [ -z "$bad" ] && [ "$n" -gt 0 ] && [ "$n" = "$(git ls-files 'runs/g3-l-*-c1.json' | wc -l | tr -d ' ')" ]; chk "the $n committed c1 specs' parameter blocks are the resolver's${bad:+ (not:$bad)}" $?
   return $rc
 }
 
