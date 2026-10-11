@@ -589,16 +589,21 @@ def az_rows(path=AZS):
     return out
 
 
-def az_alt(itype, az, path=AZS, root=ROOT):
+def az_alt(itype, az, path=AZS, root=ROOT, tracked=True):
     """The documented-AZ row for (itype, az) in scripts/g3/ladder.azs.tsv (columns type, az,
-    evidence), with its evidence checked: a manifest under results/ whose instance.type and
-    instance.az are exactly these. Raises ValueError otherwise."""
+    evidence), with its evidence checked: a committed (git-tracked) manifest under results/ whose
+    instance.type and instance.az are exactly these. Raises ValueError otherwise."""
     for r in az_rows(path):
         if r.get("type") == itype and r.get("az") == az:
             ev = r.get("evidence", "")
             full = os.path.normpath(os.path.join(root, ev))
             if not ev.startswith("results/") or not ev.endswith("/manifest.json") or not os.path.isfile(full):
                 raise ValueError("%s %s: evidence %s is not a manifest under results/" % (itype, az, ev))
+            if tracked:
+                import subprocess
+                g = subprocess.run(["git", "-C", root, "ls-files", "--error-unmatch", ev], capture_output=True)
+                if g.returncode != 0:
+                    raise ValueError("%s %s: evidence %s is not committed (git ls-files)" % (itype, az, ev))
             with open(full) as f:
                 inst = (json.load(f).get("instance") or {})
             if inst.get("type") != itype or inst.get("az") != az:
@@ -857,10 +862,15 @@ def _self_test():
         with open(azp, "w") as f:
             f.write("# c\ntype\taz\tevidence\nx8g.24xlarge\tus-west-2c\tresults/g3/r1/manifest.json\n"
                     "x8g.24xlarge\tus-west-2a\tresults/g3/r1/manifest.json\n")
-        assert az_alt("x8g.24xlarge", "us-west-2c", azp, d)["evidence"] == "results/g3/r1/manifest.json"
+        assert az_alt("x8g.24xlarge", "us-west-2c", azp, d, tracked=False)["evidence"] == "results/g3/r1/manifest.json"
+        try:   # the same evidence, not committed (the temp dir is no repo): refused
+            az_alt("x8g.24xlarge", "us-west-2c", azp, d)
+            raise AssertionError("untracked evidence accepted")
+        except ValueError as e:
+            assert "not committed" in str(e), e
         for t, z in (("x8g.24xlarge", "us-west-2a"), ("x8g.24xlarge", "us-west-2d"), ("r8g.48xlarge", "us-west-2c")):
             try:
-                az_alt(t, z, azp, d)
+                az_alt(t, z, azp, d, tracked=False)
                 raise AssertionError("az %s %s accepted" % (t, z))
             except ValueError:
                 pass

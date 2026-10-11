@@ -501,6 +501,20 @@ for i in $(seq 1 24); do
   sleep 5
 done
 [ -n "$DESC" ] || say "WARNING: DescribeInstances never found $IID; instance fields stay null (scripts/refinalise.sh fills them after the run)"
+# The AZ asked for (AK2_LAUNCH_AZ, else the spec's pinned one) must be the AZ launched in: a run in
+# another AZ is not the run that was asked for (docs/run.md, "Launch overrides").
+WANT_AZ=${AZ_OVR:-$(q '.placement.availability_zone // empty')}
+GOT_AZ=$(echo "${DESC:-null}" | jq -r '.Placement.AvailabilityZone // empty')
+if [ -n "$WANT_AZ" ] && [ -n "$GOT_AZ" ] && [ "$GOT_AZ" != "$WANT_AZ" ]; then
+  say "spawn launched in $GOT_AZ, not the requested $WANT_AZ: terminating $IID"
+  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
+  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
+  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --arg got "$GOT_AZ" --arg want "$WANT_AZ" \
+    '.launch = {requested_at:$t, instance_id:$iid, region:$lr, az:$got, requested_az:$want, error:"launched in the wrong AZ; terminated by run.sh"}'
+  scripts/orphans.sh --own "$TASK_ID" "$IID"
+  die "launch AZ $GOT_AZ != requested $WANT_AZ"
+fi
+[ -n "$WANT_AZ" ] && [ -z "$GOT_AZ" ] && say "WARNING: the launch AZ could not be read; the requested $WANT_AZ is unchecked here (make ladder-campaign checks instance.az)"
 # The installed capacity utilisation is measured against (docs/run.md, "Utilisation"): vCPUs,
 # memory and the first network card's baseline and peak line rate, from describe-instance-types.
 TYPEINFO=null

@@ -4,24 +4,29 @@
 Each scenario runs the real planner and driver in a scratch git repo holding the real committed
 c1 specs of a few rungs, the real lever table, ladder_levers.py and quota_check.sh, a synthetic
 record, and a scratch AZ list. `make run`, `make orphans`, `make g3-ladder` and quota_check.sh are
-stubs (the driver's AK2_CAMPAIGN_* seams); the run stub writes a cohort dir as run-multi.sh does,
-with params from the real `ladder_levers.py spec-params --rep $AK2_LADDER_REP`, and logs each
-start and end. Scenarios:
-  plan       ordering (cost, then ladder order), rep 2 reversed, skipping done runs, and the runs
-             not counted (failed, a recorded defect, params that differ);
-  skip       the run skips the done (rung, rep) and launches the rest;
-  normal     the first launch runs alone, the X family never exceeds its limit (and reaches it),
-             rep 2 of a rung starts after its rep 1 ends, AK2_LADDER_REP reaches params.rep, no
-             launch while quota_check refuses, make orphans after every run;
-  capacity   x8g: one retry in the documented AZ (AK2_LAUNCH_AZ), then rep 2 in the spec's AZ;
-             r8gd: no documented alternative, so the rung stops; both capacity rows reach
-             g3_defects.tsv at the end;
-  failure    a failed run stops its rung (rep 2 not launched); the other rung carries on;
-  orphans    a finding with a run in flight is informational; with nothing in flight it stops
-             the campaign (exit 3) before the next launch;
-  law1       a Law 1 DEFECT from g3-ladder stops the campaign; one already in the record refuses
-             to start.
+stubs (the driver's AK2_CAMPAIGN_* seams). The run stub writes a cohort dir as run-multi.sh does
+(params from the real `ladder_levers.py spec-params --rep $AK2_LADDER_REP`, member manifests with
+spec_sha256 and instance.az) and models run-multi's old orphan exit: rc 3 whenever another run is
+in flight, with a clean record. The tables stub writes runs.tsv and its summary line. Scenarios:
+  plan        ordering (cost, then ladder order), rep 2 reversed, the done check (and why each
+              record run is or is not counted: failed, a recorded defect, params, spec sha256,
+              prefix not fetched, excluded by ladder_tables; an old global orphans_rc 1 is not
+              disqualifying);
+  skip        the run skips the done (rung, rep) and launches the rest;
+  default     CONCURRENCY defaults to 1: never two runs in flight;
+  normal      CONCURRENCY=4: the first launch runs alone, X never exceeds its limit (and reaches
+              it), rep 2 after rep 1, AK2_LADDER_REP reaches params.rep, no launch while quota
+              refuses, orphans after every run; runs whose make run exited 3 only because another
+              run was alive are judged ok from their record (B1);
+  capacity    x8g: one retry in the documented AZ, rep 2 in the spec's AZ; r8gd: no alternative,
+              the rung stops; both rows reach g3_defects.tsv;
+  failure     a failed run, a run in the wrong AZ, and a run ladder_tables excludes each stop
+              their rung; the other rung carries on;
+  orphans     informational with a run in flight; a hard stop with none;
+  law1        a Law 1 DEFECT stops the campaign; one already there refuses to start; a g3-ladder
+              crash (exit 1, no summary line) is a hard stop too (B2).
 """
+import hashlib
 import json
 import os
 import shutil
@@ -44,7 +49,7 @@ def ok(cond, msg, detail=""):
 
 
 STUB_RUN = r'''#!/usr/bin/env python3
-import json, os, random, subprocess, sys, time
+import hashlib, json, os, random, subprocess, sys, time
 S = os.environ["AK2T"]
 a = dict(x.split("=", 1) for x in sys.argv[1:])
 spec = json.load(open(a["SPEC"]))
@@ -55,11 +60,12 @@ az = os.environ.get("AK2_LAUNCH_AZ") or spec["placement"]["availability_zone"]
 beh = json.load(open(os.path.join(S, "behave.json")))
 b = dict({"s": 0.4, "r": "ok", "cost": 1.0}, **beh.get("%s:%d" % (rung, rep), {}))
 b = dict(b, **beh.get("%s:%d:%s" % (rung, rep, az), {})) if os.environ.get("AK2_LAUNCH_AZ") else b
-def ev(kind):
-    with open(os.path.join(S, "events.jsonl"), "a") as f:
-        f.write(json.dumps({"ev": kind, "rung": rung, "rep": rep, "az": az, "type": spec["resources"]["instance_type"],
-                            "t": time.time(), "env_rep": os.environ.get("AK2_LADDER_REP"),
-                            "env_az": os.environ.get("AK2_LAUNCH_AZ"), "dry": os.environ.get("DRY_RUN") or os.environ.get("MAKEFLAGS")}) + "\n")
+EV = os.path.join(S, "events.jsonl")
+def ev(kind, **kw):
+    with open(EV, "a") as f:
+        f.write(json.dumps(dict({"ev": kind, "rung": rung, "rep": rep, "az": az, "type": spec["resources"]["instance_type"],
+                                 "t": time.time(), "env_rep": os.environ.get("AK2_LADDER_REP"), "env_az": os.environ.get("AK2_LAUNCH_AZ"),
+                                 "dry": os.environ.get("DRY_RUN") or os.environ.get("MAKEFLAGS")}, **kw)) + "\n")
 if b["r"] == "quota":
     ev("refused")
     print("quota_check: REFUSED: ...\nmake run (multi): refused before launch: 1 x t would exceed the region's on-demand vCPU quota (above)")
@@ -69,27 +75,42 @@ cid = "20261012-%s-abcdef0-%04x-n%d" % (time.strftime("%H%M%S"), random.randrang
 print("make run (multi): cohort %s: %d x %s in %s -> s3://b/%s" % (cid, n, spec["resources"]["instance_type"], az, cid), flush=True)
 os.makedirs("results/g3/%s" % cid)
 ev("start")
+inst_az = "us-west-2a" if b.get("wrong_az") else az
 for k in range(n):
     os.makedirs("results/g3/%s-r%d" % (cid, k))
-    json.dump({"cohort": {"id": cid}, "params": p, "launch": {"instance_id": None if b["r"] == "capacity" else "i-%d" % k}},
+    json.dump({"cohort": {"id": cid}, "params": p, "spec": a["SPEC"],
+               "spec_sha256": hashlib.sha256(open(a["SPEC"], "rb").read()).hexdigest(),
+               "instance": {"type": spec["resources"]["instance_type"], "az": inst_az},
+               "launch": {"instance_id": None if b["r"] == "capacity" else "i-%d" % k}},
               open("results/g3/%s-r%d/manifest.json" % (cid, k), "w"))
 time.sleep(b["s"])
-if b.get("law1"):
-    open(os.path.join(S, "law1"), "w").close()
+for flag in ("law1", "crash"):
+    if b.get(flag):
+        open(os.path.join(S, flag), "w").close()
+if b.get("excluded"):
+    open(os.path.join(S, "excluded"), "a").write(cid + "\n")
 ex = {"ok": 0, "fail": 1, "capacity": None}[b["r"]]
 if b["r"] == "capacity":
     open("results/g3/%s/rank-0.run.log" % cid, "w").write("An error occurred (InsufficientInstanceCapacity) ...\n")
+# run-multi's old exit: the global orphan check fails while another run's instance is alive.
+evs = [json.loads(l) for l in open(EV)]
+others = sum(1 if e["ev"] == "start" else -1 for e in evs if e["ev"] in ("start", "end")) - 1
 mem = [{"rank": k, "run_id": "%s-r%d" % (cid, k), "exit_code": ex, "cost_usd": None if ex is None else b["cost"],
-        "instance_id": None if ex is None else "i-%d" % k} for k in range(n)]
-json.dump({"cohort_id": cid, "params": p, "nodes": n, "az": az, "members": mem,
+        "instance_id": None if ex is None else "i-%d" % k, "own_gone": True} for k in range(n)]
+json.dump({"cohort_id": cid, "spec": a["SPEC"], "params": p, "nodes": n, "az": az, "members": mem,
            "ended": "members done" if ex == 0 else "members done (fail fast: rank 0 exited 1)",
-           "cost_usd": None if ex is None else b["cost"] * n}, open("results/g3/%s/cohort.json" % cid, "w"))
-ev("end")
-sys.exit(0 if ex == 0 else 1)
+           "cost_usd": None if ex is None else b["cost"] * n, "prefix_fetched": True, "sweep_failures": [],
+           "multipart_abort_failures": 0, "orphans_rc": 0, "orphans_scope": "own", "orphans_global_rc": 1 if others > 0 else 0},
+          open("results/g3/%s/cohort.json" % cid, "w"))
+rc = 0 if ex == 0 else 1
+if rc == 0 and others > 0:
+    rc = 3
+ev("end", rc=rc)
+sys.exit(rc)
 '''
 
 STUB_ORPHANS = r'''#!/usr/bin/env python3
-import json, os, time
+import os, time
 S = os.environ["AK2T"]
 seq = [int(x) for x in open(os.path.join(S, "orphans_seq")).read().split()] if os.path.exists(os.path.join(S, "orphans_seq")) else []
 log = os.path.join(S, "orphans.log")
@@ -101,12 +122,25 @@ raise SystemExit(rc)
 '''
 
 STUB_G3 = r'''#!/usr/bin/env python3
-import os, sys
+import glob, os, re, sys
 S = os.environ["AK2T"]
-if os.path.exists(os.path.join(S, "law1")):
-    print("ladder_tables: DEFECT (Law 1): SRR1: output sha256 differs", file=sys.stderr)
+out = dict(x.split("=", 1) for x in sys.argv[1:] if "=" in x)["OUT"]
+if os.path.exists(os.path.join(S, "crash")):
+    print("Traceback (most recent call last):\n  ...\nKeyError: 'x'", file=sys.stderr)
     raise SystemExit(1)
+excl = set(open(os.path.join(S, "excluded")).read().split()) if os.path.exists(os.path.join(S, "excluded")) else set()
+os.makedirs(out, exist_ok=True)
+ids = [os.path.basename(d) for d in glob.glob("results/g3/2*") if re.match(r"^\d{8}-\d{6}-", os.path.basename(d))
+       and not re.search(r"-n\d+-r\d+$", d)]
+with open(os.path.join(out, "runs.tsv"), "w") as f:
+    f.write("run_id\tgate\tin_attribution\n")
+    for i in ids:
+        f.write("%s\tg3\t%s\n" % (i, "no: DEFECT (contract): x" if i in excl else "yes"))
+law1 = os.path.exists(os.path.join(S, "law1"))
+if law1:
+    print("ladder_tables: DEFECT (Law 1): SRR1: output sha256 differs", file=sys.stderr)
 print("ladder_tables: DEFECT (contract): an older run (not Law 1)", file=sys.stderr)
+print("ladder_tables: %d ladder run(s), 36 lever row(s), %d DEFECT(s) -> %s/" % (len(ids), 1 + law1, out), file=sys.stderr)
 raise SystemExit(1)
 '''
 
@@ -123,7 +157,31 @@ raise SystemExit(rc)
 '''
 
 
-def scratch(rungs, record=(), defects=(), azs=None):
+def spec_path(R, rung):
+    return os.path.join(R, "runs", "g3-l-%s-c1.json" % rung.lower())
+
+
+def params_of(rung, **over):
+    sys.path.insert(0, os.path.join(HERE, "scripts", "lib"))
+    import ladder_levers
+    p = ladder_levers.spec_params(json.load(open(spec_path(HERE, rung))))
+    p.update(over)
+    return p
+
+
+def done(rung, ok=True, cost=1.24, sha=None, **cj_over):
+    """A record cohort (cohort.json, member r0 manifest) of rung, clean unless told otherwise."""
+    p = cj_over.pop("params", None) or params_of(rung)
+    s = sha or hashlib.sha256(open(spec_path(HERE, rung), "rb").read()).hexdigest()
+    spec = "runs/g3-l-%s-c1.json" % rung.lower()
+    cj = {"spec": spec, "params": p, "nodes": 1, "ended": "members done" if ok else "members done (fail fast: rank 0 exited 1)",
+          "members": [{"rank": 0, "exit_code": 0 if ok else 1, "cost_usd": cost, "own_gone": True}], "cost_usd": cost,
+          "prefix_fetched": True, "sweep_failures": [], "multipart_abort_failures": 0, "orphans_rc": 0}
+    cj.update(cj_over)
+    return cj, {"spec": spec, "spec_sha256": s, "params": p, "instance": {"az": "us-west-2b"}, "cohort": {}}
+
+
+def scratch(rungs, record=(), defects=(), excluded=()):
     d = tempfile.mkdtemp(prefix="ladder-campaign-test.")
     R = os.path.join(d, "repo")
     for sub in ("scripts/lib", "scripts/g3", "runs", "results/g3", "stub"):
@@ -132,23 +190,24 @@ def scratch(rungs, record=(), defects=(), azs=None):
               "scripts/g3/ladder.levers.tsv", "scripts/g3/ladder-campaign.sh"):
         shutil.copy2(os.path.join(HERE, f), os.path.join(R, f))
     for r in rungs:
-        shutil.copy2(os.path.join(HERE, "runs", "g3-l-%s-c1.json" % r.lower()), os.path.join(R, "runs"))
+        shutil.copy2(spec_path(HERE, r), os.path.join(R, "runs"))
     with open(os.path.join(R, "scripts/lib/g3_defects.tsv"), "w") as f:
         f.write("run\tclass\tevidence\n")
         for row in defects:
             f.write("\t".join(row) + "\n")
-    # Evidence manifests for the scratch AZ list.
-    for t, z in (("x8g.24xlarge", "us-west-2c"), ("x8g.24xlarge", "us-west-2b"), ("r8gd.48xlarge", "us-west-2b")):
-        e = os.path.join(R, "results", "ev", "%s-%s" % (t, z))
-        os.makedirs(e)
-        json.dump({"instance": {"type": t, "az": z}}, open(os.path.join(e, "manifest.json"), "w"))
+    # Evidence manifests (committed below) for the scratch AZ list.
     with open(os.path.join(R, "scripts/g3/ladder.azs.tsv"), "w") as f:
         f.write("type\taz\tevidence\n")
-        for t, z in azs or (("x8g.24xlarge", "us-west-2c"), ("x8g.24xlarge", "us-west-2b"), ("r8gd.48xlarge", "us-west-2b")):
+        for t, z in (("x8g.24xlarge", "us-west-2c"), ("x8g.24xlarge", "us-west-2b"), ("r8gd.48xlarge", "us-west-2b")):
+            e = os.path.join(R, "results", "ev", "%s-%s" % (t, z))
+            os.makedirs(e)
+            json.dump({"instance": {"type": t, "az": z}}, open(os.path.join(e, "manifest.json"), "w"))
             f.write("%s\t%s\tresults/ev/%s-%s/manifest.json\n" % (t, z, t, z))
-    for rd, cj in record:
+    for rd, (cj, m0) in record:
         os.makedirs(os.path.join(R, "results", "g3", rd))
+        os.makedirs(os.path.join(R, "results", "g3", rd + "-r0"))
         json.dump(cj, open(os.path.join(R, "results", "g3", rd, "cohort.json"), "w"))
+        json.dump(m0, open(os.path.join(R, "results", "g3", rd + "-r0", "manifest.json"), "w"))
     for name, body in (("run", STUB_RUN), ("orphans", STUB_ORPHANS), ("g3ladder", STUB_G3), ("quota", STUB_QUOTA)):
         p = os.path.join(R, "stub", name)
         open(p, "w").write(body)
@@ -156,35 +215,24 @@ def scratch(rungs, record=(), defects=(), azs=None):
     S = os.path.join(d, "state")
     os.makedirs(S)
     json.dump({}, open(os.path.join(S, "behave.json"), "w"))
+    if excluded:
+        open(os.path.join(S, "excluded"), "w").write("\n".join(excluded) + "\n")
     subprocess.run("git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm t", shell=True, cwd=R, check=True)
     return d, R, S
 
 
-def params_of(R, rung, **over):
-    spec = json.load(open(os.path.join(R, "runs", "g3-l-%s-c1.json" % rung.lower())))
-    sys.path.insert(0, os.path.join(R, "scripts", "lib"))
-    import ladder_levers
-    p = ladder_levers.spec_params(spec)
-    p.update(over)
-    return p
-
-
-def done_cohort(params, ok=True, cost=1.24):
-    return {"params": params, "nodes": 1, "ended": "members done" if ok else "members done (fail fast: rank 0 exited 1)",
-            "members": [{"rank": 0, "run_id": "x-r0", "exit_code": 0 if ok else 1, "cost_usd": cost}], "cost_usd": cost}
-
-
-def campaign(R, S, mode, rungs, reps=2, limits="X=2,Standard=2", behave=None, files=None):
+def campaign(R, S, mode, rungs, reps=2, conc=None, limits="X=2,Standard=2", behave=None, files=None):
     if behave:
         json.dump(behave, open(os.path.join(S, "behave.json"), "w"))
     for k, v in (files or {}).items():
         open(os.path.join(S, k), "w").write(v)
     env = dict(os.environ, AK2T=S, AK2_CAMPAIGN_RUN=os.path.join(R, "stub", "run"),
                AK2_CAMPAIGN_ORPHANS=os.path.join(R, "stub", "orphans"), AK2_CAMPAIGN_G3LADDER=os.path.join(R, "stub", "g3ladder"),
-               AK2_CAMPAIGN_QUOTA=os.path.join(R, "stub", "quota"), AK2_CAMPAIGN_POLL_S="0.05", AK2_CAMPAIGN_QUOTA_RETRY_S="0", DRY_RUN="",
-               MAKEFLAGS="DRY_RUN=1")
-    r = subprocess.run(["python3", "scripts/lib/ladder_campaign.py", mode, "1", "--reps", str(reps), "--rungs", ",".join(rungs),
-                        "--family-limits", limits], cwd=R, env=env, capture_output=True, text=True, timeout=300)
+               AK2_CAMPAIGN_QUOTA=os.path.join(R, "stub", "quota"), AK2_CAMPAIGN_POLL_S="0.05", AK2_CAMPAIGN_QUOTA_RETRY_S="0",
+               DRY_RUN="", MAKEFLAGS="DRY_RUN=1")
+    argv = ["python3", "scripts/lib/ladder_campaign.py", mode, "1", "--reps", str(reps), "--rungs", ",".join(rungs),
+            "--family-limits", limits] + (["--concurrency", str(conc)] if conc else [])
+    r = subprocess.run(argv, cwd=R, env=env, capture_output=True, text=True, timeout=300)
     evs = [json.loads(l) for l in open(os.path.join(S, "events.jsonl"))] if os.path.exists(os.path.join(S, "events.jsonl")) else []
     return r.returncode, r.stdout + r.stderr, evs
 
@@ -221,36 +269,41 @@ def t_of(evs, kind, rung, rep, az=None):
 
 def main():
     rungs = ["S0-T1", "S1", "S2a", "S5", "S6"]
-    # ---- plan
-    d, R, S = scratch(rungs)
-    rec = [("20261011-000001-aaaaaaa-0001-n1", done_cohort(params_of(R, "S2a"))),                  # done, no params.rep
-           ("20261011-000002-aaaaaaa-0002-n1", done_cohort(params_of(R, "S5"), ok=False)),         # failed
-           ("20261011-000003-aaaaaaa-0003-n1", done_cohort(params_of(R, "S6"))),                   # a recorded defect
-           ("20261011-000004-aaaaaaa-0004-n1", done_cohort(params_of(R, "S1", threads="96"))),     # params differ
-           ("20261011-000005-aaaaaaa-0005-n1", done_cohort(params_of(R, "S0-T1", rep=2), cost=50.0))]   # rep 2 done
-    shutil.rmtree(d)
-    d, R, S = scratch(rungs, record=rec, defects=[("20261011-000003-aaaaaaa-0003-n1", "defect: x", "y")])
+    # ---- plan: the done check
+    rec = [("20261011-000001-aaaaaaa-0001-n1", done("S2a")),                                   # done, no params.rep
+           ("20261011-000002-aaaaaaa-0002-n1", done("S5", ok=False)),                          # failed
+           ("20261011-000003-aaaaaaa-0003-n1", done("S6")),                                    # a recorded defect
+           ("20261011-000004-aaaaaaa-0004-n1", done("S1", params=params_of("S1", threads="96"))),   # params differ
+           ("20261011-000005-aaaaaaa-0005-n1", done("S0-T1", cost=50.0, params=params_of("S0-T1", rep=2))),   # rep 2 done
+           ("20261011-000006-aaaaaaa-0006-n1", done("S5", sha="0" * 64)),                      # another spec's bytes
+           ("20261011-000007-aaaaaaa-0007-n1", done("S5", prefix_fetched=False)),              # prefix not fetched
+           ("20261011-000008-aaaaaaa-0008-n1", done("S6")),                                    # excluded by ladder_tables
+           ("20261011-000009-aaaaaaa-0009-n1", done("S1", cost=30.0, orphans_rc=1))]           # old global orphans rc 1: still done
+    d, R, S = scratch(rungs, record=rec, defects=[("20261011-000003-aaaaaaa-0003-n1", "defect: x", "y")],
+                      excluded=["20261011-000008-aaaaaaa-0008-n1"])
     rc, out, _ = campaign(R, S, "plan", rungs)
     rows = plan_rows(out)
-    want = [(1, "S2a", "skip"), (1, "S5", "launch"), (1, "S6", "launch"), (1, "S1", "launch"), (1, "S0-T1", "launch"),
+    want = [(1, "S2a", "skip"), (1, "S5", "launch"), (1, "S6", "launch"), (1, "S1", "skip"), (1, "S0-T1", "launch"),
             (2, "S0-T1", "skip"), (2, "S1", "launch"), (2, "S6", "launch"), (2, "S5", "launch"), (2, "S2a", "launch")]
-    # S0-T1's measured $50 (its rep-2 run) still sorts it last; S2a's measured $1.24 first; S5 and S6
-    # tie at cost_limit and go in ladder order.
     ok(rc == 0 and rows == want, "plan: rep 1 cheapest first (measured, then estimate; ties in ladder order), rep 2 reversed, done skipped",
        "rc %d rows %s\n%s" % (rc, rows, out))
-    ok("rep 1 by default (no params.rep)" in out and "000002-aaaaaaa-0002-n1" in out and "member exit r0=1" in out
-       and "recorded defect (g3_defects.tsv 20261011-000003" in out and "params differ from runs/g3-l-s1-c1.json: threads '96' != 'vcpus'" in out,
-       "plan: lists why each record run is or is not counted", out)
+    for needle, what in (("rep 1 by default (no params.rep)", "a run without params.rep is rep 1"),
+                         ("member exit r0=1", "a failed run"),
+                         ("recorded defect (g3_defects.tsv 20261011-000003", "a recorded defect"),
+                         ("params differ from runs/g3-l-s1-c1.json: threads '96' != 'vcpus'", "a params mismatch"),
+                         ("spec_sha256 000000000000 is not the committed runs/g3-l-s5-c1.json's", "another spec's sha256"),
+                         ("prefix not fetched", "an unfetched prefix"),
+                         ("excluded by ladder_tables: no: DEFECT (contract)", "ladder_tables' exclusion")):
+        ok(needle in out, "plan: the record lists %s" % what, out[-3000:])
+    ok("000009-aaaaaaa-0009-n1           S1         rep 1 (rep 1 by default (no params.rep)): counted" in out,
+       "plan: an old cohort's global orphans_rc 1 (a concurrent run) does not disqualify it; own_gone is the scoped verdict", out[-2000:])
     ok(not os.path.exists(os.path.join(R, "results", "g3", "ladder-campaign")) and not os.path.exists(os.path.join(S, "events.jsonl")),
-       "plan: DRY_RUN writes nothing and launches nothing")
+       "plan: DRY_RUN writes nothing in the repo and launches nothing")
     shutil.rmtree(d)
 
     # ---- skip (run mode): S2a rep 1 is done
-    d, R, S = scratch(["S2a", "S5"])
-    rec = [("20261011-000001-aaaaaaa-0001-n1", done_cohort(params_of(R, "S2a")))]
-    shutil.rmtree(d)
-    d, R, S = scratch(["S2a", "S5"], record=rec)
-    rc, out, evs = campaign(R, S, "run", ["S2a", "S5"], behave={})
+    d, R, S = scratch(["S2a", "S5"], record=[("20261011-000001-aaaaaaa-0001-n1", done("S2a"))])
+    rc, out, evs = campaign(R, S, "run", ["S2a", "S5"])
     starts = [(e["rung"], e["rep"]) for e in evs if e["ev"] == "start"]
     ok(rc == 0 and sorted(starts) == [("S2a", 2), ("S5", 1), ("S5", 2)], "skip: the done S2a rep 1 is not launched; the rest are",
        "rc %d starts %s\n%s" % (rc, starts, out[-2000:]))
@@ -259,11 +312,20 @@ def main():
        "skip: the campaign log records the skip and the run that did it", tsv)
     shutil.rmtree(d)
 
-    # ---- normal
+    # ---- default: one run at a time
+    rs = ["S1", "S2a", "S5"]
+    d, R, S = scratch(rs)
+    rc, out, evs = campaign(R, S, "run", rs, behave={"S2a:1": {"s": 0.3}})
+    ok(rc == 0 and len([e for e in evs if e["ev"] == "start"]) == 6 and concurrency(evs, lambda e: True) == 1,
+       "default: CONCURRENCY=1, never two runs in flight (peak %d)" % concurrency(evs, lambda e: True), "rc %d\n%s" % (rc, out[-2000:]))
+    ok("CONCURRENCY=1 (runs in flight at once)" in out, "default: the plan states CONCURRENCY=1")
+    shutil.rmtree(d)
+
+    # ---- normal, CONCURRENCY=4
     rs = ["S1", "S2a", "S5", "S6", "S0-T1"]
     d, R, S = scratch(rs)
     beh = {"S2a:1": {"s": 0.6}, "S5:1": {"s": 1.2}, "S6:1": {"s": 1.2}, "S1:1": {"s": 0.8}, "S0-T1:1": {"s": 0.8}}
-    rc, out, evs = campaign(R, S, "run", rs, behave=beh, files={"quota_refuse": "2"})
+    rc, out, evs = campaign(R, S, "run", rs, conc=4, behave=beh, files={"quota_refuse": "2"})
     starts = [e for e in evs if e["ev"] == "start"]
     ok(rc == 0 and len(starts) == 10, "normal: exit 0, 10 launches", "rc %d %d starts\n%s" % (rc, len(starts), out[-3000:]))
     first = sorted(starts, key=lambda e: e["t"])[0]
@@ -271,9 +333,10 @@ def main():
        "normal: the cheapest (S2a rep 1) runs first and alone", [(e["rung"], e["rep"]) for e in sorted(starts, key=lambda e: e["t"])])
     px = concurrency(evs, lambda e: e["type"].startswith("x8g"))
     ok(px == 2, "normal: the X family reaches its limit of 2 and never exceeds it (peak %d)" % px)
-    ok(concurrency(evs, lambda e: True) <= 4, "normal: never more than the two families' limits in flight")
+    ok(concurrency(evs, lambda e: True) <= 4, "normal: never more than CONCURRENCY=4 in flight")
     ok(all(t_of(evs, "start", r, 2) >= t_of(evs, "end", r, 1) for r in rs), "normal: every rung's rep 2 starts after its rep 1 ends")
-    ok(all(e["env_rep"] == str(e["rep"]) and not e["dry"] for e in starts), "normal: AK2_LADDER_REP is each launch's rep (DRY_RUN and the parent make's MAKEFLAGS not passed on)")
+    ok(all(e["env_rep"] == str(e["rep"]) and not e["dry"] for e in starts),
+       "normal: AK2_LADDER_REP is each launch's rep (DRY_RUN and the parent make's MAKEFLAGS not passed on)")
     cjs = [json.load(open(os.path.join(R, "results", "g3", c, "cohort.json"))) for c in os.listdir(os.path.join(R, "results", "g3"))
            if os.path.exists(os.path.join(R, "results", "g3", c, "cohort.json"))]
     ok(sorted((c["params"]["rung"], c["params"]["rep"]) for c in cjs) == sorted((e["rung"], e["rep"]) for e in starts)
@@ -284,8 +347,9 @@ def main():
     no = sum(1 for _ in open(os.path.join(S, "orphans.log")))
     ok(no == 10 + 2, "normal: make orphans before, after each of the 10 runs, and at the end (%d calls)" % no)
     tsv = campaign_tsv(R)
-    ok(len(tsv) == 10 and all(r[7] == "ok" and r[4].startswith("results/g3/2026") and r[5] == "0" and r[6] == "1.0" for r in tsv),
-       "normal: the campaign log has rung, rep, run dir, exit, cost and class per run", tsv)
+    rc3 = [e for e in evs if e["ev"] == "end" and e.get("rc") == 3]
+    ok(rc3 and len(tsv) == 10 and all(r[7] == "ok" and r[4].startswith("results/g3/2026") and r[6] == "1.0" for r in tsv),
+       "normal: %d run(s) whose make run exited 3 only for another run's instance are ok from the record (B1); log rows complete" % len(rc3), tsv)
     shutil.rmtree(d)
 
     # ---- capacity
@@ -304,17 +368,20 @@ def main():
     ok([r[7] for r in tsv if r[1] == "S1"] == ["capacity", "not-launched"], "capacity: S1's log rows: capacity, then rep 2 not launched", tsv)
     shutil.rmtree(d)
 
-    # ---- failure
-    d, R, S = scratch(["S5", "S6"])
-    rc, out, evs = campaign(R, S, "run", ["S5", "S6"], behave={"S5:1": {"r": "fail"}})
-    starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
-    ok(rc == 1 and starts == [("S5", 1), ("S6", 1), ("S6", 2)], "failure: S5 fails, its rep 2 is not launched; S6 carries on",
-       "rc %d %s\n%s" % (rc, starts, out[-2000:]))
-    shutil.rmtree(d)
+    # ---- failure: a failed run, a run in the wrong AZ, a run ladder_tables excludes
+    for name, beh, needle in (("failed", {"S5:1": {"r": "fail"}}, "member exit r0=1"),
+                              ("wrong AZ", {"S5:1": {"wrong_az": True}}, "instance AZ us-west-2a, requested us-west-2b"),
+                              ("excluded", {"S5:1": {"excluded": True}}, "excluded by ladder_tables")):
+        d, R, S = scratch(["S5", "S6"])
+        rc, out, evs = campaign(R, S, "run", ["S5", "S6"], behave=beh)
+        starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
+        ok(rc == 1 and starts == [("S5", 1), ("S6", 1), ("S6", 2)] and needle in out,
+           "failure (%s): S5 stops, its rep 2 is not launched; S6 carries on" % name, "rc %d %s\n%s" % (rc, starts, out[-2000:]))
+        shutil.rmtree(d)
 
     # ---- orphans: informational with a run in flight; a hard stop with none
     d, R, S = scratch(["S2a", "S5", "S6"])
-    rc, out, evs = campaign(R, S, "run", ["S2a", "S5", "S6"], reps=1,
+    rc, out, evs = campaign(R, S, "run", ["S2a", "S5", "S6"], reps=1, conc=2,
                             behave={"S2a:1": {"s": 0.3}, "S5:1": {"s": 2.0}, "S6:1": {"s": 0.3}}, files={"orphans_seq": "0 0 1 0 0"})
     ok(rc == 0 and len([e for e in evs if e["ev"] == "start"]) == 3 and "informational" in out,
        "orphans: a finding while S5 is in flight is informational; the campaign goes on", "rc %d\n%s" % (rc, out[-2000:]))
@@ -326,7 +393,7 @@ def main():
        "rc %d %s\n%s" % (rc, starts, out[-2000:]))
     shutil.rmtree(d)
 
-    # ---- Law 1
+    # ---- Law 1 and g3-ladder judgement
     d, R, S = scratch(["S2a", "S5"])
     rc, out, evs = campaign(R, S, "run", ["S2a", "S5"], behave={"S2a:1": {"law1": True}})
     starts = [(e["rung"], e["rep"]) for e in evs if e["ev"] == "start"]
@@ -336,6 +403,16 @@ def main():
     d, R, S = scratch(["S2a"])
     rc, out, evs = campaign(R, S, "run", ["S2a"], files={"law1": ""})
     ok(rc == 3 and not evs and "refused to start" in out, "law1: a Law 1 DEFECT already in the record refuses to start", "rc %d\n%s" % (rc, out[-1500:]))
+    shutil.rmtree(d)
+    d, R, S = scratch(["S2a", "S5"])
+    rc, out, evs = campaign(R, S, "run", ["S2a", "S5"], behave={"S2a:1": {"crash": True}})
+    starts = [(e["rung"], e["rep"]) for e in evs if e["ev"] == "start"]
+    ok(rc == 3 and starts == [("S2a", 1)] and "without its summary line: Law 1 not judged" in out,
+       "law1: a g3-ladder crash (exit 1, no summary line) is a hard stop, not a pass (B2)", "rc %d %s\n%s" % (rc, starts, out[-2000:]))
+    shutil.rmtree(d)
+    d, R, S = scratch(["S2a"])
+    rc, out, _ = campaign(R, S, "plan", ["S2a"], files={"crash": ""})
+    ok(rc == 3 and "without its summary line" in out, "law1: DRY_RUN refuses a plan when g3-ladder cannot judge", "rc %d\n%s" % (rc, out[-1000:]))
     shutil.rmtree(d)
 
     print("ladder_campaign_test: %d passed, %d failed" % (PASS[0], FAIL[0]))

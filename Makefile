@@ -107,9 +107,9 @@ g3-fit:
 # The #25 ladder tables (#52, WP-8): per-run rows, per-rung medians and ranges, deltas with the
 # resolution check, effective cost per resource, the three pairs with their per-lever
 # decomposition, cross-arm Law 1 by on-node sha256 (exits 1 on any DEFECT), cold/warm endpoint
-# rows and spend (results/g3/ladder/; docs/ladder.md, "Ladder tables").
+# rows and spend (results/g3/ladder/, or OUT=<dir>; docs/ladder.md, "Ladder tables").
 g3-ladder:
-	python3 scripts/lib/ladder_tables.py
+	python3 scripts/lib/ladder_tables.py $(if $(OUT),--out "$(OUT)")
 
 # The modelled stock T1 point at c100 from the c10 S0-T1 records' per-thread rate (Scott, #25),
 # written to results/g3/ladder-modelled.tsv with every cited file's sha256; g3-ladder reads it and
@@ -251,10 +251,11 @@ ladder-stream-test:
 
 # The ladder campaign (docs/ladder.md, "The campaign"): every committed runs/g3-l-*-c<COHORT>.json,
 # REPS times (rep 1 cheapest first, rep 2 reversed), skipping done runs, through make run with
-# NODES = WANT_N; make orphans and make g3-ladder after each run. DRY_RUN=1 prints the plan only.
+# NODES = WANT_N, one run in flight unless CONCURRENCY=n; make orphans and make g3-ladder after each
+# run. DRY_RUN=1 prints the plan only.
 # ladder-campaign-test is its stub test (no AWS; in make test).
 ladder-campaign:
-	DRY_RUN="$(DRY_RUN)" scripts/g3/ladder-campaign.sh "$(COHORT)" "$(or $(REPS),2)" "$(RUNGS)" "$(FAMILY_LIMITS)"
+	DRY_RUN="$(DRY_RUN)" scripts/g3/ladder-campaign.sh "$(COHORT)" "$(or $(REPS),2)" "$(RUNGS)" "$(FAMILY_LIMITS)" "$(or $(CONCURRENCY),1)"
 
 ladder-campaign-test:
 	python3 scripts/tests/ladder_campaign_test.py

@@ -4,7 +4,7 @@
   ladder_tables.py [--results results] [--levers scripts/g3/ladder.levers.tsv]
                    [--modelled results/g3/ladder-modelled.tsv] [--out results/g3/ladder]
 
-Inputs: every ladder run dir under results/<gate>/2026* (a single run's manifest.json, or a
+Inputs: every ladder run dir under results/<gate>/<yyyymmdd>-* (a single run's manifest.json, or a
 cohort dir's cohort.json with its members' manifests) whose params (manifest "params", else
 cohort.json "params", else the rank-0 member's) name a rung; each run's lad-sample lines
 (out/**/lad-samples.jsonl, pushed; checked against the `lad-sample {json}` lines streamed into
@@ -677,7 +677,7 @@ def net_components(run):
 
 def discover(results, rd):
     runs = []
-    for d in sorted(glob.glob(os.path.join(results, "*", "2026*"))):
+    for d in sorted(glob.glob(os.path.join(results, "*", "[0-9]" * 8 + "-[0-9]*"))):   # run ids: <yyyymmdd>-<hhmmss>-..., any year
         if not os.path.isdir(d) or re.search(r"-n\d+-r\d+$", os.path.basename(d)):
             continue  # cohort members are read through their cohort
         sub = Reader()  # only a ladder run's files are inputs

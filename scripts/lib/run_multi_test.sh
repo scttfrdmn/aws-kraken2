@@ -71,6 +71,8 @@ exit "$EXIT"
 EOF
 cat > "$T/orphans.sh" <<'EOF'
 #!/usr/bin/env bash
+# Global (no --own): also fails if another run's instance is alive ($AK2T_STATE/other-alive).
+[ "${1:-}" != --own ] && [ -e "$AK2T_STATE/other-alive" ] && { echo "alive i-other (another run)"; exit 1; }
 n=0; for i in "$AK2T_STATE"/inst/*; do [ -e "$i" ] || continue; read -r t st < "$i"; [ "$st" = terminated ] || { echo "alive $i"; n=1; }; done; exit $n
 EOF
 printf '#!/usr/bin/env bash\nexit 0\n' > "$T/tag.sh"
@@ -155,6 +157,12 @@ run_scenario failfast none 0 "1 60 0" "1 2 1" "12 60 0"
 expect failfast 1
 echo "$CJ" | jq -e '[.terminated_early[].rank] | (index(0) != null) and (index(2) != null)' >/dev/null &&
   ok "failfast: rank 0 and the late rank 2 terminated" || bad "failfast: terminated_early $(echo "$CJ" | jq -c .terminated_early)"
+
+# A concurrent run's instance alive: the global check fails, the scoped ones pass; exit 0.
+run_scenario concurrent none 0 "1 2 0" "1 2 0" "1 2 0" ': > "$S/other-alive"'
+expect concurrent 0
+echo "$CJ" | jq -e '.orphans_rc == 0 and .orphans_scope == "own" and .orphans_global_rc == 1' >/dev/null &&
+  ok "concurrent: another run alive is informational (orphans_rc 0 own, global 1)" || bad "concurrent: $(echo "$CJ" | jq -c '{orphans_rc, orphans_scope, orphans_global_rc}')"
 
 run_scenario describe none 0 "1 2 0" "1 2 0" "1 2 0" ': > "$S/fail-describe"'
 # The members still end (their instances end themselves); the sweeps cannot see, so: exit 6.

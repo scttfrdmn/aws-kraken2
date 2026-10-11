@@ -10,33 +10,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The ladder campaign (docs/ladder.md, "The campaign"): `make ladder-campaign COHORT=<c> [REPS=2]
-  [RUNGS=…] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` (`scripts/g3/ladder-campaign.sh`,
+  [RUNGS=…] [CONCURRENCY=1] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` (`scripts/g3/ladder-campaign.sh`,
   `scripts/lib/ladder_campaign.py`).
-  - It plans every committed `runs/g3-l-*-c<c>.json`. Rep 1 is cheapest first: the measured
-    median billed $ where a successful run exists, else cost_limit × nodes. Ties go in ladder
+  - **The plan.** Every committed `runs/g3-l-*-c<c>.json`. Rep 1 is cheapest first: the
+    measured median billed $ where a done run exists, else cost_limit × nodes. Ties go in ladder
     order, and rep 2 is reversed.
-  - It skips a (rung, cohort, rep) that already has a successful, params-matching run that is
-    not a recorded defect. A run without `params.rep` counts as rep 1, so S2a's
-    `20261011-042400-f72142e-34a4-n1` is S2a rep 1.
-  - It launches through `make run … NODES=<WANT_N>`, one launch at a time. Limits: 2 instances in
-    flight per quota family by default, the first launch alone, a rung's reps in order, and
-    quota_check's verdict (wait on 1, stop on 2).
-  - After each run: a row in `results/g3/ladder-campaign/<ts>.tsv`, `make orphans`
-    (informational while others are in flight, a hard stop with none) and `make g3-ladder` (a
-    Law 1 DEFECT stops the campaign).
-  - InsufficientInstanceCapacity gives a capacity row, appended to `g3_defects.tsv` when the
-    campaign ends, and one retry in an AZ that `scripts/g3/ladder.azs.tsv` documents. Any other
-    failure stops that rung. Nothing is committed.
+  - **Done runs are skipped.** A (rung, cohort, rep) is done when it has a run whose
+    `spec_sha256` and params match the committed spec and whose record is clean:
+    - members exit 0 and `own_gone`, `members done`, the prefix fetched;
+    - no sweep or abort failures, the scoped orphan check 0;
+    - kept in the attribution by ladder_tables, and not a recorded defect.
+
+    A run without `params.rep` counts as rep 1, so S2a's `20261011-042400-f72142e-34a4-n1` is
+    S2a rep 1.
+  - **Launches.** Through `make run … NODES=<WANT_N>`, one launch at a time. One run is in
+    flight by default (`CONCURRENCY=1`): concurrent runs share S3 and RODA, which would confound
+    the timing comparisons. Above 1, a per-family limit (default 2) applies and the first launch
+    runs alone. A rung's reps go in order, and quota_check decides (wait on 1, stop on 2).
+  - **After each run:**
+    - `make orphans` (informational while others are in flight, a hard stop with none);
+    - `make g3-ladder OUT=…`, judged only by its summary line. A Law 1 DEFECT, or no summary
+      line (a crash), stops the campaign;
+    - the outcome, judged from the record rather than from make run's exit (including each
+      member's AZ), with a row in `results/g3/ladder-campaign/<ts>.tsv`.
+  - **Failures.** InsufficientInstanceCapacity gives a capacity row, appended to
+    `g3_defects.tsv` when the campaign ends, and one retry in an AZ that
+    `scripts/g3/ladder.azs.tsv` documents with a git-tracked manifest. Any other failure stops
+    that rung.
+  - **Resilience.** Drivers write to log files that the campaign follows, in their own sessions,
+    so a killed campaign leaves them running. SIGHUP is left alone, for nohup and tmux. Nothing
+    is committed.
   - Its stub test, `make ladder-campaign-test`, is in `make test`.
+- `make g3-ladder OUT=<dir>`: the ladder tables written elsewhere than `results/g3/ladder/`.
 - Launch overrides in run.sh and run-multi.sh (docs/run.md, "Launch overrides"):
   - `AK2_LADDER_REP=<n>` records `params.rep` and `rep_source` in every manifest and in
     cohort.json (`ladder_levers.py spec-params SPEC --rep n`). The spec stays byte-identical
     across reps.
   - `AK2_LAUNCH_AZ=<az>` launches in an AZ that `scripts/g3/ladder.azs.tsv` documents for the
-    type, with its evidence checked (`ladder_levers.py az-alt`). It is recorded as
-    `launch_override`.
+    type, with its evidence checked: a git-tracked manifest of that type in that AZ
+    (`ladder_levers.py az-alt`). It is recorded as `launch_override`.
   - Both are refused before anything is sent if invalid. `run_sh_test.sh` and
     `run_multi_test.sh` cover them.
+  - run.sh checks the launched instance's AZ against the requested one (`AK2_LAUNCH_AZ`, else the
+    spec's pinned AZ). On a mismatch it terminates the instance and exits 2.
 - `AK2_QUOTA_FAMILY_ONLY=1 scripts/lib/quota_check.sh REGION TYPE 1`: the quota family alone,
   with no AWS call.
 
@@ -75,6 +91,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `run-multi.sh`: the cohort's exit and `orphans_rc` came from the global orphan check, which
+  fails whenever any other ak2 instance is alive. A cohort that ran beside another run therefore
+  exited 3. Each member's scoped check (`orphans.sh --own`) now decides
+  (`orphans_scope: "own"`). The global check is kept as `orphans_global_rc`, for information.
+  The finish ignores SIGPIPE, so a reader that has gone cannot stop cohort.json being written.
+- `ladder_tables.py` read run dirs only under `results/<gate>/2026*`. It now reads any
+  `<yyyymmdd>-*` run id.
 - Found by the ladder rehearsal (#53):
   - `ladder_tables.py`: a compound lever phase (`run:A+run:B`, as `ladder.levers.tsv` writes
     it) was read as missing, because only the first term's scope was stripped. Each term now has

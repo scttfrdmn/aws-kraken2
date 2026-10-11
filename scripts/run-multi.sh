@@ -21,7 +21,8 @@
 #     did not end normally, terminates every member instance still alive and waits for it, sweeps
 #     again, aborts unfinished multipart uploads under the cohort prefix (the instance role cannot;
 #     the bucket's lifecycle rule would only after 7 days), fetches and tags the cohort prefix,
-#     writes cohort.json, and runs the global orphan check.
+#     runs each member's scoped orphan check (the cohort's exit and orphans_rc) and the global one
+#     (informational: a concurrent run's instance fails it), and writes cohort.json.
 #
 # Deliberately not `set -e`: every step's status is checked by hand.
 set -uo pipefail
@@ -220,6 +221,9 @@ finish() {
   [ "$FINISHED" = 1 ] && return
   FINISHED=1
   trap '' INT TERM HUP
+  # A reader of our output that has gone (a killed campaign, a closed pipe) must not stop the
+  # finish before cohort.json is written.
+  trap '' PIPE
   [ -n "$TAILPID" ] && { kill "$TAILPID" 2>/dev/null; wait "$TAILPID" 2>/dev/null; }
   if [ -z "$ENDED" ]; then
     ENDED="interrupted (exit $rc)"
@@ -278,7 +282,19 @@ finish() {
       row=$(jq -nc --arg rc "${RCS[$k]:-unknown}" --argjson k "$k" '{rank:$k, rc:$rc, manifest:"missing"}')
     MEMBERS=$(jq -c --argjson r "$row" '. + [$r]' <<< "$MEMBERS")
   done
-  "$ORPHANS_SH" > "$CDIR/orphans.txt" 2>&1; local ORC=$?
+  # The cohort's exit and orphans_rc come from the scoped check of each member (orphans.sh --own:
+  # fails only if that member's own instance or task is alive). The global check is recorded for
+  # information only: it fails whenever any other ak2 instance is alive (a concurrent run), which
+  # says nothing about this cohort.
+  local ORC=0 orc_k iid
+  : > "$CDIR/orphans-own.txt"
+  for ((k = 0; k < NODES; k++)); do
+    iid=$(jq -r '.launch.instance_id // empty' "results/$GATE/$COHORT_ID-r$k/manifest.json" 2>/dev/null)
+    # shellcheck disable=SC2086
+    "$ORPHANS_SH" --own "$(task_id "$k")" $iid >> "$CDIR/orphans-own.txt" 2>&1; orc_k=$?
+    [ "$orc_k" -gt "$ORC" ] && ORC=$orc_k
+  done
+  "$ORPHANS_SH" > "$CDIR/orphans.txt" 2>&1; local ORC_GLOBAL=$?
   # A ladder spec's PARAMS block (#51/#52; docs/ladder.md): cohort.json params, else null.
   local LADP; LADP=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" ${REP:+--rep "$REP"} 2>/dev/null); [ -n "$LADP" ] || LADP=null
   jq -n --arg id "$COHORT_ID" --arg gate "$GATE" --arg spec "$SPEC" --arg sha "$(git rev-parse HEAD)" \
@@ -286,6 +302,7 @@ finish() {
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
     --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
+    --argjson orcg "$ORC_GLOBAL" \
     --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" --argjson params "$LADP" \
     --argjson azo "$AZ_OVR_JSON" '{
       cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, params:$params, nodes:$n, instance_type:$type, az:$az, region:$region,
@@ -296,7 +313,7 @@ finish() {
       cost_usd:(if ($members | all(.cost_usd != null)) then ($members | map(.cost_usd) | add * 1e6 | round / 1e6) else null end),
       cost_basis:"sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
       prefix_fetched:($fetched == "yes"), multipart_aborted:$aborted, multipart_abort_failures:$abort_fail,
-      orphans_rc:$orc}' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
+      orphans_rc:$orc, orphans_scope:"own", orphans_global_rc:$orcg}' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
   # Fleet utilisation from the members' manifests and log/util.tsv (docs/run.md, "Utilisation").
   mkdir -p "$CDIR/tables"
   python3 scripts/lib/util.py "$CDIR" > "$CDIR/tables/util.log" 2>&1 ||
@@ -308,10 +325,11 @@ finish() {
     bash "$CPOST" "$CDIR" > "$CDIR/post.log" 2>&1; POSTRC=$?
     say "cohort post: $CPOST rc $POSTRC ($(tail -1 "$CDIR/post.log"))"
   fi
-  say "cohort dir: $CDIR  ended: $ENDED  cost \$$(jq -r .cost_usd "$CDIR/cohort.json" 2>/dev/null)  orphans rc $ORC"
+  say "cohort dir: $CDIR  ended: $ENDED  cost \$$(jq -r .cost_usd "$CDIR/cohort.json" 2>/dev/null)  orphans rc $ORC (own; global $ORC_GLOBAL, informational)"
   local WORST=$rc r
   for r in "${RCS[@]}"; do [[ "$r" =~ ^[0-9]+$ ]] && [ "$r" -gt "$WORST" ] && WORST=$r; done
-  [ "$ORC" = 0 ] || { say "ORPHANS: see $CDIR/orphans.txt"; [ "$WORST" = 0 ] && WORST=3; }
+  [ "$ORC" = 0 ] || { say "ORPHANS: a member's own instance is still alive: see $CDIR/orphans-own.txt"; [ "$WORST" = 0 ] && WORST=3; }
+  [ "$ORC_GLOBAL" = 0 ] || say "note: other ak2 instances are alive (global check rc $ORC_GLOBAL, $CDIR/orphans.txt); informational"
   [ "$FETCHED" = yes ] || { say "WARNING: cohort prefix not fetched"; [ "$WORST" = 0 ] && WORST=4; }
   [ "$ABORT_FAIL" = 0 ] || { [ "$WORST" = 0 ] && WORST=5; }
   [ "$SWEEP_FAILURES" = "[]" ] || { say "sweep failures: $SWEEP_FAILURES"; [ "$WORST" = 0 ] && WORST=6; }

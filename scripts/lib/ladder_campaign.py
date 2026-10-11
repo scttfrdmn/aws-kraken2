@@ -2,51 +2,54 @@
 """make ladder-campaign (docs/ladder.md, "The campaign"): every committed ladder spec of one cohort,
 REPS times, cheapest first, through make run, with the after-run checks.
 
-  ladder_campaign.py plan COHORT [--reps N] [--rungs LIST]   print the plan for the record; no AWS, no writes
-  ladder_campaign.py run  COHORT [--reps N] [--rungs LIST]   the campaign (scripts/g3/ladder-campaign.sh)
+  ladder_campaign.py plan COHORT [options]   print the plan for the record; no AWS, nothing written in the repo
+  ladder_campaign.py run  COHORT [options]   the campaign (scripts/g3/ladder-campaign.sh)
 
-Options (also from the make variables): --family-limits X=2,Standard=1 (instances in flight per
-on-demand quota family; default 2 for every family), --rungs S1,S2a (a subset, by rung name).
+Options (from the make variables): --reps N (2), --rungs S1,S2a (a subset, by rung name),
+--concurrency N (1: runs in flight at once), --family-limits X=2,Standard=1 (instances in flight
+per on-demand quota family; default 2 for every family; only binding when CONCURRENCY > 1).
 
 The plan:
   - specs: every committed runs/g3-l-*-c<COHORT>.json whose PARAMS block names that cohort;
-  - rep 1 is ordered by cost, cheapest first: the median billed cost_usd of the rung's successful
-    runs at this cohort where any exist (measured), else the spec's cost_limit x NODES (the
-    generator's TTL x on-demand price, an estimate). Ties go in ladder order (ladder.levers.tsv);
+  - rep 1 is ordered by cost, cheapest first: the median billed cost_usd of the rung's done runs
+    at this cohort where any exist (measured), else the spec's cost_limit x NODES (the generator's
+    TTL x on-demand price, an estimate). Ties go in ladder order (ladder.levers.tsv);
   - rep 2 is rep 1 reversed (rep k: reversed when k is even);
-  - a (rung, cohort, rep) that already has a successful run is skipped: a cohort dir (or single run
-    dir) whose params match the committed spec's (all keys but source, rep and rep_source), whose
-    members all exited 0 and ended "members done" without fail fast, and which is not in
-    scripts/lib/g3_defects.tsv. Its rep is params.rep, or 1 when the run has none.
+  - a (rung, cohort, rep) that already has a done run is skipped. Done: the run's spec_sha256 is
+    the committed spec's sha256 and its params match the spec's (all keys but source, rep and
+    rep_source); the record is clean (record_problems: every member exit 0, own_gone, ended
+    "members done" without fail fast, the prefix fetched, no sweep or abort failures, the scoped
+    orphan check 0); ladder_tables keeps it in the attribution; not in scripts/lib/g3_defects.tsv.
+    Its rep is params.rep, or 1 when the run has none.
 
-The run (one launch at a time; each launch settles before the next):
-  - NODES = the spec's WANT_N (REPLICAS x SHARDS); AK2_LADDER_REP=<rep> reaches manifest.params.rep;
-  - a launch waits for: its family's limit, the first launch's success (it runs alone), the rung's
-    earlier rep to end, and quota_check.sh's verdict (exit 1: wait; exit 2: stop launching);
-  - after each run: a row in results/g3/ladder-campaign/<ts>.tsv, make orphans (a finding is
-    informational while other campaign runs are in flight, a hard stop when none is), and make
-    g3-ladder (a Law 1 DEFECT stops the campaign);
-  - InsufficientInstanceCapacity: a capacity row for g3_defects.tsv, then one retry in the first AZ
-    that scripts/g3/ladder.azs.tsv documents for the type and that has not been tried
-    (AK2_LAUNCH_AZ, recorded as manifest.launch_override); with none, the rung stops;
-  - any other failure stops that rung's further launches; the others carry on;
-  - capacity rows are appended to scripts/lib/g3_defects.tsv only when the campaign ends (a
-    change under scripts/ would make run.sh refuse every later launch). Nothing is committed.
+The run: one launch settles before the next; NODES = WANT_N; AK2_LADDER_REP=<rep> reaches
+params.rep. A launch waits for: CONCURRENCY, its family's limit, the first launch's success, the
+rung's earlier rep, and quota_check.sh (exit 1: wait; exit 2: stop launching). After each run: make
+orphans (informational while other campaign runs are in flight, a hard stop when none is), make
+g3-ladder (its summary line must be there; a Law 1 DEFECT stops the campaign), then the outcome is
+judged from the record, not from make run's exit, and logged in results/g3/ladder-campaign/<ts>.tsv.
+InsufficientInstanceCapacity: a capacity row (appended to scripts/lib/g3_defects.tsv when the
+campaign ends) and one retry in an AZ that scripts/g3/ladder.azs.tsv documents; any other failure
+stops the rung. Nothing is committed.
 
 Test seams (scripts/tests/ladder_campaign_test.py): AK2_CAMPAIGN_RUN, AK2_CAMPAIGN_ORPHANS,
-AK2_CAMPAIGN_G3LADDER, AK2_CAMPAIGN_QUOTA (command prefixes), AK2_CAMPAIGN_POLL_S (10 s),
-AK2_CAMPAIGN_QUOTA_RETRY_S (60 s: a family quota_check refused is not asked again sooner),
+AK2_CAMPAIGN_G3LADDER (gets OUT=<dir>), AK2_CAMPAIGN_QUOTA (command prefixes), AK2_CAMPAIGN_POLL_S
+(10 s), AK2_CAMPAIGN_QUOTA_RETRY_S (60 s: a refused family is not asked again sooner),
 AK2_CAMPAIGN_SETTLE_S (900 s).
 """
+import csv
 import glob
+import hashlib
 import json
 import os
 import re
 import shlex
+import shutil
 import signal
 import statistics
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -60,6 +63,9 @@ DEFECTS = os.path.join(ROOT, "scripts", "lib", "g3_defects.tsv")
 CAMPAIGN_DIR = os.path.join(ROOT, "results", "g3", "ladder-campaign")
 IGNORED_KEYS = ("source", "rep", "rep_source")
 RUN_PATHS = ["scripts", "runs", "cmd", "internal", "upstream", "go.mod", "go.sum", "Makefile"]   # run.sh's clean-tree check
+RUN_DIR_RE = re.compile(r"^\d{8}-\d{6}-")      # a run or cohort id, any year
+MEMBER_RE = re.compile(r"-n\d+-r\d+$")
+SUMMARY_RE = re.compile(r"^ladder_tables: \d+ ladder run\(s\), .*\d+ DEFECT\(s\) -> ", re.M)
 DEFAULT_FAMILY_LIMIT = 2
 
 
@@ -79,14 +85,18 @@ def git(*a):
     return subprocess.run(["git", "-C", ROOT] + list(a), capture_output=True, text=True)
 
 
+def sha256(p):
+    with open(p, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
+
+
 def family_of(itype):
     """The on-demand quota family, from quota_check.sh's own mapping (no AWS call)."""
     r = subprocess.run([os.path.join(ROOT, "scripts", "lib", "quota_check.sh"), "us-west-2", itype, "1"],
                        capture_output=True, text=True, env=dict(os.environ, AK2_QUOTA_FAMILY_ONLY="1"))
     if r.returncode != 0:
         raise SystemExit("ladder-campaign: no quota family for %s: %s" % (itype, r.stderr.strip()))
-    name = r.stdout.strip().split(" ", 1)[1]
-    return name.split("(")[0]
+    return r.stdout.strip().split(" ", 1)[1].split("(")[0]
 
 
 def read_defects(path=DEFECTS):
@@ -113,7 +123,125 @@ def load_json(p):
         return None
 
 
-# ---------------------------------------------------------------- the specs and the record
+def cmd(envname, default):
+    v = os.environ.get(envname)
+    return shlex.split(v) if v else default
+
+
+# ---------------------------------------------------------------- ladder_tables
+
+def run_tables(out_dir, log):
+    """make g3-ladder OUT=<out_dir>, output to log. Returns (judged, law1_lines, in_attribution, rc).
+    judged is False when the summary line is missing (a crash also exits 1, like a DEFECT)."""
+    with open(log, "w") as f:
+        rc = subprocess.run(cmd("AK2_CAMPAIGN_G3LADDER", ["make", "g3-ladder"]) + ["OUT=" + out_dir],
+                            stdout=f, stderr=subprocess.STDOUT, cwd=ROOT,
+                            env={k: v for k, v in os.environ.items() if k not in ("MAKEFLAGS", "MFLAGS", "MAKELEVEL")}).returncode
+    with open(log, errors="replace") as f:
+        text = f.read()
+    # The summary line is the last thing ladder_tables prints (after every table is written), so it
+    # is the judgement; the exit is not: a DEFECT and a traceback both exit 1 (make reports 2).
+    judged = rc in (0, 1, 2) and bool(SUMMARY_RE.search(text))
+    law1 = [l for l in text.splitlines() if "DEFECT (Law 1)" in l]
+    attr = {}
+    p = os.path.join(out_dir, "runs.tsv")
+    if judged and os.path.isfile(p):
+        with open(p) as f:
+            for r in csv.DictReader(f, delimiter="\t"):
+                attr[r.get("run_id", "")] = r.get("in_attribution", "")
+    return judged, law1, attr, rc
+
+
+# ---------------------------------------------------------------- the record
+
+def member_manifests(cdir, cj):
+    cid = os.path.basename(cdir)
+    return [load_json(os.path.join(os.path.dirname(cdir), "%s-r%d" % (cid, k), "manifest.json")) for k in range(cj.get("nodes") or 0)]
+
+
+def record_problems(cdir, cj, mans, want_az=None):
+    """Why a cohort's record is not clean (empty if it is): what a done run must satisfy, judged
+    from cohort.json and the member manifests, never from make run's exit."""
+    why = []
+    members = cj.get("members") or []
+    ended = cj.get("ended") or ""
+    if not ended.startswith("members done") or "fail fast" in ended:
+        why.append("ended %r" % ended)
+    if not members or len(members) != cj.get("nodes"):
+        why.append("%d of %s members recorded" % (len(members), cj.get("nodes")))
+    bad = [m for m in members if m.get("exit_code") != 0]
+    if bad:
+        why.append("member exit %s" % ",".join("r%s=%s" % (m.get("rank"), m.get("exit_code")) for m in bad))
+    gone = [m for m in members if m.get("own_gone") is not True]
+    if gone:
+        why.append("own_gone not true for %s" % ",".join("r%s" % m.get("rank") for m in gone))
+    if cj.get("prefix_fetched") is not True:
+        why.append("prefix not fetched")
+    if cj.get("sweep_failures"):
+        why.append("sweep failures")
+    if cj.get("multipart_abort_failures"):
+        why.append("multipart abort failures")
+    # orphans_rc is the scoped check's only where run-multi says so (orphans_scope own); before
+    # that it was the global check, which a concurrent run fails, and the members' own_gone above
+    # is the scoped verdict.
+    if cj.get("orphans_scope") == "own" and cj.get("orphans_rc") != 0:
+        why.append("scoped orphan check rc %s" % cj.get("orphans_rc"))
+    if any(m is None for m in mans):
+        why.append("a member manifest is missing")
+    if want_az:
+        azs = sorted({(m.get("instance") or {}).get("az") for m in mans if m})
+        if azs != [want_az]:
+            why.append("instance AZ %s, requested %s" % (",".join(str(a) for a in azs), want_az))
+    return why
+
+
+def scan_record(defects, spec_sha):
+    """Every ladder run under results/<gate>/<yyyymmdd>-* (cohort dirs, and single runs that are
+    not cohort members) with the reasons it is not done (attribution added by plan)."""
+    runs = []
+    for d in sorted(glob.glob(os.path.join(ROOT, "results", "*", "*"))):
+        b = os.path.basename(d)
+        if not os.path.isdir(d) or not RUN_DIR_RE.match(b) or MEMBER_RE.search(b):
+            continue
+        cj = load_json(os.path.join(d, "cohort.json"))
+        if cj is not None:
+            mans = member_manifests(d, cj)
+            params = cj.get("params") or ((mans[0] or {}).get("params") if mans else None)
+            if not params or not params.get("rung"):
+                continue
+            ids = [b] + [m.get("run_id") for m in cj.get("members") or [] if m.get("run_id")]
+            why = record_problems(d, cj, mans)
+            ssha = (mans[0] or {}).get("spec_sha256") if mans else None
+            spec = cj.get("spec") or ((mans[0] or {}).get("spec") if mans else None)
+            cost, kind = cj.get("cost_usd"), "cohort"
+        else:
+            m = load_json(os.path.join(d, "manifest.json"))
+            if m is None or m.get("cohort") or not (m.get("params") or {}).get("rung"):
+                continue
+            params, ids, kind = m["params"], [b], "single"
+            ex = (m.get("task") or {}).get("exit_code")
+            why = [] if ex == 0 else ["task exit %s" % ex]
+            if (m.get("orphan_check") or {}).get("own_gone") is not True:
+                why.append("own_gone not true")
+            ssha, spec, cost = m.get("spec_sha256"), m.get("spec"), m.get("cost_usd")
+        if spec in spec_sha and ssha != spec_sha[spec]:
+            why.append("spec_sha256 %s is not the committed %s's %s" % ((ssha or "none")[:12], spec, spec_sha[spec][:12]))
+        hit = [i for i in ids if i in defects]
+        if hit:
+            why.append("recorded defect (g3_defects.tsv %s: %s)" % (hit[0], defects[hit[0]]))
+        rep = params.get("rep", 1)
+        try:
+            rep = int(rep)
+        except (TypeError, ValueError):
+            why.append("params rep %r" % (rep,))
+        runs.append({"dir": rel(d), "id": b, "kind": kind, "params": params, "rung": params["rung"],
+                     "cohort": params.get("cohort"), "rep": rep,
+                     "rep_basis": "params.rep" if "rep" in params else "rep 1 by default (no params.rep)",
+                     "ok": not why, "why": why, "cost": cost})
+    return runs
+
+
+# ---------------------------------------------------------------- the plan
 
 def load_specs(cohort, rungs=None):
     """The committed ladder specs of this cohort, in ladder order: (specs, notes)."""
@@ -140,14 +268,13 @@ def load_specs(cohort, rungs=None):
         if not isinstance(nodes, int) or nodes != p.get("replicas", 0) * p.get("shards", 0):
             raise SystemExit("ladder-campaign: %s: WANT_N %r is not REPLICAS x SHARDS" % (rp, nodes))
         itype = spec["resources"]["instance_type"]
-        specs.append({"rung": rung, "spec": rp, "params": p, "nodes": nodes, "type": itype,
+        specs.append({"rung": rung, "spec": rp, "sha256": sha256(f), "params": p, "nodes": nodes, "type": itype,
                       "az": spec["placement"]["availability_zone"], "region": spec["env"]["AK2_REGION"],
                       "ttl": spec["lifecycle"]["ttl"], "cost_limit": float(spec["lifecycle"]["cost_limit"]),
                       "family": family_of(itype), "ladder_index": order[rung]})
     if rungs:
         want = {r.lower() for r in rungs}
-        known = {s["rung"].lower() for s in specs}
-        unknown = sorted(want - known)
+        unknown = sorted(want - {s["rung"].lower() for s in specs})
         if unknown:
             raise SystemExit("ladder-campaign: RUNGS %s: no committed c%d spec" % (",".join(unknown), cohort))
         specs = [s for s in specs if s["rung"].lower() in want]
@@ -155,71 +282,24 @@ def load_specs(cohort, rungs=None):
     return specs, notes
 
 
-def scan_record(defects):
-    """Every ladder run in results/ (cohort dirs, and single runs that are not cohort members)."""
-    runs = []
-    for d in sorted(glob.glob(os.path.join(ROOT, "results", "*", "2026*"))):
-        if not os.path.isdir(d):
-            continue
-        cj = load_json(os.path.join(d, "cohort.json"))
-        if cj is not None:
-            params = cj.get("params")
-            members = cj.get("members") or []
-            if not params:
-                m0 = load_json(os.path.join(os.path.dirname(d), "%s-r0" % os.path.basename(d), "manifest.json")) or {}
-                params = m0.get("params")
-            if not params or not params.get("rung"):
-                continue
-            ids = [os.path.basename(d)] + [m.get("run_id") for m in members if m.get("run_id")]
-            why = []
-            ended = cj.get("ended") or ""
-            if not ended.startswith("members done") or "fail fast" in ended:
-                why.append("ended %r" % ended)
-            if len(members) != cj.get("nodes"):
-                why.append("%d of %s members recorded" % (len(members), cj.get("nodes")))
-            bad = [m for m in members if m.get("exit_code") != 0]
-            if bad:
-                why.append("member exit %s" % ",".join("r%s=%s" % (m.get("rank"), m.get("exit_code")) for m in bad))
-            cost = cj.get("cost_usd")
-            kind = "cohort"
-        else:
-            m = load_json(os.path.join(d, "manifest.json"))
-            if m is None or m.get("cohort") or not (m.get("params") or {}).get("rung"):
-                continue
-            params = m["params"]
-            ids = [os.path.basename(d)]
-            ex = (m.get("task") or {}).get("exit_code")
-            why = [] if ex == 0 else ["task exit %s" % ex]
-            cost = m.get("cost_usd")
-            kind = "single"
-        hit = [i for i in ids if i in defects]
-        if hit:
-            why.append("recorded defect (g3_defects.tsv %s: %s)" % (hit[0], defects[hit[0]]))
-        rep = params.get("rep", 1)
-        try:
-            rep = int(rep)
-        except (TypeError, ValueError):
-            why.append("params rep %r" % (rep,))
-        runs.append({"dir": rel(d), "kind": kind, "params": params, "rung": params["rung"],
-                     "cohort": params.get("cohort"), "rep": rep,
-                     "rep_basis": "params.rep" if "rep" in params else "rep 1 by default (no params.rep)",
-                     "ok": not why, "why": why, "cost": cost})
-    return runs
-
-
-def plan(cohort, reps, rungs=None, defects=None):
+def plan(cohort, reps, rungs, attr):
+    """attr: ladder_tables' in_attribution by run id (a done run must be 'yes')."""
     specs, notes = load_specs(cohort, rungs)
-    defects = read_defects() if defects is None else defects
-    record = [r for r in scan_record(defects) if r["cohort"] == cohort and r["rung"] in {s["rung"] for s in specs}]
+    record = [r for r in scan_record(read_defects(), {s["spec"]: s["sha256"] for s in specs})
+              if r["cohort"] == cohort and r["rung"] in {s["rung"] for s in specs}]
     by_rung = {s["rung"]: s for s in specs}
     for r in record:
-        s = by_rung[r["rung"]]
-        a, b = comparable(s["params"]), comparable(r["params"])
+        a, b = comparable(by_rung[r["rung"]]["params"]), comparable(r["params"])
         diff = sorted(k for k in set(a) | set(b) if a.get(k) != b.get(k))
         if diff:
-            r["ok"] = False
-            r["why"].append("params differ from %s: %s" % (s["spec"], ", ".join(
+            r["why"].append("params differ from %s: %s" % (by_rung[r["rung"]]["spec"], ", ".join(
                 "%s %r != %r" % (k, b.get(k), a.get(k)) for k in diff)))
+        ia = attr.get(r["id"])
+        if ia is None:
+            r["why"].append("not in ladder_tables' runs.tsv")
+        elif ia != "yes":
+            r["why"].append("excluded by ladder_tables: %s" % ia[:160])
+        r["ok"] = not r["why"]
     for s in specs:
         good = [r for r in record if r["rung"] == s["rung"] and r["ok"] and isinstance(r["cost"], (int, float))]
         if good:
@@ -236,7 +316,8 @@ def plan(cohort, reps, rungs=None, defects=None):
             it = dict(s, rep=rep, order=len(items) + 1, az_override=None, retried=False, tried_azs=[s["az"]])
             if done:
                 it["action"] = "skip"
-                it["why"] = "done: %s (%s)" % (done[0]["dir"], "exit 0, params match, not a recorded defect, " + done[0]["rep_basis"])
+                it["why"] = "done: %s (spec sha256 and params match, clean record, in the attribution, not a recorded defect, %s)" % (
+                    done[0]["dir"], done[0]["rep_basis"])
                 it["done_dir"] = done[0]["dir"]
             else:
                 it["action"] = "launch"
@@ -244,14 +325,14 @@ def plan(cohort, reps, rungs=None, defects=None):
     return items, record, notes
 
 
-def print_plan(cohort, reps, items, record, notes, limits, out=None):
+def print_plan(cohort, reps, items, record, notes, conc, limits, out=None):
     w = out or (lambda l: print(l, flush=True))
     w("ladder-campaign: cohort %d, REPS=%d: %d committed spec(s) runs/g3-l-*-c%d.json; rep 1 cheapest first "
-      "(measured billed $ where a successful run exists, else cost_limit x nodes), ties in ladder order; "
+      "(measured billed $ where a done run exists, else cost_limit x nodes), ties in ladder order; "
       "rep 2 reversed" % (cohort, reps, len({i['rung'] for i in items}), cohort))
-    w("ladder-campaign: family limits (instances in flight): %s, others %d; the first launch runs alone; "
-      "quota_check.sh before every launch" % (", ".join("%s=%d" % kv for kv in sorted(limits.items())) or "none",
-                                             DEFAULT_FAMILY_LIMIT))
+    w("ladder-campaign: CONCURRENCY=%d (runs in flight at once)%s; quota_check.sh before every launch" % (
+        conc, "" if conc == 1 else "; family limits (instances): %s, others %d; the first launch runs alone" % (
+            ", ".join("%s=%d" % kv for kv in sorted(limits.items())), DEFAULT_FAMILY_LIMIT)))
     for n in notes:
         w("ladder-campaign: note: %s" % n)
     w("%-5s %-3s %-11s %-30s %-5s %-14s %-10s %-8s %10s  %-46s %s" % (
@@ -273,30 +354,27 @@ def print_plan(cohort, reps, items, record, notes, limits, out=None):
 
 # ---------------------------------------------------------------- the run
 
-def cmd(envname, default):
-    v = os.environ.get(envname)
-    return shlex.split(v) if v else default
-
-
 class Campaign:
-    def __init__(self, cohort, reps, items, limits, ts):
-        self.cohort, self.reps, self.limits, self.ts = cohort, reps, limits, ts
+    def __init__(self, cohort, reps, items, conc, limits, ts):
+        self.cohort, self.reps, self.conc, self.limits, self.ts = cohort, reps, conc, limits, ts
         self.queue = [i for i in items if i["action"] == "launch"]
         self.skipped = [i for i in items if i["action"] == "skip"]
-        self.inflight = []          # dicts: item, proc, log, cohort_id, settled, t0
+        self.inflight = []          # dicts: item, proc, log, cohort_id, settled, t0, tail
         self.blocked = {}           # rung -> reason
         self.dropped = []           # (item, reason)
         self.outcomes = []
         self.pending_defects = []
-        self.stop = None            # reason no further launches happen
-        self.hard = False           # orphans with nothing in flight, Law 1, a check that cannot judge
+        self.stop = None            # why no further launches happen
+        self.hard = False           # orphans with nothing in flight, Law 1, a check that cannot judge, a signal
         self.any_ok = False
         self.waiting = None
+        self.attr = {}
         self.poll = float(os.environ.get("AK2_CAMPAIGN_POLL_S", "10"))
         self.quota_retry = float(os.environ.get("AK2_CAMPAIGN_QUOTA_RETRY_S", "60"))
         self.quota_next = {}        # family -> time before which a refused family is not asked again
         self.settle_s = float(os.environ.get("AK2_CAMPAIGN_SETTLE_S", "900"))
         self.dir = os.path.join(CAMPAIGN_DIR, ts)
+        self.tables = os.path.join(self.dir, "tables")
         self.tsv = os.path.join(CAMPAIGN_DIR, ts + ".tsv")
         self.defects_tsv = os.path.join(CAMPAIGN_DIR, ts + ".defects.tsv")
         self.n_checks = 0
@@ -334,31 +412,27 @@ class Campaign:
                                 cwd=ROOT).returncode
         if rc == 0:
             say("orphans (%s): none (%s)" % (context, rel(log)))
-            return rc
-        others = len(self.inflight)
-        if others:
-            say("orphans (%s): rc %d with %d campaign run(s) in flight: informational (%s)" % (context, rc, others, rel(log)))
+        elif self.inflight:
+            say("orphans (%s): rc %d with %d campaign run(s) in flight: informational (%s)" % (context, rc, len(self.inflight), rel(log)))
         else:
             say("orphans (%s): rc %d with nothing in flight: HARD STOP (%s)" % (context, rc, rel(log)))
             self.halt("make orphans rc %d with nothing in flight (%s)" % (rc, rel(log)), hard=True)
         return rc
 
     def law1(self, context):
+        """make g3-ladder into the campaign's tables dir. Judged only with its summary line; a
+        Law 1 DEFECT, or no judgement, is a hard stop. Sets self.attr (in_attribution by run id)."""
         self.n_checks += 1
         log = os.path.join(self.dir, "g3-ladder-%02d.log" % self.n_checks)
-        with open(log, "w") as f:
-            rc = subprocess.run(cmd("AK2_CAMPAIGN_G3LADDER", ["make", "g3-ladder"]), stdout=f, stderr=subprocess.STDOUT,
-                                cwd=ROOT).returncode
-        with open(log) as f:
-            text = f.read()
-        hits = [l for l in text.splitlines() if "DEFECT (Law 1)" in l]
+        judged, hits, attr, rc = run_tables(self.tables, log)
+        self.attr = attr
         if hits:
             say("g3-ladder (%s): Law 1 DEFECT: %s (%s)" % (context, hits[0], rel(log)))
             self.halt("Law 1 DEFECT from make g3-ladder (%s)" % rel(log), hard=True)
             return False
-        if rc not in (0, 1):
-            say("g3-ladder (%s): rc %d, could not judge Law 1 (%s)" % (context, rc, rel(log)))
-            self.halt("make g3-ladder rc %d: Law 1 not judged (%s)" % (rc, rel(log)), hard=True)
+        if not judged:
+            say("g3-ladder (%s): rc %d and no summary line: Law 1 not judged (%s)" % (context, rc, rel(log)))
+            self.halt("make g3-ladder rc %d without its summary line: Law 1 not judged (%s)" % (rc, rel(log)), hard=True)
             return False
         say("g3-ladder (%s): no Law 1 DEFECT (rc %d; %s)" % (context, rc, rel(log)))
         return True
@@ -370,6 +444,8 @@ class Campaign:
     def eligible(self, it):
         if it["rung"] in self.blocked:
             return "rung stopped"
+        if len(self.inflight) >= self.conc:
+            return "CONCURRENCY=%d runs in flight" % self.conc
         if self.inflight and not self.any_ok:
             return "the first launch runs alone until a run succeeds"
         if any(x["item"]["rung"] == it["rung"] for x in self.inflight):
@@ -394,8 +470,7 @@ class Campaign:
         self.queue = keep
 
     def pick(self):
-        quota_wait = set()
-        reasons = []
+        quota_wait, reasons = set(), []
         for it in self.queue:
             why = self.eligible(it)
             if why is None and (it["family"] in quota_wait or time.time() < self.quota_next.get(it["family"], 0)):
@@ -438,35 +513,48 @@ class Campaign:
             it["rung"], it["rep"], " ".join(argv), it["rep"],
             ", AK2_LAUNCH_AZ=" + it["az_override"] if it.get("az_override") else "", it["nodes"], it["type"],
             it["family"], rel(log)))
-        p = subprocess.Popen(argv, cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                             bufsize=1, start_new_session=True)
+        # The driver writes to its log file, not to a pipe of ours, and runs in its own session: if
+        # the campaign dies, the driver and its finish trap carry on and cohort.json is written.
+        with open(log, "w") as f:
+            p = subprocess.Popen(argv, cwd=ROOT, env=env, stdout=f, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,
+                                 start_new_session=True)
         x = {"item": it, "proc": p, "log": log, "cohort_id": None, "settled": False, "t0": time.time()}
-        t = threading.Thread(target=self.reader, args=(x,), daemon=True)
-        t.start()
-        x["thread"] = t
+        x["tail"] = threading.Thread(target=self.tail, args=(x,), daemon=True)
+        x["tail"].start()
         self.inflight.append(x)
 
-    def reader(self, x):
+    def tail(self, x):
+        """Follow the driver's log file: stream it, prefixed, and pick out the cohort id."""
         pre = "  [%s r%d] " % (x["item"]["rung"], x["item"]["rep"])
-        with open(x["log"], "w") as f:
-            for line in x["proc"].stdout:
-                f.write(line)
-                f.flush()
-                print(pre + line.rstrip("\n"), flush=True)
-                m = re.search(r"cohort (\d{8}-\d{6}-[0-9a-f]{7}-[0-9a-f]{4}-n\d+):", line)
-                if m and not x["cohort_id"]:
-                    x["cohort_id"] = m.group(1)
+        buf = ""
+        with open(x["log"], errors="replace") as f:
+            while True:
+                chunk = f.read()
+                if chunk:
+                    buf += chunk
+                    *lines, buf = buf.split("\n")
+                    for line in lines:
+                        print(pre + line, flush=True)
+                        m = re.search(r"cohort (\d{8}-\d{6}-[0-9a-f]{7}-[0-9a-f]{4}-n\d+):", line)
+                        if m and not x["cohort_id"]:
+                            x["cohort_id"] = m.group(1)
+                elif x["proc"].poll() is not None:
+                    if buf:
+                        print(pre + buf, flush=True)
+                    return
+                else:
+                    time.sleep(0.2)
 
     def settled(self, x):
-        """A launch has settled once its process ended, or every member manifest records .launch
+        """A launch has settled once its driver ended, or every member manifest records .launch
         (spawn task run returned), or the settle time ran out: only then can quota_check see it."""
         if x["settled"]:
             return True
         if x["proc"].poll() is not None:
             x["settled"] = True
         elif x["cohort_id"]:
-            n = x["item"]["nodes"]
-            ms = [load_json(os.path.join(ROOT, "results", "g3", "%s-r%d" % (x["cohort_id"], k), "manifest.json")) for k in range(n)]
+            ms = [load_json(os.path.join(ROOT, "results", "g3", "%s-r%d" % (x["cohort_id"], k), "manifest.json"))
+                  for k in range(x["item"]["nodes"])]
             if all(m and m.get("launch") for m in ms):
                 x["settled"] = True
         if not x["settled"] and time.time() - x["t0"] > self.settle_s:
@@ -476,44 +564,60 @@ class Campaign:
 
     # -- outcomes
     def classify(self, x, rc):
+        """The outcome from the record (cohort.json, member manifests, ladder_tables' attribution),
+        not from make run's exit: run-multi's exit can be non-zero for reasons that are not the run's."""
+        it = x["item"]
+        want_az = it.get("az_override") or it["az"]
         cid = x["cohort_id"]
         cdir = os.path.join(ROOT, "results", "g3", cid) if cid else None
         cj = load_json(os.path.join(cdir, "cohort.json")) if cdir else None
         texts = []
-        try:
-            with open(x["log"]) as f:
-                texts.append(f.read())
-        except OSError:
-            pass
-        if cdir:
-            texts += [open(p, errors="replace").read() for p in glob.glob(os.path.join(cdir, "rank-*.run.log"))]
-            texts += [open(p, errors="replace").read() for p in glob.glob(os.path.join(ROOT, "results", "g3", cid + "-r*", "launch.err"))]
+        for p in [x["log"]] + (glob.glob(os.path.join(cdir, "rank-*.run.log")) if cdir else []) + \
+                (glob.glob(os.path.join(ROOT, "results", "g3", cid + "-r*", "launch.err")) if cid else []):
+            try:
+                with open(p, errors="replace") as f:
+                    texts.append(f.read())
+            except OSError:
+                pass
         text = "\n".join(texts)
         cost = cj.get("cost_usd") if cj else None
         members = (cj or {}).get("members") or []
-        if rc == 0 and cj and members and all(m.get("exit_code") == 0 for m in members) and len(members) == cj.get("nodes"):
-            return "ok", cost, rel(cdir), "members exit 0"
+        run_dir = rel(cdir) if cdir else None
+        if cj:
+            why = record_problems(cdir, cj, member_manifests(cdir, cj), want_az)
+            ia = self.attr.get(cid)
+            if ia is None:
+                why.append("not in ladder_tables' runs.tsv")
+            elif ia != "yes":
+                why.append("excluded by ladder_tables: %s" % ia[:160])
+            if not why:
+                return "ok", cost, run_dir, "clean record, in the attribution" + ("" if rc == 0 else "; make run rc %d (not the run's)" % rc)
+        else:
+            why = ["no cohort.json"]
         if "InsufficientInstanceCapacity" in text:
-            return "capacity", cost, rel(cdir) if cdir else None, "InsufficientInstanceCapacity"
+            return "capacity", cost, run_dir, "InsufficientInstanceCapacity"
         if "would exceed the region's on-demand vCPU quota" in text and not any(m.get("instance_id") for m in members):
-            return "quota", cost, rel(cdir) if cdir else None, "run-multi refused before launch: vCPU quota"
-        ex = ",".join("r%s=%s" % (m.get("rank"), m.get("exit_code")) for m in members) or "no members"
-        return "fail", cost, rel(cdir) if cdir else None, "make run rc %d; member exits %s" % (rc, ex)
+            return "quota", cost, run_dir, "run-multi refused before launch: vCPU quota"
+        return "fail", cost, run_dir, "make run rc %d; %s" % (rc, "; ".join(why))
 
     def finish(self, x, rc):
         it = x["item"]
-        x["thread"].join(timeout=30)
+        x["tail"].join(timeout=30)
+        ctx = "after %s rep %d" % (it["rung"], it["rep"])
+        self.orphans(ctx)
+        self.law1(ctx)
         cls, cost, run_dir, note = self.classify(x, rc)
         az = it.get("az_override") or it["az"]
         self.outcomes.append((it, cls, run_dir, rc, cost))
-        say("ended %s rep %d: class %s, rc %d, cost %s, run dir %s (%s)" % (it["rung"], it["rep"], cls, rc, cost, run_dir, note))
+        say("ended %s rep %d: class %s, make run rc %d, cost %s, run dir %s (%s)" % (it["rung"], it["rep"], cls, rc, cost, run_dir, note))
         if cls == "ok":
             self.any_ok = True
         elif cls == "capacity":
-            cdid = os.path.basename(run_dir) if run_dir else "-"
             ev = (run_dir + "/rank-0.run.log") if run_dir else rel(x["log"])
-            d = (cdid, "capacity: InsufficientInstanceCapacity in %s (%s, %s c%d rep %d; make ladder-campaign %s)" % (
-                az, it["type"], it["rung"], self.cohort, it["rep"], self.ts), "%s (results/g3/ladder-campaign/%s.tsv)" % (ev, self.ts))
+            d = (os.path.basename(run_dir) if run_dir else "-",
+                 "capacity: InsufficientInstanceCapacity in %s (%s, %s c%d rep %d; make ladder-campaign %s)" % (
+                     az, it["type"], it["rung"], self.cohort, it["rep"], self.ts),
+                 "%s (results/g3/ladder-campaign/%s.tsv)" % (ev, self.ts))
             self.pending_defects.append(d)
             with open(self.defects_tsv, "a") as f:
                 f.write("\t".join(d) + "\n")
@@ -528,9 +632,8 @@ class Campaign:
                         except ValueError as e:
                             say("AZ list row skipped: %s" % e)
             if alt:
-                nxt = dict(it, retried=True, az_override=alt["az"], tried_azs=it["tried_azs"] + [alt["az"]],
-                           az_reason="capacity retry after InsufficientInstanceCapacity in %s (%s)" % (az, run_dir or "-"))
-                self.queue.insert(0, nxt)
+                self.queue.insert(0, dict(it, retried=True, az_override=alt["az"], tried_azs=it["tried_azs"] + [alt["az"]],
+                                          az_reason="capacity retry after InsufficientInstanceCapacity in %s (%s)" % (az, run_dir or "-")))
                 note += "; retry once in %s (scripts/g3/ladder.azs.tsv: %s)" % (alt["az"], alt["evidence"])
                 say("%s rep %d: retry once in %s" % (it["rung"], it["rep"], alt["az"]))
             else:
@@ -550,9 +653,6 @@ class Campaign:
             say("rung %s stopped: no further launches of it" % it["rung"])
         self.row(it, run_dir, rc, cost, cls, note)
         self.drop_blocked()
-        ctx = "after %s rep %d" % (it["rung"], it["rep"])
-        self.orphans(ctx)
-        self.law1(ctx)
 
     def reap(self):
         for x in list(self.inflight):
@@ -570,9 +670,10 @@ class Campaign:
                 pass
 
     def run(self):
+        # INT and TERM stop launching and pass TERM to the drivers. HUP is left alone, so the
+        # campaign can run under nohup (or tmux) and outlive the terminal.
         signal.signal(signal.SIGINT, self.interrupt)
         signal.signal(signal.SIGTERM, self.interrupt)
-        signal.signal(signal.SIGHUP, self.interrupt)
         for it in self.skipped:
             self.row(it, it["done_dir"], 0, None, "skip", it["why"])
         while self.queue or self.inflight:
@@ -635,16 +736,19 @@ def main(a):
         print(__doc__, file=sys.stderr)
         return 2
     mode, cohort = a[0], int(a[1])
-    reps, rungs, limits = 2, None, ""
+    reps, rungs, limits, conc = 2, None, "", 1
     rest = a[2:]
     while rest:
         if len(rest) < 2:
             raise SystemExit("ladder-campaign: %s needs a value" % rest[0])
         f, v, rest = rest[0], rest[1], rest[2:]
-        if f == "--reps":
+        if f in ("--reps", "--concurrency"):
             if not re.fullmatch(r"[1-9][0-9]*", v):
-                raise SystemExit("ladder-campaign: REPS=%s" % v)
-            reps = int(v)
+                raise SystemExit("ladder-campaign: %s=%s" % (f[2:].upper(), v))
+            if f == "--reps":
+                reps = int(v)
+            else:
+                conc = int(v)
         elif f == "--rungs":
             rungs = [r for r in re.split(r"[,\s]+", v) if r] or None
         elif f == "--family-limits":
@@ -652,20 +756,29 @@ def main(a):
         else:
             raise SystemExit("ladder-campaign: unknown option %s" % f)
     limits = parse_limits(limits)
-    items, record, notes = plan(cohort, reps, rungs)
     ts = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
     if mode == "plan":
-        print_plan(cohort, reps, items, record, notes, limits)
+        # ladder_tables' attribution, into a scratch dir outside the repo.
+        tmp = tempfile.mkdtemp(prefix="ladder-campaign-plan.")
+        try:
+            judged, hits, attr, rc = run_tables(os.path.join(tmp, "tables"), os.path.join(tmp, "g3-ladder.log"))
+            if not judged:
+                say("refused: make g3-ladder rc %d without its summary line; the attribution is not known:\n%s" % (
+                    rc, open(os.path.join(tmp, "g3-ladder.log"), errors="replace").read()[-2000:]))
+                return 3
+            items, record, notes = plan(cohort, reps, rungs, attr)
+            print_plan(cohort, reps, items, record, notes, conc, limits)
+            if hits:
+                say("Law 1 DEFECT in the record (a real campaign refuses to start): %s" % hits[0])
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
         d = git("status", "--porcelain", "--", *RUN_PATHS).stdout.rstrip()
         say("tree: %s" % ("clean under " + " ".join(RUN_PATHS) if not d else "CHANGES under run.sh's paths (a real campaign refuses):\n" + d))
-        say("DRY_RUN=1: nothing launched, nothing written")
+        say("DRY_RUN=1: nothing launched, nothing written in the repo")
         return 0
     # The real campaign: refuse to start on a dirty tree, orphans, or a Law 1 DEFECT already in the record.
-    c = Campaign(cohort, reps, items, limits, ts)
-    lines = []
-    print_plan(cohort, reps, items, record, notes, limits, out=lambda l: (lines.append(l), print(l, flush=True)))
-    with open(os.path.join(CAMPAIGN_DIR, ts + ".plan.txt"), "w") as f:
-        f.write("\n".join(lines) + "\n")
+    os.makedirs(CAMPAIGN_DIR, exist_ok=True)
+    c = Campaign(cohort, reps, [], conc, limits, ts)
     say("campaign %s: log results/g3/ladder-campaign/%s.tsv, driver logs results/g3/ladder-campaign/%s/" % (ts, ts, ts))
     dirty = c.tree_dirty()
     if dirty:
@@ -676,6 +789,13 @@ def main(a):
     if c.stop:
         say("refused to start: %s" % c.stop)
         return 3
+    items, record, notes = plan(cohort, reps, rungs, c.attr)
+    c.queue = [i for i in items if i["action"] == "launch"]
+    c.skipped = [i for i in items if i["action"] == "skip"]
+    lines = []
+    print_plan(cohort, reps, items, record, notes, conc, limits, out=lambda l: (lines.append(l), print(l, flush=True)))
+    with open(os.path.join(CAMPAIGN_DIR, ts + ".plan.txt"), "w") as f:
+        f.write("\n".join(lines) + "\n")
     return c.run()
 
 
