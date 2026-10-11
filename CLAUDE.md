@@ -108,6 +108,7 @@ targets; ad hoc commands only during exploration.
 | `make g3-spec` / `make g3-tables` / `make g3-frontier` / `make g3-fit` | [docs/cohort.md](docs/cohort.md) |
 | `make g3-ladder` / `make g3-ladder-model` (ladder tables: per-rung attribution, three pairs, cross-arm Law 1) | [docs/ladder.md](docs/ladder.md) |
 | `make ladder-spec ARM=… RUNG=… COHORT=…` / `make ladder-check` / `make ladder-stream-test` (the ladder body, lever table and generator) | [docs/ladder.md](docs/ladder.md) |
+| `make ladder-select COHORT=… [RUNG=…] [DRY_RUN=1]` / `make ladder-select-test` (the registered select rules into `scripts/g3/ladder.resolved.tsv`, each row citing its runs with sha256 and its margin's resolution) | [docs/ladder.md](docs/ladder.md) ("Selection") |
 | `make bash-jobs-test` | [docs/cohort.md](docs/cohort.md) |
 | G3 probes (staging, contention, decompression, hitbench, host tunes) / `make hosttune-test` | [docs/probes.md](docs/probes.md) |
 | `make lever-test` (the ladder lever library, `scripts/g3/lever.sh`) | [docs/ladder.md](docs/ladder.md) |

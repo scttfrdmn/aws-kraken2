@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Ladder selection (docs/ladder.md, "Selection"): `make ladder-select COHORT=<c> [RUNG=…]
+  [DRY_RUN=1]` (`scripts/g3/ladder-select.sh`, `scripts/lib/ladder_select.py`), and its stub
+  test `make ladder-select-test` (in `make test`).
+  - **What it does.** It applies the registered `select` rules of `ladder.levers.tsv`, parsed from
+    their text (candidates, axis, ties), to a fresh run of make g3-ladder's program. It writes the
+    S\*-time and S\*-cost alias winners into `scripts/g3/ladder.resolved.tsv`.
+  - **Refusals.** It refuses a candidate with n < 2, a Law 1 DEFECT, a g3-ladder run without its
+    summary line, and stale citations.
+  - **A row** cites a snapshot of the tables (`results/g3/ladder-select/c<C>-<fp>/`) and every
+    candidate run's cohort.json and member manifests, each with its sha256 (new `cites` column).
+    The `margin` column says whether the winner's margin over the runner-up is resolved under the
+    tables' rule. A winner taken from an unresolvable margin is labelled "chosen by the
+    registered rule from an unresolvable difference".
+  - **Other rules.** It reports what each still needs:
+    - S4 and S8 are not run at c1;
+    - O2, O4b, and S4 and S8 above c1, have candidates that are configurations, not rungs;
+    - O4b's only c1 candidate is O4a's own;
+    - O3 is chosen by the #26 fit.
+
+    A minimal mechanism is proposed: candidate rungs under an alias.
+  - **Deterministic and idempotent.** A current row stands byte for byte, and no snapshot is made.
+- `ladder_levers.py` reads `ladder.resolved.tsv` by its header's column names and checks every
+  `cites` entry (`cites_ok`: a `results/` file that still hashes to its cited sha256), so a
+  resolution whose evidence changed is refused (exit 3).
+- `scripts/g3/ladder.resolved.tsv`, first rows (`make ladder-select COHORT=1`, from the c1
+  campaign 20261011-072211; snapshot `results/g3/ladder-select/c1-027bc052f8fb/`):
+  - c1 S\*-time → S9: median wall_s 474.0 s against Sstar-r8g's 477.5 s. The margin is 3.5 s
+    against a 4.0 s threshold, so it is unresolvable (below instrument granularity) and labelled
+    as such;
+  - c1 S\*-cost → S9: median billed $1.2349 against $1.5002. The margin is $0.2653 against
+    $0.0126, so it is resolved.
 - The ladder campaign (docs/ladder.md, "The campaign"): `make ladder-campaign COHORT=<c> [REPS=2]
   [RUNGS=…] [CONCURRENCY=1] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` (`scripts/g3/ladder-campaign.sh`,
   `scripts/lib/ladder_campaign.py`).

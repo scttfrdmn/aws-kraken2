@@ -262,11 +262,14 @@ floor; regime b's spread was 33 s). So HOST_TUNES is `none` throughout, S3's lev
 **Placeholders:** `@probe-tune` (a host-tune set still to be chosen; none is left) and `@select:<rung>[:<KEY>]`
 (S4's P × T, S8's K, the S\* hosts, O2's family, O3's N, O4b's in flight; `@select:S4:PROCS`
 means S4's PROCS value). Descendants carry the same token, so one resolution reaches every rung
-that inherits it. `scripts/g3/ladder.resolved.tsv` (absent so far: columns origin, cohort, key,
-value, source) resolves a token per cohort. The generator refuses any rung with a placeholder
-left, and refuses a resolution when:
+that inherits it. `scripts/g3/ladder.resolved.tsv` (columns origin, cohort, key, value, source,
+and the cites, margin and note that `make ladder-select` writes; "Selection", below) resolves a
+token per cohort. The generator refuses any rung with a placeholder left, and refuses a resolution
+when:
 - its source is not an existing `results/…` path inside a run or cohort dir (a directory below
   `results/` holding `manifest.json` or `cohort.json`);
+- any of its cites (`path=sha256`, space-separated) is not a `results/…` file, does not exist, or
+  no longer hashes to its sha256;
 - it resolves S4 with neither THREADS nor PROCS as a `vcpus/<k>` ratio;
 - after resolving, the one-lever check, run again on the resolved values against the resolved
   predecessor, fails: the rung is identical to its predecessor (mark it not-run instead), or it
@@ -675,6 +678,159 @@ The cases:
 **Not covered locally:** real spawn launches, real capacity errors (matched by the string
 `InsufficientInstanceCapacity`), and real quota numbers.
 
+## Selection: `make ladder-select`
+
+**What:** applies the registered `select` rules of `ladder.levers.tsv` at one cohort, from a fresh
+run of make g3-ladder's program, and writes each winner as a row of `scripts/g3/ladder.resolved.tsv`.
+It launches nothing and costs $0.
+
+```bash
+DRY_RUN=1 make ladder-select COHORT=1           # what it would write; nothing is written
+make ladder-select COHORT=1                     # every rule; writes the ones it can select
+make ladder-select COHORT=10 RUNG=Sstar-time    # one rule (or a list: RUNG=Sstar-time,Sstar-cost)
+make ladder-select-test                         # its stub test (synthetic record; in make test)
+```
+
+`scripts/g3/ladder-select.sh` (`set +e`, logs `$-`) runs `scripts/lib/ladder_select.py`.
+
+**The rules are read, not restated.** Each rule's candidates, axis (`axis: median wall_s`,
+`axis: median billed_usd`, or `the #26 fit's time|cost-optimal N`) and ties (`ties: fewer …`) are
+parsed from its text in the table. A rule without them is refused. Every row's note carries the
+sha256 of the rule text.
+
+**The tables.** `ladder_tables.py` runs on the whole record into a scratch dir, with the current
+lever table and `ladder.resolved.tsv`. Its summary line must be there and there must be no
+`DEFECT (Law 1)`, as the campaign judges it; otherwise nothing is selected. Other DEFECT classes
+do not stop it (the c1 record has five, from the refused S2a launch). The medians come from its
+`rungs.tsv`. The runs behind each median come from its `runs.tsv`: cold ladder runs at the
+cohort, in the attribution. Their count must equal the median's n.
+
+**What it selects: the alias rungs** (`Sstar-time`, `Sstar-cost`).
+- The candidates are the alias's `alias_of`, which must be the rule's own list.
+- Every candidate needs n ≥ 2 measured runs at the cohort on the rule's axis; otherwise the rule
+  is refused.
+- The axis is exactly the rule's: `wall_s` (gross) for S\*-time, `billed_usd` (gross) for
+  S\*-cost. The net series is in the note beside it, for information. It does not decide.
+- The lowest median wins. An exact tie on the median is broken by fewer vCPUs (the candidate's
+  host, from its size). A tie left after that is refused.
+- **The margin** (runner-up − winner) is judged by the tables' own rule (`ladder_tables.delta`).
+  It is resolved only if it is > 2 × max(the two ranges, q); otherwise it is `unresolvable:
+  <reason>`. The winner is still the registered rule's winner, and the `margin` column then says
+  `…: chosen by the registered rule from an unresolvable difference`.
+
+**What it reports and does not write:**
+- **A rung not run at the cohort** (`not_run_cohorts`: S4 and S8 at c1). Its tokens already
+  resolve to its run predecessor's values, so a row would be ignored.
+- **A rung whose candidates are configurations:** S4 (P × T), S8 (K), O2 (the type) and O4b
+  (INFLIGHT), and their `-cost` copies. The record has runs only of rungs, so a candidate that is
+  not a rung of its own cannot be measured (below). Where the rule leaves exactly one candidate,
+  and it is the predecessor's configuration, the output says so. At c1, O4b's one candidate is
+  INFLIGHT = 1, because THREADS = vcpus. Such a rung needs a `not_run_cohorts` entry (a
+  lever-table change), not a selection.
+- **O3 and O3-cost**, which are chosen by the #26 fit, not by a ladder median.
+
+With `RUNG=`, any of these is a refusal (exit 3). Without it they are listed, and the alias rules
+are still written.
+
+**A row:**
+- `origin`, `cohort`, `key` (`alias`), `value` (the winner).
+- `source`: the tables' `manifest.json` in the selection's snapshot,
+  `results/g3/ladder-select/c<C>-<fp>/`. The snapshot is a full copy of the tables it used, so
+  `source_ok` accepts it as a dir holding a manifest.
+- `cites`: `path=sha256` of each of these:
+  - the snapshot's `manifest.json`, `rungs.tsv` and `runs.tsv`;
+  - each candidate run's `cohort.json` and member `manifest.json`, or a single run's
+    `manifest.json`.
+
+  `ladder_levers.py` checks every cite (`cites_ok`). A cited file that changes later makes the
+  generator refuse the row.
+- `margin` (above).
+- `note`, in this order: the rule's sha256; each candidate's median, n, range, q, host and vCPUs;
+  the winner and runner-up; the margin and its threshold; the net-series order.
+
+**Deterministic and idempotent.** A row stands, byte for byte, when both of these hold:
+- its winner, margin, note and cited runs (with their sha256) are what this run derives;
+- its source and cites still check.
+
+Only changed rows are written, and no snapshot is made otherwise. Rows for other rungs and cohorts
+are kept as they are.
+- The snapshot dir is named by the sha256 of the changed rows' decisions, so the same record gives
+  the same name.
+- Its `manifest.json` carries the tables' `generated_at`. So two snapshots made from scratch differ
+  only in that file's sha256.
+- The file is written whole and read back through `ladder_levers.read_resolved` and
+  `ladder_tables.load_resolved`. If either fails, the file is restored.
+
+**Commit before the next launch.** The file is under `scripts/g3/`, and run.sh refuses a dirty
+tree. The target prints that the coordinator must commit `ladder.resolved.tsv` and the snapshot
+dir before any launch.
+
+**Exit:**
+- 0: written or unchanged. The rules it cannot select yet are listed.
+- 2: usage.
+- 3: refused, with nothing written. The refusals are:
+  - a lever table that fails make ladder-check;
+  - a g3-ladder run with no summary line, or with a Law 1 DEFECT;
+  - a current `ladder.resolved.tsv` whose citations fail;
+  - a candidate with n < 2, or a tie the rule does not break;
+  - with `RUNG=`, a rule it cannot select.
+
+**The stub test** (`scripts/tests/ladder_select_test.py`) builds scratch roots holding the real
+lever table and a synthetic record. The records are made with `ladder_tables_test.py`'s helpers
+(Law 3: unit test only), and the test runs the real `ladder_tables.py` on them. The cases:
+- **resolved:** S\*-time goes to S9 by 100 s against a 4 s threshold. S\*-cost goes to Sstar-r8gd,
+  with billed set by hand against the time order.
+- **unresolvable:** S9 wins by 2 s against 4 s, and is labelled.
+- **tie:** S9 wins by fewer vCPUs (96 < 192), with margin 0, unresolvable.
+- **citations:**
+  - the cites pass `ladder_levers`, and the tables read the rows;
+  - O0's host is the winner's;
+  - a tampered cited manifest fails the check, and ladder-select then refuses.
+- **idempotence:**
+  - a second run changes nothing;
+  - a new run replaces the row, with a new snapshot;
+  - DRY_RUN writes nothing, and `RUNG=` touches only its own row.
+- **refusals:** n = 1; a Law 1 DEFECT; `RUNG=O2`; O4b's single candidate at c1. S4 at c1 is not run
+  there (exit 0).
+- **parsing:** every registered rule parses, and a rule without an axis is refused.
+
+### Selections that are not rungs (O2, O4b, S4 and S8 above c1; O3)
+
+A selection run cannot be written as a ladder run of a candidate configuration today:
+- a ladder run is identified by its rung (PARAMS `rung`), and each rung has one configuration per
+  cohort. A run of O2 on another type would carry `rung=O2` and be pooled into O2's median;
+- a new `run_kind` is a PARAMS DEFECT in the tables.
+
+**The minimal mechanism is the one S\* already uses: an alias over candidate rungs.**
+- **Candidate rungs.** Each candidate is a run rung of its own. Its predecessor is the selecting
+  rung's predecessor, and it changes only the selecting rung's group. For example:
+  - `O2-x8g`, `O2-r8g`, … for the host;
+  - `S4-p2`, `S4-p4`, … for THREADS+PROCS;
+  - `O4b-i2`, … for INFLIGHT.
+
+  A candidate that does not apply at some cohort is `not_run_cohorts` there (S4-p8 at c1 … c7,
+  say). The predecessor's own configuration is a candidate by being the predecessor, as S9 is for
+  S\*-time.
+- **The selecting rung becomes an alias** (`status: alias: …`, with `alias_of` the candidates). Its
+  select rule names them, and ladder-select applies it unchanged: the same axis, n ≥ 2 and the
+  margin label.
+- **One change in `ladder_levers._values`.** An alias token resolves only `instance` today (the
+  winner's host). It would resolve any key to the winner's value, so that `@select:S4` gives the
+  winning candidate's THREADS and PROCS. The one-lever check after resolution is unchanged.
+- **The tables need no change.** An alias's delta is its winner's runs against its predecessor,
+  and the candidates' runs are ordinary ladder runs.
+
+The candidate rows are a lever-table change, so their names and the candidate lists are Scott's.
+
+**O3 is different.** Its rule selects by the #26 fit. That needs a citation of `results/g3/fit26/`
+(`optimal.tsv` or `predictions.tsv`) and a registered reading of it:
+- which fit;
+- N restricted to {1, 2, 4, …, 64};
+- O2's type, where `optimal.tsv` gives each family's best type.
+
+At c1 every `optimal.tsv` cell is extrapolated. Under fit R and P-reg, every family's time-optimal
+N is 64, at the grid edge. R+t_sync gives 16, and P-full 9 to 23.
+
 ## The rehearsal (#53): `make rehearse-ladder`
 
 **What:** the ladder body end to end before any rung launches on AWS, on every arm, checked on
@@ -986,7 +1142,7 @@ not a measurement, not resolvable", and the pair note says the source (or target
 value (flagged: not a measurement)".
 
 **`scripts/g3/ladder.resolved.tsv`** (#51; `--resolved`) is tab-separated with the columns
-`origin`, `cohort`, `key`, `value` and `source`. The tables read only the rows with key `alias`:
+`origin`, `cohort`, `key`, `value` and `source` (and `cites`, `margin` and `note`: "Selection"). The tables read only the rows with key `alias`:
 `origin` is the alias rung, `cohort` is a number (`c10` is also read), and `value` is the winning
 rung. The file is cited in manifest.json when it exists.
 
