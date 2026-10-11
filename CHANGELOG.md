@@ -33,6 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ladder_levers.py` reads `ladder.resolved.tsv` by its header's column names and checks every
   `cites` entry (`cites_ok`: a `results/` file that still hashes to its cited sha256), so a
   resolution whose evidence changed is refused (exit 3).
+- `scripts/g3/ladder.resolved.tsv`, first rows (`make ladder-select COHORT=1`, from the c1
+  campaign 20261011-072211; snapshot `results/g3/ladder-select/c1-027bc052f8fb/`):
+  - c1 S\*-time → S9: median wall_s 474.0 s against Sstar-r8g's 477.5 s. The margin is 3.5 s
+    against a 4.0 s threshold, so it is unresolvable (below instrument granularity) and labelled
+    as such;
+  - c1 S\*-cost → S9: median billed $1.2349 against $1.5002. The margin is $0.2653 against
+    $0.0126, so it is resolved.
 - The ladder campaign (docs/ladder.md, "The campaign"): `make ladder-campaign COHORT=<c> [REPS=2]
   [RUNGS=…] [CONCURRENCY=1] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` (`scripts/g3/ladder-campaign.sh`,
   `scripts/lib/ladder_campaign.py`).
