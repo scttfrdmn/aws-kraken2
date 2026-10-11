@@ -80,29 +80,36 @@ def sha(path):
 
 def parse_rule(text):
     """{'candidates', 'axis' (wall_s, billed_usd, or fit:<objective>), 'ties'} from a select rule's
-    text; raises Refused if it names no candidates, axis or ties this program reads."""
-    m = re.match(r"candidates: (.*?); (?=axis: |the #26 fit)", text)
+    text; raises Refused if it names no candidates, axis or ties this program reads, or names an
+    axis or ties clause more than once."""
+    m = re.match(r"candidates: (.*?); (?=axis: |the #26 fit|bracket: )", text)
     if not m:
         raise Refused("rule %r: no 'candidates: ...;' followed by an axis" % text)
     out = {"candidates": m.group(1)}
-    a = re.search(r"(?:^|; )axis: median (wall_s|billed_usd)\b", text)
-    f = re.search(r"(?:^|; )the #26 fit's (time|cost)-optimal N", text)
-    if bool(a) == bool(f):
-        raise Refused("rule %r: want exactly one axis (axis: median wall_s|billed_usd, or the #26 fit's time|cost-optimal N)" % text)
-    out["axis"] = a.group(1) if a else "fit:" + f.group(1)
-    t = re.search(r"(?:^|; )ties: fewer ([A-Za-z ]+?)(?:;|$)", text)
-    if not t:
-        raise Refused("rule %r: no 'ties: fewer ...'" % text)
-    out["ties"] = t.group(1).strip()
+    a = re.findall(r"(?:^|; )axis: median (wall_s|billed_usd)\b", text)
+    f = re.findall(r"(?:^|; )the #26 fit's (time|cost)-optimal N", text)
+    anyaxis = re.findall(r"(?:^|; )axis: ", text)
+    if len(a) + len(f) != 1 or len(anyaxis) > 1:
+        raise Refused("rule %r: want exactly one axis clause (axis: median wall_s|billed_usd, or the #26 fit's "
+                      "time|cost-optimal N), found %d" % (text, len(a) + len(f) + max(0, len(anyaxis) - len(a))))
+    out["axis"] = a[0] if a else "fit:" + f[0]
+    t = re.findall(r"(?:^|; )ties: fewer ([A-Za-z ]+?)(?:;|$)", text)
+    if len(t) != 1 or len(re.findall(r"(?:^|; )ties: ", text)) != 1:
+        raise Refused("rule %r: want exactly one 'ties: fewer ...' clause" % text)
+    out["ties"] = t[0].strip()
+    if out["ties"] not in TIES:
+        raise Refused("rule %r: ties 'fewer %s' is not one this program reads (%s)" % (text, out["ties"], ", ".join(sorted(TIES))))
     return out
 
 
 def run_tables(root, cohort, scratch):
     """Run make g3-ladder's program on ROOT's record into SCRATCH. Refused without its summary line
-    or with a Law 1 DEFECT (as make ladder-campaign judges it)."""
+    or with a Law 1 DEFECT (as make ladder-campaign judges it). AK2_SELECT_TABLES (the stub test's
+    seam) names another program to run in its place."""
     lev = os.path.join(root, "scripts", "g3", "ladder.levers.tsv")
     res = os.path.join(root, "scripts", "g3", "ladder.resolved.tsv")
-    p = subprocess.run([sys.executable, os.path.join(HERE, "ladder_tables.py"), "--results", os.path.join(root, "results"),
+    prog = os.environ.get("AK2_SELECT_TABLES") or os.path.join(HERE, "ladder_tables.py")
+    p = subprocess.run([sys.executable, prog, "--results", os.path.join(root, "results"),
                         "--levers", lev, "--resolved", res, "--out", scratch], capture_output=True, text=True)
     log = p.stdout + p.stderr
     if not SUMMARY.search(p.stdout):
@@ -148,65 +155,132 @@ def fmt(v):
     return "-" if v is None else "%.6f" % v
 
 
-def select_alias(rows, row, cohort, rungs, runs, man, root):
-    """The decision of an alias rung's rule at COHORT, or Refused."""
+def tie_key(ties, v):
+    """The rule's tie-break quantity for a candidate's resolved values V (lower wins)."""
+    vc = LL.vcpus_of(v["instance"])
+    if vc is None:
+        return None
+    nodes = int(v["REPLICAS"]) * int(v["SHARDS"])
+    if ties == "vCPUs":
+        return vc
+    if ties == "processes":
+        return LL.vc(v["PROCS"], vc)
+    if ties == "nodes":
+        return nodes
+    if ties == "fleet vCPUs":
+        return nodes * vc
+    if ties == "in flight":
+        return 0 if v["INFLIGHT"] == "-" else LL.vc(v["INFLIGHT"], vc)
+    return None
+
+
+TIES = {"vCPUs", "processes", "nodes", "fleet vCPUs", "in flight"}
+
+
+def named(text, name):
+    return re.search(r"(?<![\w-])%s(?![\w-])" % re.escape(name), text) is not None
+
+
+def select_alias(rows, row, cohort, rungs, runs, man, root, res):
+    """The decision of an alias rung's rule at COHORT under resolutions RES, or Refused.
+
+    Its candidates are its alias_of rungs that apply at the cohort: a candidate not run there is
+    left out, except the alias's own predecessor, which stands for the configuration it has there
+    (its run ancestor's, or an alias's winner's); a rule with a bracket leaves out the candidates
+    outside it. Each candidate's median is read from the rung whose runs it has (config_row: an
+    alias_cohorts target, a not-run rung's run ancestor, an alias's winner)."""
     names = LL.by_name(rows)
     rule = parse_rule(row["select"])
-    cands = [c for c in row["alias_of"].split("|") if c]
-    listed = [c.strip() for c in rule["candidates"].split(",")]
-    if listed != cands:
-        raise Refused("%s: the rule's candidates (%s) are not its alias_of (%s)" % (row["rung"], ", ".join(listed), ", ".join(cands)))
+    allc = [c for c in row["alias_of"].split("|") if c]
+    missing = [c for c in allc if not named(rule["candidates"], c)]
+    if missing:
+        raise Refused("%s: the rule's candidates do not name its alias_of %s" % (row["rung"], ", ".join(missing)))
     axis = rule["axis"]
     if axis.startswith("fit:"):
-        raise Refused("%s: an alias selected by the #26 fit is not read here" % row["rung"])
-    if rule["ties"] != "vCPUs":
-        raise Refused("%s: ties 'fewer %s' (this program breaks alias ties by fewer vCPUs only)" % (row["rung"], rule["ties"]))
+        raise Refused("%s: an alias selected by the #26 fit is not read here (the rule must give a measured axis)" % row["rung"])
     order = [r["rung"] for r in rows]
+    extra, how = [], ""
+    try:
+        br = LL.bracket(rows, row, cohort, res, root)
+    except LL.Unresolved as e:
+        raise Refused(str(e))
+    cands, left = [], []
+    for c in allc:
+        if c != row["predecessor"] and LL.not_run_at(names[c], cohort):
+            left.append("%s (%s)" % (c, LL.not_run_at(names[c], cohort)))
+        elif br is not None and c not in br[0]:
+            left.append("%s (outside the bracket)" % c)
+        else:
+            cands.append(c)
+    if br is not None:
+        how = "; bracket: %s" % br[1]
+        extra = br[2]
+    if len(cands) < 2:
+        raise Refused("%s at c%d: %d candidate(s) apply (%s; left out: %s): with one, the rung is a not_run_cohorts entry, not a selection"
+                      % (row["rung"], cohort, len(cands), ", ".join(cands) or "none", "; ".join(left) or "none"))
     st, short = {}, []
     for c in cands:
-        s = stats_of(rungs, c, cohort, axis)
+        m = LL.config_row(rows, names[c], cohort, res)
+        if m is None:
+            short.append("%s is unresolved at c%d" % (c, cohort))
+            continue
+        v, bad = LL._values(rows, names[c], cohort, res)
+        if bad:
+            short.append("%s has unresolved values (%s)" % (c, ", ".join(bad)))
+            continue
+        s = stats_of(rungs, m["rung"], cohort, axis)
         if s["basis"] != "measured":
-            short.append("%s is %s on %s" % (c, s["basis"], axis))
+            short.append("%s (%s's runs) is %s on %s" % (c, m["rung"], s["basis"], axis))
         elif s["n"] < 2 or s["median"] is None:
-            short.append("%s has n = %d" % (c, s["n"]))
-        host = LL.instance_of(rows, names[c])
-        s.update(host=host, vcpus=LL.vcpus_of(host), net=stats_of(rungs, c, cohort, NET[axis]))
-        if s["vcpus"] is None:
-            short.append("%s: no vCPU count for its host %s (the tie-break)" % (c, host))
+            short.append("%s has n = %d" % (c, s["n"]) if m["rung"] == c else "%s (%s's runs) has n = %d" % (c, m["rung"], s["n"]))
+        s.update(host=v["instance"], vcpus=LL.vcpus_of(v["instance"]), tie=tie_key(rule["ties"], v), measured=m["rung"],
+                 net=stats_of(rungs, m["rung"], cohort, NET[axis]))
+        if s["tie"] is None:
+            short.append("%s: no %s for its host %s (the tie-break)" % (c, rule["ties"], v["instance"]))
         st[c] = s
     if short:
         raise Refused("%s at c%d: %s; the rule needs every candidate at n >= 2" % (row["rung"], cohort, "; ".join(short)))
-    rank = sorted(cands, key=lambda c: (st[c]["median"], st[c]["vcpus"], order.index(c)))
+    rank = sorted(cands, key=lambda c: (st[c]["median"], st[c]["tie"], order.index(c)))
     w, ru = rank[0], rank[1]
     tie = ""
     if st[w]["median"] == st[ru]["median"]:
-        if st[w]["vcpus"] == st[ru]["vcpus"]:
-            raise Refused("%s at c%d: %s and %s tie on median %s and on vCPUs; the rule does not break it"
-                          % (row["rung"], cohort, w, ru, axis))
-        tie = "; the medians tie, broken by fewer vCPUs (%d < %d)" % (st[w]["vcpus"], st[ru]["vcpus"])
+        if st[w]["tie"] == st[ru]["tie"]:
+            raise Refused("%s at c%d: %s and %s tie on median %s and on %s; the rule does not break it"
+                          % (row["rung"], cohort, w, ru, axis, rule["ties"]))
+        tie = "; the medians tie, broken by fewer %s (%d < %d)" % (rule["ties"], st[w]["tie"], st[ru]["tie"])
     d = LT.delta(st[ru], st[w])
     margin = d["status"]
     if margin != "resolved":
         margin += ": chosen by the registered rule from an unresolvable difference"
     nrank = sorted(cands, key=lambda c: (st[c]["net"]["median"] if st[c]["net"]["median"] is not None else float("inf"),
-                                         st[c]["vcpus"], order.index(c)))
+                                         st[c]["tie"], order.index(c)))
     nd = LT.delta(st[nrank[1]]["net"], st[nrank[0]]["net"])
     rsha = hashlib.sha256(row["select"].encode()).hexdigest()
-    note = ("rule sha256 %s: lowest median %s of %s, ties fewer vCPUs; %s; winner %s, runner-up %s, margin %s, "
-            "threshold %s (2 x max(spread %s, q %s))%s; net series %s (informational): lowest %s, margin over %s %s, %s"
-            % (rsha, axis, ", ".join(cands),
-               "; ".join("%s %s (n %d, range %s, q %s, %s %d vCPUs)" % (c, fmt(st[c]["median"]), st[c]["n"], fmt(st[c]["range"]),
-                                                                        fmt(st[c]["q"]), st[c]["host"], st[c]["vcpus"]) for c in cands),
+
+    def desc(c):
+        s = st[c]
+        t = "" if rule["ties"] == "vCPUs" else ", %s %d" % (rule["ties"], s["tie"])
+        r = "" if s["measured"] == c else ", %s's runs" % s["measured"]
+        return "%s %s (n %d, range %s, q %s, %s %d vCPUs%s%s)" % (c, fmt(s["median"]), s["n"], fmt(s["range"]), fmt(s["q"]),
+                                                               s["host"], s["vcpus"], t, r)
+    note = ("rule sha256 %s: lowest median %s of %s, ties fewer %s; %s; winner %s, runner-up %s, margin %s, "
+            "threshold %s (2 x max(spread %s, q %s))%s; net series %s (informational): lowest %s, margin over %s %s, %s%s%s"
+            % (rsha, axis, ", ".join(cands), rule["ties"], "; ".join(desc(c) for c in cands),
                w, ru, fmt(d["delta"]), fmt(d["threshold"]), fmt(d["measured_spread"]), fmt(d["q"]), tie,
-               NET[axis], nrank[0], nrank[1], fmt(nd["delta"]), nd["status"] or "-"))
-    # The runs behind each median: in the attribution, cold ladder runs of the candidate at this cohort.
+               NET[axis], nrank[0], nrank[1], fmt(nd["delta"]), nd["status"] or "-", how,
+               "; left out at c%d: %s" % (cohort, "; ".join(left)) if left else ""))
+    # The runs behind each median: in the attribution, cold ladder runs of the measured rung at this cohort.
     dirs = {r["run_id"]: r["dir"] for r in man.get("runs", [])}
-    cites = []
+    cites, done = [], set()
     for c in cands:
-        ids = sorted(r["run_id"] for r in runs if r["rung"] == c and r["cohort"] == str(cohort) and r["in_attribution"] == "yes"
+        m = st[c]["measured"]
+        if m in done:
+            continue
+        done.add(m)
+        ids = sorted(r["run_id"] for r in runs if r["rung"] == m and r["cohort"] == str(cohort) and r["in_attribution"] == "yes"
                      and r.get("run_kind", "ladder") == "ladder" and r.get("state", "cold") == "cold")
         if len(ids) != st[c]["n"]:
-            raise Refused("%s at c%d: %s has %d run(s) in the attribution but n = %d on %s" % (row["rung"], cohort, c, len(ids), st[c]["n"], axis))
+            raise Refused("%s at c%d: %s has %d run(s) in the attribution but n = %d on %s" % (row["rung"], cohort, m, len(ids), st[c]["n"], axis))
         for i in ids:
             rd = dirs.get(i, os.path.join("results", "g3", i))
             rd = os.path.relpath(rd, root) if os.path.isabs(rd) else rd
@@ -214,38 +288,23 @@ def select_alias(rows, row, cohort, rungs, runs, man, root):
                 if not os.path.isfile(os.path.join(root, p)):
                     raise Refused("%s: %s (run %s) does not exist" % (row["rung"], p, i))
                 cites.append("%s=%s" % (p, sha(os.path.join(root, p))))
+    for p in extra:
+        cites.append("%s=%s" % (p, sha(os.path.join(root, p))))
     return {"origin": row["rung"], "cohort": str(cohort), "key": "alias", "value": w, "margin": margin, "note": note,
             "run_cites": cites, "winner": w, "runner_up": ru, "axis": axis, "delta": d, "stats": st}
 
 
 def pending(rows, row, cohort, res):
-    """Why a non-alias rule cannot be selected from the record at COHORT (one sentence)."""
-    names = LL.by_name(rows)
-    rung = row["rung"]
+    """Why a rule that is not an alias over candidate rungs cannot be selected at COHORT."""
     why = LL.not_run_at(row, cohort)
     if why:
         return "not-run", "%s: its tokens already resolve to its run predecessor's values; no row is written" % why
     rule = parse_rule(row["select"])
     if rule["axis"].startswith("fit:"):
-        return "pending", ("chosen by the #26 fit's %s-optimal N (results/g3/fit26/), not by a ladder median; it needs %s's type "
-                           "resolved first, and a registered reading of the fit (which fit, and N restricted to the rule's set)"
-                           % (rule["axis"][4:], row["predecessor"]))
-    base = rung[:-5] if rung.endswith("-cost") else rung
-    if base == "O4b":
-        # INFLIGHT 1..vCPUs/THREADS on O3's type: with THREADS = vcpus there is one candidate, 1.
-        try:
-            t = LL._values(rows, row, cohort, res)[0].get("THREADS")
-        except ValueError:
-            t = None
-        p = LL.run_pred_at(rows, row, cohort)
-        pv = LL._values(rows, p, cohort, res)[0] if p is not None else {}
-        if t == "vcpus" and pv.get("INFLIGHT") == "1":
-            return "pending", ("its only candidate at c%d is INFLIGHT = 1 (THREADS = vcpus, so vCPUs / THREADS = 1), %s's own "
-                               "configuration: like S4 and S8 at c1, it is a not_run_cohorts entry (a lever-table change), not a selection"
-                               % (cohort, p["rung"]))
-    what = {"S4": "P x T", "S8": "K replicas", "O2": "instance type", "O4b": "INFLIGHT"}.get(base, "configuration")
-    return "pending", ("its candidates are %s values, and the record has runs only of rungs: a candidate that is not a rung of its "
-                       "own cannot be measured (docs/ladder.md, \"Selection\": candidate rungs under an alias)" % what)
+        return "pending", ("chosen by the #26 fit's %s-optimal N, not by a ladder median: the rule needs candidate rungs and a "
+                           "measured axis" % rule["axis"][4:])
+    return "pending", ("its candidates are %s values with no rungs of their own: the record has runs only of rungs, so its "
+                       "candidate rungs (an alias over them, docs/ladder.md \"Selection\") must be added first" % row["group"])
 
 
 def load_existing(path):
@@ -302,7 +361,7 @@ def main(argv=None):
             sel = [r for r in sel if r["rung"] in want]
         existing = load_existing(resp)
         try:
-            res = LL.read_resolved(resp, root)
+            res = LL.read_resolved(resp, root, rows)
         except ValueError as e:
             raise Refused("the current ladder.resolved.tsv fails its citation check: %s" % e)
         scratch = tempfile.mkdtemp(prefix="ak2-ladder-select-")
@@ -311,10 +370,15 @@ def main(argv=None):
             print("ladder-select: fresh tables: %s" % summ.split(" -> ")[0])
             rungs, runs, man = read_tables(os.path.join(scratch, "tables"))
             decided, refused, other = [], [], []
+            # In table order, so a selection made here (S4, O2, ...) reaches the rules that follow it.
             for r in sel:
                 try:
-                    if r["status"].startswith("alias:"):
-                        decided.append(select_alias(rows, r, cohort, rungs, runs, man, root))
+                    if LL.not_run_at(r, cohort):
+                        other.append((r["rung"],) + pending(rows, r, cohort, res))
+                    elif r["status"].startswith("alias:"):
+                        d = select_alias(rows, r, cohort, rungs, runs, man, root, res)
+                        decided.append(d)
+                        res[(d["origin"], d["cohort"], "alias")] = (d["value"], "this run")
                     else:
                         other.append((r["rung"],) + pending(rows, r, cohort, res))
                 except Refused as e:
@@ -327,10 +391,11 @@ def main(argv=None):
                 print("ladder-select: %s at c%d: %s by median %s, over %s by %s (threshold %s): %s"
                       % (d["origin"], cohort, d["winner"], d["axis"], d["runner_up"], fmt(d["delta"]["delta"]),
                          fmt(d["delta"]["threshold"]), d["margin"]))
-            if refused:
-                for rung, why in refused:
-                    print("ladder-select: refused: %s at c%d: %s" % (rung, cohort, why), file=sys.stderr)
-                raise Refused("%d rule(s) refused; nothing is written" % len(refused))
+            for rung, why in refused:
+                print("ladder-select: %s %s at c%d: %s" % ("refused:" if want else "not selected:", rung, cohort, why),
+                      file=sys.stderr if want else sys.stdout)
+            if refused and want:
+                raise Refused("%d requested rule(s) refused; nothing is written" % len(refused))
             # Unchanged rows stay byte for byte; changed ones are written with one snapshot.
             byk = {(r["origin"], r["cohort"].lstrip("c"), r["key"]): r for r in existing}
             change = []

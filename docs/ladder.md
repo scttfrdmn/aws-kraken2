@@ -219,8 +219,13 @@ caught): against its predecessor, a rung's changed keys, less the keys its `coup
 with a reason, fall in exactly its `group`. A coupled key must really change and lie outside the
 group. Every counterpart is an existing rung or `none: <reason>`. ETAG_CHECK is `on` everywhere.
 Each of S\*-time, S\*-cost, O\*-time and O\*-cost is declared for cohorts 1, 10, 100 and 1000 on
-exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). The module is importable (`load`,
-`check`, `resolve`, `changed`, `coupled_keys`, `spec_params`) for #53's `ladder_check.py`.
+exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). An alias's candidates are run (or alias)
+rungs with the alias's predecessor and group, or the predecessor itself. An `alias_cohorts` entry
+names another run rung of the same arm, on a rung whose status is `run`, and at a cohort that is
+not also in its `not_run_cohorts`. On the committed table, every `alias_cohorts` declaration whose
+two rungs resolve under the committed `ladder.resolved.tsv` must be one configuration. The module is
+importable (`load`, `check`, `resolve`, `changed`, `coupled_keys`, `spec_params`, `config_row`,
+`alias_cohort_problems`, `bracket`) for #53's `ladder_check.py`.
 
 **The one rung that is not one lever, and why** (the `coupled` column; O0b-cost is its copy):
 - **O0b** (ours' plain path → the engine at N = 1) also changes DB_STAGE/DB_PLACE/DB_LOAD to
@@ -247,7 +252,7 @@ rung as its winner's runs, as they do (`scripts/tests/ladder_levers_tables_test.
 real alias rows in a synthetic record). S\*-cost and O\*-cost are chosen by the **lowest median billed $** (Scott, 2026-10-10);
 effective cost per resource is still reported for every endpoint.
 **Ladder 2 runs twice** (Scott, 2026-10-10): the time side O0 … O5 from `Sstar-time`, with O3's N
-the fit's time-optimal one, and the cost side O0-cost … O5-cost from `Sstar-cost`, with its own
+chosen among candidates bracketed by the fit, and the cost side O0-cost … O5-cost from `Sstar-cost`, with its own
 selections (`@select:O2-cost`, `@select:O3-cost` at the cost-optimal N, `@select:O4b-cost`). O5 is
 O\*-time and O5-cost is O\*-cost, so each pair's lever rows follow its endpoint's own predecessor
 chain back to S0-T1. The S rungs' counterparts name both sides.
@@ -277,7 +282,11 @@ when:
   with `vc()` at its own rung's host (vCPUs from the type's size), so `THREADS=96, PROCS=vcpus/96`
   on x8g.24xlarge is S2a's `THREADS=vcpus, PROCS=1` and is refused. The same text on two hosts is
   a derived move with the host's own lever (the `derived` column), not a second lever;
-- an alias's winner is not one of its `alias_of` candidates.
+- an alias's winner is not one of its `alias_of` candidates, or is a candidate not run at that
+  cohort (the alias's own predecessor excepted);
+- its note names a rule sha256 (`rule sha256 <hex>`, as make ladder-select writes it) that is not
+  the sha256 of the rung's `select` text now: the rule changed after the selection;
+- any `alias_cohorts` declaration at that cohort whose two rungs both resolve but differ (below).
 
 Every refusal is a `ladder_levers: refused: …` message with exit 3, never a traceback. A resolution
 row for a rung at a cohort where it is not run (`not_run_cohorts`) is never used, so it draws a
@@ -285,23 +294,69 @@ warning (`ladder_levers: warning: … is ignored`).
 
 **Not run at some cohorts** (`not_run_cohorts`, `c<cohort>: <reason>;...`): a rung whose selection
 has a single candidate at a cohort, its predecessor's own configuration, is not run there. Its
-tokens then resolve to that predecessor's values, so its descendants stay determined. S4 and S8 are
-not run at c1: P and K are at most the cohort, so P = 1 with T = vcpus (S2a's) and K = 1 (S7b's). At
-c1 S5's run predecessor is therefore S2a, and S9's is S7b. The tables must skip a rung at the
-cohorts it lists, as they skip `status: not-run`.
+tokens then resolve to that predecessor's values, so its descendants stay determined. The entries
+are allowed on a selecting rung, on a candidate rung, and on a rung whose values derive from a
+selection (an `@select` token). At c1:
+- S4 and S8: P and K are at most the cohort, so P = 1 with T = vcpus (S2a's) and K = 1 (S7b's).
+  At c1, S5's run predecessor is therefore S2a, and S9's is S7b;
+- O1 and O1-cost: N = S8's K = 1, which is O0b's (O0b-cost's) own configuration;
+- O4b and O4b-cost: INFLIGHT 1 … vCPUs / THREADS with THREADS = vcpus leaves only 1, O4a's (O4a-cost's);
+- the candidate rungs whose value the cohort excludes: every S4-t\<T\> (P = 96 / T > 1), S8-k2,
+  O2-x8g and O2-cost-x8g (O1's own type at c1).
+
+The tables must skip a rung at the cohorts it lists, as they skip `status: not-run`.
+
+**The cost chain reads the time chain where they coincide** (`alias_cohorts`, `c<cohort>:
+<rung>;...`; Scott via the coordinator, 2026-10-11). At a cohort where a cost-chain rung's resolved
+PARAMS and host equal its time-chain counterpart's (its name without `-cost`), it is not run. It is
+`alias: same configuration as <rung> at c<C>` there and reads that rung's runs.
+- At c1 these are O0-cost (O0) and O0b-cost (O0b), because both S\* endpoints chose S9, and
+  O2-cost-r8g (O2-r8g).
+- **The generator** refuses to generate a rung at a cohort where it is aliased ("no spec is
+  generated for it; <rung>'s runs are read"). It refuses any generation at a cohort where a
+  declaration whose two rungs resolve differs in any PARAM or the host. It refuses a cost rung
+  whose resolved configuration equals its time counterpart's without the declaration ("declare
+  alias_cohorts 'c<C>: <rung>'"), so a coincidence that a later selection creates (O3-cost's N
+  equal to O3's, say) cannot run twice.
+- `make ladder-check` verifies every declaration that resolves under the committed
+  `ladder.resolved.tsv`.
+- **The tables** read the target's runs at that cohort (rungs.tsv basis "alias: same configuration
+  as O0 at c1 (alias_cohorts)"). They take the rung's delta against its own predecessor, and skip it
+  in the pairs when the two read the same runs. A run of the rung itself at such a cohort is not
+  used, and a note says so.
 
 **Selection rules** (the `select` column, registered before any run; every `@select:<rung>`
 selection has one, and a rule names the candidates, the axis and the ties):
 
-| rung | candidates | axis | ties |
+| rung | candidates (alias_of) | axis | ties |
 |---|---|---|---|
-| S4 | P × T = vCPUs, P a divisor of vCPUs, P ≤ cohort; recorded as THREADS=T, PROCS=vcpus/T | median wall_s | fewer processes |
-| S8 | K = 1 … min(cohort, the free X quota in x8g.24xlarge) replicas | median wall_s | fewer nodes |
+| S4 (alias) | S2a (P = 1, T = vcpus) and S4-t48, -t32, -t24, -t16, -t12, -t8, -t6, -t4, -t3, -t2, -t1: T threads × 96/T processes on x8g.24xlarge, P ≤ cohort (`not_run_cohorts` where 96/T > cohort); recorded as THREADS=T, PROCS=vcpus/T | median wall_s | fewer processes |
+| S8 (alias) | S7b (K = 1) and S8-k2: K = 1 … min(cohort, the free X quota in x8g.24xlarge); the X quota is 256 vCPUs, 2 nodes (a raised quota adds S8-k\<K\> rows) | median wall_s | fewer nodes |
 | Sstar-time | S9, Sstar-r8g, Sstar-r8gd (alias) | median wall_s | fewer vCPUs |
 | Sstar-cost | S9, Sstar-r8g, Sstar-r8gd (alias) | median billed_usd | fewer vCPUs |
-| O2 / O2-cost | the c8g, c9g, r8g and x8g types whose memory holds 1/N of the table at O1's N | wall_s / billed_usd | fewer fleet vCPUs |
-| O3 / O3-cost | N ∈ {1, 2, 4, 8, 16, 32, 64} that O2's type can hold | the #26 fit's time-optimal / cost-optimal N | fewer nodes |
-| O4b / O4b-cost | INFLIGHT 1 … vCPUs / THREADS on O3's type, memory permitting | wall_s / billed_usd | fewer in flight |
+| O2 / O2-cost (alias) | O1 (O1-cost), O2-r8g (O2-cost-r8g, r8g.48xlarge), O2-x8g (O2-cost-x8g, x8g.24xlarge): per family of c8g, c9g, r8g and x8g, its smallest type that holds 1/N of the table at O1's N (metal twins excluded; c8g and c9g end at 384 GiB); the rows are N = 1's, not run at c10 and above until S8 gives N there | median wall_s / billed_usd | fewer fleet vCPUs |
+| O3 / O3-cost (alias) | O2 (O2-cost) and O3-n2, -n4, -n8, -n16, -n32 (O3-cost-n…): N shards on O2's type; **bracket:** per cohort, the N within a factor 2 of fit R's time- (cost-)optimal N over {1, 2, 4, …, 64} for that type (`results/g3/fit26/predictions.tsv`), widened to all of them where that prediction is not "within data" or the type has none | median wall_s / billed_usd (measured, not the fit) | fewer nodes |
+| O4b / O4b-cost | INFLIGHT 1 … vCPUs / THREADS on O3's type, memory permitting (no candidate rungs yet: below) | median wall_s / billed_usd | fewer in flight |
+
+**Candidate rungs** (Scott via the coordinator, 2026-10-11). Each selection is an alias over its
+candidates, as S\* is:
+- each candidate is a run rung named `<rung>-<short value>` that changes only the selecting rung's
+  key-group from the same predecessor. The names live in `ladder.levers.tsv` only (its rows and
+  `alias_of`), so a rename is an edit of that one file;
+- the predecessor counts as a candidate. A predecessor not run at the cohort stands for the
+  configuration it has there (O1 at c1 is O0b's);
+- `@select:<alias>[:KEY]` resolves any key to the winner's value (`_values`), so S5 takes S4's
+  winner's THREADS and PROCS, and O3's candidates (`instance =pred`) take O2's winner's type.
+
+**What the registered rules leave open:**
+- **O2:** the rule says "types". The rows read it as one candidate per family, its smallest type
+  holding 1/N of the table (the #26 fit's memory floor), with metal twins excluded. Scott should
+  confirm this reading.
+- **N = 2 rows for O2:** O2's rows for N = 2 (r8g.24xlarge, x8g.12xlarge) wait for S8 at c10 and
+  above.
+- **O4b:** its candidates (INFLIGHT up to vCPUs / THREADS on O3's type) depend on S4's T and on
+  O3's type, which no cohort above c1 has resolved yet. O4b and O4b-cost therefore stay selecting
+  rungs, not run at c1. Their candidate rows are added once S4 and O3 are selected at a cohort.
 
 Ladder 1 is one chain until S\*, so S4 and S8 select on time. On one host, billed $ is price × wall,
 so S4's two axes give the same order; S8's do not, and its cost side is left to the S\*-cost
@@ -410,9 +465,18 @@ estimate, and noting that the classic `aws s3 cp` rate is unmeasured. `run.sh` a
 `cohort.json` `params` (`ladder_levers.py spec-params`: lowercase keys, ints for cohort, want_n,
 replicas and shards, `run_kind: ladder`, `state: cold`); other specs get `params: null`.
 
-Generated and committed at c1 (every rung fully determined there, 15): S0-T1, S0-Tv, S1, S2b-i,
-S2b-ii, S2d, S2c, S2a, S5, S6, S7a, S7b, S9, Sstar-r8g, Sstar-r8gd. All of them pass `DRY_RUN=1` (user data, cost and quota checks):
-`results/rehearse/dryrun-userdata-*-<sha7>.tsv`.
+Generated and committed at c1 (every rung fully determined there, 18):
+- the S rungs (15): S0-T1, S0-Tv, S1, S2b-i, S2b-ii, S2d, S2c, S2a, S5, S6, S7a, S7b, S9, Sstar-r8g,
+  Sstar-r8gd;
+- the O rungs (3), since the S\* aliases resolved to S9: O0, O0b and O2-r8g.
+
+All of them pass `DRY_RUN=1` (user data, cost and quota checks):
+`results/rehearse/dryrun-userdata-*-<sha7>.tsv`. The other O rungs are not generated at c1, for
+these reasons:
+- O0-cost, O0b-cost and O2-cost-r8g are aliases there;
+- O1, O1-cost, O4b, O4b-cost, O2-x8g and O2-cost-x8g are not run there;
+- O3's candidates, O4a and O5 wait for O2's selection (O2-r8g's runs). The cost side waits the
+  same way for O2-cost's.
 
 ## The body (`scripts/g3/ladder.body.sh`)
 
@@ -682,6 +746,7 @@ The cases:
 
 **What:** applies the registered `select` rules of `ladder.levers.tsv` at one cohort, from a fresh
 run of make g3-ladder's program, and writes each winner as a row of `scripts/g3/ladder.resolved.tsv`.
+Every selection is an alias over candidate rungs ("Candidate rungs", above).
 It launches nothing and costs $0.
 
 ```bash
@@ -701,36 +766,50 @@ sha256 of the rule text.
 **The tables.** `ladder_tables.py` runs on the whole record into a scratch dir, with the current
 lever table and `ladder.resolved.tsv`. Its summary line must be there and there must be no
 `DEFECT (Law 1)`, as the campaign judges it; otherwise nothing is selected. Other DEFECT classes
-do not stop it (the c1 record has five, from the refused S2a launch). The medians come from its
-`rungs.tsv`. The runs behind each median come from its `runs.tsv`: cold ladder runs at the
-cohort, in the attribution. Their count must equal the median's n.
+do not stop it. The c1 record now has three, all on the refused S2a launch: the successor-phase
+check no longer counts rungs that are not run at the run's cohort. The medians come from its
+`rungs.tsv`. The runs behind each median come from its `runs.tsv`: cold ladder runs at the cohort,
+in the attribution. Their count must equal the median's n.
 
-**What it selects: the alias rungs** (`Sstar-time`, `Sstar-cost`).
-- The candidates are the alias's `alias_of`, which must be the rule's own list.
-- Every candidate needs n ≥ 2 measured runs at the cohort on the rule's axis; otherwise the rule
-  is refused.
-- The axis is exactly the rule's: `wall_s` (gross) for S\*-time, `billed_usd` (gross) for
-  S\*-cost. The net series is in the note beside it, for information. It does not decide.
-- The lowest median wins. An exact tie on the median is broken by fewer vCPUs (the candidate's
-  host, from its size). A tie left after that is refused.
+**What it selects: every alias rung** (S4, S8, Sstar-time, Sstar-cost, O2, O2-cost, O3, O3-cost),
+in table order, so that a selection made in the same run (O2, say) reaches the rules after it
+(O3's bracket).
+- **The candidates** are the alias's `alias_of`. Each must be named in the rule's `candidates:`
+  clause. At the cohort, the set leaves out:
+  - a candidate not run there, unless it is the alias's own predecessor, which stands for the
+    configuration it has there (O1 at c1 is O0b's);
+  - a candidate outside the rule's bracket (O3).
+
+  Fewer than two candidates left is refused: that rung needs a `not_run_cohorts` entry, not a
+  selection.
+- **The median** of each candidate is read from the rung whose runs it has (`config_row`): its
+  `alias_cohorts` target, a not-run predecessor's run ancestor, or an alias's winner. The note
+  names it ("O2-r8g's runs").
+- Every candidate needs n ≥ 2 measured runs at the cohort on the rule's axis; otherwise the rule is
+  not selected.
+- **The axis** is exactly the rule's: `wall_s` (gross) or `billed_usd` (gross). The net series is
+  in the note beside it, for information. It does not decide.
+- **The lowest median wins.** An exact tie on the median is broken by the rule's ties, from the
+  candidate's resolved values: fewer vCPUs, processes, nodes, fleet vCPUs or in flight. A tie left
+  after that is refused.
 - **The margin** (runner-up − winner) is judged by the tables' own rule (`ladder_tables.delta`).
   It is resolved only if it is > 2 × max(the two ranges, q); otherwise it is `unresolvable:
   <reason>`. The winner is still the registered rule's winner, and the `margin` column then says
   `…: chosen by the registered rule from an unresolvable difference`.
 
 **What it reports and does not write:**
-- **A rung not run at the cohort** (`not_run_cohorts`: S4 and S8 at c1). Its tokens already
-  resolve to its run predecessor's values, so a row would be ignored.
-- **A rung whose candidates are configurations:** S4 (P × T), S8 (K), O2 (the type) and O4b
-  (INFLIGHT), and their `-cost` copies. The record has runs only of rungs, so a candidate that is
-  not a rung of its own cannot be measured (below). Where the rule leaves exactly one candidate,
-  and it is the predecessor's configuration, the output says so. At c1, O4b's one candidate is
-  INFLIGHT = 1, because THREADS = vcpus. Such a rung needs a `not_run_cohorts` entry (a
-  lever-table change), not a selection.
-- **O3 and O3-cost**, which are chosen by the #26 fit, not by a ladder median.
+- **A rung not run at the cohort** (`not_run_cohorts`: at c1, S4, S8, O4b and O4b-cost). Its
+  tokens already resolve to its run predecessor's values, so a row would be ignored.
+- **A selecting rung without candidate rungs** (O4b and O4b-cost above c1).
+- **An alias that cannot be selected yet:**
+  - a candidate with n < 2;
+  - a candidate still unresolved (O3 before O2);
+  - an unbroken tie.
 
-With `RUNG=`, any of these is a refusal (exit 3). Without it they are listed, and the alias rules
-are still written.
+**`RUNG=` is all or nothing:** with it, any of these is a refusal (exit 3), and nothing is written.
+Without it they are listed as `not selected: …`, and every rule that did select is written. At c1
+on the current record, the S\* rows stand. O2 and O2-cost wait for O2-r8g's runs, and O3 and
+O3-cost wait for O2.
 
 **A row:**
 - `origin`, `cohort`, `key` (`alias`), `value` (the winner).
@@ -739,14 +818,21 @@ are still written.
   `source_ok` accepts it as a dir holding a manifest.
 - `cites`: `path=sha256` of each of these:
   - the snapshot's `manifest.json`, `rungs.tsv` and `runs.tsv`;
-  - each candidate run's `cohort.json` and member `manifest.json`, or a single run's
-    `manifest.json`.
+  - each measured candidate run's `cohort.json` and member `manifest.json`, or a single run's
+    `manifest.json`;
+  - for a bracketed rule, the fit's `predictions.tsv`.
 
   `ladder_levers.py` checks every cite (`cites_ok`). A cited file that changes later makes the
-  generator refuse the row.
+  generator refuse the row. `ladder_tables.py` checks them too (`cite_problem`): a row whose cites
+  do not verify leaves the alias "alias unresolved" there, with a note in summary.md and
+  manifest.json.
 - `margin` (above).
-- `note`, in this order: the rule's sha256; each candidate's median, n, range, q, host and vCPUs;
-  the winner and runner-up; the margin and its threshold; the net-series order.
+- `note`, in this order:
+  - `rule sha256 <hex>`: the generator refuses the row once the rule text changes;
+  - each candidate's median, n, range, q, host and vCPUs, its tie quantity, and the rung whose runs
+    it reads;
+  - the winner and runner-up, the margin and its threshold, and the net-series order;
+  - the bracket, and the candidates left out.
 
 **Deterministic and idempotent.** A row stands, byte for byte, when both of these hold:
 - its winner, margin, note and cited runs (with their sha256) are what this run derives;
@@ -766,14 +852,13 @@ tree. The target prints that the coordinator must commit `ladder.resolved.tsv` a
 dir before any launch.
 
 **Exit:**
-- 0: written or unchanged. The rules it cannot select yet are listed.
+- 0: written or unchanged. The rules not selected are listed.
 - 2: usage.
 - 3: refused, with nothing written. The refusals are:
   - a lever table that fails make ladder-check;
   - a g3-ladder run with no summary line, or with a Law 1 DEFECT;
-  - a current `ladder.resolved.tsv` whose citations fail;
-  - a candidate with n < 2, or a tie the rule does not break;
-  - with `RUNG=`, a rule it cannot select.
+  - a current `ladder.resolved.tsv` whose citations fail, or whose rule sha256 no longer matches;
+  - with `RUNG=`, a rule it could not select.
 
 **The stub test** (`scripts/tests/ladder_select_test.py`) builds scratch roots holding the real
 lever table and a synthetic record. The records are made with `ladder_tables_test.py`'s helpers
@@ -785,51 +870,37 @@ lever table and a synthetic record. The records are made with `ladder_tables_tes
 - **citations:**
   - the cites pass `ladder_levers`, and the tables read the rows;
   - O0's host is the winner's;
-  - a tampered cited manifest fails the check, and ladder-select then refuses.
+  - a tampered cited manifest fails the check, and ladder-select then refuses;
+  - the tables leave the alias unresolved, with the note;
+  - a changed rule text is refused by `ladder_levers` and by ladder-select.
 - **idempotence:**
   - a second run changes nothing;
   - a new run replaces the row, with a new snapshot;
   - DRY_RUN writes nothing, and `RUNG=` touches only its own row.
-- **refusals:** n = 1; a Law 1 DEFECT; `RUNG=O2`; O4b's single candidate at c1. S4 at c1 is not run
-  there (exit 0).
-- **parsing:** every registered rule parses, and a rule without an axis is refused.
+- **refusals:**
+  - n = 1, which is listed without `RUNG=` and refused with it;
+  - a Law 1 DEFECT;
+  - g3-ladder without its summary line (a planted crash, through the `AK2_SELECT_TABLES` seam);
+  - `RUNG=O2` with no candidate runs.
 
-### Selections that are not rungs (O2, O4b, S4 and S8 above c1; O3)
+  S4 and O4b at c1 are not run there (exit 0).
+- **parsing:** every registered rule parses. A rule without an axis is refused, and so is one with
+  two axis clauses or two ties clauses.
+- **candidate rungs:**
+  - S4 at c10 over S2a and the five S4-t\<T\> with P ≤ 10: S4-t24 wins, resolved, and S5 then
+    takes THREADS=24, PROCS=vcpus/24;
+  - O2 and O2-cost at c1 over O1 (O0b's runs) and O2-r8g, with O2-cost-r8g reading O2-r8g's runs:
+    time picks O2-r8g, billed $ picks O1-cost;
+  - O3 is listed, with no candidate runs, and O3-n2 is generated on O2's winner's type;
+  - the tables read O2-cost as O0b's runs.
 
-A selection run cannot be written as a ladder run of a candidate configuration today:
-- a ladder run is identified by its rung (PARAMS `rung`), and each rung has one configuration per
-  cohort. A run of O2 on another type would carry `rung=O2` and be pooled into O2's median;
-- a new `run_kind` is a PARAMS DEFECT in the tables.
-
-**The minimal mechanism is the one S\* already uses: an alias over candidate rungs.**
-- **Candidate rungs.** Each candidate is a run rung of its own. Its predecessor is the selecting
-  rung's predecessor, and it changes only the selecting rung's group. For example:
-  - `O2-x8g`, `O2-r8g`, … for the host;
-  - `S4-p2`, `S4-p4`, … for THREADS+PROCS;
-  - `O4b-i2`, … for INFLIGHT.
-
-  A candidate that does not apply at some cohort is `not_run_cohorts` there (S4-p8 at c1 … c7,
-  say). The predecessor's own configuration is a candidate by being the predecessor, as S9 is for
-  S\*-time.
-- **The selecting rung becomes an alias** (`status: alias: …`, with `alias_of` the candidates). Its
-  select rule names them, and ladder-select applies it unchanged: the same axis, n ≥ 2 and the
-  margin label.
-- **One change in `ladder_levers._values`.** An alias token resolves only `instance` today (the
-  winner's host). It would resolve any key to the winner's value, so that `@select:S4` gives the
-  winning candidate's THREADS and PROCS. The one-lever check after resolution is unchanged.
-- **The tables need no change.** An alias's delta is its winner's runs against its predecessor,
-  and the candidates' runs are ordinary ladder runs.
-
-The candidate rows are a lever-table change, so their names and the candidate lists are Scott's.
-
-**O3 is different.** Its rule selects by the #26 fit. That needs a citation of `results/g3/fit26/`
-(`optimal.tsv` or `predictions.tsv`) and a registered reading of it:
-- which fit;
-- N restricted to {1, 2, 4, …, 64};
-- O2's type, where `optimal.tsv` gives each family's best type.
-
-At c1 every `optimal.tsv` cell is extrapolated. Under fit R and P-reg, every family's time-optimal
-N is 64, at the grid edge. R+t_sync gives 16, and P-full 9 to 23.
+`scripts/tests/ladder_levers_tables_test.py` (the tables cross-check) runs a synthetic record of
+every rung run at c1 through the real lever table. It resolves the aliases (S\* to Sstar-r8g, O2 to
+O2-r8g, O3 to O3-n4, and their -cost copies), and a copy of the table declares the cost chain's
+coincidence through O5-cost in `alias_cohorts`. `alias_cohort_problems` confirms each declaration.
+Both S\* vs O\* pairs must then have 6 resolved lever rows that sum to their totals (O0, O0b, O2,
+O3, O4a and O5; O1 and O4b are not run at c1). The cost pair's rows must read the time chain's
+runs.
 
 ## The rehearsal (#53): `make rehearse-ladder`
 
@@ -1089,6 +1160,7 @@ comments. Columns are read by name:
 | `status` (optional) | empty or `run` for a run rung. `alias: <rule>`, with `alias_of` set, marks an **alias rung** (Sstar-time, Sstar-cost): it has no runs of its own, and at each cohort its runs are those of the winner that `scripts/g3/ladder.resolved.tsv` names for it (below). An alias with no resolution at a cohort, or whose named winner is not one of its `alias_of`, gives the status "alias unresolved" in rungs.tsv, deltas.tsv and pairs.tsv, never a silent empty. A ladder.resolved.tsv row whose winner is outside `alias_of`, and a second row for the same (rung, cohort), are each a DEFECT (resolved) and leave the alias unresolved there. An alias left unresolved at a cohort where any of its candidates has runs gets a note. An alias whose winner is its own predecessor adds no lever: its delta row says "<rung> is an alias of its predecessor <rung>: no lever", and the pairs skip it. Otherwise the alias's delta is its winner's runs against the alias's predecessor, labelled "alias of <winner>". A rung that takes an alias as its predecessor (O0) is measured against the winner's runs. |
 | `status`, continued | `not-run: <reason>` (read from this column only) means the rung is not run, for example `not-run: no parameter change` for S3 when the tune probe chose `none`. It has its own deltas row labelled with that text and no numbers. Its successor's delta is taken against the **nearest run ancestor**, and labelled with that ancestor and with the skipped rung's text (deltas.tsv `predecessor_basis` and status; pairs.tsv lever-row note). The pairs skip the rung. A run on such a rung gets a note. |
 | `not_run_cohorts` (optional) | the cohorts at which the rung is not run, as `c1: <reason>;c10: <reason>` (#51's form) or a bare `1;10`. At a listed cohort the rung is treated exactly as `status: not-run`: its own deltas row carries "not-run at c<k>: <reason> (not_run_cohorts)", the pairs skip it, and its successor's delta is against the nearest ancestor that ran there. At other cohorts it is an ordinary rung. (S4 and S8 at c1, where their only candidate is the predecessor's configuration.) |
+| `alias_cohorts` (optional) | `c1: O0;...`: at those cohorts the rung has the named rung's configuration (the cost chain where it coincides with the time chain) and reads its runs: rungs.tsv basis "alias: same configuration as O0 at c1 (alias_cohorts)", its delta against its own predecessor, skipped in the pairs when the two read the same runs. A run of the rung itself there is not used (a note). The generator checks that the two resolve to one configuration ("The cost chain reads the time chain", above). |
 
 The **stock rungs** are the S root whose lever is `stock` (S0-T1) and its `threads` child
 (S0-Tv). They are the sources of pairs 1 and 2, and the candidates for the Law 1 reference.

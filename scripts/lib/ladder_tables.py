@@ -231,6 +231,9 @@ def load_levers(path, rd):
         # those of the winner named in ladder.resolved.tsv (key alias) for each cohort.
         r["alias_of"] = [x.strip() for x in (f.get("alias_of") or "").split("|") if x.strip()]
         r["alias"] = st.lower().startswith("alias:") and bool(r["alias_of"])
+        # `alias_cohorts` (`c1: O0;...`): at those cohorts the rung has another rung's configuration
+        # (the cost chain where it coincides with the time chain) and reads that rung's runs.
+        r["alias_cohorts"] = {c: t.strip() for c, t in parse_cohort_list(f.get("alias_cohorts") or "").items() if t.strip()}
         if not r["arm"]:
             r["arm"] = r["rung"][:1]
         if r["rung"]:
@@ -238,11 +241,29 @@ def load_levers(path, rd):
     return out
 
 
-def load_resolved(path, rd, levers):
+def cite_problem(cites, rd, repo):
+    """'' if every `path=sha256` of a resolution's cites column names a file under REPO with that
+    sha256 (each one read, so it is an input of manifest.json), else the first failure."""
+    for c in cites.split():
+        p, _, h = c.rpartition("=")
+        if not p or not re.fullmatch(r"[0-9a-f]{64}", h) or ".." in p.split("/"):
+            return f"cite {c!r} is not path=<sha256>"
+        full = os.path.join(repo, p)
+        if not os.path.isfile(full):
+            return f"cited {p} does not exist"
+        rd.text(full)
+        got = rd.files[os.path.abspath(full)][1]
+        if got != h:
+            return f"cited {p} has sha256 {got}, not the cited {h}"
+    return ""
+
+
+def load_resolved(path, rd, levers, repo=ROOT):
     """((alias rung, cohort) -> (winner or None, note), errors), from ladder.resolved.tsv rows with
-    key `alias` (columns origin, cohort, key, value, source). A winner outside the rung's alias_of
-    and a duplicated (rung, cohort) are errors (DEFECTs), and leave the alias unresolved there.
-    Missing file: ({}, [])."""
+    key `alias` (columns origin, cohort, key, value, source, and cites when make ladder-select wrote
+    the row). A winner outside the rung's alias_of and a duplicated (rung, cohort) are errors
+    (DEFECTs), and leave the alias unresolved there. A row whose cites do not verify (a file under
+    REPO missing or changed) leaves the alias unresolved, with that note. Missing file: ({}, [])."""
     out, errs = {}, []
     if not path or not os.path.exists(path):
         return out, errs
@@ -261,6 +282,9 @@ def load_resolved(path, rd, levers):
         elif v not in lv["alias_of"]:
             errs.append(f"ladder.resolved.tsv: {rung} at c{c} names {v!r}, not one of its alias_of {'|'.join(lv['alias_of'])}")
             out[k] = (None, f"alias unresolved: ladder.resolved.tsv names {v!r}, not one of {'|'.join(lv['alias_of'])}")
+        elif cite_problem(f.get("cites") or "", rd, repo):
+            out[k] = (None, f"alias unresolved: ladder.resolved.tsv's {rung} c{c} row ({v}) cites do not verify: "
+                            f"{cite_problem(f.get('cites') or '', rd, repo)}")
         else:
             out[k] = (v, f"alias of {v} (ladder.resolved.tsv; source {f.get('source') or '-'})")
     return out, errs
@@ -865,7 +889,7 @@ def validate(runs, levers, defects):
             defects.append(("contract", f"{rid}: {e}"))
             r["exclude"].append(f"DEFECT (contract): {e}")
         for x, lv in sorted(levers.items()):
-            if not lv.get("phase") or run_pred(levers, x, coh)[0] != rung:
+            if not lv.get("phase") or not_run(lv, coh) or run_pred(levers, x, coh)[0] != rung:
                 continue
             sm = phase_missing(r, lv["phase"])
             cond = [t for t in sm if t.split(":")[-1] in COND_PHASES]
@@ -1032,10 +1056,35 @@ class Groups:
                 notes.append(f"modelled {rung} c{cohort} {axis} ignored: measured runs exist")
 
     def alias(self, rung, cohort):
-        """(winner, note) for an alias rung, (rung, "") for any other."""
-        if not (self.levers.get(rung) or {}).get("alias"):
-            return rung, ""
-        return self.resolved.get((rung, cohort), (None, "alias unresolved: no ladder.resolved.tsv row (key alias)"))
+        """(the rung whose runs RUNG reads at COHORT, note), or (None, why) if an alias on the way is
+        unresolved. In turn: an `alias_cohorts` entry at the cohort gives its target ("alias: same
+        configuration as <rung> at c<C>"); an alias rung gives its ladder.resolved.tsv winner; a
+        winner or target not run at the cohort (an alias's own predecessor as its candidate) gives its
+        nearest run ancestor. Any other rung reads its own runs, (rung, "")."""
+        r, notes, seen = rung, [], []
+        while True:
+            lv = self.levers.get(r) or {}
+            if r in seen:
+                return None, "alias unresolved: a loop through " + " -> ".join(seen + [r])
+            seen.append(r)
+            if cohort in (lv.get("alias_cohorts") or {}):
+                t = lv["alias_cohorts"][cohort]
+                notes.append(f"alias: same configuration as {t} at c{cohort} (alias_cohorts)")
+                r = t
+                continue
+            if lv.get("alias"):
+                w, note = self.resolved.get((r, cohort), (None, "alias unresolved: no ladder.resolved.tsv row (key alias)"))
+                if w is None:
+                    return None, note
+                notes.append(note)
+                r = w
+                continue
+            if r != rung and not_run(lv, cohort):
+                p, _ = run_pred(self.levers, r, cohort)
+                notes.append(f"{r} {not_run(lv, cohort)}: its run ancestor {p or '-'}'s runs")
+                r = p
+                continue
+            return r, "; ".join(notes)
 
     def runs(self, rung, cohort):
         w, _ = self.alias(rung, cohort)
@@ -1072,14 +1121,16 @@ def net_basis(runs):
 def alias_step(G, rung, cohort):
     """For an alias rung: (skip, note). Skip when its winner is its own run predecessor (the alias
     then adds no lever: its runs are the predecessor's)."""
-    if not (G.levers.get(rung) or {}).get("alias"):
+    lv = G.levers.get(rung) or {}
+    if not (lv.get("alias") or cohort in (lv.get("alias_cohorts") or {})):
         return False, ""
     w, note = G.alias(rung, cohort)
     if w is None:
         return False, note
     pr, _ = run_pred(G.levers, rung, cohort)
-    if w == pr:
-        return True, f"{rung} is an alias of its predecessor {pr}: no lever"
+    pw, _ = G.alias(pr, cohort) if pr else (None, "")
+    if w == pr or (pw is not None and w == pw):
+        return True, f"{rung} is an alias of its predecessor {pr}" + (f" ({pw}'s runs)" if pw not in (None, pr) else "") + ": no lever"
     return False, note
 
 
@@ -1348,7 +1399,13 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None):
 
     keys = set(G.g) | {(r, c) for r, c, _ in modelled}
     cs = {c for _, c in keys}
-    keys = sorted(keys | {(r, c) for r, lv in levers.items() if lv.get("alias") for c in cs})
+    keys = sorted(keys | {(r, c) for r, lv in levers.items() if lv.get("alias") for c in cs}
+                  | {(r, c) for r, lv in levers.items() for c in (lv.get("alias_cohorts") or {}) if c in cs})
+    for (rung, c), rs in sorted(G.g.items()):
+        t = ((levers.get(rung) or {}).get("alias_cohorts") or {}).get(c)
+        if t:
+            notes.append(f"{len(rs)} run(s) of {rung} at c{c}, where it is an alias of {t} (alias_cohorts): not used; "
+                         f"{rung} reads {t}'s runs there")
     for (rung, c) in keys:
         if (levers.get(rung) or {}).get("alias") and G.alias(rung, c)[0] is None:
             have = [x for x in levers[rung]["alias_of"] if G.runs(x, c)]
@@ -1552,8 +1609,9 @@ def main(argv=None):
     cs = None
     if os.path.exists(spend_p):
         cs = {r.get("run") for r in csv.DictReader(rd.text(spend_p).splitlines(), delimiter="\t")}
-    resolved, rerrs = load_resolved(a.resolved, rd, levers)
+    resolved, rerrs = load_resolved(a.resolved, rd, levers, os.path.dirname(os.path.abspath(a.results)))
     T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved)
+    notes += [f"{r} at c{c}: {note}" for (r, c), (w, note) in sorted(resolved.items()) if w is None and "cites do not verify" in note]
     defects += [("modelled", f"refused: {x}") for x in refused] + [("resolved", x) for x in rerrs]
     if not levers:
         notes.insert(0, f"no lever table at {os.path.relpath(a.levers, ROOT)}: no predecessors, endpoints, deltas or pairs")
