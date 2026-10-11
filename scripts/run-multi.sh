@@ -52,6 +52,23 @@ ITYPE=$(q '.resources.instance_type // empty')
 AZ=$(q '.placement.availability_zone // empty')
 [ -n "$AZ" ] || die "a cohort spec must pin placement.availability_zone (every member in one AZ)"
 [[ "$AZ" == "$REGION"* ]] || die "placement.availability_zone $AZ is not in $REGION"
+# Launch overrides (docs/run.md, "Launch overrides"); every member's run.sh inherits and records
+# them. AK2_LADDER_REP: the ladder replicate (cohort.json params.rep). AK2_LAUNCH_AZ: an AZ that
+# scripts/g3/ladder.azs.tsv documents for this type, instead of the spec's.
+REP=${AK2_LADDER_REP:-}
+if [ -n "$REP" ]; then
+  python3 scripts/lib/ladder_levers.py spec-params "$SPEC" --rep "$REP" > /dev/null || die "AK2_LADDER_REP=$REP refused (above)"
+fi
+AZ_OVR_JSON=null
+if [ -n "${AK2_LAUNCH_AZ:-}" ]; then
+  [[ "$AK2_LAUNCH_AZ" == "$REGION"[a-z] ]] || die "AK2_LAUNCH_AZ $AK2_LAUNCH_AZ is not an AZ of $REGION"
+  AZ_EV=$(python3 scripts/lib/ladder_levers.py az-alt "$ITYPE" "$AK2_LAUNCH_AZ") || die "AK2_LAUNCH_AZ=$AK2_LAUNCH_AZ refused (above)"
+  AZ_OVR_JSON=$(jq -c --arg s "$AZ" '{availability_zone:.az, spec_availability_zone:$s, source:"AK2_LAUNCH_AZ",
+    reason:(env.AK2_LAUNCH_AZ_REASON // "not given"), documented_by:.list, evidence:.evidence}' <<< "$AZ_EV") ||
+    die "could not record AK2_LAUNCH_AZ"
+  say "launch override: $ITYPE in $AK2_LAUNCH_AZ, not the spec's $AZ"
+  AZ=$AK2_LAUNCH_AZ
+fi
 COST=$(q '.lifecycle.cost_limit // 0')
 TTL=$(q '.lifecycle.ttl // empty')
 RB_VAR="AK2_RESULTS_BUCKET_${REGION//-/_}"; RESULTS_BUCKET=${!RB_VAR:-}
@@ -263,14 +280,16 @@ finish() {
   done
   "$ORPHANS_SH" > "$CDIR/orphans.txt" 2>&1; local ORC=$?
   # A ladder spec's PARAMS block (#51/#52; docs/ladder.md): cohort.json params, else null.
-  local LADP; LADP=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" 2>/dev/null); [ -n "$LADP" ] || LADP=null
+  local LADP; LADP=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" ${REP:+--rep "$REP"} 2>/dev/null); [ -n "$LADP" ] || LADP=null
   jq -n --arg id "$COHORT_ID" --arg gate "$GATE" --arg spec "$SPEC" --arg sha "$(git rev-parse HEAD)" \
     --argjson n "$NODES" --arg type "$ITYPE" --arg az "$AZ" --arg region "$REGION" --arg prefix "$CPREFIX" \
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
     --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
-    --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" --argjson params "$LADP" '{
+    --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" --argjson params "$LADP" \
+    --argjson azo "$AZ_OVR_JSON" '{
       cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, params:$params, nodes:$n, instance_type:$type, az:$az, region:$region,
+      launch_override:$azo,
       quota_check:$quota, cost_limit_check:$costchk, sample_accessions_ref:$accrec,
       prefix:$prefix, network:{vpc:$vpc, security_group:$sg, admits:"itself, 22/tcp, ICMP"}, start:$start, stop:$stop,
       ended:$ended, terminated_early:$early, sweep_failures:$sweepfail, members:$members,

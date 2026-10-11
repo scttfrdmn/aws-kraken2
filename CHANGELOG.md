@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- The ladder campaign (docs/ladder.md, "The campaign"): `make ladder-campaign COHORT=<c> [REPS=2]
+  [RUNGS=…] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` (`scripts/g3/ladder-campaign.sh`,
+  `scripts/lib/ladder_campaign.py`).
+  - It plans every committed `runs/g3-l-*-c<c>.json`. Rep 1 is cheapest first: the measured
+    median billed $ where a successful run exists, else cost_limit × nodes. Ties go in ladder
+    order, and rep 2 is reversed.
+  - It skips a (rung, cohort, rep) that already has a successful, params-matching run that is
+    not a recorded defect. A run without `params.rep` counts as rep 1, so S2a's
+    `20261011-042400-f72142e-34a4-n1` is S2a rep 1.
+  - It launches through `make run … NODES=<WANT_N>`, one launch at a time. Limits: 2 instances in
+    flight per quota family by default, the first launch alone, a rung's reps in order, and
+    quota_check's verdict (wait on 1, stop on 2).
+  - After each run: a row in `results/g3/ladder-campaign/<ts>.tsv`, `make orphans`
+    (informational while others are in flight, a hard stop with none) and `make g3-ladder` (a
+    Law 1 DEFECT stops the campaign).
+  - InsufficientInstanceCapacity gives a capacity row, appended to `g3_defects.tsv` when the
+    campaign ends, and one retry in an AZ that `scripts/g3/ladder.azs.tsv` documents. Any other
+    failure stops that rung. Nothing is committed.
+  - Its stub test, `make ladder-campaign-test`, is in `make test`.
+- Launch overrides in run.sh and run-multi.sh (docs/run.md, "Launch overrides"):
+  - `AK2_LADDER_REP=<n>` records `params.rep` and `rep_source` in every manifest and in
+    cohort.json (`ladder_levers.py spec-params SPEC --rep n`). The spec stays byte-identical
+    across reps.
+  - `AK2_LAUNCH_AZ=<az>` launches in an AZ that `scripts/g3/ladder.azs.tsv` documents for the
+    type, with its evidence checked (`ladder_levers.py az-alt`). It is recorded as
+    `launch_override`.
+  - Both are refused before anything is sent if invalid. `run_sh_test.sh` and
+    `run_multi_test.sh` cover them.
+- `AK2_QUOTA_FAMILY_ONLY=1 scripts/lib/quota_check.sh REGION TYPE 1`: the quota family alone,
+  with no AWS call.
+
 - The ladder rehearsal (#53; docs/ladder.md, "The rehearsal"): `make rehearse-ladder`, and
   `make rehearse SPEC=runs/g3-l-*` for one committed c1 spec, both after `make util-stream-test`
   (`scripts/lib/ladder_rehearse.sh`, `scripts/lib/ladder_rehearse_check.py`).

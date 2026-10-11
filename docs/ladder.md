@@ -385,6 +385,8 @@ inside `fetch-inputs`.
 - Cohorts go c1, then c10, then c100.
 - n = 2, with rep 2 in the reverse order of rep 1.
 
+`make ladder-campaign COHORT=<c>` runs one cohort in this order ("The campaign", below).
+
 **Predictions:** `pred_*` are filled only where a measured rate gives one: S5's `pred_phase_s`
 (−7.8 s at c1, from probe (c), if classify is gzip-bound). Classic `aws s3 cp` has never been
 measured, so S1 has none. Modelled values go in `results/g3/ladder-modelled.tsv` (header only
@@ -486,6 +488,135 @@ The full local rehearsal is #53 ("The rehearsal", below).
 
 **Not covered locally:** real NVMe devices (`lv_nvme` uses its seam), real S3 and RODA, and an
 instance's CPU count and memory (the rehearsal's VM has 8 vCPUs and 8 GiB).
+
+## The campaign: `make ladder-campaign`
+
+**What:** every committed ladder spec of one cohort, `REPS` times, in the run order above,
+through `make run`, with the after-run checks. It commits nothing and pushes nothing.
+
+```bash
+DRY_RUN=1 make ladder-campaign COHORT=1        # the plan for the record: no AWS call, nothing written
+make ladder-campaign COHORT=1                  # the campaign (REPS=2)
+make ladder-campaign COHORT=1 RUNGS=S1,S5      # a subset, by rung name
+make ladder-campaign COHORT=1 FAMILY_LIMITS=X=1,Standard=2
+make ladder-campaign-test                      # the stub test (no AWS; in make test)
+```
+
+`scripts/g3/ladder-campaign.sh` (`set +e`, logs `$-`) runs `scripts/lib/ladder_campaign.py`.
+
+**The plan.**
+- **Specs:** every committed `runs/g3-l-*-c<C>.json` whose PARAMS block names cohort C. An
+  uncommitted one is listed and not planned. NODES is the spec's WANT_N, which must be REPLICAS ×
+  SHARDS.
+- **Cost:** a rung's cost is the median billed `cost_usd` of its successful runs at this cohort,
+  if there are any (measured). Otherwise it is the spec's `cost_limit` × NODES: the generator's
+  TTL × on-demand price, an upper bound (estimate). No price is fetched.
+- **Order:** rep 1 is cheapest first, with ties in ladder order (the rows of
+  `ladder.levers.tsv`). Rep 2 is rep 1 reversed, and any rep k is reversed when k is even. The
+  order is fixed when the campaign starts.
+- **Skips:** a (rung, cohort, rep) is skipped if the record already has a successful run of it.
+  That is a cohort dir, or a single run dir that is not a cohort member, under `results/*/2026*`,
+  such that:
+  - its `params` equal the committed spec's PARAMS, on every key but `source`, `rep` and
+    `rep_source`;
+  - every member exited 0, and the cohort ended `members done` without fail fast;
+  - neither its id nor a member's id is in `scripts/lib/g3_defects.tsv`.
+
+  Its rep is `params.rep`, or 1 if it has none. So S2a's first run
+  (`results/g3/20261011-042400-f72142e-34a4-n1`, no `rep`) is S2a rep 1. The plan lists every
+  ladder run of the planned rungs with the reason it is or is not counted.
+
+**Rep in the record.** `AK2_LADDER_REP=<rep>` is set in the env of each `make run`. run.sh and
+run-multi.sh check it and record it as `params.rep`, with `rep_source`, in every manifest and in
+`cohort.json` (docs/run.md, "Launch overrides"). The spec is the same file, byte for byte, for
+every rep: `spec_sha256` shows that rep 2 ran the configuration that rep 1 did. No spec is
+generated, so the tree stays clean and committed.
+
+**Launching.** `make run GATE=g3 SPEC=<spec> NODES=<WANT_N>`, one launch at a time. A launch
+waits until all of these hold:
+- the previous launch has settled: its driver has exited, or every member manifest records
+  `.launch` (so the next quota check sees its instances);
+- the family is within its limit: the instances in flight per on-demand quota family (the mapping
+  of `quota_check.sh`) are at most `FAMILY_LIMITS`, which defaults to 2 for every family,
+  including X. A run larger than its family's limit runs only when the family is otherwise
+  empty;
+- the first launch has succeeded: until a run of this campaign succeeds, nothing else is in
+  flight (the cheapest rung runs first, alone);
+- the rung's earlier rep has ended;
+- `quota_check.sh REGION TYPE NODES` exits 0. Exit 1 means wait and check again. Exit 2 (cannot
+  judge) stops launching.
+
+A later item of another family may start while an earlier one waits on its family or on quota.
+The tree must be clean under run.sh's paths before every launch; otherwise launching stops.
+
+**After each run:**
+- a row in `results/g3/ladder-campaign/<ts>.tsv` (`t, rung, rep, az, run_dir, exit, cost_usd,
+  class, note`). The class is `ok`, `capacity`, `quota` (run-multi refused for quota before any
+  launch, so the run is queued again, up to 3 times), `fail`, `skip` (one row per skipped item,
+  at the start) or `not-launched`;
+- `make orphans`. A finding is informational while other campaign runs are in flight. With
+  nothing in flight it is a hard stop: no further launches, exit 3;
+- `make g3-ladder`. A `DEFECT (Law 1)` line stops the campaign: no further launches, exit 3. So
+  does an exit other than 0 or 1, since Law 1 was then not judged. Other DEFECT classes (for
+  example the refused S2a launch's incomplete and contract DEFECTs) do not stop it.
+
+Before the first launch, the campaign runs both checks with nothing in flight. It refuses to start
+on a finding, on a Law 1 DEFECT already in the record, or on a dirty tree. Runs in flight when the
+campaign stops run to their end and are recorded; nothing is terminated early. The exception is
+INT, TERM or HUP to the campaign: it passes TERM to each driver's process group (run-multi.sh's
+finish trap then terminates its instances), waits for them, and runs the final orphan check. A
+quota wait with nothing in flight lasts until the quota frees.
+
+**Failures.**
+- **InsufficientInstanceCapacity** (in the driver's output, a member's `launch.err` or a rank
+  log) gives a capacity row: `<cohort id>`, `capacity: InsufficientInstanceCapacity in <az>
+  (<type>, <rung> c<C> rep <r>; make ladder-campaign <ts>)` and its evidence. The row goes in
+  `<ts>.defects.tsv` at once, and is appended to `scripts/lib/g3_defects.tsv` when the campaign
+  ends: a change under `scripts/` during the campaign would make run.sh refuse every later launch.
+  The item is then retried once, at the front of the queue, in the first AZ of
+  `scripts/g3/ladder.azs.tsv` for the type that has not been tried and whose evidence holds. The
+  retry has `AK2_LAUNCH_AZ` and a reason naming the failed run, and it is recorded as
+  `launch_override`. With no such AZ, or a second capacity failure, the rung stops. x8g.24xlarge
+  has us-west-2c, 2b and 2a on record. r8gd.48xlarge and r8g.48xlarge have only us-west-2b, so a
+  capacity failure on them stops the rung and is reported.
+- **Any other failure** stops that rung: its later reps are logged `not-launched`. The other
+  rungs carry on.
+
+**Outputs:** `results/g3/ladder-campaign/<ts>.plan.txt` (the plan as printed), `<ts>.tsv`, and
+`<ts>/` with each launch's driver output (`<rung>-rep<r>[-<az>].log`) and each orphan and
+g3-ladder check's output. Progress streams to stdout: the launches, each driver's lines prefixed
+`[<rung> r<rep>]`, waits, outcomes, checks and a summary. The coordinator commits the results and
+the g3_defects.tsv rows.
+
+**Exit:** 0 when every planned launch succeeded (a capacity retry that succeeded counts). 1 when
+a rung stopped or an item was not launched. 2 when it refused to start. 3 on a hard stop (orphans
+with nothing in flight, a Law 1 DEFECT, a check that cannot judge, a signal).
+
+**The stub test** (`scripts/tests/ladder_campaign_test.py`, in `make test`, about 20 s) runs the
+real planner and driver in a scratch repo. The repo holds real committed c1 specs, the lever table
+and a synthetic record. `make run`, `make orphans`, `make g3-ladder` and `quota_check.sh` are
+stubs, through the `AK2_CAMPAIGN_*` seams, and the run stub writes cohort dirs as run-multi.sh
+does. The cases:
+- **plan:** the ordering, rep 2 reversed, and the skip, together with why a failed run, a
+  recorded defect and a params mismatch are not counted. DRY_RUN writes nothing.
+- **skip:** the run skips the done item.
+- **normal:**
+  - the first launch runs alone;
+  - X reaches its limit of 2 and never exceeds it;
+  - each rung's rep 2 starts after its rep 1 ends;
+  - `AK2_LADDER_REP` reaches `params.rep`;
+  - nothing launches while quota_check refuses;
+  - orphans run before, after each run and at the end;
+  - the log rows are complete.
+- **capacity:** x8g is retried in us-west-2c, and rep 2 runs in the spec's AZ. r8gd has no
+  alternative, so the rung stops. Both rows reach g3_defects.tsv.
+- **failure:** the rung stops and the others go on.
+- **orphans:** a finding is informational with a run in flight, and a hard stop with none.
+- **law1:** the campaign stops after a Law 1 DEFECT, and refuses to start when one is already
+  there.
+
+**Not covered locally:** real spawn launches, real capacity errors (matched by the string
+`InsufficientInstanceCapacity`), and real quota numbers.
 
 ## The rehearsal (#53): `make rehearse-ladder`
 

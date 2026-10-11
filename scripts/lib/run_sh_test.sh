@@ -43,6 +43,15 @@ spec() {  # spec FILE ACCESSIONS BODY
 spec plain.json "" 'echo hi'
 spec ref-nobody.json "@PRJNA398089:1-3" 'echo hi'
 spec ref-body.json "@PRJNA398089:1-3" 'ACC=$("$W/repo/scripts/lib/accessions.sh" -r "$W/repo" "$AK2_ACCESSIONS")'
+# A ladder spec (PARAMS block, pinned type and AZ) and a scratch AZ list with its evidence, for
+# the launch overrides AK2_LADDER_REP and AK2_LAUNCH_AZ.
+jq -n --arg body "$(printf '# Parameters (scripts/g3/mkspec-ladder.sh S S5 1):\nRUNG=S5; ARM=S; COHORT=1; WANT_N=1\necho hi')" '{
+  command:["bash","-c",$body], resources:{instance_type:"x8g.24xlarge"}, placement:{availability_zone:"us-west-2b"},
+  env:{AK2_REGION:"us-west-2", AK2_ACCESSIONS:"", AK2_ALLOW_NO_BUCKETS:"1"},
+  lifecycle:{ttl:"10m", cost_limit:0.1, on_complete:"terminate"}}' > "$R/runs/ladder.json"
+mkdir -p "$R/results/ev"
+echo '{"instance":{"type":"x8g.24xlarge","az":"us-west-2c"}}' > "$R/results/ev/manifest.json"
+printf 'type\taz\tevidence\nx8g.24xlarge\tus-west-2c\tresults/ev/manifest.json\n' > "$R/scripts/g3/ladder.azs.tsv"
 ( cd "$R" && git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm t ) || { echo "run_sh_test: cannot make the scratch repo"; exit 1; }
 HEAD7=$(git -C "$R" rev-parse --short=7 HEAD)
 OTHER7=$(printf '%07x' $(( (16#$HEAD7 + 1) % 268435456 )))
@@ -54,7 +63,7 @@ run() {
     OUT=$(cd "$R" && PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" AK2_COHORT_ID="$cid" AK2_COHORT_RANK=0 AK2_COHORT_N=2 \
       scripts/run.sh t "runs/$spec" 2>&1)
   else
-    OUT=$(cd "$R" && PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" scripts/run.sh t "runs/$spec" 2>&1)
+    OUT=$(cd "$R" && env ${RUN_ENV:-} PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" scripts/run.sh t "runs/$spec" 2>&1)
   fi
   RC=$?
   rm -rf "$R/results/t"
@@ -73,6 +82,25 @@ run ref-nobody ref-nobody.json
 run ref-body ref-body.json
 reached_stop && [[ "$OUT" == *"accessions: @PRJNA398089:1-3 -> 3 runs"* ]] &&
   ok "reference: a body calling accessions.sh passes, the reference expanded" || bad "reference: body: rc $RC: $(echo "$OUT" | tail -2)"
+
+# Launch overrides (docs/run.md, "Launch overrides").
+RUN_ENV="AK2_LADDER_REP=0" run rep-bad ladder.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"AK2_LADDER_REP=0 refused"* ]] && ! reached_stop &&
+  ok "rep: AK2_LADDER_REP=0 is refused" || bad "rep: bad: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_LADDER_REP=2" run rep-plain plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"no ladder PARAMS block"* ]] && ! reached_stop &&
+  ok "rep: AK2_LADDER_REP on a spec that is not a ladder spec is refused" || bad "rep: plain: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_LADDER_REP=2" run rep-ok ladder.json
+reached_stop && ok "rep: AK2_LADDER_REP=2 on a ladder spec passes" || bad "rep: ok: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_LAUNCH_AZ=us-west-2d" run az-unlisted ladder.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"x8g.24xlarge in us-west-2d is not in scripts/g3/ladder.azs.tsv"* ]] && ! reached_stop &&
+  ok "az: an AZ the list does not document is refused" || bad "az: unlisted: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_LAUNCH_AZ=us-west-2c" run az-plain plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"needs a spec that pins"* ]] && ! reached_stop &&
+  ok "az: AK2_LAUNCH_AZ on a spec without a pinned type and AZ is refused" || bad "az: plain: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_LAUNCH_AZ=us-west-2c" run az-listed ladder.json
+reached_stop && [[ "$OUT" == *"launch override: x8g.24xlarge in us-west-2c, not the spec's us-west-2b"* ]] &&
+  ok "az: a documented AZ passes, the override announced" || bad "az: listed: rc $RC: $(echo "$OUT" | tail -2)"
 
 echo "run_sh_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]

@@ -116,6 +116,7 @@ targets; ad hoc commands only during exploration.
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make rehearse SPEC=…` (local rehearsal of a spec under the nodes' environment; runs `make util-stream-test` first) | [docs/cohort.md](docs/cohort.md) |
 | `make rehearse-ladder` / `make rehearse SPEC=runs/g3-l-…` (the ladder body end to end on AL2023 nodes, before any rung launches) | [docs/ladder.md](docs/ladder.md) ("The rehearsal") |
+| `make ladder-campaign COHORT=… [REPS=2] [RUNGS=…] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` / `make ladder-campaign-test` (every committed c<COHORT> rung, cheapest first, rep 2 reversed, done runs skipped; `AK2_LADDER_REP` / `AK2_LAUNCH_AZ` launch overrides) | [docs/ladder.md](docs/ladder.md) ("The campaign"), [docs/run.md](docs/run.md) ("Launch overrides") |
 | `make util-stream-test [N=…]` / `make util DIR=…` / `make util-backfill` / `make instance-types` | [docs/util.md](docs/util.md), [docs/run.md](docs/run.md) ("Utilisation") |
 | `make run GATE=… SPEC=… [NODES=n]` | [docs/run.md](docs/run.md) ("Multi-node runs"), [docs/engine.md](docs/engine.md) |
 | `make dryrun-userdata [GEN=…]` (user-data size and pre-launch checks of every spec) | [docs/run.md](docs/run.md) |

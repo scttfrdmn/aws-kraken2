@@ -220,6 +220,27 @@ refused, and one is refused while another X instance of 48 vCPU or more is runni
 `scripts/lib/run_multi_test.sh` checks that run-multi.sh refuses 2 × x8g.24xlarge before any
 launch, under `DRY_RUN=1` too.
 
+`AK2_QUOTA_FAMILY_ONLY=1 scripts/lib/quota_check.sh REGION TYPE 1` prints the family (code and
+name) and exits, with no AWS call. `make ladder-campaign` uses it for its per-family limit, so the
+two never disagree on a type's family.
+
+## Launch overrides
+
+Two variables in the launch host's env (never the spec's: run.sh's env allow-list refuses them
+there) change how a committed spec is launched, without changing its bytes. run.sh and
+run-multi.sh check each before anything is sent, and every cohort member's run.sh inherits it.
+`make ladder-campaign` sets them (docs/ladder.md, "The campaign"); a hand launch may too.
+
+| variable | what | refused when | recorded as |
+|---|---|---|---|
+| `AK2_LADDER_REP=<n>` | the ladder replicate this launch is | the spec has no ladder PARAMS block; n is not an integer ≥ 1; the PARAMS block names another `REP` | `manifest.params.rep` and `cohort.json` `params.rep` (with `rep_source`), by `ladder_levers.py spec-params SPEC --rep n` |
+| `AK2_LAUNCH_AZ=<az>` (and `AK2_LAUNCH_AZ_REASON`) | launch in this AZ instead of the spec's pinned one | the AZ is not in the spec's region; the spec does not pin `resources.instance_type` and `placement.availability_zone`; `scripts/g3/ladder.azs.tsv` does not list the type in that AZ, or its evidence does not hold (`ladder_levers.py az-alt`) | `manifest.launch_override` and `cohort.json` `launch_override` (`availability_zone`, `spec_availability_zone`, `reason`, `documented_by`, `evidence`); `spec.resolved.json` carries the AZ launched, `spec.json` the committed one |
+
+Without `AK2_LADDER_REP`, `params` has no `rep`, and the ladder tables read it as rep 1. A row of
+`scripts/g3/ladder.azs.tsv` is documented by its evidence: a committed manifest that launched
+exactly that type in exactly that AZ. `scripts/lib/run_sh_test.sh` and `run_multi_test.sh` (in
+`make test`) check each refusal and that a documented AZ passes and is recorded.
+
 ## cost_limit
 
 There is no budget cap (Scott, 2026-10-09, #25): spend is tracked, and each run's TTL and

@@ -85,7 +85,11 @@ chmod +x "$T/bin/aws" "$T/bin/truffle" "$T/driver.sh" "$T/orphans.sh" "$T/tag.sh
 # A scratch repo holding run-multi.sh, ak2.env and a cohort spec.
 R="$T/repo"; mkdir -p "$R/scripts/lib" "$R/runs" "$R/results/cohort/PRJNA398089"
 cp "$HERE/scripts/run-multi.sh" "$HERE/scripts/ak2.env" "$R/scripts/"
-cp "$HERE/scripts/lib/quota_check.sh" "$HERE/scripts/lib/accessions.sh" "$HERE/scripts/lib/cost_check.sh" "$R/scripts/lib/"
+cp "$HERE/scripts/lib/quota_check.sh" "$HERE/scripts/lib/accessions.sh" "$HERE/scripts/lib/cost_check.sh" "$HERE/scripts/lib/ladder_levers.py" "$R/scripts/lib/"
+# A scratch AZ list with its evidence, for AK2_LAUNCH_AZ (docs/run.md, "Launch overrides").
+mkdir -p "$R/scripts/g3" "$R/results/ev"
+echo '{"instance":{"type":"x8g.24xlarge","az":"us-west-2c"}}' > "$R/results/ev/manifest.json"
+printf 'type\taz\tevidence\nx8g.24xlarge\tus-west-2c\tresults/ev/manifest.json\n' > "$R/scripts/g3/ladder.azs.tsv"
 cp "$HERE/results/cohort/PRJNA398089/runs.tsv" "$R/results/cohort/PRJNA398089/"
 # mkspec(FILE TYPE TTL COST ACCESSIONS BODY): a cohort spec.
 mk() {
@@ -173,7 +177,7 @@ pre_launch() {
   S="$T/state-$name"; mkdir -p "$S/inst"; : > "$S/log"; : > "$S/uploads"
   echo "1 1 0" > "$S/behave-r0"; echo "1 1 0" > "$S/behave-r1"
   ( cd "$R" && PATH="$T/bin:$PATH" AK2T_STATE="$S" AK2_MULTI_RUN_SH="$T/driver.sh" AK2_MULTI_ORPHANS_SH="$T/orphans.sh" \
-      AK2_MULTI_TAG_SH="$T/tag.sh" AK2_MULTI_POLL_S=1 DRY_RUN=$dry exec scripts/run-multi.sh t "$spec" "$n" ) > "$S/out" 2>&1
+      AK2_MULTI_TAG_SH="$T/tag.sh" AK2_MULTI_POLL_S=1 DRY_RUN=$dry exec env ${RUN_ENV:-} scripts/run-multi.sh t "$spec" "$n" ) > "$S/out" 2>&1
   RC=$?; CJ=$(cat "$R"/results/t/*/cohort.json 2>/dev/null); rm -rf "$R/results/t"
 }
 pre_launch quota2 2 runs/x.json
@@ -201,6 +205,16 @@ pre_launch typodry 1 runs/typo.json 1
 pre_launch badref 1 runs/badref.json
 [ "$RC" = 2 ] && grep -q "does not resolve" "$S/out" && ! grep -q launch "$S/log" &&
   ok "accessions: a reference past runs.tsv refused before any launch" || { bad "accessions: badref exit $RC"; tail -5 "$S/out"; }
+
+# AK2_LAUNCH_AZ: a documented AZ replaces the spec's (cohort.json az and launch_override); an
+# undocumented one is refused before any launch.
+RUN_ENV="AK2_LAUNCH_AZ=us-west-2c AK2_LAUNCH_AZ_REASON=test" pre_launch az-listed 1 runs/x.json
+[ "$RC" = 0 ] && echo "$CJ" | jq -e '.az == "us-west-2c" and .launch_override.spec_availability_zone == "us-west-2a"
+   and .launch_override.reason == "test" and .launch_override.evidence == "results/ev/manifest.json"' >/dev/null &&
+  ok "az: a documented AK2_LAUNCH_AZ is the cohort's AZ, recorded as launch_override" || { bad "az: listed: exit $RC $(echo "$CJ" | jq -c '{az, launch_override}')"; tail -5 "$S/out"; }
+RUN_ENV="AK2_LAUNCH_AZ=us-west-2d" pre_launch az-unlisted 1 runs/x.json
+[ "$RC" = 2 ] && grep -q "is not in scripts/g3/ladder.azs.tsv" "$S/out" && ! grep -q launch "$S/log" &&
+  ok "az: an undocumented AK2_LAUNCH_AZ is refused before any launch" || { bad "az: unlisted: exit $RC"; tail -5 "$S/out"; }
 
 echo "run_multi_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]
