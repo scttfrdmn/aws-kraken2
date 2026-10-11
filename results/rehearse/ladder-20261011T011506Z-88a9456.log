@@ -1,0 +1,1566 @@
+ladder-rehearse: mode all at 88a9456 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-20261011T011506Z-88a9456.log
+ladder-rehearse: disk at start: 32Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (dea8b556d009); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-63239 (10.194.101.0/24); infra 10.194.101.2: hash.k2d at http://10.194.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.194.101.2:8003
+ladder-rehearse: ---- u-serial-1lane (1): upstream, s5cmd-serial, 1 lane, 3 samples
+ladder-rehearse: u-serial-1lane: RUNG=S7a; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: u-serial-1lane: cohort 20261011-011512-88a9456-ee1f-n1: node exits 0
+ok   u-serial-1lane: exit: every node's body exits 0 (rcs [0])
+ok   u-serial-1lane: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   u-serial-1lane: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   u-serial-1lane: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   u-serial-1lane: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   u-serial-1lane: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   u-serial-1lane: stream: r0: lever lines streamed (31) equal the pushed lever.jsonl (31)
+ok   u-serial-1lane: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   u-serial-1lane: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   u-serial-1lane: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   u-serial-1lane: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   u-serial-1lane: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   u-serial-1lane: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   u-serial-1lane: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   u-serial-1lane: law1: SRR062634: the file set is output and report
+ok   u-serial-1lane: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   u-serial-1lane: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   u-serial-1lane: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   u-serial-1lane: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   u-serial-1lane: law1: ERR478965: the file set is output and report
+ok   u-serial-1lane: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   u-serial-1lane: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   u-serial-1lane: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   u-serial-1lane: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   u-serial-1lane: law1: SRR28305653: the file set is output and report
+ok   u-serial-1lane: objects: 6 objects under out/S7a/ (want 6)
+ok   u-serial-1lane: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   u-serial-1lane: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   u-serial-1lane: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   u-serial-1lane: net: r0: critical_measurement_s 0.105 = identity 0 + sha_get 0 + sha_critical 0.105
+ok   u-serial-1lane: net: r0: sha_critical_s 0.105 == the sum of its samples' sha-critical 0.105
+ok   u-serial-1lane: net: r0: identity_s 0 is 0 (no identity phase)
+ok   u-serial-1lane: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   u-serial-1lane: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   u-serial-1lane: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   u-serial-1lane: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   u-serial-1lane: order: r0: serial: each lane's next sample starts after the previous one's uploads end ([('SRR062634', 0.204), ('ERR478965', 0.118)])
+ok   u-serial-1lane: build: r0: serial: the build waited for in setup (setup)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- u-overlap-1lane (1): upstream, s5cmd-overlap, 1 lane
+ladder-rehearse: u-overlap-1lane: RUNG=S7b; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: u-overlap-1lane: cohort 20261011-011547-88a9456-4864-n1: node exits 0
+ok   u-overlap-1lane: exit: every node's body exits 0 (rcs [0])
+ok   u-overlap-1lane: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   u-overlap-1lane: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   u-overlap-1lane: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   u-overlap-1lane: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   u-overlap-1lane: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   u-overlap-1lane: stream: r0: lever lines streamed (31) equal the pushed lever.jsonl (31)
+ok   u-overlap-1lane: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   u-overlap-1lane: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   u-overlap-1lane: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   u-overlap-1lane: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   u-overlap-1lane: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   u-overlap-1lane: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   u-overlap-1lane: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   u-overlap-1lane: law1: SRR062634: the file set is output and report
+ok   u-overlap-1lane: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   u-overlap-1lane: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   u-overlap-1lane: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   u-overlap-1lane: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   u-overlap-1lane: law1: ERR478965: the file set is output and report
+ok   u-overlap-1lane: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   u-overlap-1lane: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   u-overlap-1lane: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   u-overlap-1lane: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   u-overlap-1lane: law1: SRR28305653: the file set is output and report
+ok   u-overlap-1lane: objects: 6 objects under out/S7b/ (want 6)
+ok   u-overlap-1lane: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   u-overlap-1lane: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   u-overlap-1lane: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   u-overlap-1lane: net: r0: critical_measurement_s 0 = identity 0 + sha_get 0 + sha_critical 0
+ok   u-overlap-1lane: net: r0: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   u-overlap-1lane: net: r0: identity_s 0 is 0 (no identity phase)
+ok   u-overlap-1lane: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   u-overlap-1lane: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   u-overlap-1lane: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   u-overlap-1lane: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   u-overlap-1lane: order: r0: overlap: a lane's next sample starts before the previous one's uploads end ([('SRR062634', -4.438), ('ERR478965', -6.962)])
+ok   u-overlap-1lane: build: r0: serial: the build waited for in setup (setup)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- u-serial-2lanes (1): upstream, awscp-default (stock), 2 lanes, NVMe, load
+ladder-rehearse: u-serial-2lanes: RUNG=S0-Tv; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus/2; PROCS=2; DB_STAGE=awscp-default; DB_PLACE=nvme; DB_LOAD=load; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: u-serial-2lanes: cohort 20261011-011616-88a9456-852a-n1: node exits 0
+ok   u-serial-2lanes: exit: every node's body exits 0 (rcs [0])
+ok   u-serial-2lanes: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   u-serial-2lanes: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   u-serial-2lanes: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   u-serial-2lanes: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   u-serial-2lanes: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   u-serial-2lanes: stream: r0: lever lines streamed (22) equal the pushed lever.jsonl (22)
+ok   u-serial-2lanes: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   u-serial-2lanes: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   u-serial-2lanes: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   u-serial-2lanes: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   u-serial-2lanes: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   u-serial-2lanes: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   u-serial-2lanes: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   u-serial-2lanes: law1: SRR062634: the file set is output and report
+ok   u-serial-2lanes: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   u-serial-2lanes: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   u-serial-2lanes: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   u-serial-2lanes: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   u-serial-2lanes: law1: ERR478965: the file set is output and report
+ok   u-serial-2lanes: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   u-serial-2lanes: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   u-serial-2lanes: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   u-serial-2lanes: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   u-serial-2lanes: law1: SRR28305653: the file set is output and report
+ok   u-serial-2lanes: objects: 6 objects under out/S0-Tv/ (want 6)
+ok   u-serial-2lanes: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   u-serial-2lanes: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   u-serial-2lanes: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   u-serial-2lanes: net: r0: critical_measurement_s 0.085 = identity 0 + sha_get 0 + sha_critical 0.085
+ok   u-serial-2lanes: net: r0: sha_critical_s 0.085 == the sum of its samples' sha-critical 0.085
+ok   u-serial-2lanes: net: r0: identity_s 0 is 0 (no identity phase)
+ok   u-serial-2lanes: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   u-serial-2lanes: requests: r0: the database staging counted (80 GetObject requests in fetch-db)
+ok   u-serial-2lanes: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   u-serial-2lanes: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   u-serial-2lanes: order: r0: serial: each lane's next sample starts after the previous one's uploads end ([('SRR062634', 0.087)])
+ok   u-serial-2lanes: order: r0: 2 lanes (want 2), whose classify spans overlap: True
+ok   u-serial-2lanes: build: r0: serial: the build waited for in setup (setup)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- u-overlap-2lanes (1): upstream, s5cmd-overlap, 2 lanes, rapidgzip-Pauto, SETUP=overlap
+ladder-rehearse: u-overlap-2lanes: RUNG=S9; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus/2; PROCS=2; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: u-overlap-2lanes: cohort 20261011-011648-88a9456-271d-n1: node exits 0
+ok   u-overlap-2lanes: exit: every node's body exits 0 (rcs [0])
+ok   u-overlap-2lanes: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   u-overlap-2lanes: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   u-overlap-2lanes: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   u-overlap-2lanes: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   u-overlap-2lanes: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   u-overlap-2lanes: stream: r0: lever lines streamed (32) equal the pushed lever.jsonl (32)
+ok   u-overlap-2lanes: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   u-overlap-2lanes: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   u-overlap-2lanes: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   u-overlap-2lanes: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   u-overlap-2lanes: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   u-overlap-2lanes: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   u-overlap-2lanes: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   u-overlap-2lanes: law1: SRR062634: the file set is output and report
+ok   u-overlap-2lanes: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   u-overlap-2lanes: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   u-overlap-2lanes: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   u-overlap-2lanes: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   u-overlap-2lanes: law1: ERR478965: the file set is output and report
+ok   u-overlap-2lanes: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   u-overlap-2lanes: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   u-overlap-2lanes: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   u-overlap-2lanes: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   u-overlap-2lanes: law1: SRR28305653: the file set is output and report
+ok   u-overlap-2lanes: objects: 6 objects under out/S9/ (want 6)
+ok   u-overlap-2lanes: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   u-overlap-2lanes: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   u-overlap-2lanes: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   u-overlap-2lanes: net: r0: critical_measurement_s 1.187 = identity 1.187 + sha_get 0 + sha_critical 0
+ok   u-overlap-2lanes: net: r0: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   u-overlap-2lanes: net: r0: identity_s 1.187 equals the identity phase (1 s, whole-second markers)
+ok   u-overlap-2lanes: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   u-overlap-2lanes: net: r0: the samples carry their share of identity (s5-identity sum 2.326)
+ok   u-overlap-2lanes: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   u-overlap-2lanes: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   u-overlap-2lanes: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   u-overlap-2lanes: order: r0: overlap: a lane's next sample starts before the previous one's uploads end ([('SRR062634', -4.35)])
+ok   u-overlap-2lanes: order: r0: 2 lanes (want 2), whose classify spans overlap: True
+ok   u-overlap-2lanes: build: r0: overlap: waited in build-wait, build_end 1791681421.261 recorded, before identity (1791681421)
+ok   u-overlap-2lanes: s5: r0: one identity line per input file this node read (6)
+ok   u-overlap-2lanes: s5: r0: identity at the run's -P 2 (lad-config gunzip_P)
+ok   u-overlap-2lanes: s5: r0: input_defect on [] (want [])
+ok   u-overlap-2lanes: s5: r0: SRR062634: s5 identical/none P 2 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   u-overlap-2lanes: s5: r0: ERR478965: s5 identical/none P 2 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   u-overlap-2lanes: s5: r0: SRR28305653: s5 identical/none P 2 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   u-overlap-2lanes: s5: r0: gzip-shim.calls has 6 rapidgzip calls (want 6: two mates of each non-fallback sample)
+ok   u-overlap-2lanes: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   u-overlap-2lanes: s5: r0: the body's own shim check (lad-shim ok True)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- ours-plain (1): ours-plain (O0), AK2_DECOMPRESS=pipe under rapidgzip
+ladder-rehearse: ours-plain: RUNG=O0; ARM=O; COHORT=3; WANT_N=1; CLASSIFIER=ours-plain; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: ours-plain: cohort 20261011-011718-88a9456-dc5c-n1: node exits 0
+ok   ours-plain: exit: every node's body exits 0 (rcs [0])
+ok   ours-plain: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   ours-plain: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   ours-plain: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   ours-plain: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   ours-plain: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   ours-plain: stream: r0: lever lines streamed (32) equal the pushed lever.jsonl (32)
+ok   ours-plain: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   ours-plain: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   ours-plain: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   ours-plain: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   ours-plain: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   ours-plain: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   ours-plain: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   ours-plain: law1: SRR062634: the file set is output and report
+ok   ours-plain: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   ours-plain: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   ours-plain: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   ours-plain: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   ours-plain: law1: ERR478965: the file set is output and report
+ok   ours-plain: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   ours-plain: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   ours-plain: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   ours-plain: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   ours-plain: law1: SRR28305653: the file set is output and report
+ok   ours-plain: objects: 6 objects under out/O0/ (want 6)
+ok   ours-plain: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   ours-plain: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   ours-plain: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   ours-plain: net: r0: critical_measurement_s 2.151 = identity 2.113 + sha_get 0 + sha_critical 0.038
+ok   ours-plain: net: r0: sha_critical_s 0.038 == the sum of its samples' sha-critical 0.038
+ok   ours-plain: net: r0: identity_s 2.113 equals the identity phase (2 s, whole-second markers)
+ok   ours-plain: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   ours-plain: net: r0: the samples carry their share of identity (s5-identity sum 2.081)
+ok   ours-plain: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   ours-plain: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   ours-plain: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   ours-plain: build: r0: overlap: waited in build-wait, build_end 1791681446.642 recorded, before identity (1791681446)
+ok   ours-plain: s5: r0: one identity line per input file this node read (6)
+ok   ours-plain: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   ours-plain: s5: r0: input_defect on [] (want [])
+ok   ours-plain: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   ours-plain: s5: r0: ERR478965: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   ours-plain: s5: r0: SRR28305653: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   ours-plain: s5: r0: gzip-shim.calls has 6 rapidgzip calls (want 6: two mates of each non-fallback sample)
+ok   ours-plain: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   ours-plain: s5: r0: the body's own shim check (lad-shim ok True)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- engine-k2 (1): the engine, K=2 replicas of N=1
+ladder-rehearse: engine-k2: RUNG=O1; ARM=O; COHORT=3; WANT_N=2; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=2; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: engine-k2: cohort 20261011-011735-88a9456-111d-n2: node exits 0 0
+ok   engine-k2: exit: every node's body exits 0 (rcs [0, 0])
+ok   engine-k2: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   engine-k2: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   engine-k2: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   engine-k2: stream: r0: 2 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (2)
+ok   engine-k2: stream: r0: the container's own stdout (the stream as it happened) has the same 2 lad-sample lines
+ok   engine-k2: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   engine-k2: stream: r0: lever lines streamed (22) equal the pushed lever.jsonl (22)
+ok   engine-k2: stream: r1: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   engine-k2: stream: r1: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   engine-k2: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   engine-k2: stream: r1: lever lines streamed (16) equal the pushed lever.jsonl (16)
+ok   engine-k2: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'SRR28305653': 1, 'ERR478965': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   engine-k2: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   engine-k2: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   engine-k2: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   engine-k2: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   engine-k2: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   engine-k2: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   engine-k2: law1: SRR062634: the file set is output and report
+ok   engine-k2: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   engine-k2: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   engine-k2: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   engine-k2: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   engine-k2: law1: SRR28305653: the file set is output and report
+ok   engine-k2: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   engine-k2: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   engine-k2: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   engine-k2: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   engine-k2: law1: ERR478965: the file set is output and report
+ok   engine-k2: objects: 6 objects under out/O1/ (want 6)
+ok   engine-k2: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   engine-k2: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   engine-k2: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   engine-k2: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   engine-k2: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   engine-k2: phases: r1: 2 drop_caches calls in the log (want 2)
+ok   engine-k2: net: r0: critical_measurement_s 0.025 = identity 0 + sha_get 0 + sha_critical 0.025
+ok   engine-k2: net: r0: sha_critical_s 0.025 == the sum of its samples' sha-critical 0.025
+ok   engine-k2: net: r0: identity_s 0 is 0 (no identity phase)
+ok   engine-k2: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   engine-k2: net: r1: critical_measurement_s 0.025 = identity 0 + sha_get 0 + sha_critical 0.025
+ok   engine-k2: net: r1: sha_critical_s 0.025 == the sum of its samples' sha-critical 0.025
+ok   engine-k2: net: r1: identity_s 0 is 0 (no identity phase)
+ok   engine-k2: net: r1: sha_get_s 0 is 0 (no sha-get phase)
+ok   engine-k2: requests: r0: the shard load's ranged GETs counted (GetObject-range 28)
+ok   engine-k2: requests: r1: the shard load's ranged GETs counted (GetObject-range 28)
+ok   engine-k2: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   engine-k2: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   engine-k2: engine: r0: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   engine-k2: engine: r1: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   engine-k2: engine: replica 0 has its own rendezvous (g0: ['rank-0000.json'])
+ok   engine-k2: engine: replica 0 rank-0000.json: shard address 10.194.101.10:37713 is the node's own, not loopback
+ok   engine-k2: engine: replica 1 has its own rendezvous (g1: ['rank-0000.json'])
+ok   engine-k2: engine: replica 1 rank-0000.json: shard address 10.194.101.11:46875 is the node's own, not loopback
+ok   engine-k2: build: r0: serial: the build waited for in setup (setup)
+ok   engine-k2: build: r1: serial: the build waited for in setup (setup)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- engine-n2 (1): the engine, N=2 shards over TCP (lpt)
+ladder-rehearse: engine-n2: RUNG=O3; ARM=O; COHORT=3; WANT_N=2; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=2; PLACEMENT=lpt; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: engine-n2: cohort 20261011-011742-88a9456-13e0-n2: node exits 0 0
+ok   engine-n2: exit: every node's body exits 0 (rcs [0, 0])
+ok   engine-n2: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   engine-n2: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   engine-n2: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   engine-n2: stream: r0: 2 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (2)
+ok   engine-n2: stream: r0: the container's own stdout (the stream as it happened) has the same 2 lad-sample lines
+ok   engine-n2: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   engine-n2: stream: r0: lever lines streamed (23) equal the pushed lever.jsonl (23)
+ok   engine-n2: stream: r1: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   engine-n2: stream: r1: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   engine-n2: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   engine-n2: stream: r1: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   engine-n2: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'SRR28305653': 1, 'ERR478965': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   engine-n2: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   engine-n2: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   engine-n2: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   engine-n2: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   engine-n2: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   engine-n2: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   engine-n2: law1: SRR062634: the file set is output and report
+ok   engine-n2: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   engine-n2: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   engine-n2: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   engine-n2: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   engine-n2: law1: SRR28305653: the file set is output and report
+ok   engine-n2: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   engine-n2: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   engine-n2: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   engine-n2: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   engine-n2: law1: ERR478965: the file set is output and report
+ok   engine-n2: objects: 6 objects under out/O3/ (want 6)
+ok   engine-n2: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   engine-n2: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   engine-n2: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   engine-n2: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   engine-n2: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   engine-n2: phases: r1: 2 drop_caches calls in the log (want 2)
+ok   engine-n2: net: r0: critical_measurement_s 1.546 = identity 1.546 + sha_get 0 + sha_critical 0
+ok   engine-n2: net: r0: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   engine-n2: net: r0: identity_s 1.546 equals the identity phase (2 s, whole-second markers)
+ok   engine-n2: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   engine-n2: net: r0: the samples carry their share of identity (s5-identity sum 1.521)
+ok   engine-n2: net: r1: critical_measurement_s 0.668 = identity 0.644 + sha_get 0 + sha_critical 0.024
+ok   engine-n2: net: r1: sha_critical_s 0.024 == the sum of its samples' sha-critical 0.024
+ok   engine-n2: net: r1: identity_s 0.644 equals the identity phase (1 s, whole-second markers)
+ok   engine-n2: net: r1: sha_get_s 0 is 0 (no sha-get phase)
+ok   engine-n2: net: r1: the samples carry their share of identity (s5-identity sum 0.627)
+ok   engine-n2: requests: r0: the shard load's ranged GETs counted (GetObject-range 23)
+ok   engine-n2: requests: r1: the shard load's ranged GETs counted (GetObject-range 24)
+ok   engine-n2: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   engine-n2: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   engine-n2: engine: r0: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   engine-n2: engine: r1: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   engine-n2: engine: every shard homed samples ({0: 2, 1: 1}): the placement spread them
+ok   engine-n2: engine: replica 0 has its own rendezvous (g0: ['rank-0000.json', 'rank-0001.json'])
+ok   engine-n2: engine: replica 0 rank-0000.json: shard address 10.194.101.10:39087 is the node's own, not loopback
+ok   engine-n2: engine: replica 0 rank-0001.json: shard address 10.194.101.11:40267 is the node's own, not loopback
+ok   engine-n2: build: r0: serial: the build waited for in setup (setup)
+ok   engine-n2: build: r1: serial: the build waited for in setup (setup)
+ok   engine-n2: s5: r0: one identity line per input file this node read (4)
+ok   engine-n2: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   engine-n2: s5: r0: input_defect on [] (want [])
+ok   engine-n2: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   engine-n2: s5: r0: SRR28305653: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   engine-n2: s5: r0: gzip-shim.calls has 4 rapidgzip calls (want 4: two mates of each non-fallback sample)
+ok   engine-n2: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   engine-n2: s5: r0: the body's own shim check (lad-shim ok True)
+ok   engine-n2: s5: r1: one identity line per input file this node read (2)
+ok   engine-n2: s5: r1: identity at the run's -P 4 (lad-config gunzip_P)
+ok   engine-n2: s5: r1: input_defect on [] (want [])
+ok   engine-n2: s5: r1: ERR478965: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   engine-n2: s5: r1: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   engine-n2: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   engine-n2: s5: r1: the body's own shim check (lad-shim ok True)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- o5-sdk (1): O5: the engine's sdk-stream emitter at N=2, sha256 by GET
+ladder-rehearse: o5-sdk: RUNG=O5; ARM=O; COHORT=3; WANT_N=2; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=sdk-stream; REPLICAS=1; SHARDS=2; PLACEMENT=mod; INFLIGHT=2; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: o5-sdk: cohort 20261011-011754-88a9456-5c5a-n2: node exits 0 0
+ok   o5-sdk: exit: every node's body exits 0 (rcs [0, 0])
+ok   o5-sdk: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   o5-sdk: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   o5-sdk: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   o5-sdk: stream: r0: 2 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (2)
+ok   o5-sdk: stream: r0: the container's own stdout (the stream as it happened) has the same 2 lad-sample lines
+ok   o5-sdk: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   o5-sdk: stream: r0: lever lines streamed (8) equal the pushed lever.jsonl (8)
+ok   o5-sdk: stream: r1: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   o5-sdk: stream: r1: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   o5-sdk: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   o5-sdk: stream: r1: lever lines streamed (8) equal the pushed lever.jsonl (8)
+ok   o5-sdk: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR28305653': 1, 'SRR062634': 1, 'ERR478965': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   o5-sdk: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   o5-sdk: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   o5-sdk: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   o5-sdk: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   o5-sdk: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   o5-sdk: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   o5-sdk: law1: SRR28305653: the file set is output and report
+ok   o5-sdk: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   o5-sdk: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   o5-sdk: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   o5-sdk: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   o5-sdk: law1: SRR062634: the file set is output and report
+ok   o5-sdk: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   o5-sdk: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   o5-sdk: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   o5-sdk: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   o5-sdk: law1: ERR478965: the file set is output and report
+ok   o5-sdk: objects: 6 objects under out/O5/ (want 6)
+ok   o5-sdk: sdk: every sha256 came from a GET of the object the SDK emitter wrote (sha256_source)
+ok   o5-sdk: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'sha-get', 'push', 'end']
+ok   o5-sdk: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   o5-sdk: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   o5-sdk: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'sha-get', 'push', 'end']
+ok   o5-sdk: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   o5-sdk: phases: r1: 2 drop_caches calls in the log (want 2)
+ok   o5-sdk: net: r0: critical_measurement_s 0.204 = identity 0 + sha_get 0.204 + sha_critical 0
+ok   o5-sdk: net: r0: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   o5-sdk: net: r0: identity_s 0 is 0 (no identity phase)
+ok   o5-sdk: net: r0: sha_get_s 0.204 equals the sha-get phase (0 s, whole-second markers)
+ok   o5-sdk: net: r1: critical_measurement_s 0.105 = identity 0 + sha_get 0.105 + sha_critical 0
+ok   o5-sdk: net: r1: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   o5-sdk: net: r1: identity_s 0 is 0 (no identity phase)
+ok   o5-sdk: net: r1: sha_get_s 0.105 equals the sha-get phase (0 s, whole-second markers)
+ok   o5-sdk: requests: r0: the shard load's ranged GETs counted (GetObject-range 23)
+ok   o5-sdk: requests: r1: the shard load's ranged GETs counted (GetObject-range 24)
+ok   o5-sdk: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   o5-sdk: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   o5-sdk: engine: r0: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   o5-sdk: engine: r1: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   o5-sdk: engine: every shard homed samples ({0: 2, 1: 1}): the placement spread them
+ok   o5-sdk: engine: replica 0 has its own rendezvous (g0: ['rank-0000.json', 'rank-0001.json'])
+ok   o5-sdk: engine: replica 0 rank-0000.json: shard address 10.194.101.10:35471 is the node's own, not loopback
+ok   o5-sdk: engine: replica 0 rank-0001.json: shard address 10.194.101.11:32785 is the node's own, not loopback
+ok   o5-sdk: build: r0: serial: the build waited for in setup (setup)
+ok   o5-sdk: build: r1: serial: the build waited for in setup (setup)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: independent tool runs (file gzip_exit rapidgzip_exit rapidgzip_sha256 gzip_sha256):
+    cohort-s5/SRR28305653_1.fastq.gz 0 1 f5736d26deddda3fb5640e48fa0e8fbe59fcb23581ff25c811ccb5134df765b1 ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946
+    cohort-s5/SRR062634_1.fastq.gz 0 0 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5 7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5
+    cohort-corrupt/SRR062634_1.fastq.gz 1 1 7a45be84da32b9e1932285f562abab7b106a814f845511898a728aa8498c26d6 5284c415e1db4845093b03cf12b6e89dc29771f2b06a25afdff8069bcfdde96e
+ladder-rehearse: ---- s5-trailing (2): S5: real rapidgzip; SRR28305653 mate 1 has 4096 trailing zero bytes
+ladder-rehearse: s5-trailing: RUNG=S5; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: s5-trailing: cohort 20261011-011804-88a9456-d9c7-n1: node exits 0
+ok   s5-trailing: exit: every node's body exits 0 (rcs [0])
+ok   s5-trailing: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   s5-trailing: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   s5-trailing: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   s5-trailing: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   s5-trailing: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   s5-trailing: stream: r0: lever lines streamed (32) equal the pushed lever.jsonl (32)
+ok   s5-trailing: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   s5-trailing: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   s5-trailing: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   s5-trailing: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   s5-trailing: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   s5-trailing: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   s5-trailing: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   s5-trailing: law1: SRR062634: the file set is output and report
+ok   s5-trailing: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   s5-trailing: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   s5-trailing: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   s5-trailing: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   s5-trailing: law1: ERR478965: the file set is output and report
+ok   s5-trailing: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   s5-trailing: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   s5-trailing: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   s5-trailing: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   s5-trailing: law1: SRR28305653: the file set is output and report
+ok   s5-trailing: objects: 6 objects under out/S5/ (want 6)
+ok   s5-trailing: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   s5-trailing: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   s5-trailing: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   s5-trailing: net: r0: critical_measurement_s 2.193 = identity 2.115 + sha_get 0 + sha_critical 0.078
+ok   s5-trailing: net: r0: sha_critical_s 0.078 == the sum of its samples' sha-critical 0.078
+ok   s5-trailing: net: r0: identity_s 2.115 equals the identity phase (2 s, whole-second markers)
+ok   s5-trailing: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   s5-trailing: net: r0: the samples carry their share of identity (s5-identity sum 2.08)
+ok   s5-trailing: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   s5-trailing: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   s5-trailing: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   s5-trailing: build: r0: serial: the build waited for in setup (setup)
+ok   s5-trailing: s5: r0: one identity line per input file this node read (6)
+ok   s5-trailing: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   s5-trailing: s5: r0: input_defect on [] (want [])
+ok   s5-trailing: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   s5-trailing: s5: r0: ERR478965: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   s5-trailing: s5: r0: SRR28305653: s5 differs/gzip P 4 gz_exit [0, 0] rg_exit [1, 0] (want differs/gzip)
+ok   s5-trailing: s5: r0: SRR28305653_1.fastq.gz: recorded gzip exit 0, rapidgzip exit 1 and sha f5736d26dedd equal an independent run of the same tools (0, 1, f5736d26dedd)
+ok   s5-trailing: s5: r0: gzip-shim.calls has 4 rapidgzip calls (want 4: two mates of each non-fallback sample)
+ok   s5-trailing: s5: r0: s5-fallback.calls has 2 GNU gzip calls (want 2), naming the fallback samples' inputs
+ok   s5-trailing: s5: r0: the body's own shim check (lad-shim ok True)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- s5-mut-nofallback (2): negative control: the S5 fallback removed
+ladder-rehearse: s5-mut-nofallback: RUNG=S5; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: s5-mut-nofallback: cohort 20261011-011830-88a9456-f9f9-n1: node exits 1
+FAIL s5-mut-nofallback: exit: every node's body exits 0 (rcs [1])
+ok   s5-mut-nofallback: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   s5-mut-nofallback: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   s5-mut-nofallback: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   s5-mut-nofallback: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   s5-mut-nofallback: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   s5-mut-nofallback: stream: r0: lever lines streamed (29) equal the pushed lever.jsonl (29)
+ok   s5-mut-nofallback: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+FAIL s5-mut-nofallback: samples: every sample's classify rc is 0 ([0, 0, 65])
+ok   s5-mut-nofallback: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   s5-mut-nofallback: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   s5-mut-nofallback: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   s5-mut-nofallback: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   s5-mut-nofallback: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   s5-mut-nofallback: law1: SRR062634: the file set is output and report
+ok   s5-mut-nofallback: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   s5-mut-nofallback: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   s5-mut-nofallback: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   s5-mut-nofallback: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   s5-mut-nofallback: law1: ERR478965: the file set is output and report
+FAIL s5-mut-nofallback: law1: SRR28305653 output: on-node sha256 de66cdbab72cdeb1 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   s5-mut-nofallback: objects: SRR28305653 output: the uploaded object's sha256 de66cdbab72cdeb1 == the recorded de66cdbab72cdeb1
+FAIL s5-mut-nofallback: law1: SRR28305653 report: on-node sha256 None == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   s5-mut-nofallback: objects: SRR28305653 report: the uploaded object's sha256 None == the recorded None
+FAIL s5-mut-nofallback: law1: SRR28305653: the file set is output and report
+FAIL s5-mut-nofallback: objects: 5 objects under out/S5/ (want 6)
+ok   s5-mut-nofallback: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   s5-mut-nofallback: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   s5-mut-nofallback: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   s5-mut-nofallback: net: r0: critical_measurement_s 2.231 = identity 2.117 + sha_get 0 + sha_critical 0.114
+ok   s5-mut-nofallback: net: r0: sha_critical_s 0.114 == the sum of its samples' sha-critical 0.114
+ok   s5-mut-nofallback: net: r0: identity_s 2.117 equals the identity phase (2 s, whole-second markers)
+ok   s5-mut-nofallback: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   s5-mut-nofallback: net: r0: the samples carry their share of identity (s5-identity sum 2.083)
+ok   s5-mut-nofallback: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+FAIL s5-mut-nofallback: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 5 (want 6, the objects)
+ok   s5-mut-nofallback: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   s5-mut-nofallback: build: r0: serial: the build waited for in setup (setup)
+ok   s5-mut-nofallback: s5: r0: one identity line per input file this node read (6)
+ok   s5-mut-nofallback: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   s5-mut-nofallback: s5: r0: input_defect on [] (want [])
+ok   s5-mut-nofallback: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   s5-mut-nofallback: s5: r0: ERR478965: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+FAIL s5-mut-nofallback: s5: r0: SRR28305653: s5 identical/none P 4 gz_exit [0, 0] rg_exit [1, 0] (want differs/gzip)
+ok   s5-mut-nofallback: s5: r0: SRR28305653_1.fastq.gz: recorded gzip exit 0, rapidgzip exit 1 and sha f5736d26dedd equal an independent run of the same tools (0, 1, f5736d26dedd)
+FAIL s5-mut-nofallback: s5: r0: gzip-shim.calls has 6 rapidgzip calls (want 4: two mates of each non-fallback sample)
+FAIL s5-mut-nofallback: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 2), naming the fallback samples' inputs
+ok   s5-mut-nofallback: s5: r0: the body's own shim check (lad-shim ok True)
+ok   s5-mut-nofallback: negative control: check s5 FAILED, as the mutation must make it
+ok   s5-mut-nofallback: negative control: check law1 FAILED, as the mutation must make it
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- s5-mut-net (4): negative control: identity left out of lad-net's sum
+ladder-rehearse: s5-mut-net: RUNG=S5; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: s5-mut-net: cohort 20261011-011855-88a9456-43db-n1: node exits 0
+ok   s5-mut-net: exit: every node's body exits 0 (rcs [0])
+ok   s5-mut-net: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   s5-mut-net: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   s5-mut-net: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   s5-mut-net: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   s5-mut-net: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   s5-mut-net: stream: r0: lever lines streamed (32) equal the pushed lever.jsonl (32)
+ok   s5-mut-net: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   s5-mut-net: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   s5-mut-net: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   s5-mut-net: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   s5-mut-net: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   s5-mut-net: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   s5-mut-net: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   s5-mut-net: law1: SRR062634: the file set is output and report
+ok   s5-mut-net: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   s5-mut-net: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   s5-mut-net: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   s5-mut-net: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   s5-mut-net: law1: ERR478965: the file set is output and report
+ok   s5-mut-net: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   s5-mut-net: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   s5-mut-net: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   s5-mut-net: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   s5-mut-net: law1: SRR28305653: the file set is output and report
+ok   s5-mut-net: objects: 6 objects under out/S5/ (want 6)
+ok   s5-mut-net: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   s5-mut-net: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   s5-mut-net: phases: r0: 2 drop_caches calls in the log (want 2)
+FAIL s5-mut-net: net: r0: critical_measurement_s 0.095 = identity 2.122 + sha_get 0 + sha_critical 0.095
+ok   s5-mut-net: net: r0: sha_critical_s 0.095 == the sum of its samples' sha-critical 0.095
+ok   s5-mut-net: net: r0: identity_s 2.122 equals the identity phase (3 s, whole-second markers)
+ok   s5-mut-net: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   s5-mut-net: net: r0: the samples carry their share of identity (s5-identity sum 2.086)
+ok   s5-mut-net: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   s5-mut-net: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   s5-mut-net: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   s5-mut-net: build: r0: serial: the build waited for in setup (setup)
+ok   s5-mut-net: s5: r0: one identity line per input file this node read (6)
+ok   s5-mut-net: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   s5-mut-net: s5: r0: input_defect on [] (want [])
+ok   s5-mut-net: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   s5-mut-net: s5: r0: ERR478965: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   s5-mut-net: s5: r0: SRR28305653: s5 differs/gzip P 4 gz_exit [0, 0] rg_exit [1, 0] (want differs/gzip)
+ok   s5-mut-net: s5: r0: SRR28305653_1.fastq.gz: recorded gzip exit 0, rapidgzip exit 1 and sha f5736d26dedd equal an independent run of the same tools (0, 1, f5736d26dedd)
+ok   s5-mut-net: s5: r0: gzip-shim.calls has 4 rapidgzip calls (want 4: two mates of each non-fallback sample)
+ok   s5-mut-net: s5: r0: s5-fallback.calls has 2 GNU gzip calls (want 2), naming the fallback samples' inputs
+ok   s5-mut-net: s5: r0: the body's own shim check (lad-shim ok True)
+ok   s5-mut-net: negative control: check net FAILED, as the mutation must make it
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- s5-corrupt (2): S5: a corrupt input (mate 1 cut at half its bytes)
+ladder-rehearse: s5-corrupt: RUNG=S5; ARM=S; COHORT=2; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: s5-corrupt: cohort 20261011-011921-88a9456-36c8-n1: node exits 1
+ok   s5-corrupt: exit: the run fails (rcs [1])
+ok   s5-corrupt: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   s5-corrupt: message: '"input_defect":true' in the log of rank(s) [0]
+ok   s5-corrupt: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   s5-corrupt: s5: input_defect on SRR062634_1 only; its recorded exits (gzip 1, rapidgzip 1) are the tools' real ones (the independent run)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- law1-mut (1): negative control: a classifier option changed (Law 1 must fail)
+ladder-rehearse: law1-mut: RUNG=S7a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: law1-mut: cohort 20261011-011943-88a9456-2116-n1: node exits 0
+ok   law1-mut: exit: every node's body exits 0 (rcs [0])
+ok   law1-mut: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   law1-mut: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   law1-mut: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   law1-mut: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   law1-mut: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   law1-mut: stream: r0: lever lines streamed (19) equal the pushed lever.jsonl (19)
+ok   law1-mut: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   law1-mut: samples: every sample's classify rc is 0 ([0])
+ok   law1-mut: samples: every lad-sample is contract v1 with the run's rung and arm
+FAIL law1-mut: law1: SRR062634 output: on-node sha256 c5561434a82d5d11 == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   law1-mut: objects: SRR062634 output: the uploaded object's sha256 c5561434a82d5d11 == the recorded c5561434a82d5d11
+FAIL law1-mut: law1: SRR062634 report: on-node sha256 3c288f5d70a3c14c == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   law1-mut: objects: SRR062634 report: the uploaded object's sha256 3c288f5d70a3c14c == the recorded 3c288f5d70a3c14c
+ok   law1-mut: law1: SRR062634: the file set is output and report
+ok   law1-mut: objects: 2 objects under out/S7a/ (want 2)
+ok   law1-mut: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   law1-mut: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   law1-mut: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   law1-mut: net: r0: critical_measurement_s 0.04 = identity 0 + sha_get 0 + sha_critical 0.04
+ok   law1-mut: net: r0: sha_critical_s 0.04 == the sum of its samples' sha-critical 0.04
+ok   law1-mut: net: r0: identity_s 0 is 0 (no identity phase)
+ok   law1-mut: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   law1-mut: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   law1-mut: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   law1-mut: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   law1-mut: build: r0: serial: the build waited for in setup (setup)
+ok   law1-mut: negative control: check law1 FAILED, as the mutation must make it
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-gzip-k2dir (3): a gzip in KRAKEN2_DIR
+ladder-rehearse: neg-gzip-k2dir: RUNG=S7a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-gzip-k2dir: cohort 20261011-012001-88a9456-0c39-n1: node exits 1
+ok   neg-gzip-k2dir: exit: the run fails (rcs [1])
+ok   neg-gzip-k2dir: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-gzip-k2dir: message: 'a gzip or bzip2 in KRAKEN2_DIR' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-bzip2-k2dir (3): a bzip2 in KRAKEN2_DIR
+ladder-rehearse: neg-bzip2-k2dir: RUNG=S7a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-bzip2-k2dir: cohort 20261011-012016-88a9456-5cf7-n1: node exits 1
+ok   neg-bzip2-k2dir: exit: the run fails (rcs [1])
+ok   neg-bzip2-k2dir: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-bzip2-k2dir: message: 'a gzip or bzip2 in KRAKEN2_DIR' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-etag-lv (3): an ETag mismatch, via lv_etag
+ladder-rehearse: neg-etag-lv: RUNG=S7a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-etag-lv: cohort 20261011-012030-88a9456-ed1d-n1: node exits 1
+ok   neg-etag-lv: exit: the run fails (rcs [1])
+ok   neg-etag-lv: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-etag-lv: message: 'hash.k2d does not match its ETag' in the log of rank(s) [0]
+ok   neg-etag-lv: message: 'does not match ETag' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-etag-engine (3): an ETag mismatch, via the engine's in-memory check
+ladder-rehearse: neg-etag-engine: RUNG=O0b; ARM=O; COHORT=1; WANT_N=1; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-etag-engine: cohort 20261011-012044-88a9456-542a-n1: node exits 1
+ok   neg-etag-engine: exit: the run fails (rcs [1])
+ok   neg-etag-engine: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-etag-engine: message: 'a classifier exited non-zero' in the log of rank(s) [0]
+ok   neg-etag-engine: message: 'stderr] classify: engine: hash.k2d does not match its ETag: computed' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-classifier-rc (3): a classifier exiting non-zero (a truncated mate)
+ladder-rehearse: neg-classifier-rc: RUNG=S7a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-classifier-rc: cohort 20261011-012052-88a9456-d59e-n1: node exits 1
+ok   neg-classifier-rc: exit: the run fails (rcs [1])
+ok   neg-classifier-rc: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-classifier-rc: message: 'a classifier exited non-zero' in the log of rank(s) [0]
+ok   neg-classifier-rc: rc: the lad-sample line records the classifier's own exit 65
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-engine-noline (3): an engine home sample with no ak2-sample line
+ladder-rehearse: neg-engine-noline: RUNG=O0b; ARM=O; COHORT=3; WANT_N=1; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-engine-noline: cohort 20261011-012110-88a9456-5e3b-n1: node exits 1
+ok   neg-engine-noline: exit: the run fails (rcs [1])
+ok   neg-engine-noline: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-engine-noline: message: 'home samples have no ak2-sample line: ERR478965' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-place-needs (3): cohort_place.py needs fails
+ladder-rehearse: neg-place-needs: RUNG=O0b; ARM=O; COHORT=3; WANT_N=1; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-place-needs: cohort 20261011-012118-88a9456-b7cc-n1: node exits 1
+ok   neg-place-needs: exit: the run fails (rcs [1])
+ok   neg-place-needs: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-place-needs: message: 'cohort_place.py needs failed' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-place-table (3): cohort_place.py table fails
+ladder-rehearse: neg-place-table: RUNG=O0b; ARM=O; COHORT=3; WANT_N=1; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-place-table: cohort 20261011-012122-88a9456-d064-n1: node exits 1
+ok   neg-place-table: exit: the run fails (rcs [1])
+ok   neg-place-table: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-place-table: message: 'cohort_place.py table failed' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-place-disagree (3): needs and table disagree
+ladder-rehearse: neg-place-disagree: RUNG=O0b; ARM=O; COHORT=3; WANT_N=1; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-place-disagree: cohort 20261011-012127-88a9456-5c3e-n1: node exits 1
+ok   neg-place-disagree: exit: the run fails (rcs [1])
+ok   neg-place-disagree: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-place-disagree: message: 'would read 2 samples but is home to 3' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- neg-place-emptyneed (3): an empty NEED
+ladder-rehearse: neg-place-emptyneed: RUNG=O0b; ARM=O; COHORT=3; WANT_N=1; CLASSIFIER=ours-engine; THREADS=vcpus; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=1; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: neg-place-emptyneed: cohort 20261011-012131-88a9456-5287-n1: node exits 1
+ok   neg-place-emptyneed: exit: the run fails (rcs [1])
+ok   neg-place-emptyneed: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   neg-place-emptyneed: message: 'no inputs to read with 3 samples planned' in the log of rank(s) [0]
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- overlap-slow-build (4): SETUP=overlap with a slow build (20 s more)
+ladder-rehearse: overlap-slow-build: RUNG=S9; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: overlap-slow-build: cohort 20261011-012135-88a9456-2f3b-n1: node exits 0
+ok   overlap-slow-build: exit: every node's body exits 0 (rcs [0])
+ok   overlap-slow-build: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   overlap-slow-build: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   overlap-slow-build: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   overlap-slow-build: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   overlap-slow-build: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   overlap-slow-build: stream: r0: lever lines streamed (32) equal the pushed lever.jsonl (32)
+ok   overlap-slow-build: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653'])
+ok   overlap-slow-build: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   overlap-slow-build: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   overlap-slow-build: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   overlap-slow-build: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   overlap-slow-build: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   overlap-slow-build: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   overlap-slow-build: law1: SRR062634: the file set is output and report
+ok   overlap-slow-build: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   overlap-slow-build: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   overlap-slow-build: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   overlap-slow-build: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   overlap-slow-build: law1: ERR478965: the file set is output and report
+ok   overlap-slow-build: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   overlap-slow-build: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   overlap-slow-build: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   overlap-slow-build: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   overlap-slow-build: law1: SRR28305653: the file set is output and report
+ok   overlap-slow-build: objects: 6 objects under out/S9/ (want 6)
+ok   overlap-slow-build: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   overlap-slow-build: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   overlap-slow-build: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   overlap-slow-build: net: r0: critical_measurement_s 2.146 = identity 2.108 + sha_get 0 + sha_critical 0.038
+ok   overlap-slow-build: net: r0: sha_critical_s 0.038 == the sum of its samples' sha-critical 0.038
+ok   overlap-slow-build: net: r0: identity_s 2.108 equals the identity phase (2 s, whole-second markers)
+ok   overlap-slow-build: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   overlap-slow-build: net: r0: the samples carry their share of identity (s5-identity sum 2.075)
+ok   overlap-slow-build: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   overlap-slow-build: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   overlap-slow-build: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   overlap-slow-build: build: r0: overlap: waited in build-wait, build_end 1791681728.534 recorded, before identity (1791681728)
+ok   overlap-slow-build: build: r0: the build was still running at build-wait (wait_s 28.77999997138977): the overlap is observed
+ok   overlap-slow-build: s5: r0: one identity line per input file this node read (6)
+ok   overlap-slow-build: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   overlap-slow-build: s5: r0: input_defect on [] (want [])
+ok   overlap-slow-build: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   overlap-slow-build: s5: r0: ERR478965: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   overlap-slow-build: s5: r0: SRR28305653: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   overlap-slow-build: s5: r0: gzip-shim.calls has 6 rapidgzip calls (want 6: two mates of each non-fallback sample)
+ok   overlap-slow-build: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   overlap-slow-build: s5: r0: the body's own shim check (lad-shim ok True)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: oracle SRR062634m: 10900 sequences classified (1.09%); output 9fc0c013ce4f597d report a30267a3028690ab
+ladder-rehearse: ---- tail-crit-1 (4): tail uploads lag the hashes (try 1)
+ladder-rehearse: tail-crit-1: RUNG=S7b; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus/3; PROCS=3; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: tail-crit-1: cohort 20261011-012253-88a9456-7fb9-n1: node exits 0
+ok   tail-crit-1: exit: every node's body exits 0 (rcs [0])
+ok   tail-crit-1: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   tail-crit-1: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   tail-crit-1: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   tail-crit-1: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   tail-crit-1: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   tail-crit-1: stream: r0: lever lines streamed (31) equal the pushed lever.jsonl (31)
+ok   tail-crit-1: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634a': 1, 'SRR062634b': 1, 'SRR062634c': 1}; planned ['SRR062634a', 'SRR062634b', 'SRR062634c'])
+ok   tail-crit-1: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   tail-crit-1: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   tail-crit-1: law1: SRR062634a output: on-node sha256 9fc0c013ce4f597d == oracle 9fc0c013ce4f597d (upstream at the pin, SRR062634m)
+ok   tail-crit-1: objects: SRR062634a output: the uploaded object's sha256 9fc0c013ce4f597d == the recorded 9fc0c013ce4f597d
+ok   tail-crit-1: law1: SRR062634a report: on-node sha256 a30267a3028690ab == oracle a30267a3028690ab (upstream at the pin, SRR062634m)
+ok   tail-crit-1: objects: SRR062634a report: the uploaded object's sha256 a30267a3028690ab == the recorded a30267a3028690ab
+ok   tail-crit-1: law1: SRR062634a: the file set is output and report
+ok   tail-crit-1: law1: SRR062634b output: on-node sha256 9fc0c013ce4f597d == oracle 9fc0c013ce4f597d (upstream at the pin, SRR062634m)
+ok   tail-crit-1: objects: SRR062634b output: the uploaded object's sha256 9fc0c013ce4f597d == the recorded 9fc0c013ce4f597d
+ok   tail-crit-1: law1: SRR062634b report: on-node sha256 a30267a3028690ab == oracle a30267a3028690ab (upstream at the pin, SRR062634m)
+ok   tail-crit-1: objects: SRR062634b report: the uploaded object's sha256 a30267a3028690ab == the recorded a30267a3028690ab
+ok   tail-crit-1: law1: SRR062634b: the file set is output and report
+ok   tail-crit-1: law1: SRR062634c output: on-node sha256 9fc0c013ce4f597d == oracle 9fc0c013ce4f597d (upstream at the pin, SRR062634m)
+ok   tail-crit-1: objects: SRR062634c output: the uploaded object's sha256 9fc0c013ce4f597d == the recorded 9fc0c013ce4f597d
+ok   tail-crit-1: law1: SRR062634c report: on-node sha256 a30267a3028690ab == oracle a30267a3028690ab (upstream at the pin, SRR062634m)
+ok   tail-crit-1: objects: SRR062634c report: the uploaded object's sha256 a30267a3028690ab == the recorded a30267a3028690ab
+ok   tail-crit-1: law1: SRR062634c: the file set is output and report
+ok   tail-crit-1: objects: 6 objects under out/S7b/ (want 6)
+ok   tail-crit-1: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   tail-crit-1: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   tail-crit-1: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   tail-crit-1: net: r0: critical_measurement_s 0.109 = identity 0 + sha_get 0 + sha_critical 0.109
+ok   tail-crit-1: net: r0: sha_critical_s 0.109 == the sum of its samples' sha-critical 0.109
+ok   tail-crit-1: net: r0: identity_s 0 is 0 (no identity phase)
+ok   tail-crit-1: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   tail-crit-1: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   tail-crit-1: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   tail-crit-1: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   tail-crit-1: order: r0: 3 lanes (want 3), whose classify spans overlap: True
+ok   tail-crit-1: build: r0: serial: the build waited for in setup (setup)
+ok   tail-crit-1: tail: r0: the probe resolves: 3 output hashes (6 files) after the last classify span ended (want >= 2)
+ok   tail-crit-1: tail: r0: sha_critical_s 0.109 is about one hash (the first, 0.109; the largest 0.109), not the tail's 6 hashes (0.286)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- tail-mut-1 (4): negative control: NB1 (uploads cover) removed (try 1)
+ladder-rehearse: tail-mut-1: RUNG=S7b; ARM=S; COHORT=3; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus/3; PROCS=3; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: tail-mut-1: cohort 20261011-012339-88a9456-b5c0-n1: node exits 0
+ok   tail-mut-1: exit: every node's body exits 0 (rcs [0])
+ok   tail-mut-1: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   tail-mut-1: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   tail-mut-1: stream: r0: 3 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (3)
+ok   tail-mut-1: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+ok   tail-mut-1: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   tail-mut-1: stream: r0: lever lines streamed (31) equal the pushed lever.jsonl (31)
+ok   tail-mut-1: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634a': 1, 'SRR062634b': 1, 'SRR062634c': 1}; planned ['SRR062634a', 'SRR062634b', 'SRR062634c'])
+ok   tail-mut-1: samples: every sample's classify rc is 0 ([0, 0, 0])
+ok   tail-mut-1: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   tail-mut-1: law1: SRR062634a output: on-node sha256 9fc0c013ce4f597d == oracle 9fc0c013ce4f597d (upstream at the pin, SRR062634m)
+ok   tail-mut-1: objects: SRR062634a output: the uploaded object's sha256 9fc0c013ce4f597d == the recorded 9fc0c013ce4f597d
+ok   tail-mut-1: law1: SRR062634a report: on-node sha256 a30267a3028690ab == oracle a30267a3028690ab (upstream at the pin, SRR062634m)
+ok   tail-mut-1: objects: SRR062634a report: the uploaded object's sha256 a30267a3028690ab == the recorded a30267a3028690ab
+ok   tail-mut-1: law1: SRR062634a: the file set is output and report
+ok   tail-mut-1: law1: SRR062634b output: on-node sha256 9fc0c013ce4f597d == oracle 9fc0c013ce4f597d (upstream at the pin, SRR062634m)
+ok   tail-mut-1: objects: SRR062634b output: the uploaded object's sha256 9fc0c013ce4f597d == the recorded 9fc0c013ce4f597d
+ok   tail-mut-1: law1: SRR062634b report: on-node sha256 a30267a3028690ab == oracle a30267a3028690ab (upstream at the pin, SRR062634m)
+ok   tail-mut-1: objects: SRR062634b report: the uploaded object's sha256 a30267a3028690ab == the recorded a30267a3028690ab
+ok   tail-mut-1: law1: SRR062634b: the file set is output and report
+ok   tail-mut-1: law1: SRR062634c output: on-node sha256 9fc0c013ce4f597d == oracle 9fc0c013ce4f597d (upstream at the pin, SRR062634m)
+ok   tail-mut-1: objects: SRR062634c output: the uploaded object's sha256 9fc0c013ce4f597d == the recorded 9fc0c013ce4f597d
+ok   tail-mut-1: law1: SRR062634c report: on-node sha256 a30267a3028690ab == oracle a30267a3028690ab (upstream at the pin, SRR062634m)
+ok   tail-mut-1: objects: SRR062634c report: the uploaded object's sha256 a30267a3028690ab == the recorded a30267a3028690ab
+ok   tail-mut-1: law1: SRR062634c: the file set is output and report
+ok   tail-mut-1: objects: 6 objects under out/S7b/ (want 6)
+ok   tail-mut-1: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   tail-mut-1: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   tail-mut-1: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   tail-mut-1: net: r0: critical_measurement_s 0.285 = identity 0 + sha_get 0 + sha_critical 0.285
+ok   tail-mut-1: net: r0: sha_critical_s 0.285 == the sum of its samples' sha-critical 0.285
+ok   tail-mut-1: net: r0: identity_s 0 is 0 (no identity phase)
+ok   tail-mut-1: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   tail-mut-1: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   tail-mut-1: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 6 (want 6, the objects)
+ok   tail-mut-1: requests: input fetches counted: fetch.sh's HeadObject = 6 (want 6, one per input file)
+ok   tail-mut-1: order: r0: 3 lanes (want 3), whose classify spans overlap: True
+ok   tail-mut-1: build: r0: serial: the build waited for in setup (setup)
+ok   tail-mut-1: tail: r0: the probe resolves: 3 output hashes (6 files) after the last classify span ended (want >= 2)
+FAIL tail-mut-1: tail: r0: sha_critical_s 0.285 is about one hash (the first, 0.107; the largest 0.107), not the tail's 6 hashes (0.285)
+ok   tail-mut-1: negative control: check tail FAILED, as the mutation must make it
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- resolver (5)
+ok   resolver: a resolution with no citation is refused (exit 3: ladder_levers: refused: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/resolver/nosource.tsv: resolution S4/10/THREADS has no sourc)
+ok   resolver: a resolution identical by value to its predecessor (THREADS=96 PROCS=vcpus/96 = S2a's vcpus/1 on x8g.24xlarge) is refused (exit 3: ladder_levers: refused: S4 at cohort 10: the resolution makes it identical to S2a (mark it not-run instead))
+ok   resolver: positive control: a real one-lever resolution of S4 at c10 (12 x 8 on 96 vCPUs) is accepted (exit 0)
+ok   resolver: an alias winner outside alias_of is refused (exit 3: ladder_levers: refused: alias Sstar-time at cohort 1: winner S7b is not one of its alias_of (S9, Sstar-r8g, Sstar-r8gd))
+ok   resolver: S4 is not run at c1 (exit 3: ladder_levers: refused: S4 is not-run at c1: the only candidate (P <= cohort, so P = 1 and T = vcpus) is S2a's)
+ok   resolver: S8 is not run at c1 (exit 3: ladder_levers: refused: S8 is not-run at c1: the only candidate (K <= cohort, so K = 1) is S7b's own configura)
+ok   resolver: at c1, S5 inherits S4's tokens as S2a's values (THREADS=vcpus; PROCS=1)
+ok   resolver: at c1, S9 inherits S8's K as S7b's (REPLICAS=1)
+ok   resolver: a resolution row for S4 at c1 (not run there) is ignored with a warning; S5 is unchanged (exit 0)
+ok   resolver: the 15 committed c1 specs' parameter blocks are the resolver's
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- ttl-kill (7): a KILL mid-classify; RUNG=S7a; ARM=S; COHORT=2; WANT_N=1; CLASSIFIER=upstream; THREADS=2; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: ttl-kill: cohort 20261011-012427-88a9456-7bf8-n1: node exits 137
+ok   ttl-kill: kill: the node was killed (KILL) while the second sample classified
+ok   ttl-kill: kill: a pushed log/run.log exists for the killed run (82 lines)
+ok   ttl-kill: kill: the stream before the kill had the first sample's lad-sample line and the classifier's own lines (32 such lines)
+ok   ttl-kill: kill: every one of them is in the pushed log (32 of 32; missing [])
+ok   ttl-kill: kill: the pushed log shows the classify phase
+ok   ttl-kill: kill: KILL: no finish ran (the hard stop): what is there came from the 5 s pusher
+ok   ttl-kill: kill: the pusher uploaded run.log 5 times before the kill
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- ttl-term (7): a TERM mid-classify; RUNG=S7a; ARM=S; COHORT=2; WANT_N=1; CLASSIFIER=upstream; THREADS=2; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: ttl-term: cohort 20261011-012454-88a9456-6e58-n1: node exits 143
+ok   ttl-term: kill: the node was killed (TERM) while the second sample classified
+ok   ttl-term: kill: a pushed log/run.log exists for the killed run (84 lines)
+ok   ttl-term: kill: the stream before the kill had the first sample's lad-sample line and the classifier's own lines (32 such lines)
+ok   ttl-term: kill: every one of them is in the pushed log (32 of 32; missing [])
+ok   ttl-term: kill: the pushed log shows the classify phase
+ok   ttl-term: kill: TERM: the preamble's trap ran its finish (rc 143 in the pushed log)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- ttl-kill-nopush (7): a KILL mid-classify; RUNG=S7a; ARM=S; COHORT=2; WANT_N=1; CLASSIFIER=upstream; THREADS=2; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: ttl-kill-nopush: cohort 20261011-012523-88a9456-bc0c-n1: node exits 137
+ok   ttl-kill-nopush: kill: the node was killed (KILL) while the second sample classified
+FAIL ttl-kill-nopush: kill: a pushed log/run.log exists for the killed run (0 lines)
+ok   ttl-kill-nopush: kill: the stream before the kill had the first sample's lad-sample line and the classifier's own lines (32 such lines)
+FAIL ttl-kill-nopush: kill: every one of them is in the pushed log (0 of 32; missing ['ak2-phase\t2026-10-11T01:25:23Z\t1791681923\tpreamble\tno', 'ak2-phase\t2026-10-11T01:25:23Z\t1791681923\tbody\tno'])
+FAIL ttl-kill-nopush: kill: the pushed log shows the classify phase
+ok   ttl-kill-nopush: kill: KILL: no finish ran (the hard stop): what is there came from the 5 s pusher
+FAIL ttl-kill-nopush: kill: the pusher uploaded run.log 0 times before the kill
+ok   ttl-kill-nopush: negative control: with no pusher, a hard kill loses the streamed lines, and the check says so
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s0-t1 (6): runs/g3-l-s0-t1-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s0-t1: RUNG=S0-T1; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=1; PROCS=1; DB_STAGE=awscp-default; DB_PLACE=nvme; DB_LOAD=load; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s0-t1: cohort 20261011-012550-88a9456-5008-n1: node exits 0
+ok   spec-s0-t1: exit: every node's body exits 0 (rcs [0])
+ok   spec-s0-t1: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s0-t1: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s0-t1: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s0-t1: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s0-t1: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s0-t1: stream: r0: lever lines streamed (14) equal the pushed lever.jsonl (14)
+ok   spec-s0-t1: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s0-t1: samples: every sample's classify rc is 0 ([0])
+ok   spec-s0-t1: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s0-t1: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s0-t1: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s0-t1: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s0-t1: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s0-t1: law1: SRR062634: the file set is output and report
+ok   spec-s0-t1: objects: 2 objects under out/S0-T1/ (want 2)
+ok   spec-s0-t1: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s0-t1: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s0-t1: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s0-t1: net: r0: critical_measurement_s 0.039 = identity 0 + sha_get 0 + sha_critical 0.039
+ok   spec-s0-t1: net: r0: sha_critical_s 0.039 == the sum of its samples' sha-critical 0.039
+ok   spec-s0-t1: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s0-t1: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s0-t1: requests: r0: the database staging counted (80 GetObject requests in fetch-db)
+ok   spec-s0-t1: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s0-t1: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s0-t1: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s0-tv (6): runs/g3-l-s0-tv-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s0-tv: RUNG=S0-Tv; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=awscp-default; DB_PLACE=nvme; DB_LOAD=load; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s0-tv: cohort 20261011-012609-88a9456-8591-n1: node exits 0
+ok   spec-s0-tv: exit: every node's body exits 0 (rcs [0])
+ok   spec-s0-tv: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s0-tv: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s0-tv: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s0-tv: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s0-tv: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s0-tv: stream: r0: lever lines streamed (14) equal the pushed lever.jsonl (14)
+ok   spec-s0-tv: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s0-tv: samples: every sample's classify rc is 0 ([0])
+ok   spec-s0-tv: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s0-tv: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s0-tv: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s0-tv: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s0-tv: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s0-tv: law1: SRR062634: the file set is output and report
+ok   spec-s0-tv: objects: 2 objects under out/S0-Tv/ (want 2)
+ok   spec-s0-tv: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s0-tv: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s0-tv: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s0-tv: net: r0: critical_measurement_s 0.04 = identity 0 + sha_get 0 + sha_critical 0.04
+ok   spec-s0-tv: net: r0: sha_critical_s 0.04 == the sum of its samples' sha-critical 0.04
+ok   spec-s0-tv: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s0-tv: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s0-tv: requests: r0: the database staging counted (80 GetObject requests in fetch-db)
+ok   spec-s0-tv: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s0-tv: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s0-tv: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s1 (6): runs/g3-l-s1-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s1: RUNG=S1; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=nvme; DB_LOAD=load; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s1: cohort 20261011-012628-88a9456-ea2c-n1: node exits 0
+ok   spec-s1: exit: every node's body exits 0 (rcs [0])
+ok   spec-s1: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s1: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s1: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s1: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s1: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s1: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s1: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s1: samples: every sample's classify rc is 0 ([0])
+ok   spec-s1: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s1: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s1: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s1: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s1: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s1: law1: SRR062634: the file set is output and report
+ok   spec-s1: objects: 2 objects under out/S1/ (want 2)
+ok   spec-s1: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s1: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s1: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s1: net: r0: critical_measurement_s 0.041 = identity 0 + sha_get 0 + sha_critical 0.041
+ok   spec-s1: net: r0: sha_critical_s 0.041 == the sum of its samples' sha-critical 0.041
+ok   spec-s1: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s1: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s1: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s1: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s1: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s1: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s2a (6): runs/g3-l-s2a-c1.json (x8g.24xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s2a: RUNG=S2a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s2a: cohort 20261011-012646-88a9456-1e10-n1: node exits 0
+ok   spec-s2a: exit: every node's body exits 0 (rcs [0])
+ok   spec-s2a: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s2a: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s2a: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s2a: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s2a: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s2a: stream: r0: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-s2a: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s2a: samples: every sample's classify rc is 0 ([0])
+ok   spec-s2a: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s2a: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s2a: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s2a: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s2a: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s2a: law1: SRR062634: the file set is output and report
+ok   spec-s2a: objects: 2 objects under out/S2a/ (want 2)
+ok   spec-s2a: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s2a: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s2a: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s2a: net: r0: critical_measurement_s 0.028 = identity 0 + sha_get 0 + sha_critical 0.028
+ok   spec-s2a: net: r0: sha_critical_s 0.028 == the sum of its samples' sha-critical 0.028
+ok   spec-s2a: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s2a: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s2a: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s2a: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s2a: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s2a: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s2b-i (6): runs/g3-l-s2b-i-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s2b-i: RUNG=S2b-i; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=nvme; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s2b-i: cohort 20261011-012704-88a9456-b601-n1: node exits 0
+ok   spec-s2b-i: exit: every node's body exits 0 (rcs [0])
+ok   spec-s2b-i: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s2b-i: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s2b-i: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s2b-i: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s2b-i: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s2b-i: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s2b-i: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s2b-i: samples: every sample's classify rc is 0 ([0])
+ok   spec-s2b-i: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s2b-i: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s2b-i: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s2b-i: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s2b-i: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s2b-i: law1: SRR062634: the file set is output and report
+ok   spec-s2b-i: objects: 2 objects under out/S2b-i/ (want 2)
+ok   spec-s2b-i: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s2b-i: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s2b-i: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s2b-i: net: r0: critical_measurement_s 0.031 = identity 0 + sha_get 0 + sha_critical 0.031
+ok   spec-s2b-i: net: r0: sha_critical_s 0.031 == the sum of its samples' sha-critical 0.031
+ok   spec-s2b-i: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s2b-i: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s2b-i: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s2b-i: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s2b-i: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s2b-i: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s2b-ii (6): runs/g3-l-s2b-ii-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s2b-ii: RUNG=S2b-ii; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s2b-ii: cohort 20261011-012723-88a9456-324a-n1: node exits 0
+ok   spec-s2b-ii: exit: every node's body exits 0 (rcs [0])
+ok   spec-s2b-ii: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s2b-ii: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s2b-ii: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s2b-ii: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s2b-ii: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s2b-ii: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s2b-ii: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s2b-ii: samples: every sample's classify rc is 0 ([0])
+ok   spec-s2b-ii: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s2b-ii: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s2b-ii: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s2b-ii: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s2b-ii: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s2b-ii: law1: SRR062634: the file set is output and report
+ok   spec-s2b-ii: objects: 2 objects under out/S2b-ii/ (want 2)
+ok   spec-s2b-ii: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s2b-ii: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s2b-ii: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s2b-ii: net: r0: critical_measurement_s 0.024 = identity 0 + sha_get 0 + sha_critical 0.024
+ok   spec-s2b-ii: net: r0: sha_critical_s 0.024 == the sum of its samples' sha-critical 0.024
+ok   spec-s2b-ii: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s2b-ii: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s2b-ii: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s2b-ii: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s2b-ii: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s2b-ii: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s2c (6): runs/g3-l-s2c-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s2c: RUNG=S2c; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s2c: cohort 20261011-012741-88a9456-ecef-n1: node exits 0
+ok   spec-s2c: exit: every node's body exits 0 (rcs [0])
+ok   spec-s2c: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s2c: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s2c: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s2c: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s2c: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s2c: stream: r0: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-s2c: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s2c: samples: every sample's classify rc is 0 ([0])
+ok   spec-s2c: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s2c: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s2c: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s2c: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s2c: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s2c: law1: SRR062634: the file set is output and report
+ok   spec-s2c: objects: 2 objects under out/S2c/ (want 2)
+ok   spec-s2c: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s2c: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s2c: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s2c: net: r0: critical_measurement_s 0.027 = identity 0 + sha_get 0 + sha_critical 0.027
+ok   spec-s2c: net: r0: sha_critical_s 0.027 == the sum of its samples' sha-critical 0.027
+ok   spec-s2c: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s2c: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s2c: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s2c: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s2c: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s2c: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s2d (6): runs/g3-l-s2d-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s2d: RUNG=S2d; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s2d: cohort 20261011-012800-88a9456-6b93-n1: node exits 0
+ok   spec-s2d: exit: every node's body exits 0 (rcs [0])
+ok   spec-s2d: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s2d: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s2d: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s2d: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s2d: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s2d: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s2d: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s2d: samples: every sample's classify rc is 0 ([0])
+ok   spec-s2d: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s2d: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s2d: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s2d: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s2d: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s2d: law1: SRR062634: the file set is output and report
+ok   spec-s2d: objects: 2 objects under out/S2d/ (want 2)
+ok   spec-s2d: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s2d: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s2d: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s2d: net: r0: critical_measurement_s 0.028 = identity 0 + sha_get 0 + sha_critical 0.028
+ok   spec-s2d: net: r0: sha_critical_s 0.028 == the sum of its samples' sha-critical 0.028
+ok   spec-s2d: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s2d: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s2d: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s2d: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s2d: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s2d: build: r0: serial: the build waited for in setup (setup)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s5 (6): runs/g3-l-s5-c1.json (x8g.24xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s5: RUNG=S5; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s5: cohort 20261011-012818-88a9456-b06b-n1: node exits 0
+ok   spec-s5: exit: every node's body exits 0 (rcs [0])
+ok   spec-s5: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s5: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s5: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s5: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s5: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s5: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s5: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s5: samples: every sample's classify rc is 0 ([0])
+ok   spec-s5: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s5: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s5: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s5: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s5: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s5: law1: SRR062634: the file set is output and report
+ok   spec-s5: objects: 2 objects under out/S5/ (want 2)
+ok   spec-s5: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s5: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s5: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s5: net: r0: critical_measurement_s 0.747 = identity 0.715 + sha_get 0 + sha_critical 0.032
+ok   spec-s5: net: r0: sha_critical_s 0.032 == the sum of its samples' sha-critical 0.032
+ok   spec-s5: net: r0: identity_s 0.715 equals the identity phase (1 s, whole-second markers)
+ok   spec-s5: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s5: net: r0: the samples carry their share of identity (s5-identity sum 0.7)
+ok   spec-s5: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s5: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s5: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s5: build: r0: serial: the build waited for in setup (setup)
+ok   spec-s5: s5: r0: one identity line per input file this node read (2)
+ok   spec-s5: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-s5: s5: r0: input_defect on [] (want [])
+ok   spec-s5: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-s5: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-s5: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-s5: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s6 (6): runs/g3-l-s6-c1.json (x8g.24xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s6: RUNG=S6; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s6: cohort 20261011-012838-88a9456-2773-n1: node exits 0
+ok   spec-s6: exit: every node's body exits 0 (rcs [0])
+ok   spec-s6: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s6: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s6: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s6: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s6: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s6: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s6: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s6: samples: every sample's classify rc is 0 ([0])
+ok   spec-s6: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s6: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s6: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s6: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s6: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s6: law1: SRR062634: the file set is output and report
+ok   spec-s6: objects: 2 objects under out/S6/ (want 2)
+ok   spec-s6: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s6: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s6: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s6: net: r0: critical_measurement_s 0.745 = identity 0.716 + sha_get 0 + sha_critical 0.029
+ok   spec-s6: net: r0: sha_critical_s 0.029 == the sum of its samples' sha-critical 0.029
+ok   spec-s6: net: r0: identity_s 0.716 equals the identity phase (1 s, whole-second markers)
+ok   spec-s6: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s6: net: r0: the samples carry their share of identity (s5-identity sum 0.7)
+ok   spec-s6: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s6: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s6: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s6: build: r0: serial: the build waited for in setup (setup)
+ok   spec-s6: s5: r0: one identity line per input file this node read (2)
+ok   spec-s6: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-s6: s5: r0: input_defect on [] (want [])
+ok   spec-s6: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-s6: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-s6: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-s6: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s7a (6): runs/g3-l-s7a-c1.json (x8g.24xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s7a: RUNG=S7a; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-serial; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s7a: cohort 20261011-012859-88a9456-4ba1-n1: node exits 0
+ok   spec-s7a: exit: every node's body exits 0 (rcs [0])
+ok   spec-s7a: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s7a: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s7a: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s7a: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s7a: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s7a: stream: r0: lever lines streamed (20) equal the pushed lever.jsonl (20)
+ok   spec-s7a: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s7a: samples: every sample's classify rc is 0 ([0])
+ok   spec-s7a: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s7a: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s7a: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s7a: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s7a: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s7a: law1: SRR062634: the file set is output and report
+ok   spec-s7a: objects: 2 objects under out/S7a/ (want 2)
+ok   spec-s7a: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s7a: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s7a: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s7a: net: r0: critical_measurement_s 0.744 = identity 0.715 + sha_get 0 + sha_critical 0.029
+ok   spec-s7a: net: r0: sha_critical_s 0.029 == the sum of its samples' sha-critical 0.029
+ok   spec-s7a: net: r0: identity_s 0.715 equals the identity phase (1 s, whole-second markers)
+ok   spec-s7a: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s7a: net: r0: the samples carry their share of identity (s5-identity sum 0.701)
+ok   spec-s7a: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s7a: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s7a: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s7a: build: r0: serial: the build waited for in setup (setup)
+ok   spec-s7a: s5: r0: one identity line per input file this node read (2)
+ok   spec-s7a: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-s7a: s5: r0: input_defect on [] (want [])
+ok   spec-s7a: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-s7a: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-s7a: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-s7a: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s7b (6): runs/g3-l-s7b-c1.json (x8g.24xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s7b: RUNG=S7b; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s7b: cohort 20261011-012919-88a9456-9910-n1: node exits 0
+ok   spec-s7b: exit: every node's body exits 0 (rcs [0])
+ok   spec-s7b: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s7b: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s7b: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s7b: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s7b: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s7b: stream: r0: lever lines streamed (20) equal the pushed lever.jsonl (20)
+ok   spec-s7b: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s7b: samples: every sample's classify rc is 0 ([0])
+ok   spec-s7b: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s7b: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s7b: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s7b: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s7b: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s7b: law1: SRR062634: the file set is output and report
+ok   spec-s7b: objects: 2 objects under out/S7b/ (want 2)
+ok   spec-s7b: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s7b: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s7b: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s7b: net: r0: critical_measurement_s 0.736 = identity 0.713 + sha_get 0 + sha_critical 0.023
+ok   spec-s7b: net: r0: sha_critical_s 0.023 == the sum of its samples' sha-critical 0.023
+ok   spec-s7b: net: r0: identity_s 0.713 equals the identity phase (1 s, whole-second markers)
+ok   spec-s7b: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s7b: net: r0: the samples carry their share of identity (s5-identity sum 0.698)
+ok   spec-s7b: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s7b: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s7b: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s7b: build: r0: serial: the build waited for in setup (setup)
+ok   spec-s7b: s5: r0: one identity line per input file this node read (2)
+ok   spec-s7b: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-s7b: s5: r0: input_defect on [] (want [])
+ok   spec-s7b: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-s7b: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-s7b: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-s7b: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-s9 (6): runs/g3-l-s9-c1.json (x8g.24xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s9: RUNG=S9; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-s9: cohort 20261011-012939-88a9456-de0a-n1: node exits 0
+ok   spec-s9: exit: every node's body exits 0 (rcs [0])
+ok   spec-s9: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s9: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s9: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s9: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s9: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s9: stream: r0: lever lines streamed (20) equal the pushed lever.jsonl (20)
+ok   spec-s9: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s9: samples: every sample's classify rc is 0 ([0])
+ok   spec-s9: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-s9: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s9: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-s9: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s9: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-s9: law1: SRR062634: the file set is output and report
+ok   spec-s9: objects: 2 objects under out/S9/ (want 2)
+ok   spec-s9: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s9: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s9: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s9: net: r0: critical_measurement_s 0.75 = identity 0.723 + sha_get 0 + sha_critical 0.027
+ok   spec-s9: net: r0: sha_critical_s 0.027 == the sum of its samples' sha-critical 0.027
+ok   spec-s9: net: r0: identity_s 0.723 equals the identity phase (1 s, whole-second markers)
+ok   spec-s9: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s9: net: r0: the samples carry their share of identity (s5-identity sum 0.709)
+ok   spec-s9: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s9: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s9: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s9: build: r0: overlap: waited in build-wait, build_end 1791682193.37 recorded, before identity (1791682193)
+ok   spec-s9: s5: r0: one identity line per input file this node read (2)
+ok   spec-s9: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-s9: s5: r0: input_defect on [] (want [])
+ok   spec-s9: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-s9: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-s9: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-s9: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-sstar-r8g (6): runs/g3-l-sstar-r8g-c1.json (r8g.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-sstar-r8g: RUNG=Sstar-r8g; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-sstar-r8g: cohort 20261011-012958-88a9456-5e14-n1: node exits 0
+ok   spec-sstar-r8g: exit: every node's body exits 0 (rcs [0])
+ok   spec-sstar-r8g: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-sstar-r8g: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-sstar-r8g: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-sstar-r8g: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-sstar-r8g: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-sstar-r8g: stream: r0: lever lines streamed (20) equal the pushed lever.jsonl (20)
+ok   spec-sstar-r8g: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-sstar-r8g: samples: every sample's classify rc is 0 ([0])
+ok   spec-sstar-r8g: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-sstar-r8g: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-sstar-r8g: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-sstar-r8g: law1: SRR062634: the file set is output and report
+ok   spec-sstar-r8g: objects: 2 objects under out/Sstar-r8g/ (want 2)
+ok   spec-sstar-r8g: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-sstar-r8g: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-sstar-r8g: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-sstar-r8g: net: r0: critical_measurement_s 0.74 = identity 0.715 + sha_get 0 + sha_critical 0.025
+ok   spec-sstar-r8g: net: r0: sha_critical_s 0.025 == the sum of its samples' sha-critical 0.025
+ok   spec-sstar-r8g: net: r0: identity_s 0.715 equals the identity phase (1 s, whole-second markers)
+ok   spec-sstar-r8g: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-sstar-r8g: net: r0: the samples carry their share of identity (s5-identity sum 0.699)
+ok   spec-sstar-r8g: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-sstar-r8g: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-sstar-r8g: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-sstar-r8g: build: r0: overlap: waited in build-wait, build_end 1791682211.785 recorded, before identity (1791682211)
+ok   spec-sstar-r8g: s5: r0: one identity line per input file this node read (2)
+ok   spec-sstar-r8g: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-sstar-r8g: s5: r0: input_defect on [] (want [])
+ok   spec-sstar-r8g: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-sstar-r8g: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-sstar-r8g: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: ---- spec-sstar-r8gd (6): runs/g3-l-sstar-r8gd-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-sstar-r8gd: RUNG=Sstar-r8gd; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-sstar-r8gd: cohort 20261011-013016-88a9456-9c8a-n1: node exits 0
+ok   spec-sstar-r8gd: exit: every node's body exits 0 (rcs [0])
+ok   spec-sstar-r8gd: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-sstar-r8gd: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-sstar-r8gd: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-sstar-r8gd: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-sstar-r8gd: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-sstar-r8gd: stream: r0: lever lines streamed (20) equal the pushed lever.jsonl (20)
+ok   spec-sstar-r8gd: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-sstar-r8gd: samples: every sample's classify rc is 0 ([0])
+ok   spec-sstar-r8gd: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-sstar-r8gd: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-sstar-r8gd: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-sstar-r8gd: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-sstar-r8gd: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-sstar-r8gd: law1: SRR062634: the file set is output and report
+ok   spec-sstar-r8gd: objects: 2 objects under out/Sstar-r8gd/ (want 2)
+ok   spec-sstar-r8gd: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-sstar-r8gd: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-sstar-r8gd: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-sstar-r8gd: net: r0: critical_measurement_s 0.75 = identity 0.72 + sha_get 0 + sha_critical 0.03
+ok   spec-sstar-r8gd: net: r0: sha_critical_s 0.03 == the sum of its samples' sha-critical 0.03
+ok   spec-sstar-r8gd: net: r0: identity_s 0.72 equals the identity phase (1 s, whole-second markers)
+ok   spec-sstar-r8gd: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-sstar-r8gd: net: r0: the samples carry their share of identity (s5-identity sum 0.706)
+ok   spec-sstar-r8gd: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-sstar-r8gd: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-sstar-r8gd: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-sstar-r8gd: build: r0: overlap: waited in build-wait, build_end 1791682229.986 recorded, before identity (1791682229)
+ok   spec-sstar-r8gd: s5: r0: one identity line per input file this node read (2)
+ok   spec-sstar-r8gd: s5: r0: identity at the run's -P 4 (lad-config gunzip_P)
+ok   spec-sstar-r8gd: s5: r0: input_defect on [] (want [])
+ok   spec-sstar-r8gd: s5: r0: SRR062634: s5 identical/none P 4 gz_exit [0, 0] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8gd: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-sstar-r8gd: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-sstar-r8gd: s5: r0: the body's own shim check (lad-shim ok True)
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1
+ladder-rehearse: disk: 32Gi free
+    ladder_tables: 15 ladder run(s), 36 lever row(s), 0 DEFECT(s) -> /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/ladder/
+ok   tables: 15 ladder runs, 0 DEFECTs (exit 0)
+ok   tables: law1.tsv: every accession identical across the 15 rungs
+ok   tables: rungs.tsv reads Sstar-time at c1 as S9's runs (n|median 1|18.250000; the three candidates' net walls differ: 3 values)
+ok   tables: rungs.tsv reads Sstar-cost at c1 as Sstar-r8gd's runs (n|median 1|17.250000; the three candidates' net walls differ: 3 values)
+    deltas.tsv: Sstar-cost	S9	alias of Sstar-r8gd (ladder.resolved.tsv; source (rehearsal: a synthetic selection))	wall_s	18.000000	19.000000	-1.000000	unresolvable: n < 2 (n 1 vs 1), no spread
+    deltas.tsv: Sstar-time	S9	Sstar-time is an alias of its predecessor S9: no lever	wall_s	19.000000	19.000000		Sstar-time is an alias of its predecessor S9: no lever
+    runs.tsv in_attribution:   15 yes
+ladder-rehearse: disk: 32Gi free
+ok   tables-lever-phase: S0-T1: lever phase run:classify measured (n 1, 4.000000 s)
+ok   tables-lever-phase: S0-Tv: lever phase run:classify measured (n 1, 3.000000 s)
+ok   tables-lever-phase: S1: lever phase run:fetch-db measured (n 1, 0.000000 s)
+FAIL tables-lever-phase: S2a: lever phase run:fetch-db+run:load+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: S2b-i: lever phase run:load+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: S2b-ii: lever phase run:fetch-db+run:load+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: S2c: lever phase run:fetch-inputs+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: S2d: lever phase run:fetch-db+run:load+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+ok   tables-lever-phase: S5: lever phase run:classify measured (n 1, 3.000000 s)
+ok   tables-lever-phase: S6: lever phase run:fetch-inputs measured (n 1, 0.000000 s)
+FAIL tables-lever-phase: S7a: lever phase run:classify+run:upload-drain missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: S7b: lever phase run:classify+run:upload-drain missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: S9: lever phase run:setup+run:fetch-db missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: Sstar-r8g: lever phase run:fetch-db+run:load+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+FAIL tables-lever-phase: Sstar-r8gd: lever phase run:fetch-db+run:load+run:classify missing (n 0): its manifest phases are there (phases.tsv), the tables do not read them
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: tables of the rehearsal record: results/rehearse/ladder-20261011T011506Z-88a9456-tables/
+ladder-rehearse: ---- spec-s1-law1mut (6): runs/g3-l-s1-c1.json (r8gd.48xlarge, WANT_N 1); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-s1-law1mut: RUNG=S1; ARM=S; COHORT=1; WANT_N=1; CLASSIFIER=upstream; THREADS=vcpus; PROCS=1; DB_STAGE=s5cmd; DB_PLACE=nvme; DB_LOAD=load; HOST_TUNES=none; GUNZIP=gzip; IN_FETCH=serial; IN_CLIENT=default; IN_DEST=nvme; OUT_UPLOAD=awscp-default; REPLICAS=1; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=serial; ETAG_CHECK=on
+ladder-rehearse: spec-s1-law1mut: cohort 20261011-013035-88a9456-62d9-n1: node exits 0
+ok   spec-s1-law1mut: exit: every node's body exits 0 (rcs [0])
+ok   spec-s1-law1mut: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-s1-law1mut: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-s1-law1mut: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-s1-law1mut: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-s1-law1mut: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-s1-law1mut: stream: r0: lever lines streamed (18) equal the pushed lever.jsonl (18)
+ok   spec-s1-law1mut: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1}; planned ['SRR062634'])
+ok   spec-s1-law1mut: samples: every sample's classify rc is 0 ([0])
+ok   spec-s1-law1mut: samples: every lad-sample is contract v1 with the run's rung and arm
+FAIL spec-s1-law1mut: law1: SRR062634 output: on-node sha256 c5561434a82d5d11 == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-s1-law1mut: objects: SRR062634 output: the uploaded object's sha256 c5561434a82d5d11 == the recorded c5561434a82d5d11
+FAIL spec-s1-law1mut: law1: SRR062634 report: on-node sha256 3c288f5d70a3c14c == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-s1-law1mut: objects: SRR062634 report: the uploaded object's sha256 3c288f5d70a3c14c == the recorded 3c288f5d70a3c14c
+ok   spec-s1-law1mut: law1: SRR062634: the file set is output and report
+ok   spec-s1-law1mut: objects: 2 objects under out/S1/ (want 2)
+ok   spec-s1-law1mut: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-s1-law1mut: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-s1-law1mut: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-s1-law1mut: net: r0: critical_measurement_s 0.025 = identity 0 + sha_get 0 + sha_critical 0.025
+ok   spec-s1-law1mut: net: r0: sha_critical_s 0.025 == the sum of its samples' sha-critical 0.025
+ok   spec-s1-law1mut: net: r0: identity_s 0 is 0 (no identity phase)
+ok   spec-s1-law1mut: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-s1-law1mut: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-s1-law1mut: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 2 (want 2, the objects)
+ok   spec-s1-law1mut: requests: input fetches counted: fetch.sh's HeadObject = 2 (want 2, one per input file)
+ok   spec-s1-law1mut: build: r0: serial: the build waited for in setup (setup)
+ok   spec-s1-law1mut: negative control: check law1 FAILED, as the mutation must make it
+record: /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record-neg/results/g3/20261011-013035-88a9456-62d9-n1
+ladder-rehearse: disk: 32Gi free
+    ladder_tables: DEFECT (Law 1): SRR062634 20261011-013035-88a9456-62d9-n1: DEFECT: sha256 differs from the reference on output,report
+    ladder_tables: 16 ladder run(s), 36 lever row(s), 1 DEFECT(s) -> /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record-neg/ladder/
+ok   tables-neg: a Law-1-mutated S1 run in the record gives a Law 1 DEFECT (exit 1)
+    ladder_tables: DEFECT (resolved): ladder.resolved.tsv: Sstar-time at c1 names 'S7b', not one of its alias_of S9|Sstar-r8g|Sstar-r8gd
+    ladder_tables: 15 ladder run(s), 36 lever row(s), 1 DEFECT(s) -> /Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record-neg/ladder-badalias/
+ok   tables-neg: an alias winner outside alias_of gives a DEFECT (resolved) (exit 1)
+ladder-rehearse: disk: 32Gi free
+ok   law1-across-arms: ERR478965 output: one sha256 339ce5ad82a601e0 (the oracle's) over 10 cases (ours-engine, ours-plain, upstream)
+ok   law1-across-arms: ERR478965 report: one sha256 1f7a65806fcef7c6 (the oracle's) over 10 cases (ours-engine, ours-plain, upstream)
+ok   law1-across-arms: SRR062634 output: one sha256 bebbf3380833d5da (the oracle's) over 25 cases (ours-engine, ours-plain, upstream)
+ok   law1-across-arms: SRR062634 report: one sha256 14c3ea3aa2f37f0b (the oracle's) over 25 cases (ours-engine, ours-plain, upstream)
+ok   law1-across-arms: SRR062634m output: one sha256 9fc0c013ce4f597d (the oracle's) over 1 cases (upstream)
+ok   law1-across-arms: SRR062634m report: one sha256 a30267a3028690ab (the oracle's) over 1 cases (upstream)
+ok   law1-across-arms: SRR28305653 output: one sha256 1b3fef049ca7fc93 (the oracle's) over 10 cases (ours-engine, ours-plain, upstream)
+ok   law1-across-arms: SRR28305653 report: one sha256 f5ffc9beb513b235 (the oracle's) over 10 cases (ours-engine, ours-plain, upstream)
+ladder-rehearse: disk: 32Gi free
+ladder-rehearse: summary (all at 88a9456):
+item | case                       | what                                                       | checks |   failed | result
+1    | u-serial-1lane             | upstream, s5cmd-serial, 1 lane, 3 samples                  |  38 ok |   0 FAIL | PASS
+1    | u-overlap-1lane            | upstream, s5cmd-overlap, 1 lane                            |  38 ok |   0 FAIL | PASS
+1    | u-serial-2lanes            | upstream, awscp-default (stock), 2 lanes, NVMe, load       |  39 ok |   0 FAIL | PASS
+1    | u-overlap-2lanes           | upstream, s5cmd-overlap, 2 lanes, rapidgzip-Pauto, SETUP=overlap |  49 ok |   0 FAIL | PASS
+1    | ours-plain                 | ours-plain (O0), AK2_DECOMPRESS=pipe under rapidgzip       |  47 ok |   0 FAIL | PASS
+1    | engine-k2                  | the engine, K=2 replicas of N=1                            |  57 ok |   0 FAIL | PASS
+1    | engine-n2                  | the engine, N=2 shards over TCP (lpt)                      |  74 ok |   0 FAIL | PASS
+1    | o5-sdk                     | O5: the engine's sdk-stream emitter at N=2, sha256 by GET  |  58 ok |   0 FAIL | PASS
+2    | s5-trailing                | S5: real rapidgzip; SRR28305653 mate 1 has 4096 trailing zero bytes |  48 ok |   0 FAIL | PASS
+2    | s5-mut-nofallback          | negative control: the S5 fallback removed                  |  40 ok |  10 FAIL | PASS
+4    | s5-mut-net                 | negative control: identity left out of lad-net's sum       |  48 ok |   1 FAIL | PASS
+2    | s5-corrupt                 | S5: a corrupt input (mate 1 cut at half its bytes)         |   5 ok |   0 FAIL | PASS
+1    | law1-mut                   | negative control: a classifier option changed (Law 1 must fail) |  26 ok |   2 FAIL | PASS
+3    | neg-gzip-k2dir             | a gzip in KRAKEN2_DIR                                      |   3 ok |   0 FAIL | PASS
+3    | neg-bzip2-k2dir            | a bzip2 in KRAKEN2_DIR                                     |   3 ok |   0 FAIL | PASS
+3    | neg-etag-lv                | an ETag mismatch, via lv_etag                              |   4 ok |   0 FAIL | PASS
+3    | neg-etag-engine            | an ETag mismatch, via the engine's in-memory check         |   4 ok |   0 FAIL | PASS
+3    | neg-classifier-rc          | a classifier exiting non-zero (a truncated mate)           |   4 ok |   0 FAIL | PASS
+3    | neg-engine-noline          | an engine home sample with no ak2-sample line              |   3 ok |   0 FAIL | PASS
+3    | neg-place-needs            | cohort_place.py needs fails                                |   3 ok |   0 FAIL | PASS
+3    | neg-place-table            | cohort_place.py table fails                                |   3 ok |   0 FAIL | PASS
+3    | neg-place-disagree         | needs and table disagree                                   |   3 ok |   0 FAIL | PASS
+3    | neg-place-emptyneed        | an empty NEED                                              |   3 ok |   0 FAIL | PASS
+4    | overlap-slow-build         | SETUP=overlap with a slow build (20 s more)                |  48 ok |   0 FAIL | PASS
+4    | tail-crit-1                | tail uploads lag the hashes (try 1)                        |  40 ok |   0 FAIL | PASS
+4    | tail-mut-1                 | negative control: NB1 (uploads cover) removed (try 1)      |  40 ok |   1 FAIL | PASS
+5    | resolver                   | the generator's resolver refusals and c1 fallbacks         |  10 ok |   0 FAIL | PASS
+7    | ttl-kill                   | a KILL mid-classify: the streamed lines are in the pushed log |   7 ok |   0 FAIL | PASS
+7    | ttl-term                   | a TERM mid-classify: the streamed lines are in the pushed log |   6 ok |   0 FAIL | PASS
+7    | ttl-kill-nopush            | a KILL-nopush mid-classify: the streamed lines are in the pushed log |   4 ok |   4 FAIL | PASS
+6    | spec-s0-t1                 | runs/g3-l-s0-t1-c1.json end to end                         |  28 ok |   0 FAIL | PASS
+6    | spec-s0-tv                 | runs/g3-l-s0-tv-c1.json end to end                         |  28 ok |   0 FAIL | PASS
+6    | spec-s1                    | runs/g3-l-s1-c1.json end to end                            |  28 ok |   0 FAIL | PASS
+6    | spec-s2a                   | runs/g3-l-s2a-c1.json end to end                           |  28 ok |   0 FAIL | PASS
+6    | spec-s2b-i                 | runs/g3-l-s2b-i-c1.json end to end                         |  28 ok |   0 FAIL | PASS
+6    | spec-s2b-ii                | runs/g3-l-s2b-ii-c1.json end to end                        |  28 ok |   0 FAIL | PASS
+6    | spec-s2c                   | runs/g3-l-s2c-c1.json end to end                           |  28 ok |   0 FAIL | PASS
+6    | spec-s2d                   | runs/g3-l-s2d-c1.json end to end                           |  28 ok |   0 FAIL | PASS
+6    | spec-s5                    | runs/g3-l-s5-c1.json end to end                            |  36 ok |   0 FAIL | PASS
+6    | spec-s6                    | runs/g3-l-s6-c1.json end to end                            |  36 ok |   0 FAIL | PASS
+6    | spec-s7a                   | runs/g3-l-s7a-c1.json end to end                           |  36 ok |   0 FAIL | PASS
+6    | spec-s7b                   | runs/g3-l-s7b-c1.json end to end                           |  36 ok |   0 FAIL | PASS
+6    | spec-s9                    | runs/g3-l-s9-c1.json end to end                            |  36 ok |   0 FAIL | PASS
+6    | spec-sstar-r8g             | runs/g3-l-sstar-r8g-c1.json end to end                     |  36 ok |   0 FAIL | PASS
+6    | spec-sstar-r8gd            | runs/g3-l-sstar-r8gd-c1.json end to end                    |  36 ok |   0 FAIL | PASS
+6    | tables                     | make g3-ladder on the rehearsal record                     |   4 ok |   0 FAIL | PASS
+6    | tables-lever-phase         | every rung's lever phase in rungs.tsv                      |   5 ok |  10 FAIL | FAIL
+6    | spec-s1-law1mut            | runs/g3-l-s1-c1.json end to end (mut_law1: a negative control) |  27 ok |   2 FAIL | PASS
+6    | tables-neg                 | negative controls: the tables flag a Law 1 mismatch and a bad alias |   2 ok |   0 FAIL | PASS
+1    | law1-across-arms           | each sample's sha256 equal across every arm and the oracle |   8 ok |   0 FAIL | PASS
+ladder-rehearse: disk at end: 32Gi free
+ladder-rehearse: FAILED: 1 of 50 cases (KEEP=1 keeps /Users/scttfrdmn/.ak2-ladreh.Qs28Q3)

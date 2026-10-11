@@ -1,0 +1,1037 @@
+{
+  "generator": "scripts/lib/ladder_tables.py",
+  "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+  "generator_dirty": false,
+  "generated_at": "2026-10-11T01:30:35Z",
+  "lad_sample_contract_v": 1,
+  "levers": "scripts/g3/ladder.levers.tsv",
+  "modelled": null,
+  "resolved": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/ladder.resolved.tsv",
+  "runs": [
+    {
+      "run_id": "20261011-012550-88a9456-5008-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S0-T1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "1",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012609-88a9456-8591-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S0-Tv",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "awscp-default",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012628-88a9456-ea2c-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S1",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "load",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012646-88a9456-1e10-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S2a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012704-88a9456-b601-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S2b-i",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "nvme",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012723-88a9456-324a-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S2b-ii",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012741-88a9456-ecef-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S2c",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012800-88a9456-6b93-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S2d",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "gzip",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "nvme",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012818-88a9456-b06b-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S5",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "serial",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012838-88a9456-2773-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S6",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "awscp-default",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012859-88a9456-4ba1-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S7a",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-serial",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012919-88a9456-9910-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S7b",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "serial",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012939-88a9456-de0a-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "S9",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-012958-88a9456-5e14-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "Sstar-r8g",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    },
+    {
+      "run_id": "20261011-013016-88a9456-9c8a-n1",
+      "dir": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1",
+      "commit": "88a945618b148d033e73e9dae0eb88f9df35b913",
+      "params": {
+        "rung": "Sstar-r8gd",
+        "arm": "S",
+        "cohort": 1,
+        "want_n": 1,
+        "classifier": "upstream",
+        "threads": "vcpus",
+        "procs": "1",
+        "db_stage": "s5cmd",
+        "db_place": "tmpfs-huge",
+        "db_load": "mmap",
+        "host_tunes": "none",
+        "gunzip": "rapidgzip-Pauto",
+        "in_fetch": "lanes16",
+        "in_client": "default",
+        "in_dest": "tmpfs",
+        "out_upload": "s5cmd-overlap",
+        "replicas": 1,
+        "shards": 1,
+        "placement": "mod",
+        "inflight": "-",
+        "setup": "overlap",
+        "etag_check": "on",
+        "run_kind": "ladder",
+        "state": "cold",
+        "source": "spec command[2] PARAMS block",
+        "rep": 1,
+        "endpoint": ""
+      }
+    }
+  ],
+  "defects": [],
+  "findings": [],
+  "notes": [],
+  "inputs": [
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/ladder.resolved.tsv",
+      "bytes": 153,
+      "sha256": "4f7ac56578a80e08e11fc7022661432aeabb0473c02988ab8b65957bfd8531a5"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1-r0/log/run.log",
+      "bytes": 15485,
+      "sha256": "9d754b3d3d93ee4b231943457ca3f3ad18bb28bfcbaac5d9a8b11de996825ffa"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1-r0/manifest.json",
+      "bytes": 2218,
+      "sha256": "30e7971d206a55b309671f3601612c452fd32d9aaad09f9d2d5df3417047088c"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "42cfdf0253d1c9efe1f6c3fdb2bb658403dee4abb827690373aed99f5ddadaa4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1-r0/out/lad-samples.jsonl",
+      "bytes": 725,
+      "sha256": "7528ed2feee4cdc8ad59b727991e1be8b340297605ccb5a04e43e2c8371b2bde"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1-r0/out/lad.jsonl",
+      "bytes": 2009,
+      "sha256": "8b28da8019588b4ed0f85e05b3d65d09c794ca55f0bf757d76b2680ef36935b8"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012550-88a9456-5008-n1/cohort.json",
+      "bytes": 1060,
+      "sha256": "fbfedafeeb886a0e508af088df1bd728e392b71546f819e9da55996d466a8b2e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1-r0/log/run.log",
+      "bytes": 15483,
+      "sha256": "389e82112c1220dbfd7de6295e9f615609b7f64bfe1763772515c3f7c127b9c9"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1-r0/manifest.json",
+      "bytes": 2222,
+      "sha256": "4247ebcdd03f11895801f6bb37df62935f9b11fea10fdf2695ddf013294818c4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1-r0/out/lad-net.jsonl",
+      "bytes": 98,
+      "sha256": "729740251fa60abebcc045b07ebbc3495492eafecc109dfb0493c511d00418c1"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1-r0/out/lad-samples.jsonl",
+      "bytes": 724,
+      "sha256": "de9050371055f0efa4179729256e368daf140f643392479c95187acff0456b8d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1-r0/out/lad.jsonl",
+      "bytes": 2009,
+      "sha256": "77d004b42b73340dddeec55bcb0bfd972297e4e28bfeb2f5d13330e04480ef31"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012609-88a9456-8591-n1/cohort.json",
+      "bytes": 1064,
+      "sha256": "7c466d768870ef67472f026b1b8994277fe08b3387d80f442e7d9a186568c17c"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1-r0/log/run.log",
+      "bytes": 16646,
+      "sha256": "995d0388a3c7fdd2eb64da5f7b098b08255ae2d54c59896689f7a5ea1e75b687"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1-r0/manifest.json",
+      "bytes": 2208,
+      "sha256": "5fdd89db39ee13608a9a41179966f3f7414a04e86801c5172d65e57917d8b4ce"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "8167a2aecfb3f010e3aa5501253883007251ca82296d1853db4d08d4453256bd"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1-r0/out/lad-samples.jsonl",
+      "bytes": 722,
+      "sha256": "ba878de9bf7086804ac5100f4437ad358cf63c5e037bf9ae1a6430c3188f4842"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1-r0/out/lad.jsonl",
+      "bytes": 1998,
+      "sha256": "2a317b211659d1c568b1823d9c2cbbbc572aa35f833f38fd79e19f33955b7b90"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012628-88a9456-ea2c-n1/cohort.json",
+      "bytes": 1050,
+      "sha256": "8fc6af70a873629d26b470efbf5741df95c26f96b8094c12ac6b9b5a26fe9e86"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1-r0/log/run.log",
+      "bytes": 16600,
+      "sha256": "0972a668e88500c0015026c544d3f97b0862406149e9d2342e94761624c258f0"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1-r0/manifest.json",
+      "bytes": 2216,
+      "sha256": "1d99bad39d62a761d340c8453aab57af7e6406f503c34c33a553ab541918b8b0"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "b9b239c6a3b9dd13bd52aadf3b0e0a654c8e1f227bb40c3a3dae7317d13e87fb"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1-r0/out/lad-samples.jsonl",
+      "bytes": 723,
+      "sha256": "3ab7c2922aec35fd504b05c5cb773dc5c3827472317b863ab7e075d9479ed4cc"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1-r0/out/lad.jsonl",
+      "bytes": 1996,
+      "sha256": "9012eed3abbe74987cf1b7a876eee0d9c3732bbcdfd7396a8f916cb5ecd52eec"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012646-88a9456-1e10-n1/cohort.json",
+      "bytes": 1058,
+      "sha256": "d949c2cff50957743bc00240e57fbd26b5bbfc20ff9461e37c5f71cdc96f282d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1-r0/log/run.log",
+      "bytes": 16686,
+      "sha256": "a596bd298f4b3876a95f7c8da119e1608b01c4546fb818d6a699f1544b934bad"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1-r0/manifest.json",
+      "bytes": 2214,
+      "sha256": "6d09ef50d7cdd90ca6643181bc709fb79b6e1b70555efc5fd0b66918b1bbd7e5"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "f960058ee339f3b5808bbb82152ea1f7d3672eba8efd8913fbb043b89118e049"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1-r0/out/lad-samples.jsonl",
+      "bytes": 726,
+      "sha256": "c4a582321dd571fd56735f6d6ae6d60e669a30cb0b4254daffd5c534179ccea7"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1-r0/out/lad.jsonl",
+      "bytes": 2006,
+      "sha256": "3856063aa44cd4a62daca48eaeb43e8f4f5fcd4080800f8fd0695791f2bf9b9f"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012704-88a9456-b601-n1/cohort.json",
+      "bytes": 1056,
+      "sha256": "075d157b04fd6e286de784b2944848d51497b43403aed6af804962c1e4640b4a"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1-r0/log/run.log",
+      "bytes": 16745,
+      "sha256": "9468144f1a095f070716283e514486b2304828c05f3f5a6b57db8240c6989d1a"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1-r0/manifest.json",
+      "bytes": 2217,
+      "sha256": "f09cb6e2002730152a73778acebbdfc20cf30b49f733053fba9cf035a027b483"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "483fde8a2d7159f4d102dbe616be2a17b61b46dc27e120213d6f1cbd44ba53c2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 725,
+      "sha256": "9f9868ee14be646104f9844267ce59091c6a2fdc3cb4b2c04759c915e7ff040b"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1-r0/out/lad.jsonl",
+      "bytes": 2005,
+      "sha256": "b8d757409f78a0d92c42d9a56eb8db832518d64c6d58d842fcca33cf3b7e1e91"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012723-88a9456-324a-n1/cohort.json",
+      "bytes": 1059,
+      "sha256": "0a93cc941a0af2b1c54b8e17017c0225222c361e8cedfb2a8a70017073654c60"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1-r0/log/run.log",
+      "bytes": 16618,
+      "sha256": "d05706dee1b1be28e616745d0d05eeb6affbb62e9c071eea1ceef0e714b12eee"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1-r0/manifest.json",
+      "bytes": 2217,
+      "sha256": "0a7b89b05c2e59f21f0bbc6a3583ae025c0b97175cfdd3cea6c2a39e19ca2cae"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "c0cf5ddb6c6850cc328cd86f765dc3fd07beb0da5b5276eca421a608a10e3efc"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1-r0/out/lad-samples.jsonl",
+      "bytes": 724,
+      "sha256": "5bb18e19e78d1b292531ae6a30a31ed3d4c9641bbbe0dfcddbe84d57831aaac5"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1-r0/out/lad.jsonl",
+      "bytes": 2010,
+      "sha256": "9f856a21be1ea8f02096e37236cb20d06f11d9661ba17bd4e80e4eb4ee157d6b"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012741-88a9456-ecef-n1/cohort.json",
+      "bytes": 1059,
+      "sha256": "8c6f34f1385c3132e690e553518ef3da38473b13d669a3ca066d526805f5e98e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1-r0/log/run.log",
+      "bytes": 16727,
+      "sha256": "e769944f09cfd029fd8c8399779c0e08eb97874e0c15d516ca5933817f28d262"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1-r0/manifest.json",
+      "bytes": 2216,
+      "sha256": "75e605ac1deadc6bdf43c7d2795edc3afa35c68719ef978c74063a0195e34610"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1-r0/out/lad-net.jsonl",
+      "bytes": 100,
+      "sha256": "b9b239c6a3b9dd13bd52aadf3b0e0a654c8e1f227bb40c3a3dae7317d13e87fb"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1-r0/out/lad-samples.jsonl",
+      "bytes": 724,
+      "sha256": "b0cb87a3724652b7fbb6016691b51280d65a6d51df0f77d18a0b98474371deb2"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1-r0/out/lad.jsonl",
+      "bytes": 2010,
+      "sha256": "bce39540eb2467ff6f9bd62ae62d4d5197da42b1afa393bf00ef3310d9ee686d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012800-88a9456-6b93-n1/cohort.json",
+      "bytes": 1058,
+      "sha256": "9830907dc4815d81e873163078989b90781af59ed715d2b6e6129474a0573358"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1-r0/log/run.log",
+      "bytes": 19397,
+      "sha256": "55ef2ed6e95a74d348ba4e3dbdaec0a9e3b5091d01297358181ac773edcdb8ce"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1-r0/manifest.json",
+      "bytes": 2305,
+      "sha256": "c53b8d3c46b9c9ea245bf398941054525728902e65b8fc4e8d36f41ddfe90002"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "aeaffec3d7a8af18046bfe898e16d54ebdc5f1d1d2871bf6bff2a06937b60774"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1075,
+      "sha256": "cf5cbb5faee439a717861c232c1cd24f9c22edef0d1bbd2b443b6b2f4ca93cf6"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1-r0/out/lad.jsonl",
+      "bytes": 3323,
+      "sha256": "731acc229cbbf3ae3f8f73e233073c21d20d7e8284bf824c46cfdb094452b2d3"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012818-88a9456-b06b-n1/cohort.json",
+      "bytes": 1067,
+      "sha256": "107a0868ff4d14fac74e9899b429f5b9157c35ff413c32bb3ab52b1571d42953"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1-r0/log/run.log",
+      "bytes": 19399,
+      "sha256": "257597cccbecee8815c6cd1486175931a2d5e30bb2c28be3ebb3312f26ccdea9"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1-r0/manifest.json",
+      "bytes": 2306,
+      "sha256": "eaa90fcbf24bbf7ddd0ce715ac3264768ea14e7748b918609367454fce378e66"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "d4d5f98ede4dcefac7ef54edcf30fc1f836b653b3d39a8ab3c0c42820fc535fe"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1074,
+      "sha256": "7fb9f856c4883a71dce3b16ab58ed836b7550e5711ee59d4c8ae9a4eee739dcb"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1-r0/out/lad.jsonl",
+      "bytes": 3321,
+      "sha256": "021717c1448d8cd12d61c0fec571e8c165b4f6af51bdfe1d95aa639d865e8de9"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012838-88a9456-2773-n1/cohort.json",
+      "bytes": 1068,
+      "sha256": "70b32d41a4ddaf0b1c65145c6e2bbe7504640c3cd9701b651d5a215834d9d0ed"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1-r0/log/run.log",
+      "bytes": 20014,
+      "sha256": "505271049df1c3fe34a067539f00b4f8712018a0b5414bbdfe8c052865c3027e"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1-r0/manifest.json",
+      "bytes": 2307,
+      "sha256": "005fd6b7db3a9bb03519eee75b2a3cdaee4051cc123aa40874bc2d9401119623"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "b26da014e9c555663237ac845b895a50b9ff2e228fc5dc39d520a0234b62aad0"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1077,
+      "sha256": "52ce72ea8f12ae433e1b78461d15b5f0c36039f19bcd81e08554f8b2c13fb2f8"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1-r0/out/lad.jsonl",
+      "bytes": 3324,
+      "sha256": "88ddd82d7d330effbd3ef8be9988673de06c466989cfdf003045657f10fdb5c4"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012859-88a9456-4ba1-n1/cohort.json",
+      "bytes": 1069,
+      "sha256": "dafbfdbf6d1b9532ef2d3fb61298cf44b8479b06fc95b85d640966f1b0c8771a"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1-r0/log/run.log",
+      "bytes": 20017,
+      "sha256": "3c695dee5feac9582f37995f4dade68ee0151bc25a7202eb9a3ff10c44cbe5c8"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1-r0/manifest.json",
+      "bytes": 2308,
+      "sha256": "3556ca05e41012b114548d8506fadcf4619efee2c280dac7cf318749f8388b7f"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1-r0/out/lad-net.jsonl",
+      "bytes": 104,
+      "sha256": "23cd7d2cdf5b1893145c6f2387c6059606a8a5bb8ff45e05f667250238573141"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1062,
+      "sha256": "4d0e88d765866fa3d2a51ea86a46929866f3088ea6f3895ad1f9a360587195f6"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1-r0/out/lad.jsonl",
+      "bytes": 3309,
+      "sha256": "b336f260ccda020a0f4dad16e03df5eb141b872997ffc5db06773b46c432c322"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012919-88a9456-9910-n1/cohort.json",
+      "bytes": 1070,
+      "sha256": "d2fc80d024308a2caab72e9601c66c73bf82f21dc9a43ac6bbf6ed3afa0f8190"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1-r0/log/run.log",
+      "bytes": 20065,
+      "sha256": "5197a6a9d9469fe5612d8c9eea7ce3232adbf3512f7f1a913b9791c9de5ce0e7"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1-r0/manifest.json",
+      "bytes": 2388,
+      "sha256": "2a76c42cfac398e8e1392028b3902a301a120fd70af5b8dabe814d8496242d72"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1-r0/out/lad-net.jsonl",
+      "bytes": 103,
+      "sha256": "90216827d6bdb4842b7dddd5ea5c2be5b6cf89af774cc75245b4e2a514c17180"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1061,
+      "sha256": "6e8010e4f755f627c0832cba1af9e882c9774d53042e8996599368e9ad105099"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1-r0/out/lad.jsonl",
+      "bytes": 3315,
+      "sha256": "63c3804fc72a48ad609b9100b1ab38bb2287265b897850679a1216c908e2c64f"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012939-88a9456-de0a-n1/cohort.json",
+      "bytes": 1069,
+      "sha256": "2c9804784e700457e4187745efcb771b2f696aed5dc885a5564069b95c5263fe"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1-r0/log/run.log",
+      "bytes": 20170,
+      "sha256": "d8720cbb54777514aca6a2cde0dc45b5d75cfdc8e4f2a99507daf29669608f2f"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1-r0/manifest.json",
+      "bytes": 2402,
+      "sha256": "2f7f1a1ffcf95c7547370f7703ea401af77224e163850cf315416cb8151e45a9"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1-r0/out/lad-net.jsonl",
+      "bytes": 103,
+      "sha256": "e533b1c26bf724ae6d816ea0693bdb08df18b43e09118ef079fb7fc535d1707a"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1068,
+      "sha256": "b4ea6f67b16bfebdfcb2c35918a4574ca74bd872a1492a291dc1f2b609b67895"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1-r0/out/lad.jsonl",
+      "bytes": 3328,
+      "sha256": "39b92ecf246283ffa4da7ad25cf96ce5bcb437394c780ff6872a4cd22fe5bada"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-012958-88a9456-5e14-n1/cohort.json",
+      "bytes": 1083,
+      "sha256": "bbae4be70b3a67c1f62a092995eff9ac52f2d3eaaf4a82fda2d9f984ae120fa9"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1-r0/log/run.log",
+      "bytes": 20186,
+      "sha256": "74606f3698db8060e7874684a2b2da9758e86df0b7f4926071e600c51c137b6d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1-r0/manifest.json",
+      "bytes": 2405,
+      "sha256": "6cb0067f235a9e5ba667575f6804d0d3125e70e517d5392217f1ee55c3cb6ffc"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1-r0/out/lad-net.jsonl",
+      "bytes": 101,
+      "sha256": "f0b2b6b50594ceb27961a2677a2196249c7e21ec6de12f5833d163a10866461d"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1-r0/out/lad-samples.jsonl",
+      "bytes": 1068,
+      "sha256": "e592cada0772971e90358965f957f8e74fb3f882c637c2a639a0b6c8e5773d14"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1-r0/out/lad.jsonl",
+      "bytes": 3328,
+      "sha256": "c40e9df07c8c1d06f15ffcc7661fcca1c1e9c3550174c58e014ebabbcf76dd60"
+    },
+    {
+      "path": "/Users/scttfrdmn/.ak2-ladreh.Qs28Q3/record/results/g3/20261011-013016-88a9456-9c8a-n1/cohort.json",
+      "bytes": 1086,
+      "sha256": "d49411c73915f990e8b3c2c61f0ad03ebb728874a24ae7c7e1d6651bb15efea8"
+    },
+    {
+      "path": "scripts/g3/ladder.levers.tsv",
+      "bytes": 19106,
+      "sha256": "23f8d6090ff5ef8e6955d63552e3c2587484a16073bc0139b0e441a84ee63630"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "runs.tsv",
+      "sha256": "d17afc729c445448254d042f267ef8f1d989a7412753e58e71ebb775985683a5"
+    },
+    {
+      "path": "tidy.tsv",
+      "sha256": "70e4cc2b3732574aa3e926ded7b78e96174a4c9dc71dd157c4c21dee6c741e40"
+    },
+    {
+      "path": "rungs.tsv",
+      "sha256": "b17f3b1a60444970d784e78923e6d6364fe55f474b61a62285048c46a982c9ce"
+    },
+    {
+      "path": "effcost.tsv",
+      "sha256": "803f8c8fb2351c503aaf1310094f167a1015c01c1bf56fdeee22edce574e2295"
+    },
+    {
+      "path": "deltas.tsv",
+      "sha256": "6c712639f4815b5df7c3f28fec996108439ec0fd733df38c740a83e185684f12"
+    },
+    {
+      "path": "pairs.tsv",
+      "sha256": "90050d50bec0229a907c8512693bfb78f1725171ae57cd6ad1d958d720a06fb0"
+    },
+    {
+      "path": "law1.tsv",
+      "sha256": "f79fff299129df83c12d24e3807a149ddfa1639ef1d2ebf86e62556e4de1d31a"
+    },
+    {
+      "path": "law1-detail.tsv",
+      "sha256": "a03a138e961246dafd7e411af20f856253001a6c51ec265b33ed1f318f92e036"
+    },
+    {
+      "path": "s5-nonpreserving.tsv",
+      "sha256": "ad0ba07442a8eef5c6a9a686fb01a0e94341735e6d8966c44aa80ea82ebbdae8"
+    },
+    {
+      "path": "endpoints.tsv",
+      "sha256": "c89258aa96a51faa28619ca7b03c0e903353d6994eb8b62211f294d5af2f24db"
+    },
+    {
+      "path": "spend.tsv",
+      "sha256": "b5d4af564c7491b81ca90da7f1526644c75d102379692dbfaab5f8419775d3cf"
+    },
+    {
+      "path": "summary.md",
+      "sha256": "aea58d4b76a10f6b8406795a6d817da18a91b62d957df69230bbb13b3b4a5d65"
+    }
+  ]
+}
