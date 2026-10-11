@@ -1,0 +1,72 @@
+ladder-campaign: cohort 1, REPS=2: 18 committed spec(s) runs/g3-l-*-c1.json; rep 1 cheapest first (measured billed $ where a done run exists, else cost_limit x nodes), ties in ladder order; rep 2 reversed
+ladder-campaign: CONCURRENCY=1 (runs in flight at once); quota_check.sh before every launch
+order rep rung        spec                           nodes type           az         family     cost_usd  basis                                          action
+1     1   S6          runs/g3-l-s6-c1.json           1     x8g.24xlarge   us-west-2b X              1.16  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-073312-4f40ed3-e170-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+2     1   S7b         runs/g3-l-s7b-c1.json          1     x8g.24xlarge   us-west-2b X              1.23  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-075320-4f40ed3-3458-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+3     1   S9          runs/g3-l-s9-c1.json           1     x8g.24xlarge   us-west-2b X              1.23  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-080254-4f40ed3-c4dd-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+4     1   S7a         runs/g3-l-s7a-c1.json          1     x8g.24xlarge   us-west-2b X              1.31  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-074247-4f40ed3-8e25-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+5     1   S2a         runs/g3-l-s2a-c1.json          1     x8g.24xlarge   us-west-2b X              1.32  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-042400-f72142e-34a4-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, rep 1 by default (no params.rep))
+6     1   S5          runs/g3-l-s5-c1.json           1     x8g.24xlarge   us-west-2b X              1.39  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-072219-4f40ed3-9d46-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+7     1   Sstar-r8g   runs/g3-l-sstar-r8g-c1.json    1     r8g.48xlarge   us-west-2b Standard       1.50  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-081231-4f40ed3-fd4a-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+8     1   S2c         runs/g3-l-s2c-c1.json          1     r8gd.48xlarge  us-west-2b Standard       1.87  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-084915-4f40ed3-1a15-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+9     1   Sstar-r8gd  runs/g3-l-sstar-r8gd-c1.json   1     r8gd.48xlarge  us-west-2b Standard       1.87  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-085849-4f40ed3-f9d5-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+10    1   S2d         runs/g3-l-s2d-c1.json          1     r8gd.48xlarge  us-west-2b Standard       1.99  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-083840-4f40ed3-2f49-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+11    1   S2b-ii      runs/g3-l-s2b-ii-c1.json       1     r8gd.48xlarge  us-west-2b Standard       3.52  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-082155-4f40ed3-6f18-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+12    1   S2b-i       runs/g3-l-s2b-i-c1.json        1     r8gd.48xlarge  us-west-2b Standard       5.28  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-093338-4f40ed3-9f51-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+13    1   S1          runs/g3-l-s1-c1.json           1     r8gd.48xlarge  us-west-2b Standard       5.40  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-090843-4f40ed3-5451-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+14    1   S0-Tv       runs/g3-l-s0-tv-c1.json        1     r8gd.48xlarge  us-west-2b Standard      13.16  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-105849-4f40ed3-69ea-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+15    1   S0-T1       runs/g3-l-s0-t1-c1.json        1     r8gd.48xlarge  us-west-2b Standard      13.63  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-095853-4f40ed3-10f4-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+16    1   O0b         runs/g3-l-o0b-c1.json          1     x8g.24xlarge   us-west-2b X             14.07  estimate: cost_limit x 1 node(s) (TTL 90m x price) launch
+17    1   O2-r8g      runs/g3-l-o2-r8g-c1.json       1     r8g.48xlarge   us-west-2b Standard      16.97  estimate: cost_limit x 1 node(s) (TTL 90m x price) launch
+18    1   O0          runs/g3-l-o0-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+19    2   O0          runs/g3-l-o0-c1.json           1     x8g.24xlarge   us-west-2b X             18.76  estimate: cost_limit x 1 node(s) (TTL 120m x price) launch
+20    2   O2-r8g      runs/g3-l-o2-r8g-c1.json       1     r8g.48xlarge   us-west-2b Standard      16.97  estimate: cost_limit x 1 node(s) (TTL 90m x price) launch
+21    2   O0b         runs/g3-l-o0b-c1.json          1     x8g.24xlarge   us-west-2b X             14.07  estimate: cost_limit x 1 node(s) (TTL 90m x price) launch
+22    2   S0-T1       runs/g3-l-s0-t1-c1.json        1     r8gd.48xlarge  us-west-2b Standard      13.63  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-125422-4f40ed3-c53e-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+23    2   S0-Tv       runs/g3-l-s0-tv-c1.json        1     r8gd.48xlarge  us-west-2b Standard      13.16  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-115635-4f40ed3-e8da-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+24    2   S1          runs/g3-l-s1-c1.json           1     r8gd.48xlarge  us-west-2b Standard       5.40  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-142024-4f40ed3-c5dd-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+25    2   S2b-i       runs/g3-l-s2b-i-c1.json        1     r8gd.48xlarge  us-west-2b Standard       5.28  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-135418-4f40ed3-f5f3-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+26    2   S2b-ii      runs/g3-l-s2b-ii-c1.json       1     r8gd.48xlarge  us-west-2b Standard       3.52  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-151422-4f40ed3-2181-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+27    2   S2d         runs/g3-l-s2d-c1.json          1     r8gd.48xlarge  us-west-2b Standard       1.99  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-150437-4f40ed3-3bb1-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+28    2   Sstar-r8gd  runs/g3-l-sstar-r8gd-c1.json   1     r8gd.48xlarge  us-west-2b Standard       1.87  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-144528-4f40ed3-6caf-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+29    2   S2c         runs/g3-l-s2c-c1.json          1     r8gd.48xlarge  us-west-2b Standard       1.87  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-145503-4f40ed3-4b94-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+30    2   Sstar-r8g   runs/g3-l-sstar-r8g-c1.json    1     r8g.48xlarge   us-west-2b Standard       1.50  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-153046-4f40ed3-5127-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+31    2   S5          runs/g3-l-s5-c1.json           1     x8g.24xlarge   us-west-2b X              1.39  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-161738-4f40ed3-8d62-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+32    2   S2a         runs/g3-l-s2a-c1.json          1     x8g.24xlarge   us-west-2b X              1.32  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-162822-4f40ed3-fd5a-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+33    2   S7a         runs/g3-l-s7a-c1.json          1     x8g.24xlarge   us-west-2b X              1.31  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-155929-4f40ed3-1195-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+34    2   S9          runs/g3-l-s9-c1.json           1     x8g.24xlarge   us-west-2b X              1.23  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-154020-4f40ed3-3c2f-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+35    2   S7b         runs/g3-l-s7b-c1.json          1     x8g.24xlarge   us-west-2b X              1.23  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-154955-4f40ed3-e37a-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+36    2   S6          runs/g3-l-s6-c1.json           1     x8g.24xlarge   us-west-2b X              1.16  measured: median billed $ of 2 run(s)          skip: done: results/g3/20261011-160904-4f40ed3-9df7-n1 (spec sha256 and params match, clean record, in the attribution, not a recorded defect, params.rep)
+ladder-campaign: the record, ladder runs of these rungs at c1:
+  results/g3/20261011-041927-a959453                   S2a        rep 1 (rep 1 by default (no params.rep)): not counted: task exit 1; recorded defect (g3_defects.tsv 20261011-041927-a959453: defect: launched without NODES=1 (operator error); the body refused before any I/O); excluded by ladder_tables: no: DEFECT (incomplete): 0 of 1 planned samples; missing SRR5935740; DEFECT (contract): its lever phase run:fetch-db+run:load+run:classify: run:fetch-db, run:lo
+  results/g3/20261011-042400-f72142e-34a4-n1           S2a        rep 1 (rep 1 by default (no params.rep)): counted
+  results/g3/20261011-072219-4f40ed3-9d46-n1           S5         rep 1 (params.rep): counted
+  results/g3/20261011-073312-4f40ed3-e170-n1           S6         rep 1 (params.rep): counted
+  results/g3/20261011-074247-4f40ed3-8e25-n1           S7a        rep 1 (params.rep): counted
+  results/g3/20261011-075320-4f40ed3-3458-n1           S7b        rep 1 (params.rep): counted
+  results/g3/20261011-080254-4f40ed3-c4dd-n1           S9         rep 1 (params.rep): counted
+  results/g3/20261011-081231-4f40ed3-fd4a-n1           Sstar-r8g  rep 1 (params.rep): counted
+  results/g3/20261011-082155-4f40ed3-6f18-n1           S2b-ii     rep 1 (params.rep): counted
+  results/g3/20261011-083840-4f40ed3-2f49-n1           S2d        rep 1 (params.rep): counted
+  results/g3/20261011-084915-4f40ed3-1a15-n1           S2c        rep 1 (params.rep): counted
+  results/g3/20261011-085849-4f40ed3-f9d5-n1           Sstar-r8gd rep 1 (params.rep): counted
+  results/g3/20261011-090843-4f40ed3-5451-n1           S1         rep 1 (params.rep): counted
+  results/g3/20261011-093338-4f40ed3-9f51-n1           S2b-i      rep 1 (params.rep): counted
+  results/g3/20261011-095853-4f40ed3-10f4-n1           S0-T1      rep 1 (params.rep): counted
+  results/g3/20261011-105849-4f40ed3-69ea-n1           S0-Tv      rep 1 (params.rep): counted
+  results/g3/20261011-115635-4f40ed3-e8da-n1           S0-Tv      rep 2 (params.rep): counted
+  results/g3/20261011-125422-4f40ed3-c53e-n1           S0-T1      rep 2 (params.rep): counted
+  results/g3/20261011-135418-4f40ed3-f5f3-n1           S2b-i      rep 2 (params.rep): counted
+  results/g3/20261011-142024-4f40ed3-c5dd-n1           S1         rep 2 (params.rep): counted
+  results/g3/20261011-144528-4f40ed3-6caf-n1           Sstar-r8gd rep 2 (params.rep): counted
+  results/g3/20261011-145503-4f40ed3-4b94-n1           S2c        rep 2 (params.rep): counted
+  results/g3/20261011-150437-4f40ed3-3bb1-n1           S2d        rep 2 (params.rep): counted
+  results/g3/20261011-151422-4f40ed3-2181-n1           S2b-ii     rep 2 (params.rep): counted
+  results/g3/20261011-153046-4f40ed3-5127-n1           Sstar-r8g  rep 2 (params.rep): counted
+  results/g3/20261011-154020-4f40ed3-3c2f-n1           S9         rep 2 (params.rep): counted
+  results/g3/20261011-154955-4f40ed3-e37a-n1           S7b        rep 2 (params.rep): counted
+  results/g3/20261011-155929-4f40ed3-1195-n1           S7a        rep 2 (params.rep): counted
+  results/g3/20261011-160904-4f40ed3-9df7-n1           S6         rep 2 (params.rep): counted
+  results/g3/20261011-161738-4f40ed3-8d62-n1           S5         rep 2 (params.rep): counted
+  results/g3/20261011-162822-4f40ed3-fd5a-n1           S2a        rep 2 (params.rep): counted
+ladder-campaign: 6 launch(es), 30 skipped; cost basis of the launches $99.60 (an upper bound where estimated)
