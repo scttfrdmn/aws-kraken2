@@ -67,6 +67,7 @@ EFF = [("eff_cpu_usd", "U_cpu"), ("eff_mem_usd", "U_mem_mean"), ("eff_net_baseli
        ("eff_net_tx_peak_usd", "U_net_tx_peak")]
 EFF_U = dict(EFF)
 EMPTY_SHA = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"  # sha256 of an empty stream
+GZ_WARNING = 2   # GNU gzip's exit for a warning (e.g. "trailing garbage ignored"): the output is complete
 # Gross and net (Scott, 2026-10-10, #25): every wall delta and pair is reported gross and net of the
 # measurement-only work, net the headline. The tables do not re-derive that work: each node emits one
 # `lad-net {"v": 1, "rank", "critical_measurement_s"}` line (#51 computes the number under its rule),
@@ -737,26 +738,30 @@ def sample_errors(run, s):
             elif not (isinstance(rx, list) and isinstance(gx, list) and len(rx) == len(rg) == len(gx)
                       and all(is_int(x) for x in rx + gx)):
                 errs.append(f"{where}: s5.rg_exit and s5.gz_exit must be integer lists, one per mate")
+            elif "gz_warning" in s5 and s5["gz_warning"] != [x == GZ_WARNING for x in gx]:
+                errs.append(f"{where}: s5.gz_warning {s5['gz_warning']!r} must be, per mate, whether gz_exit is {GZ_WARNING} ({gx})")
             else:
-                # The body's B1 rule: a mate differs if the sha256 differ, either tool exits non-zero,
-                # or either output is the empty stream.
-                differs = rg != gz or any(x != 0 for x in rx + gx) or EMPTY_SHA in rg + gz
+                # The body's B1 rule: a mate differs if the sha256 differ, rapidgzip exits non-zero, GNU
+                # gzip exits other than 0 or 2 (2 is its warning, e.g. trailing garbage ignored, with the
+                # output complete), or either output is the empty stream.
+                differs = rg != gz or any(x != 0 for x in rx) or any(x not in (0, GZ_WARNING) for x in gx) or EMPTY_SHA in rg + gz
                 if s5.get("status") == "identical" and differs:
                     errs.append(f"{where}: s5.status identical, but the B1 rule says differs (sha256 lists, a non-zero "
-                                "exit, or an empty-stream sha256)")
+                                "rapidgzip exit, a gzip exit other than 0 or 2, or an empty-stream sha256)")
                 elif s5.get("status") == "differs" and not differs:
-                    errs.append(f"{where}: s5.status differs, but the lists are equal, every exit is 0 and no output is empty")
+                    errs.append(f"{where}: s5.status differs, but the lists are equal, rapidgzip exits 0, gzip 0 or 2, and no output is empty")
     return errs
 
 
 def gzip_failed(s):
-    """The reason, if the identity phase's gzip run failed on this input (a non-zero gz_exit, or an
-    empty gzip stream); "" otherwise."""
+    """The reason, if the identity phase's gzip run failed on this input (a gz_exit other than 0 or 2,
+    or an empty gzip stream); "" otherwise. Exit 2 is GNU gzip's warning (e.g. trailing garbage
+    ignored): its output is complete and upstream's wrapper ignores the status, so it is no failure."""
     x = s.get("s5") if isinstance(s.get("s5"), dict) else {}
     if x.get("status") in (None, "n/a"):
         return ""
     why = []
-    if any(e != 0 for e in x.get("gz_exit") or []):
+    if any(e not in (0, GZ_WARNING) for e in x.get("gz_exit") or []):
         why.append(f"gzip exited {x.get('gz_exit')}")
     if EMPTY_SHA in (x.get("gz_sha256") or []):
         why.append("gzip's output is the empty stream")
@@ -835,6 +840,20 @@ def validate(runs, levers, defects):
             r["notes"].append(f"{len(got) - len(set(got))} duplicate lad-sample accession line(s)")
         if r["params"]["run_kind"] == "ladder" and r["params"]["state"] != "cold":
             r["exclude"].append(f"state {r['params']['state']}: ladder runs are cold")
+        # The run's own lever phase: a term that matches nothing is a contract DEFECT, never a silently
+        # missing value. A run successor's phase (its delta is taken against this run) that this run
+        # lacks is a note: the successor's lever may be what adds that phase.
+        rung, coh = r["params"]["rung"], r["params"].get("cohort")
+        spec = (levers.get(rung) or {}).get("phase")
+        miss = phase_missing(r, spec) if spec else []
+        if miss:
+            e = f"its lever phase {spec}: {', '.join(miss)} match(es) no manifest phase or lad-sample phase"
+            defects.append(("contract", f"{rid}: {e}"))
+            r["exclude"].append(f"DEFECT (contract): {e}")
+        for x, lv in sorted(levers.items()):
+            if lv.get("phase") and run_pred(levers, x, coh)[0] == rung and phase_missing(r, lv["phase"]):
+                r["notes"].append(f"{x}'s lever phase {lv['phase']}: {', '.join(phase_missing(r, lv['phase']))} not in this run "
+                                  f"(its predecessor run), so that delta's phase axis is missing here")
         if r["params"]["rung"] not in levers:
             r["notes"].append(f"rung {r['params']['rung']} is not in ladder.levers.tsv")
         elif not_run(levers[r["params"]["rung"]], r["params"].get("cohort")):
@@ -845,10 +864,29 @@ def validate(runs, levers, defects):
 
 # ---------------------------------------------------------------- axes, stats, deltas
 def phase_parts(spec):
-    if not spec:
-        return []
-    scope, name = (spec.split(":", 1) if ":" in spec else ("", spec))
-    return [(scope, part) for part in name.split("+")]
+    """A lever phase's terms, each with its own scope: "run:A+run:B" (as ladder.levers.tsv writes a
+    compound phase), "sample:A+run:B" and bare terms alike -> [(scope, name), ...]."""
+    out = []
+    for t in (spec or "").split("+"):
+        t = t.strip()
+        if not t:
+            continue
+        scope, name = t.split(":", 1) if ":" in t else ("", t)
+        out.append((scope, name))
+    return out
+
+
+def phase_missing(run, spec):
+    """The terms of SPEC that match nothing in RUN: a run: term that is not a manifest phase, a
+    sample: term that no lad-sample has, a bare term that is neither."""
+    miss = []
+    for scope, part in phase_parts(spec):
+        in_run = part in run.get("phases_run", {})
+        in_sam = any(isinstance(s.get("phases"), dict) and part in s["phases"] for s in run.get("samples", []))
+        if (scope == "run" and not in_run) or (scope == "sample" and not in_sam) or (scope == "" and not (in_run or in_sam)) \
+                or scope not in ("run", "sample", ""):
+            miss.append(f"{scope}:{part}" if scope else part)
+    return miss
 
 
 def phase_value(run, spec):

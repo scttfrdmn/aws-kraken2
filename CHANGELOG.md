@@ -32,6 +32,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Every on-node sha256 is checked against upstream at the pin. The Law 1, S5 fallback,
     net-accounting, TTL and tables checks each fail under a planted defect.
 
+### Fixed
+
+- Found by the ladder rehearsal (#53):
+  - `ladder_tables.py`: a compound lever phase (`run:A+run:B`, as `ladder.levers.tsv` writes
+    it) was read as missing, because only the first term's scope was stripped. Each term now has
+    its own scope. A run's own lever phase that matches nothing is a DEFECT (contract), not a
+    silently missing value. Unit tests are in `ladder_tables_test.py`.
+  - The ladder body's S5 identity rule (Scott, 2026-10-11): GNU gzip's exit 2 is a warning (for
+    example "trailing garbage ignored": the output is complete, and upstream's wrapper ignores the
+    status). It is recorded as `gz_warning` (identity line and `s5`) and is neither a difference
+    nor an input defect. An input defect is a gzip exit other than 0 or 2, or an empty stream. Any
+    non-zero rapidgzip exit still differs. The tables' B1 rule and `input` DEFECT follow. The
+    rehearsal case `s5-garbage` and a ladder-stream-test case cover it. The 15 c1 specs are
+    regenerated with the body.
+  - The ladder body's `lad_crit` on the engine path: the engine's exit time is recorded as the
+    engine exits (`eng.end`, from `lad_engine`'s subshell). Previously a hash made after the exit,
+    but before the watch loop noticed, counted as covered.
+
 - The #25 ladder body, lever table and generator (#51, WP-7; docs/ladder.md).
   - `scripts/g3/ladder.body.sh`: one body for both arms of both ladders. The lever choices are
     a PARAMS block in the payload. The phases are the same on both arms, every run is cold

@@ -331,7 +331,9 @@ ran beside fetch-db and fetch-inputs, and the `lad-build` line records `build_en
 for each of its outputs, from lever.sh's upload-enqueue records. Its critical part is the seconds
 of those intervals that no classify span on the node covers:
 - per-sample path: each sample's span is `[start, end]`, a running sample covering up to the hash;
-- engine: the engine's classify phase, up to its exit.
+- engine: the engine's classify phase, up to its exit. The exit time is recorded by `lad_engine`'s
+  subshell as the engine exits (`eng.end`), not when the watch loop next notices. A hash made
+  after the exit is therefore uncovered, to within the few ms that writing the file takes.
 
 **Uploads cover too (NB1).** The node's end waits for its uploads either way, so an upload cannot
 leave the hash critical either. The covering spans therefore also include:
@@ -452,13 +454,19 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
   the tool's own command substitution, because the pipeline's PIPESTATUS is gone once the
   substitution returns. A mate differs if:
   - the two sha256 differ;
-  - either tool exits non-zero;
+  - rapidgzip exits non-zero;
+  - GNU gzip exits other than 0 or 2;
   - or either output is empty (the empty-stream sha256, e3b0c442…).
 
-  The lad-sample `s5` carries `gz_exit` and `rg_exit`, integer lists per mate, whenever status is not
-  n/a, beside the sha lists. If GNU gzip itself exits non-zero or gives an empty stream, the identity
-  line has `input_defect: true`: that is an input or staging DEFECT, not an S5 finding (the input
-  passed its sha256 against the staged metadata). A sample that differs gets `s5.status: differs`
+  **GNU gzip's exit 2 is a warning** (Scott, 2026-10-11), for example "trailing garbage ignored":
+  its output is complete, and upstream's wrapper ignores the status, so stock reads the full
+  stream. By itself it is neither a difference nor an input defect. It is recorded as
+  `gz_warning: true` in the identity line, and as `s5.gz_warning`, a boolean list per mate.
+
+  The lad-sample `s5` carries `gz_exit`, `gz_warning` and `rg_exit`, lists per mate, whenever status
+  is not n/a, beside the sha lists. If GNU gzip itself exits other than 0 or 2, or gives an empty
+  stream, the identity line has `input_defect: true`. That is an input or staging DEFECT, not an S5
+  finding (the input passed its sha256 against the staged metadata). A sample that differs gets `s5.status: differs`
   ("S5 not output-preserving on this input") and falls back to GNU gzip by per-sample shim
   behaviour: a `gzip` ahead of the shim on PATH sends exactly its inputs to GNU gzip, and logs
   them (`out/s5-fallback.calls`). After classify the run fails unless `gzip-shim.calls` has at
@@ -574,6 +582,7 @@ container's stdout and the bucket):
 | 1 | `engine-k2`, `engine-n2`, `o5-sdk` | the engine at K = 2 replicas, at N = 2 shards (lpt) over TCP, and O5's sdk-stream emitter at N = 2, with sha256 by GET |
 | 1 | `law1-across-arms` | each sample's sha256 is one value across every passing arm, the oracle's |
 | 2 | `s5-trailing` | real rapidgzip on SRR28305653 with 4096 zero bytes after mate 1 (the oracle's zeropad variant). Only that sample differs and falls back. The recorded exits and sha256 equal an independent run of the same tools at the same -P |
+| 2 | `s5-garbage` | ERR478965 with a garbage line after mate 1 (the oracle's garbage variant). GNU gzip exits 2, its warning, so the input is kept: `gz_warning`, no `input_defect`. rapidgzip differs, so the sample falls back, and Law 1 holds. The recorded exits equal an independent run |
 | 2 | `s5-corrupt` | mate 1 cut at half its bytes. `input_defect` is set on that file only, with GNU gzip's real exit, and the run fails (the classifier sees a short mate) |
 | 3 | `neg-*` | each fails the run, for its stated reason (the message is checked): a gzip, and a bzip2, in KRAKEN2_DIR (the upstream build mutated); an ETag mismatch via lv_etag and via the engine; a classifier exiting non-zero (a truncated mate; its rc is in the lad-sample line); an engine home sample with no ak2-sample line; `cohort_place.py needs` failing, `table` failing, the two disagreeing, and an empty NEED that the table agrees with |
 | 4 | `overlap-slow-build` | SETUP=overlap with a build 20 s slower: build-wait, identity, load, and the wait observed |
@@ -695,7 +704,7 @@ Contract version 1:
 | `t_start`, `t_end` | yes | number | epoch seconds (3 decimals) when the sample's work started and ended on the node, with `t_end` ≥ `t_start`. The model's per-sample span is the union of these intervals. |
 | `phases` | yes | object | phase name → seconds, written with 3 decimals (ms granularity). A `sample:` lever phase must use names that appear here. |
 | `outputs` | yes | object | role → `{"bytes": int, "sha256": "<64 lowercase hex, computed on the node>"}`. `output` and `report` are required; add `classified_1`, `classified_2`, `unclassified_1` and `unclassified_2` when they are written. The set of roles is the file set. |
-| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "gz_exit": [int, ...], "rg_exit": [int, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, with `gz_exit` and `rg_exit` each tool's real exit status, one per input file in mate order (R1, R2). The four lists must have the same length: the shas 64 lowercase hex, the exits integers. **The body's B1 rule** decides `differs`: the sha lists differ, **or** any exit is non-zero, **or** either list holds the empty-stream sha256 (`e3b0c442…b855`). `differs` must satisfy it and `identical` must not; so `identical` with a non-zero exit, or with an empty output, is a contract DEFECT. **A non-zero `gz_exit`, or an empty gzip stream** (`e3b0c442…` in `gz_sha256`), is a DEFECT of its own, of class `input`: an input or staging failure, not an S5 finding. The same DEFECT is raised from the body's **identity line** (`lad-identity {json}`, kind `identity`, in `out/lad.jsonl`) when it carries `input_defect: true`, for an input whose sample's `s5` does not already show it. A sample flagged both ways gets one DEFECT. The run is excluded, and the sample is not counted in the S5 fallback finding. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
+| `s5` | yes | object | `{"status": "n/a"\|"identical"\|"differs", "fallback": "none"\|"gzip", "gz_sha256": [hex, ...], "rg_sha256": [hex, ...], "gz_exit": [int, ...], "gz_warning": [bool, ...], "rg_exit": [int, ...], "P": int, "nproc": int}`. `n/a` means the run does not use rapidgzip; the lists are then not read. Otherwise `status` is the identity phase's result for this input, and `gz_sha256` and `rg_sha256` are the sha256 of gzip's and of rapidgzip's decompressed output, with `gz_exit` and `rg_exit` each tool's real exit status, one per input file in mate order (R1, R2). The four lists must have the same length: the shas 64 lowercase hex, the exits integers. **The body's B1 rule** decides `differs`: the sha lists differ, **or** any `rg_exit` is non-zero, **or** any `gz_exit` is other than 0 or 2, **or** either list holds the empty-stream sha256 (`e3b0c442…b855`). `differs` must satisfy it and `identical` must not; so `identical` with a non-zero rapidgzip exit, a gzip exit other than 0 or 2, or an empty output, is a contract DEFECT. GNU gzip's exit 2 is its warning (output complete; upstream's wrapper ignores it): `gz_warning`, when present, must be `gz_exit == 2` per mate, or it is a contract DEFECT. **A `gz_exit` other than 0 or 2, or an empty gzip stream** (`e3b0c442…` in `gz_sha256`), is a DEFECT of its own, of class `input`: an input or staging failure, not an S5 finding. The same DEFECT is raised from the body's **identity line** (`lad-identity {json}`, kind `identity`, in `out/lad.jsonl`) when it carries `input_defect: true`, for an input whose sample's `s5` does not already show it. A sample flagged both ways gets one DEFECT. The run is excluded, and the sample is not counted in the S5 fallback finding. `fallback` defaults to `none`. When `status` is `differs`, the body must decompress that sample with gzip instead and record `"fallback": "gzip"`. `differs` with `fallback: none` is a contract DEFECT, and so is `fallback: gzip` with any other status. |
 | `rank`, `idx`, `input_bytes`, `threads` | no | | node rank, index in the cohort, input bytes, threads |
 
 A missing or ill-typed required field is a DEFECT (contract) and excludes the run.
@@ -729,7 +738,7 @@ comments. Columns are read by name:
 | `predecessor` | the rung this one changes one lever from (empty or `-` for a root) |
 | `lever` | the lever key-group. `stock` marks only the root S0-T1. S0-Tv's predecessor is S0-T1 and its lever is `threads`. S5's lever is `rapidgzip`, which is how the S5 findings find it. |
 | `counterpart` | the O counterpart of an S lever, or the stated reason there is none |
-| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two. |
+| `phase` | the lever's own phase. `run:NAME` is a manifest phase; `sample:NAME` is the sum over the run's lad-sample `phases.NAME`; a bare `NAME` means run if the manifest has it, else sample. `A+B` sums the two, each term with its own scope (`run:fetch-db+run:load+run:classify`, as this table writes a compound phase; `sample:A+run:B` alike). A term of a run's own lever phase that matches nothing (no such manifest phase, no lad-sample with it) is a DEFECT (contract), and the run is excluded. A run successor's phase that the predecessor run lacks is a note. |
 | `endpoint` | the endpoint(s) this rung is, for example `S*-time;S*-cost` (every cohort) or `c1:S*-time;c10:S*-time` (per cohort; a per-cohort declaration wins). Two rungs declaring the same endpoint for the same cohort is a DEFECT (levers). An endpoint that is not declared gives the status "endpoint not declared"; nothing is selected from the data. |
 | `pred_wall_s`, `pred_usd`, `pred_phase_s` (optional) | the predicted delta on each axis, set against the threshold |
 | `alias_of` | for an alias rung, its candidates separated by `\|` (e.g. `S9\|Sstar-r8g\|Sstar-r8gd`) |

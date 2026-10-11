@@ -82,6 +82,8 @@ try:
         return depth[r]
 
     res, out, n = os.path.join(tmp, "synthetic"), os.path.join(tmp, "out1"), 0
+    # Every phase the body marks, so each rung's lever phase (ladder.levers.tsv) is measurable.
+    PH = {"setup": 5, "fetch-db": 10, "etag-hash.k2d": 1, "fetch-inputs": 3, "load": 20, "classify": 50, "upload-drain": 2}
     for r, x in lv.items():
         if x.get("not_run") or x.get("alias") or 1 in (x.get("not_run_cohorts") or {}):
             continue
@@ -89,7 +91,7 @@ try:
             n += 1
             wall = 2000 - 10 * d(r) + (0.5 if rep == 2 else 0)
             s = T.sample(x["arm"], r, s5="identical" if lt.has_rapidgzip(lv, r) else "n/a")
-            T.single(res, "20261010-%06d-aaaaaaa" % n, x["arm"], r, rep, wall, start=n * 3000, samples=[s])
+            T.single(res, "20261010-%06d-aaaaaaa" % n, x["arm"], r, rep, wall, PH, start=n * 3000, samples=[s])
     resd = os.path.join(tmp, "ladder.resolved.tsv")
     with open(resd, "w") as f:
         f.write("origin\tcohort\tkey\tvalue\tsource\n")

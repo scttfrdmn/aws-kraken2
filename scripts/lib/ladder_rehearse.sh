@@ -151,6 +151,8 @@ for s in "${SRC[@]}"; do put cohort "$s" "$K2_READS/${s}_200000_1.fq.gz" "$K2_RE
 # 4096 zero bytes appended; cut, SRR062634's mate 1 cut at half its bytes.
 { cat "$K2_READS/SRR28305653_200000_1.fq.gz"; head -c 4096 /dev/zero; } > "$T/reads/zp_1.fq.gz" || exit 1
 head -c $(( $(wc -c < "$K2_READS/SRR062634_200000_1.fq.gz") / 2 )) "$K2_READS/SRR062634_200000_1.fq.gz" > "$T/reads/cut_1.fq.gz" || exit 1
+# garbage: ERR478965's mate 1 with a garbage line appended (GNU gzip: "trailing garbage ignored", exit 2).
+{ cat "$K2_READS/ERR478965_200000_1.fq.gz"; printf 'trailing garbage\n'; } > "$T/reads/gb_1.fq.gz" || exit 1
 WEIGHTS=(200000 200000 200000)
 
 # ---- the committed tree for the nodes: a bundle of HEAD, k2probe for the infra container ----
@@ -544,6 +546,9 @@ case_s5() {
   put cohort-s5 SRR062634 "$K2_READS/SRR062634_200000_1.fq.gz" "$K2_READS/SRR062634_200000_2.fq.gz"
   put cohort-s5 ERR478965 "$K2_READS/ERR478965_200000_1.fq.gz" "$K2_READS/ERR478965_200000_2.fq.gz"
   put cohort-s5 SRR28305653 "$T/reads/zp_1.fq.gz" "$K2_READS/SRR28305653_200000_2.fq.gz"
+  put cohort-garbage SRR062634 "$K2_READS/SRR062634_200000_1.fq.gz" "$K2_READS/SRR062634_200000_2.fq.gz"
+  put cohort-garbage ERR478965 "$T/reads/gb_1.fq.gz" "$K2_READS/ERR478965_200000_2.fq.gz"
+  put cohort-garbage SRR28305653 "$K2_READS/SRR28305653_200000_1.fq.gz" "$K2_READS/SRR28305653_200000_2.fq.gz"
   put cohort-corrupt SRR062634 "$T/reads/cut_1.fq.gz" "$K2_READS/SRR062634_200000_2.fq.gz"
   put cohort-corrupt ERR478965 "$K2_READS/ERR478965_200000_1.fq.gz" "$K2_READS/ERR478965_200000_2.fq.gz"
   local P5; P5=$(pset "$P_BASE" GUNZIP=rapidgzip-Pauto)
@@ -553,20 +558,29 @@ case_s5() {
   ind=$("${PM[@]}" run --rm -v "$T:/work" "$IMG" bash -c '
     set +e; python3 -m venv /tmp/v > /dev/null && /tmp/v/bin/pip install -q --no-index --find-links /opt/wheels rapidgzip==0.14.5 > /dev/null || exit 1
     d=/work/s3/'"$RESB/$DATAP"'
-    for f in cohort-s5/SRR28305653_1.fastq.gz cohort-s5/SRR062634_1.fastq.gz cohort-corrupt/SRR062634_1.fastq.gz; do
+    for f in cohort-s5/SRR28305653_1.fastq.gz cohort-s5/SRR062634_1.fastq.gz cohort-corrupt/SRR062634_1.fastq.gz cohort-garbage/ERR478965_1.fastq.gz; do
       g=$(gzip -dc "$d/$f" 2> /dev/null | sha256sum | cut -c1-64; exit "${PIPESTATUS[0]}"); gr=$?
       h=$(/tmp/v/bin/rapidgzip -d -c -P 4 "$d/$f" 2> /dev/null | sha256sum | cut -c1-64; exit "${PIPESTATUS[0]}"); hr=$?
       printf "%s %s %s %s %s\n" "$f" "$gr" "$hr" "$h" "$g"
     done')
   say "independent tool runs (file gzip_exit rapidgzip_exit rapidgzip_sha256 gzip_sha256):"; echo "$ind" | sed 's/^/    /'
   local -a zp cut
-  read -r -a zp <<< "$(sed -n 1p <<< "$ind")"; read -r -a cut <<< "$(sed -n 3p <<< "$ind")"
+  local -a gb
+  read -r -a zp <<< "$(sed -n 1p <<< "$ind")"; read -r -a cut <<< "$(sed -n 3p <<< "$ind")"; read -r -a gb <<< "$(sed -n 4p <<< "$ind")"
   [ "${zp[4]}" != "${zp[3]}" ] || say "WARNING: rapidgzip 0.14.5 kept every byte of the zero-padded input at -P 4 (the probe cannot resolve the fallback)"
   local exs
   exs=$(jq -nc --argjson zg "${zp[1]}" --argjson zr "${zp[2]}" --arg zh "${zp[3]}" '{exit:"ok", pipefail_off:true,
     s5:{differs:["SRR28305653"], defect:[], independent:{"SRR28305653_1.fastq.gz":[$zg, $zr, $zh]}}}')
   arm s5-trailing 2 "S5: real rapidgzip; SRR28305653 mate 1 has 4096 trailing zero bytes" S5 S 1 x8g.24xlarge "$P5" "$exs" \
     cohort-s5 "$ALL3" "$W3" '{}'
+  # A garbage tail: GNU gzip warns (exit 2) with its output complete, so the input is kept (no
+  # input_defect; gz_warning recorded); rapidgzip differs, so the sample falls back to GNU gzip.
+  local exg
+  exg=$(jq -nc --argjson g "${gb[1]}" --argjson r "${gb[2]}" --arg h "${gb[3]}" '{exit:"ok", pipefail_off:true,
+    s5:{differs:["ERR478965"], defect:[], warning:["ERR478965_1.fastq.gz"], independent:{"ERR478965_1.fastq.gz":[$g, $r, $h]}}}')
+  [ "${gb[1]}" = 2 ] || say "WARNING: GNU gzip exits ${gb[1]} on the garbage tail, not 2 (the probe cannot resolve gz_warning)"
+  arm s5-garbage 2 "S5: ERR478965 mate 1 with a garbage tail (gzip exit 2: a warning)" S5 S 1 x8g.24xlarge "$P5" "$exg" \
+    cohort-garbage "$ALL3" "$W3" '{}'
   # Negative control: no sample marked as differing (the fallback never installed); the zero-padded
   # sample is then classified from rapidgzip's short stream, so S5's check and Law 1 must fail.
   MUTF=mut_nofallback EXPECTFAIL=s5,law1 \

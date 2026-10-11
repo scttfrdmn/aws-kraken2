@@ -367,12 +367,14 @@ lad_finish() {
 # critical; with several such lanes another lane's span can cover a hash that delays its own lane,
 # and on the engine at N > 1 a peer's work is not a span here (net is then an upper bound).
 lad_crit() {
-  local f j a b p alive=0
+  local f j a b
   {
     echo "H $*"
     if [ "$ENGINE" = 1 ]; then
-      for p in "${CPIDS[@]}"; do kill -0 "$p" 2> /dev/null && alive=1; done
-      [ -n "${CLS_T0:-}" ] && echo "S $CLS_T0 $([ "$alive" = 1 ] && echo 9e18 || echo "${ENG_END:-9e18}")"
+      # The engine's classify span ends at its recorded exit (eng.end, written by lad_engine's
+      # subshell as the engine exits); until that file exists the engine is running and covers.
+      local ee=""; [ -s "$W/eng.end" ] && read -r ee < "$W/eng.end"
+      [ -n "${CLS_T0:-}" ] && echo "S $CLS_T0 ${ee:-9e18}"
     else
       for f in "$SD"/start/*; do
         [ -e "$f" ] || continue
@@ -436,7 +438,7 @@ lad_line() {
          + (if $cs == "" then {} else {"classify-process":n($cs)} end)
          + (if $e == null then {} else ({"engine-setup":n($e.setup_s), "engine-classify":n($e.classify_s), "engine-close":n($e.close_s),
              "engine-report":n($e.report_s)} | with_entries(select(.value != null))) end)) | map_values(ms)),
-       outputs:$outs, s5:({status:$st, fallback:$fb, P:$k, nproc:$nproc} + (if $st == "n/a" then {} else {gz_sha256:[$g1, $g2], rg_sha256:[$r1, $r2], gz_exit:($ge | split(" ") | map(tonumber)), rg_exit:($re | split(" ") | map(tonumber))} end)),
+       outputs:$outs, s5:({status:$st, fallback:$fb, P:$k, nproc:$nproc} + (if $st == "n/a" then {} else {gz_sha256:[$g1, $g2], rg_sha256:[$r1, $r2], gz_exit:($ge | split(" ") | map(tonumber)), gz_warning:($ge | split(" ") | map(tonumber == 2)), rg_exit:($re | split(" ") | map(tonumber))} end)),
        rank:$rank, idx:$idx, t_start:(n($t0) | ms), t_end:(n($t1) | ms), input_bytes:$inb, threads:$t,
        replica:$group, lane:$lane, classifier:$cl, out_upload:$upm, sha256_source:$shsrc,
        s5_verdict:(if $st == "differs" then "S5 not output-preserving on this input" else null end), engine:$e}')"
@@ -458,10 +460,13 @@ lad_lanes() {
 # lad_engine: the one cohort-mode engine process (ENGINE_ENV), its stderr to eng.stderr and, as
 # written, its ak2 lines into the run log (the same 2> >(...) > /dev/null order as lad_one). Sets CPIDS.
 lad_engine() {
-  : > "$W/eng.stderr"
+  : > "$W/eng.stderr"; rm -f "$W/eng.end"
   T_LAUNCH=$(now)   # the engine's start_s are seconds after its process start
-  env "${ENGINE_ENV[@]}" "$OURS" --db "$DBDIR" --paired \
-    2> >(tee "$W/eng.stderr" | grep --line-buffered -E '^ak2-(sample|timing|engine)' | sed -u "s/^/[$RUNG] /") > /dev/null &
+  # The subshell writes the engine's exit time (eng.end) as soon as it exits, so lad_crit's engine
+  # span ends there and not when the watch loop next notices (to the few ms of writing it).
+  ( env "${ENGINE_ENV[@]}" "$OURS" --db "$DBDIR" --paired \
+      2> >(tee "$W/eng.stderr" | grep --line-buffered -E '^ak2-(sample|timing|engine)' | sed -u "s/^/[$RUNG] /") > /dev/null
+    rc=$?; now > "$W/eng.end.tmp" && mv "$W/eng.end.tmp" "$W/eng.end"; exit "$rc" ) &
   CPIDS+=($!)
 }
 # The watch loop (main shell: phases, uploads and lad-sample lines are its own). Phase boundaries
@@ -516,7 +521,7 @@ lad_watch() {
   while :; do
     alive=0
     for p in "${CPIDS[@]}"; do kill -0 "$p" 2> /dev/null && alive=1; done
-    [ "$alive" = 0 ] && { ENG_END=${ENG_END:-$(now)}; sleep 1; }   # the end of the classify spans; let the tees drain
+    [ "$alive" = 0 ] && sleep 1   # let the tees drain (the engine span ends at eng.end; lad_engine)
     lad_scan
     [ "$alive" = 0 ] && break
     if [ $(( $(date +%s) - LASTPUSH )) -ge 30 ]; then lad_push; LASTPUSH=$(date +%s); fi
@@ -554,8 +559,9 @@ LADFB
 # depends on -P (docs/oracle.md), so every input this node reads is decompressed by both tools at
 # this run's -P on this host, before any classify; its own phase, measurement only. Each tool's
 # real exit status is taken inside its command substitution (the pipeline's PIPESTATUS is gone
-# once the substitution returns). A sample differs if any mate's sha256 differ, either tool exits
-# non-zero, or either tool's output is empty (the empty-stream sha256): it then falls back to GNU
+# once the substitution returns). A sample differs if any mate's sha256 differ, rapidgzip exits
+# non-zero, GNU gzip exits other than 0 or 2 (2 is its warning, gz_warning: the output is complete),
+# or either tool's output is empty (the empty-stream sha256): it then falls back to GNU
 # gzip (lad_s5_fallback). Sets S5BAD, IDSEC, GZSHA, RGSHA, GZRC, RGRC.
 EMPTY_SHA=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 lad_identity() {
@@ -581,20 +587,24 @@ lad_identity() {
     why=""
     [[ $g =~ ^[0-9a-f]{64}$ ]] && [[ $h =~ ^[0-9a-f]{64}$ ]] || why="no sha256"
     [ "$g" = "$h" ] || why="${why:+$why; }sha256 differ"
-    [ "$gr" = 0 ] || why="${why:+$why; }gzip exit $gr"
+    # GNU gzip's exit 2 is its warning (e.g. "trailing garbage ignored"): the output is complete and
+    # upstream's wrapper ignores the status, so stock reads the full stream. Recorded as gz_warning;
+    # by itself it is neither a difference nor an input defect (Scott, 2026-10-11).
+    gw=false
+    case $gr in 0) ;; 2) gw=true ;; *) why="${why:+$why; }gzip exit $gr" ;; esac
     [ "$hr" = 0 ] || why="${why:+$why; }rapidgzip exit $hr"
     { [ "$g" = "$EMPTY_SHA" ] || [ "$h" = "$EMPTY_SHA" ]; } && why="${why:+$why; }empty output"
     ok=true; [ -z "$why" ] || ok=false
-    # GNU gzip itself failing, or giving nothing, is an input/staging defect (the input passed its
-    # sha256 against the staged metadata), not an S5 finding: flagged for the tables.
-    idef=false; { [ "$gr" != 0 ] || [ "$g" = "$EMPTY_SHA" ] || ! [[ $g =~ ^[0-9a-f]{64}$ ]]; } && idef=true
+    # GNU gzip itself failing (an exit other than 0 or 2), or giving nothing, is an input/staging
+    # defect (the input passed its sha256 against the staged metadata), not an S5 finding: flagged for the tables.
+    idef=false; { ! [[ $gr =~ ^(0|2)$ ]] || [ "$g" = "$EMPTY_SHA" ] || ! [[ $g =~ ^[0-9a-f]{64}$ ]]; } && idef=true
     GZSHA[$f]=$g; RGSHA[$f]=$h; GZRC[$f]=$gr; RGRC[$f]=$hr
     s=${f%_[12].fastq.gz}
     [ "$ok" = true ] || S5BAD[$s]=1
     IDSEC[$s]=$(awk -v a="${IDSEC[$s]:-0}" -v b="$t0" -v c="$t1" 'BEGIN{printf "%.3f", a + c - b}')
     emit identity "$(jq -nc --arg f "$f" --arg s "$s" --arg g "$g" --arg h "$h" --argjson gr "$gr" --argjson hr "$hr" --argjson k "$GZK" \
-      --argjson nproc "$NPROC" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg why "$why" --argjson idef "$idef" \
-      '{kind:"identity", file:$f, sample:$s, gzip_sha256:$g, gzip_exit:$gr, rapidgzip_sha256:$h, rapidgzip_exit:$hr, rapidgzip_P:$k,
+      --argjson nproc "$NPROC" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg why "$why" --argjson idef "$idef" --argjson gw "$gw" \
+      '{kind:"identity", file:$f, sample:$s, gzip_sha256:$g, gzip_exit:$gr, gz_warning:$gw, rapidgzip_sha256:$h, rapidgzip_exit:$hr, rapidgzip_P:$k,
         nproc:$nproc, identical:$ok, input_defect:$idef, why:(if $why == "" then null else $why end), seconds:(($t1|tonumber)-($t0|tonumber)),
         verdict:(if $ok then "output-preserving" else "S5 not output-preserving on this input" end)}')"
   done

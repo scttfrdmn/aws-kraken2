@@ -335,6 +335,10 @@ def check(c, expect_fail):
             K.need("s5", sorted(x["file"] for x in ids) == sorted(f"{a}_{m}.fastq.gz" for a in mine for m in (1, 2)),
                    f"r{r}: one identity line per input file this node read ({len(ids)})")
             K.need("s5", all(x.get("rapidgzip_P") == P for x in ids) and P, f"r{r}: identity at the run's -P {P} (lad-config gunzip_P)")
+            got_w = {x["file"] for x in ids if x.get("gz_warning") is True}
+            want_w = {f for f in s5.get("warning", []) if f.split("_")[0] in mine}
+            K.need("s5", got_w == want_w and all(x.get("gz_warning") == (x.get("gzip_exit") == 2) for x in ids),
+                   f"r{r}: gz_warning (GNU gzip's exit 2) on {sorted(got_w)} (want {sorted(want_w)}), and exactly where gzip exited 2")
             got_def = {x["file"] for x in ids if x.get("input_defect")}
             K.need("s5", got_def == {f for f in defect if f.split("_")[0] in mine},
                    f"r{r}: input_defect on {sorted(got_def)} (want {sorted(f for f in defect if f.split('_')[0] in mine)})")
@@ -342,10 +346,12 @@ def check(c, expect_fail):
                 a, v = s["accession"], s.get("s5") or {}
                 wd = a in differs
                 ok = (v.get("status") == ("differs" if wd else "identical") and v.get("fallback") == ("gzip" if wd else "none")
-                      and v.get("P") == P and all(len(v.get(k) or []) == 2 for k in ("gz_sha256", "rg_sha256", "gz_exit", "rg_exit")))
+                      and v.get("P") == P and all(len(v.get(k) or []) == 2 for k in ("gz_sha256", "rg_sha256", "gz_exit", "rg_exit"))
+                      and v.get("gz_warning") == [e == 2 for e in v.get("gz_exit") or []])
                 if ok and not wd:
                     ok = v["gz_sha256"] == v["rg_sha256"] and v["gz_exit"] == [0, 0] and v["rg_exit"] == [0, 0] and EMPTY not in v["gz_sha256"]
-                K.need("s5", ok, f"r{r}: {a}: s5 {v.get('status')}/{v.get('fallback')} P {v.get('P')} gz_exit {v.get('gz_exit')} rg_exit {v.get('rg_exit')} "
+                K.need("s5", ok, f"r{r}: {a}: s5 {v.get('status')}/{v.get('fallback')} P {v.get('P')} gz_exit {v.get('gz_exit')} "
+                       f"gz_warning {v.get('gz_warning')} rg_exit {v.get('rg_exit')} "
                        f"(want {'differs/gzip' if wd else 'identical/none'})")
             for x in ids:
                 ind = (s5.get("independent") or {}).get(x["file"])
