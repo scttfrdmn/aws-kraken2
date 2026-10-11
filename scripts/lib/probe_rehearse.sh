@@ -271,37 +271,48 @@ tune)
   cat "$T/run/tables/probe-tune-selection.tsv"
   ;;
 awscp)
-  # Three runs of the body on the 320 MiB stand-in: a throttled copy (8 MiB/s) stopped by the bytes
-  # limit (64 MiB), one (4 MiB/s) stopped by the time limit (7 s), and an unthrottled one that
-  # completes. Each: exit 0; the progress lines streamed equal the pushed awscp.jsonl; at least 2
-  # progress lines for the limited runs; the done line's stopped_by; the client recorded with its
-  # resolved value; GetObject counted; the partial file removed; probe_tables.py awscp makes both tables.
+  # Four runs of the body on the 320 MiB stand-in: a throttled copy (8 MiB/s) stopped by the bytes
+  # limit (64 MiB), one (4 MiB/s) stopped by the time limit (7 s), one that ignores TERM (stopped by
+  # time, then KILLed 30 s later: killed_hard), and an unthrottled one that completes. Each: exit 0;
+  # the progress lines streamed equal the pushed awscp.jsonl; at least 2 progress lines for the
+  # limited runs, each with dirty_kb and writeback_kb; the done line's stopped_by and killed_hard;
+  # the client recorded with its resolved value; GetObject counted; the partial file removed;
+  # probe_tables.py awscp makes both tables.
   SZ=$(wc -c < "$T/hash.k2d" | tr -d ' ')
-  for v in bytes:8388608:67108864:60 time:4194304:999999999999:7 complete:0:999999999999:60; do
-    IFS=: read -r want bps lb ls <<< "$v"
-    mkdir -p "$T/run-$want/out" "$T/home-$want"
-    env -i "${ENVV[@]}" HOME="$T/home-$want" AK2T_OUT="$T/run-$want/out" AK2_RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$SHA" \
-      AK2_INSTANCE_TYPE=r8gd.48xlarge AK2_ALLOWED_BUCKETS="$RB $B" AK2_REHEARSE_NVME="$T/nvme-$want" AK2T_COPY_BPS="$bps" \
-      AK2_REHEARSE_AWSCP_BYTES="$lb" AK2_REHEARSE_AWSCP_S="$ls" AK2_REHEARSE_AWSCP_EVERY=2 \
-      bash -c "cd \$HOME; $(cat "$T/node.sh")" > "$T/body-$want.log" 2>&1
-    b=$?; echo "rehearse: awscp ($want) body exit $b"; [ "$b" = 0 ] || { tail -25 "$T/body-$want.log" | sed 's/^/  body | /'; RC=1; }
-    J="$T/run-$want/out/awscp.jsonl"
-    st=$(grep -c '^probe-awscp ' "$T/body-$want.log"); jl=$(grep -c . "$J" 2>/dev/null)
+  for v in bytes:bytes:8388608:67108864:60: time:time:4194304:999999999999:7: hard:time:4194304:999999999999:7:1 \
+           complete:complete:0:999999999999:60:; do
+    IFS=: read -r name want bps lb ls ign <<< "$v"
+    mkdir -p "$T/run-$name/out" "$T/home-$name"
+    t0=$SECONDS
+    env -i "${ENVV[@]}" HOME="$T/home-$name" AK2T_OUT="$T/run-$name/out" AK2_RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$SHA" \
+      AK2_INSTANCE_TYPE=r8gd.48xlarge AK2_ALLOWED_BUCKETS="$RB $B" AK2_REHEARSE_NVME="$T/nvme-$name" AK2T_COPY_BPS="$bps" \
+      AK2T_IGNORE_TERM="$ign" AK2_REHEARSE_AWSCP_BYTES="$lb" AK2_REHEARSE_AWSCP_S="$ls" AK2_REHEARSE_AWSCP_EVERY=2 \
+      bash -c "cd \$HOME; $(cat "$T/node.sh")" > "$T/body-$name.log" 2>&1
+    b=$?; el=$((SECONDS - t0))
+    kh=$(jq -r 'select(.kind == "done") | .killed_hard' "$T/run-$name/out/awscp.jsonl" 2>/dev/null)
+    mk=$(jq -s 'map(select(.kind == "progress") | has("dirty_kb") and has("writeback_kb")) | all' "$T/run-$name/out/awscp.jsonl" 2>/dev/null)
+    wkh=false; [ -n "$ign" ] && wkh=true
+    echo "rehearse: awscp ($name): killed_hard $kh (want $wkh), body ${el} s; every progress line has dirty_kb and writeback_kb: $mk"
+    [ "$kh" = "$wkh" ] && [ "$mk" = true ] || { echo "rehearse: awscp ($name) killed_hard or the meminfo fields wrong" >&2; RC=1; }
+    [ -z "$ign" ] || [ "$el" -ge 30 ] || { echo "rehearse: awscp (hard) took $el s: the 30 s TERM grace did not run" >&2; RC=1; }
+    echo "rehearse: awscp ($name) body exit $b"; [ "$b" = 0 ] || { tail -25 "$T/body-$name.log" | sed 's/^/  body | /'; RC=1; }
+    J="$T/run-$name/out/awscp.jsonl"
+    st=$(grep -c '^probe-awscp ' "$T/body-$name.log"); jl=$(grep -c . "$J" 2>/dev/null)
     np=$(grep -c '"kind":"progress"' "$J" 2>/dev/null)
     sb=$(jq -r 'select(.kind == "done") | .stopped_by' "$J" 2>/dev/null); by=$(jq -r 'select(.kind == "done") | .bytes' "$J" 2>/dev/null)
     cl=$(jq -r 'select(.kind == "client") | "\(.client) \(.resolved)"' "$J" 2>/dev/null)
-    ge=$(awk -F'\t' '$1 ~ /^GetObject/ {s += $2} END {print s + 0}' "$T/run-$want/out/requests.tsv" 2>/dev/null)
-    left=$(find "$T/nvme-$want" -type f 2>/dev/null | wc -l | tr -d ' ')
+    ge=$(awk -F'\t' '$1 ~ /^GetObject/ {s += $2} END {print s + 0}' "$T/run-$name/out/requests.tsv" 2>/dev/null)
+    left=$(find "$T/nvme-$name" -type f 2>/dev/null | wc -l | tr -d ' ')
     minp=2; [ "$want" = complete ] && minp=1
-    echo "rehearse: awscp ($want): streamed $st lines, awscp.jsonl $jl; $np progress (want >= $minp); stopped_by $sb (want $want), $by bytes of $SZ; client '$cl'; GetObject $ge; $left files left on the NVMe (want 0)"
+    echo "rehearse: awscp ($name): streamed $st lines, awscp.jsonl $jl; $np progress (want >= $minp); stopped_by $sb (want $want), $by bytes of $SZ; client '$cl'; GetObject $ge; $left files left on the NVMe (want 0)"
     [ "$st" = "$jl" ] && [ "$np" -ge "$minp" ] && [ "$sb" = "$want" ] && [[ $cl == "default "* ]] && [ "${cl#default }" != null ] \
-      && [ "${ge:-0}" -gt 0 ] && [ "$left" = 0 ] || { echo "rehearse: awscp ($want) results wrong" >&2; RC=1; }
+      && [ "${ge:-0}" -gt 0 ] && [ "$left" = 0 ] || { echo "rehearse: awscp ($name) results wrong" >&2; RC=1; }
     case $want in
       bytes) [ "$by" -ge "$lb" ] && [ "$by" -lt "$SZ" ] || { echo "rehearse: awscp (bytes) stopped at $by, not past $lb short of $SZ" >&2; RC=1; } ;;
       complete) [ "$by" = "$SZ" ] || { echo "rehearse: awscp (complete) $by != $SZ" >&2; RC=1; } ;;
     esac
-    python3 scripts/lib/probe_tables.py awscp "$T/run-$want" || RC=1
-    [ -s "$T/run-$want/tables/probe-awscp.tsv" ] && column -t -s$'\t' "$T/run-$want/tables/probe-awscp.tsv" | cut -c1-220
+    python3 scripts/lib/probe_tables.py awscp "$T/run-$name" || RC=1
+    [ -s "$T/run-$name/tables/probe-awscp.tsv" ] && column -t -s$'\t' "$T/run-$name/tables/probe-awscp.tsv" | cut -c1-220
   done
   ;;
 *) echo "rehearse: unknown probe kind $KIND" >&2; exit 2 ;;

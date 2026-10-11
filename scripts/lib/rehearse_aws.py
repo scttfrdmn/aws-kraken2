@@ -54,6 +54,9 @@ if len(pos) >= 3 and pos[0] == "s3" and pos[1] == "cp":
         if os.path.isdir(dst):
             dst = os.path.join(dst, os.path.basename(k))
         bps = int(os.environ.get("AK2T_COPY_BPS", "0") or 0)
+        if os.environ.get("AK2T_IGNORE_TERM"):   # a copy that ignores TERM (a stop must then KILL it)
+            import signal
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
         if bps > 0:
             # A throttled download (AK2T_COPY_BPS bytes/s, written as it arrives), so a rate probe sees progress.
             with open(f, "rb") as fi, open(dst, "wb") as fo:

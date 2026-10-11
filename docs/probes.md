@@ -91,6 +91,7 @@ comes first (or the object completes). Then it is stopped (TERM, then KILL if it
 **Rehearsal** (`probe_rehearse.sh`, kind awscp): three runs on the 320 MiB stand-in:
 - a throttled copy stopped by the bytes limit;
 - one stopped by the time limit;
+- one that ignores TERM, so the stop KILLs it 30 s later (`killed_hard`);
 - one that completes.
 
 The seams are `AK2_REHEARSE_AWSCP_S`, `_BYTES`, `_EVERY` and lever.sh's `NVME`, plus the stub
