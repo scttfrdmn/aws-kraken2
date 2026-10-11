@@ -234,6 +234,9 @@ def load_levers(path, rd):
         # `alias_cohorts` (`c1: O0;...`): at those cohorts the rung has another rung's configuration
         # (the cost chain where it coincides with the time chain) and reads that rung's runs.
         r["alias_cohorts"] = {c: t.strip() for c, t in parse_cohort_list(f.get("alias_cohorts") or "").items() if t.strip()}
+        # A host that moves with the lever (the `derived` column's `instance:` clause; the generator
+        # honours it only for O3's right-sized candidates and their alias): the delta includes it.
+        r["derived_host"] = re.search(r"(?:^|; )instance: ", f.get("derived") or "") is not None
         if not r["arm"]:
             r["arm"] = r["rung"][:1]
         if r["rung"]:
@@ -1165,6 +1168,17 @@ def net_basis(runs):
     return " | ".join(sorted({r["net"]["basis"] for r in runs}))
 
 
+RIGHTSIZE_NOTE = ("the delta includes the per-N host right-sizing (each N on its family's smallest type that holds "
+                  "table/N: vCPUs, memory and network change with N)")
+
+
+def rightsize_note(G, rung, cohort):
+    """RIGHTSIZE_NOTE for a rung whose host moves with its lever (O3 and its candidates, on the runs
+    it reads at the cohort), else ''."""
+    w, _ = G.alias(rung, cohort)
+    return RIGHTSIZE_NOTE if any((G.levers.get(x) or {}).get("derived_host") for x in (rung, w) if x) else ""
+
+
 def alias_step(G, rung, cohort):
     """For an alias rung: (skip, note). Skip when its winner is its own run predecessor (the alias
     then adds no lever: its runs are the predecessor's)."""
@@ -1239,7 +1253,8 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
         rows.append(L(row="lever", step=i, rung=rung, predecessor=pr, lever=lv["lever"], n_rung=x["n"],
                       n_pred=y["n"], delta=fmt(d["delta"]), status=d["status"], granularity_q=fmt(d["q"]),
                       threshold=fmt(d["threshold"]),
-                      note="; ".join(x for x in ("" if pb == "direct" else f"against the {pb}", anote) if x),
+                      note="; ".join(x for x in ("" if pb == "direct" else f"against the {pb}", anote,
+                                                 rightsize_note(G, rung, cohort)) if x),
                       util_coverage=coverage(G.runs(rung, cohort) + G.runs(pr, cohort)) if eff else "",
                       net_basis=net_basis(G.runs(rung, cohort) + G.runs(pr, cohort)) if netax else ""))
     complete = not missing and tot["delta"] is not None
@@ -1503,6 +1518,8 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_
             pbcol = anote if pb == "direct" else f"{pb}; {anote}"
         else:
             pbcol = pb
+        if rightsize_note(G, rung, cohort):
+            pbcol = f"{pbcol}; {RIGHTSIZE_NOTE}"
         for ax in AXES:
             a, b = G.stats(rung, cohort, ax), G.stats(pr, cohort, ax, rung)
             d = delta(a, b, num(lv.get(PRED_COL[ax])))

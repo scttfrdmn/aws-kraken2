@@ -1,7 +1,7 @@
 # Instance types of the families O2 and O3 choose among (c8g, c9g, r8g, x8g; us-west-2), for ladder_levers.py's
 # floor rule: a family's smallest non-metal type that holds a rung by fits() (O3-n<K>'s host, Scott 2026-10-11, #25).
-# Source: truffle 0.57.1, `truffle find 'c8g.*' 'c9g.*' 'r8g.*' 'x8g.*' --regions us-west-2 --show-price -o json`,
-# 2026-10-11. A metal type has its twin's vCPUs, memory and price, so the floor skips it.
+# Written by make ladder-types (scripts/lib/ladder_types.py write): truffle 0.57.1, `truffle find c8g.* c9g.* r8g.* x8g.* --regions us-west-2 --show-price -o json`, 2026-10-11T23:28:30Z.
+# A metal type has its twin's vCPUs, memory and price, so the floor skips it.
 type	vcpus	memory_mib	on_demand_usd_per_h
 c8g.medium	1	2048	0.03988
 c8g.large	2	4096	0.07976

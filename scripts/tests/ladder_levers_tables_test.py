@@ -137,6 +137,12 @@ try:
     check("the cost chain's lever rows are the time chain's rungs' runs (alias_cohorts), one for one",
           [r["rung"] for r in lev["cost"]] == ["O0-cost", "O0b-cost", "O2-cost", "O3-cost", "O4a-cost", "O5-cost"]
           and [r["rung"] for r in lev["time"]] == ["O0", "O0b", "O2", "O3", "O4a", "O5"])
+    dl = [r for r in csv.DictReader(open(os.path.join(out, "deltas.tsv")), delimiter="\t") if r["cohort"] == "1"]
+    check("O3's delta (deltas.tsv) and lever row (pairs.tsv) say it includes the per-N host right-sizing; O2's do not",
+          all("per-N host right-sizing" in r["predecessor_basis"] for r in dl if r["rung"] in ("O3", "O3-cost"))
+          and not any("per-N host right-sizing" in r["predecessor_basis"] for r in dl if r["rung"] in ("O2", "O4a"))
+          and all("per-N host right-sizing" in r["note"] for f in ("time", "cost") for r in lev[f] if r["rung"] in ("O3", "O3-cost"))
+          and not any("per-N host right-sizing" in r["note"] for f in ("time", "cost") for r in lev[f] if r["rung"] not in ("O3", "O3-cost")))
     rr = {(r["rung"], r["axis"]): r for r in csv.DictReader(open(os.path.join(out, "rungs.tsv")), delimiter="\t") if r["cohort"] == "1"}
     check("O0b-cost reads O0b's runs, labelled alias: same configuration as O0b at c1",
           rr[("O0b-cost", "wall_s")]["median"] == rr[("O0b", "wall_s")]["median"]

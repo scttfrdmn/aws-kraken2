@@ -145,7 +145,7 @@ raise SystemExit(1)
 '''
 
 STUB_QUOTA = r'''#!/usr/bin/env python3
-import os, sys, time
+import json, os, sys, time
 S = os.environ["AK2T"]
 log = os.path.join(S, "quota.log")
 n = sum(1 for _ in open(log)) if os.path.exists(log) else 0
@@ -154,6 +154,10 @@ rc = 1 if n < refuse else 0
 rd = lambda f: open(os.path.join(S, f)).read().split() if os.path.exists(os.path.join(S, f)) else []
 typ = sys.argv[2]
 perm, always = typ in rd("quota_perm"), typ in rd("quota_always")
+if typ in rd("quota_busy"):   # refused while any run of this type is in flight (the campaign's own)
+    EV = os.path.join(S, "events.jsonl")
+    evs = [json.loads(l) for l in open(EV)] if os.path.exists(EV) else []
+    always = sum(1 if e["ev"] == "start" else -1 for e in evs if e["ev"] in ("start", "end") and e["type"] == typ) > 0
 if perm or always:
     rc = 1
 open(log, "a").write("%f %d %s\n" % (time.time(), rc, " ".join(sys.argv[1:])))
@@ -361,6 +365,22 @@ def main():
     ok(rc == 1 and starts == [("S1", 1), ("S1", 2)] and len(xq) > 2 and "over the 0 s bound" in out,
        "quota-wait: refused for running instances, S2a is asked again (%d calls) until the 0.4 s bound, then stops; S1 runs" % len(xq),
        "rc %d starts %s\n%s" % (rc, starts, out[-2000:]))
+    shutil.rmtree(d)
+
+    # ---- quota: refused while the campaign's own x8g run is in flight, longer than the bound: that
+    # time is the schedule, not the quota, so S5 is not stopped; it launches once S2a ends.
+    d, R, S = scratch(rs)
+    os.environ["AK2_CAMPAIGN_QUOTA_MAX_WAIT_S"] = "0.3"
+    try:
+        rc, out, evs = campaign(R, S, "run", rs, conc=3, behave={"S2a:1": {"s": 1.5}, "S2a:2": {"s": 1.5}, "S5:1": {"s": 1.5},
+                                                                 "S5:2": {"s": 1.5}}, files={"quota_busy": "x8g.24xlarge"})
+    finally:
+        del os.environ["AK2_CAMPAIGN_QUOTA_MAX_WAIT_S"]
+    starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
+    busy = [l for l in open(os.path.join(S, "quota.log")) if " x8g.24xlarge " in l and l.split()[1] == "1"]
+    ok(rc == 0 and len(starts) == 6 and len(busy) >= 2 and "over the" not in out,
+       "quota-siblings: %d refusals while the campaign's own x8g run was in flight (over 1 s against a 0.3 s bound) do not "
+       "stop S5; all 6 launch" % len(busy), "rc %d starts %s\n%s" % (rc, starts, out[-2000:]))
     shutil.rmtree(d)
 
     # ---- normal, CONCURRENCY=4

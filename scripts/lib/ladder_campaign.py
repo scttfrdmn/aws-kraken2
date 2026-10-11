@@ -372,9 +372,10 @@ class Campaign:
         self.poll = float(os.environ.get("AK2_CAMPAIGN_POLL_S", "10"))
         self.quota_retry = float(os.environ.get("AK2_CAMPAIGN_QUOTA_RETRY_S", "60"))
         self.quota_next = {}        # family -> time before which a refused family is not asked again
-        self.quota_wait_start = {}  # (rung, rep) -> when quota_check first refused it for running instances
+        # (rung, rep) -> (seconds refused for others' instances, time of the last refusal): the bounded
+        # quota wait. Time while the campaign's own runs of that family are in flight is not counted.
+        self.quota_waited = {}
         self.quota_max_wait = float(os.environ.get("AK2_CAMPAIGN_QUOTA_MAX_WAIT_S", str(6 * 3600)))
-        self.permanent_quota = []   # (rung, why): refused on their own vCPUs
         self.settle_s = float(os.environ.get("AK2_CAMPAIGN_SETTLE_S", "900"))
         self.dir = os.path.join(CAMPAIGN_DIR, ts)
         self.tables = os.path.join(self.dir, "tables")
@@ -491,7 +492,9 @@ class Campaign:
         item's own vCPUs exceed the quota with nothing else running: its rung stops at once, and the
         rest of its family is not held up. Any other refusal (instances already running) is waited
         for, the family asked again after the retry time, for at most AK2_CAMPAIGN_QUOTA_MAX_WAIT_S in
-        total per item (default 6 h); after that the rung stops."""
+        total per item (default 6 h); after that the rung stops. The clock counts only the time
+        between refusals at which none of the campaign's own runs of that family is in flight (a wait
+        on its own sibling runs is the schedule, not the quota), to within the retry interval."""
         quota_wait, reasons = set(), []
         for it in self.queue:
             why = self.eligible(it)
@@ -508,12 +511,16 @@ class Campaign:
                                                     "own (permanent until the quota is raised)" % (it["nodes"], it["type"], need[0],
                                                                                                     it["family"], need[1]))
                         say("quota: %s rep %d stopped: %s" % (it["rung"], it["rep"], self.blocked[it["rung"]]))
-                        self.permanent_quota.append((it["rung"], self.blocked[it["rung"]]))
                         continue
-                    t0 = self.quota_wait_start.setdefault(key, time.time())
-                    if time.time() - t0 > self.quota_max_wait:
-                        self.blocked[it["rung"]] = ("quota: refused for %.0f s (over the %.0f s bound) while other instances ran: %s"
-                                                    % (time.time() - t0, self.quota_max_wait, line))
+                    now = time.time()
+                    acc, last = self.quota_waited.get(key, (0.0, None))
+                    if last is not None and not self.family_load(it["family"]):
+                        acc += now - last
+                    self.quota_waited[key] = (acc, now)
+                    if acc > self.quota_max_wait:
+                        self.blocked[it["rung"]] = ("quota: refused for %.0f s (over the %.0f s bound; time waiting on the "
+                                                    "campaign's own runs not counted) while other instances ran: %s"
+                                                    % (acc, self.quota_max_wait, line))
                         say("quota: %s rep %d stopped: %s" % (it["rung"], it["rep"], self.blocked[it["rung"]]))
                         continue
                     quota_wait.add(it["family"])

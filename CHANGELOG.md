@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `make ladder-types [CHECK=1]` (`scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`)
+  writes `scripts/g3/ladder.types.tsv` from truffle, recording the truffle version and the query.
+  With CHECK=1 it compares the committed table with truffle's current answer. `make test` validates
+  the table offline.
+- **Review fixes to O3 right-sizing:**
+  - `derived_host` is honoured only for `@floor:<predecessor>`, or for `@select:<self>` on an alias
+    whose candidates all qualify. The reviewer's three probes are refused in the self-test.
+  - O3's delta and lever rows state that they include the per-N host right-sizing (vCPUs, memory
+    and network).
+  - The quota wait clock excludes time spent on the campaign's own sibling runs, with a new test.
+  - `permanent_quota` and the dead `ns` in `bracket()` are removed.
+  - The self-test now asserts that O5 inherits the right-sized host.
+  - A stale docs sentence is fixed.
 - **O3 right-sized per N** (Scott, 2026-10-11, #25).
   - **The type:** each O3-n\<K\> and O3-cost-n\<K\> (`instance @floor:O2`, `@floor:O2-cost`) runs
     on the smallest non-metal type of O2's winning family that holds table/K by `fits()`. The types

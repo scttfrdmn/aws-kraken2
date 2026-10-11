@@ -354,7 +354,8 @@ candidates, as S\* is:
 - the predecessor counts as a candidate. A predecessor not run at the cohort stands for the
   configuration it has there (O1 at c1 is O0b's);
 - `@select:<alias>[:KEY]` resolves any key to the winner's value (`_values`), so S5 takes S4's
-  winner's THREADS and PROCS, and O3's candidates (`instance =pred`) take O2's winner's type.
+  winner's THREADS and PROCS, and O3's candidates (`instance @floor:O2`) take the smallest type of
+  O2's winner's family that holds table/K (below).
 
 **O2 is one candidate per family** (Scott, 2026-10-11, #25; in the rule text): the family's smallest
 type holding 1/N of the table (the #26 fit's memory floor), metal twins excluded.
@@ -362,7 +363,8 @@ type holding 1/N of the table (the #26 fit's memory floor), metal twins excluded
 **O3 is right-sized per N** (Scott, 2026-10-11, #25). Each O3-n\<K\> and O3-cost-n\<K\> has `instance
 @floor:O2` (`@floor:O2-cost`).
 - **The type** is the smallest non-metal type of O2's winning family, from
-  `scripts/g3/ladder.types.tsv`, that holds the rung at that cohort by `fits()`. That is the engine
+  `scripts/g3/ladder.types.tsv` (written and checked by `make ladder-types`, below), that holds the
+  rung at that cohort by `fits()`. That is the engine
   shard table/K × 1.15 + 8 GB + 7.5 GB per sample in flight, the inputs and outputs, and 16 GiB of
   slack, with every other PARAM as resolved. The types table holds the families' types, vCPUs and
   memory from truffle on 2026-10-11.
@@ -371,12 +373,39 @@ type holding 1/N of the table (the #26 fit's memory floor), metal twins excluded
   - r8g: r8g.24xlarge at 2, r8g.12xlarge at 4, r8g.8xlarge at 8, r8g.4xlarge at 16 and 32.
 - **The one-lever check counts the host change as derived.** It moves with SHARDS inside O3's lever,
   as S4's vCPU ratios move with the host. It is declared in the `derived` column as an `instance:
-  …` clause (`derived_host`). Without that clause the change is the HOST group and is refused.
+  …` clause, and `derived_host` honours the clause only in two cases:
+  - the rung's instance is `@floor:<its own predecessor>`;
+  - the rung is an alias whose instance is `@select:<itself>` and every candidate other than its
+    predecessor qualifies.
+
+  Any other host change is the HOST group and is refused, clause or not. The tests refuse three
+  cases: S5 with a changed host plus the clause, `@floor:Sstar-time` on O3-n2, and a fixed
+  c8g.48xlarge on O3-n2. The last two also stop the O3 alias from qualifying.
+- **O3's delta includes the host right-sizing.** Each N runs on its own type, so O3's delta is not
+  the shard count alone: the vCPUs, the memory and the network change with N as well. deltas.tsv
+  (`predecessor_basis`) and the pairs.tsv lever row (`note`) say so on O3 and O3-cost: "the delta
+  includes the per-N host right-sizing (…)".
 - **The O3 alias's own host** is `@select:O3`, its winner's host, also declared as derived. So O4a
   and O5 (`=pred`) inherit the winner's right-sized type.
 - **The bracket's grid is the candidates' N:** {1, 2, 4, 8, 16, 32}, where 1 is O2's own N at
   K = 1. 64 is dropped rather than an O3-n64 added. The candidate rows end at 32, as the
   coordinator set them, and a grid with an N that no row has is refused.
+
+**The types table** (`make ladder-types`, `scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`):
+
+```bash
+make ladder-types           # rewrite scripts/g3/ladder.types.tsv from truffle (read-only: nothing is launched)
+make ladder-types CHECK=1   # compare the committed table with truffle's answer now; exit 1 on any difference
+```
+
+- **Write** queries `truffle find 'c8g.*' 'c9g.*' 'r8g.*' 'x8g.*' --regions us-west-2 --show-price -o
+  json` and keeps the four families exactly (no d, b or n variants): type, vCPUs, memory and the
+  on-demand price. It records `truffle version`, the query and the time in the header (truffle
+  0.57.1 on 2026-10-11).
+- **Check** compares every type, vCPU count, memory and price, and reports both truffle versions.
+- `make test` runs `ladder_types.py validate` offline. It checks the shape, that each family has a
+  non-metal type, and that the header records the version and the query.
+- The table is under `scripts/g3/`, so it must be committed before the next launch.
 
 **What the registered rules leave open:**
 - **N = 2 rows for O2:** O2's rows for N = 2 (r8g.24xlarge, x8g.12xlarge) wait for S8 at c10 and
@@ -674,7 +703,9 @@ waits until all of these hold:
     its family is still asked in the same pass;
   - **the request fits but running instances fill the quota:** wait. The family is asked again
     after 60 s, for at most `AK2_CAMPAIGN_QUOTA_MAX_WAIT_S` in total per item (default 6 h).
-    After that the rung stops.
+    After that the rung stops. The clock counts only the time between refusals during which none
+    of the campaign's own runs of that family is in flight, to within the retry interval. A wait
+    on its own sibling runs is the schedule, not the quota.
 
 The tree must be clean under run.sh's paths before every launch; otherwise launching stops.
 

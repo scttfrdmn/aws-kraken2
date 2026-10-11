@@ -123,12 +123,26 @@ def instance_of(rows, row):
     return i
 
 
-def derived_host(row):
-    """Whether the rung's host is a derived move with its lever, declared in its `derived` column as
-    an `instance: ...` clause (O3-n<K>: the family's smallest type that holds table/K moves with
-    SHARDS, as S4's vCPU ratios move with the host). The one-lever check then counts the host change
-    as derived, not as the HOST group."""
-    return re.search(r"(?:^|; )instance: ", row.get("derived", "")) is not None
+def derived_host(rows, row, _seen=None):
+    """Whether the rung's host is a derived move with its lever (O3-n<K>: the family's smallest type
+    that holds table/K moves with SHARDS, as S4's vCPU ratios move with the host). The one-lever
+    check then counts the host change as derived, not as the HOST group. Honoured only when all of
+    these hold:
+      - its `derived` column declares it, as an `instance: ...` clause;
+      - its instance is `@floor:<its own predecessor>` (the predecessor's family, right-sized), or
+        it is an alias whose instance is `@select:<itself>` and every candidate other than its
+        predecessor qualifies the same way.
+    Any other host change (a fixed type, a floor on another rung's family) stays the HOST group."""
+    if re.search(r"(?:^|; )instance: ", row.get("derived", "")) is None:
+        return False
+    inst = row.get("instance", "")
+    if inst == "@floor:%s" % row.get("predecessor", ""):
+        return True
+    if inst == "@select:%s" % row["rung"] and row.get("status", "").startswith("alias:"):
+        names, seen = by_name(rows), (_seen or set()) | {row["rung"]}
+        cands = [c for c in row.get("alias_of", "").split("|") if c and c != row.get("predecessor")]
+        return bool(cands) and all(c in names and c not in seen and derived_host(rows, names[c], seen) for c in cands)
+    return False
 
 
 def changed(rows, row, pred):
@@ -243,7 +257,7 @@ def check(rows):
             continue
         ch = changed(rows, r, p)
         co = coupled_keys(r)
-        free = [k for k in ch if k not in co and not (k == "instance" and derived_host(r))]
+        free = [k for k in ch if k not in co and not (k == "instance" and derived_host(rows, r))]
         groups = sorted({GROUP[k] for k in free})
         if st.startswith("not-run"):
             if ch:
@@ -630,7 +644,6 @@ def bracket(rows, alias_row, cohort, res, root=ROOT):
             raise Unresolved("%s at c%s: candidate %s is unresolved (%s), so its bracket cannot be computed"
                              % (alias_row["rung"], cohort, c, ", ".join(bad)))
         vals[c] = v
-    ns = {int(v["SHARDS"]) for v in vals.values()}
     rowns = {int(names[c]["SHARDS"]) for c in cands if re.fullmatch(r"[0-9]+", names[c]["SHARDS"])}
     if not rowns <= grid or not grid - rowns <= {1}:
         raise Unresolved("%s: the bracket's grid {%s} is not its candidate rows' N {%s} (plus the predecessor's 1)"
@@ -717,7 +730,7 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
         ch = [k for k in KEYS if not same_value(k, out[k], out["instance"], pv[k], pv["instance"])]
         if out["instance"] != pv["instance"]:
             ch.append("instance")
-        free = [k for k in ch if k not in coupled_keys(r) and not (k == "instance" and derived_host(r))]
+        free = [k for k in ch if k not in coupled_keys(r) and not (k == "instance" and derived_host(rows, r))]
         groups = sorted({GROUP[k] for k in free})
         if not ch:
             raise Unresolved("%s at cohort %s: the resolution makes it identical to %s (mark it not-run instead)"
@@ -1193,9 +1206,27 @@ def _self_test():
             raise AssertionError("a host change without its derived declaration was accepted")
         except Unresolved as e:
             assert "not just the group REPLICAS+SHARDS" in str(e), e
-        # O4a inherits O3's winner's right-sized host.
-        assert _values(rows, names["O4a"], 1, {("Sstar-time", "1", "alias"): ("S9", src), ("O2", "1", "alias"): ("O1", src),
-                                                ("O3", "1", "alias"): ("O3-n8", src)})[0]["instance"] == "x8g.4xlarge"
+        # O4a and O5 inherit O3's winner's right-sized host.
+        w8 = {("Sstar-time", "1", "alias"): ("S9", src), ("O2", "1", "alias"): ("O1", src), ("O3", "1", "alias"): ("O3-n8", src)}
+        assert _values(rows, names["O4a"], 1, w8)[0]["instance"] == "x8g.4xlarge"
+        assert _values(rows, names["O5"], 1, w8)[0]["instance"] == "x8g.4xlarge"
+        # derived_host is honoured only for @floor:<predecessor> (or @select:<self> on an alias whose
+        # candidates all qualify). The reviewer's probes, each refused by the one-lever check:
+        assert derived_host(rows, names["O3-n2"]) and derived_host(rows, names["O3"]) and derived_host(rows, names["O3-cost"])
+        for rung, inst, der, want in (("S5", "r8g.48xlarge", "instance: a changed host", "S5: changes GUNZIP,instance"),
+                                      ("O3-n2", "@floor:Sstar-time", None, "O3-n2: changes SHARDS,instance"),
+                                      ("O3-n2", "c8g.48xlarge", None, "O3-n2: changes SHARDS,instance")):
+            t = _copy(rows)
+            x = by_name(t)[rung]
+            x["instance"] = inst
+            if der is not None:
+                x["derived"] = der
+            assert not derived_host(t, x), (rung, inst)
+            assert any(p.startswith(want) for p in check(t)), (rung, inst, check(t))
+            # ... and the O3 alias no longer qualifies once one of its candidates does not.
+            if rung == "O3-n2":
+                assert not derived_host(t, by_name(t)["O3"])
+                assert any(p.startswith("O3: changes") for p in check(t)), check(t)
         with open(os.path.join(root, "results", "g3", "fit26", "predictions.tsv"), "w") as f:
             f.write("fit\tfamily\ttype\tcohort\tN\tT_pred_s\tusd_run_NpT\tstatus\n")
             for t_, n, tp in (("r8g.48xlarge", 1, 500), ("r8g.24xlarge", 2, 400), ("r8g.12xlarge", 4, 300), ("r8g.8xlarge", 8, 310),
