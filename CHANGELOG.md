@@ -31,6 +31,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - a TTL kill (KILL and TERM) mid-classify.
   - Every on-node sha256 is checked against upstream at the pin. The Law 1, S5 fallback,
     net-accounting, TTL and tables checks each fail under a planted defect.
+- A pre-launch probe of the classic `aws s3 cp` rate (docs/probes.md, probe f):
+  `runs/g3-probe-awscp-r8gd.48xlarge.json` (`scripts/g3/probe-awscp.body.sh`; TTL 40 min,
+  cost_limit $9.41).
+  - It stages hash.k2d onto r8gd.48xlarge's single NVMe device exactly as S0's fetch-db does
+    (`lv_nvme single`, lv_stage_db awscp-default's client and command line), for 20 min or
+    300 GiB.
+  - It streams `probe-awscp` progress every 10 s and records the resolved client. The tables
+    are `probe_tables.py awscp` (post script).
+  - Rehearsed with `probe_rehearse.sh` (kind awscp: stopped by bytes, by time, and complete);
+    DRY_RUN passes. Not launched.
 
 ### Fixed
 
