@@ -64,7 +64,7 @@ make orphans
   then `aws s3 cp --only-show-errors` of hash.k2d.
 
 `drop_caches` runs before the copy. The copy runs until 20 min or 300 GiB received, whichever
-comes first (or the object completes). Then it is stopped and the partial file is removed.
+comes first (or the object completes). Then it is stopped (TERM, then KILL if it has not exited within 30 s, recorded as `killed_hard`) and the partial file is removed.
 
 **Lines** (streamed as `probe-awscp {json}` and in `out/awscp.jsonl`, pushed every 30 s):
 - `client` and `config`;
@@ -74,7 +74,8 @@ comes first (or the object completes). Then it is stopped and the partial file i
   - `s`;
   - `gbps`: gigabits/s, cumulative;
   - `interval_gbps`: since the last line;
-  - `gb_per_s`: GB/s.
+  - `gb_per_s`: GB/s;
+  - `dirty_kb` and `writeback_kb`: from /proc/meminfo. If they grow, the NVMe, not the network, limits the rate.
 - `done`:
   - `stopped_by`: time, bytes, complete or failed;
   - `steady_gbps`: from the first line past 60 s to the end;

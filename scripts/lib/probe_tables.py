@@ -123,9 +123,9 @@ elif mode == "awscp":
             fmt(x.get("gb_per_s")), fmt(x.get("steady_gbps")), x["object_bytes"], fmt(x.get("est_object_s")),
             fmt(x.get("est_object_s_steady")), ttl_s, "-" if not est else f"{est / ttl_s:.3f}"]])
     write(os.path.join(d, "tables", "probe-awscp-progress.tsv"),
-          ["s", "bytes", "bytes_basis", "allocated_bytes", "gbps", "interval_gbps", "gb_per_s"],
+          ["s", "bytes", "bytes_basis", "allocated_bytes", "gbps", "interval_gbps", "gb_per_s", "dirty_kb", "writeback_kb"],
           [[fmt(p["s"]), p["bytes"], p["bytes_basis"], p["allocated_bytes"], fmt(p.get("gbps")), fmt(p.get("interval_gbps")),
-            fmt(p.get("gb_per_s"))] for p in pr])
+            fmt(p.get("gb_per_s")), fmt(p.get("dirty_kb")), fmt(p.get("writeback_kb"))] for p in pr])
     if x["stopped_by"] not in ("time", "bytes", "complete"):
         sys.exit(1)
 else:

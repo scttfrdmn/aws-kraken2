@@ -65,10 +65,15 @@ while :; do
   for _ in $(seq "$EVERY"); do kill -0 "$CP" 2> /dev/null || break; sleep 1; done
   t=$(now); s=$(awk -v a="$T0" -v b="$t" 'BEGIN{printf "%.3f", b - a}')
   r=$(rx); al=$(alloc "$DEST")
+  # Dirty and Writeback (kB): page cache waiting for, or being written to, the NVMe. Growing, they
+  # say the disk, not the network, limits the rate. "" where there is no /proc/meminfo.
+  read -r dk wk < <(awk '/^Dirty:/ {d = $2} /^Writeback:/ {w = $2} END {print d, w}' /proc/meminfo 2> /dev/null)
   if [ -n "$R0" ] && [ -n "$r" ]; then b=$((r - R0)); basis=nic_rx; else b=$al; basis=allocated; fi
-  emit "$(jq -nc --argjson b "$b" --argjson al "${al:-0}" --arg basis "$basis" --argjson s "$s" --argjson lb "$LB" --argjson ls "$LS" '
+  emit "$(jq -nc --argjson b "$b" --argjson al "${al:-0}" --arg basis "$basis" --argjson s "$s" --argjson lb "$LB" --argjson ls "$LS" \
+    --arg dk "${dk:-}" --arg wk "${wk:-}" '
     def r3: . * 1000 | round / 1000;
     {kind:"progress", bytes:$b, bytes_basis:$basis, allocated_bytes:$al, s:$s,
+     dirty_kb:(if $dk == "" then null else ($dk | tonumber) end), writeback_kb:(if $wk == "" then null else ($wk | tonumber) end),
      gbps:(if $s > 0 then ($b * 8 / $s / 1e9 | r3) else null end),
      gb_per_s:(if $s > 0 then ($b / $s / 1e9 | r3) else null end),
      interval_gbps:(if $s > $ls then (($b - $lb) * 8 / ($s - $ls) / 1e9 | r3) else null end)}')"
@@ -79,7 +84,14 @@ while :; do
   if [ "$b" -ge "$LIMIT_B" ]; then STOP=bytes; break; fi
   if [ $((SECONDS - LASTPUSH)) -ge 30 ]; then ak2_push "$J" awscp.jsonl > /dev/null; LASTPUSH=$SECONDS; fi
 done
-if [ "$STOP" != ended ]; then kill "$CP" 2> /dev/null; fi
+# Stop the copy: TERM, then KILL if it has not exited within 30 s, so the wait below cannot hang
+# until the TTL.
+HARD=false
+if [ "$STOP" != ended ]; then
+  kill "$CP" 2> /dev/null
+  for _ in $(seq 30); do kill -0 "$CP" 2> /dev/null || break; sleep 1; done
+  if kill -0 "$CP" 2> /dev/null; then kill -KILL "$CP" 2> /dev/null; HARD=true; ak2_say "probe-awscp: the copy ignored TERM for 30 s; KILL"; fi
+fi
 wait "$CP"; CPRC=$?
 [ "$STOP" = ended ] && { [ "$CPRC" = 0 ] && STOP=complete || STOP=failed; }
 T1=$(now); sync
@@ -91,12 +103,12 @@ B=$LB; [ -n "$R0" ] && [ -n "$FR" ] && B=$((FR - R0))
 SFX=""; [ "${LV_CLIENT_EST[default]:-1}" = 1 ] && SFX=-estimate
 ak2_req "GetObject$SFX" $(( (B + 8388607) / 8388608 )) "$RB"
 emit "$(jq -nc --arg stop "$STOP" --argjson rc "$CPRC" --argjson b "$B" --argjson fb "${FB:-0}" --argjson obj "$OBJ" \
-  --arg t0 "$T0" --arg t1 "$T1" --arg s60 "${S60:-}" --arg out "$(tail -c 600 "$W/cp.out")" '
+  --arg t0 "$T0" --arg t1 "$T1" --arg s60 "${S60:-}" --argjson hard "$HARD" --arg out "$(tail -c 600 "$W/cp.out")" '
   def r3: . * 1000 | round / 1000;
   (($t1|tonumber) - ($t0|tonumber)) as $s
   | (if $s60 == "" then null else ($s60 | split(" ") | map(tonumber)) end) as $p
   | (if $p == null or $s <= $p[0] then null else (($b - $p[1]) / ($s - $p[0])) end) as $steady
-  | {kind:"done", stopped_by:$stop, cp_rc:$rc, bytes:$b, allocated_bytes_after_stop:$fb, object_bytes:$obj, s:($s | r3),
+  | {kind:"done", stopped_by:$stop, cp_rc:$rc, killed_hard:$hard, bytes:$b, allocated_bytes_after_stop:$fb, object_bytes:$obj, s:($s | r3),
      gbps:(if $s > 0 then ($b * 8 / $s / 1e9 | r3) else null end), gb_per_s:(if $s > 0 then ($b / $s / 1e9 | r3) else null end),
      steady_gbps:(if $steady == null then null else ($steady * 8 / 1e9 | r3) end),
      est_object_s:(if $s > 0 and $b > 0 then ($obj / ($b / $s) | round) else null end),
