@@ -1,0 +1,12 @@
+# The AZs in which a ladder type may be launched other than its spec's pinned AZ, for the one
+# capacity retry of make ladder-campaign (docs/ladder.md, "The campaign") and AK2_LAUNCH_AZ in
+# run.sh / run-multi.sh (docs/run.md, "Launch overrides"). A row is documented by its evidence: a
+# committed manifest that launched exactly this type in exactly this AZ (ladder_levers.py az-alt
+# checks it). File order is the retry's preference order: the most recent successful launch first.
+# r8gd.48xlarge and r8g.48xlarge have no launch outside us-west-2b on record, so they have no
+# alternative: a capacity failure on them stops the rung and is reported.
+type	az	evidence
+x8g.24xlarge	us-west-2c	results/g3/20261009-223514-4ee77c3/manifest.json
+x8g.24xlarge	us-west-2b	results/g3/20261008-163526-3201a75/manifest.json
+x8g.24xlarge	us-west-2a	results/g3/20261008-050436-8a6dbe6-b5de-n1-r0/manifest.json
+r8gd.48xlarge	us-west-2b	results/g2/20261006-210414-2058d42/manifest.json

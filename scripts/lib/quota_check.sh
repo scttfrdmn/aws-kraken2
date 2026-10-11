@@ -18,8 +18,6 @@ REGION=${1:-}; TYPE=${2:-}; COUNT=${3:-}
 die() { echo "quota_check: $*" >&2; exit 2; }
 [ -n "$REGION" ] && [ -n "$TYPE" ] && [[ "$COUNT" =~ ^[1-9][0-9]*$ ]] ||
   die "usage: quota_check.sh REGION INSTANCE_TYPE COUNT (COUNT >= 1)"
-command -v aws >/dev/null || die "aws not on PATH"
-command -v jq >/dev/null || die "jq not on PATH"
 
 # family_of TYPE -> "<quota code> <family name>", or nothing if no on-demand family is known.
 # The letters before the first digit select the family (x8g -> x, im4gn -> im, trn1 -> trn,
@@ -43,6 +41,13 @@ family_of() {
 }
 
 FAM=$(family_of "$TYPE")
+# The family only, no AWS call (make ladder-campaign's per-family limit uses the same mapping).
+if [ "${AK2_QUOTA_FAMILY_ONLY:-}" = 1 ]; then
+  [ -n "$FAM" ] || die "no on-demand vCPU quota family is known for $TYPE"
+  echo "$FAM"; exit 0
+fi
+command -v aws >/dev/null || die "aws not on PATH"
+command -v jq >/dev/null || die "jq not on PATH"
 [ -n "$FAM" ] || die "no on-demand vCPU quota family is known for $TYPE; add its prefix to family_of in scripts/lib/quota_check.sh"
 CODE=${FAM%% *}; FNAME=${FAM#* }
 

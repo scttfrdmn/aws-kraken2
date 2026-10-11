@@ -107,6 +107,29 @@ DATASETS=$(q '.env.AK2_DATASETS // ""')
 ALLOW_NO_BUCKETS=$(q '.env.AK2_ALLOW_NO_BUCKETS // empty')
 ALLOW_RP=$(q '.env.AK2_ALLOW_REQUESTER_PAYS // empty')
 
+# ---- launch overrides from the launch host's env (docs/run.md, "Launch overrides") ----
+# AK2_LADDER_REP=<n>: the ladder replicate this launch is (make ladder-campaign). Recorded as
+# manifest.params.rep with its source; the spec's bytes are the same for every rep.
+# AK2_LAUNCH_AZ=<az>: launch in this AZ instead of the spec's pinned one (the campaign's one
+# capacity retry). Only an AZ that scripts/g3/ladder.azs.tsv documents for the spec's type, with
+# its evidence holding; recorded as manifest.launch_override.
+REP=${AK2_LADDER_REP:-}
+if [ -n "$REP" ]; then
+  python3 scripts/lib/ladder_levers.py spec-params "$SPEC" --rep "$REP" > /dev/null ||
+    die "AK2_LADDER_REP=$REP refused (above)"
+fi
+AZ_OVR=${AK2_LAUNCH_AZ:-}; AZ_OVR_JSON=null
+if [ -n "$AZ_OVR" ]; then
+  [[ "$AZ_OVR" == "$REGION"[a-z] ]] || die "AK2_LAUNCH_AZ $AZ_OVR is not an AZ of $REGION"
+  SPEC_TYPE=$(q '.resources.instance_type // empty'); SPEC_AZ=$(q '.placement.availability_zone // empty')
+  [ -n "$SPEC_TYPE" ] && [ -n "$SPEC_AZ" ] || die "AK2_LAUNCH_AZ needs a spec that pins resources.instance_type and placement.availability_zone"
+  AZ_EV=$(python3 scripts/lib/ladder_levers.py az-alt "$SPEC_TYPE" "$AZ_OVR") || die "AK2_LAUNCH_AZ=$AZ_OVR refused (above)"
+  AZ_OVR_JSON=$(jq -c --arg s "$SPEC_AZ" '{availability_zone:.az, spec_availability_zone:$s, source:"AK2_LAUNCH_AZ",
+    reason:(env.AK2_LAUNCH_AZ_REASON // "not given"), documented_by:.list, evidence:.evidence}' <<< "$AZ_EV") ||
+    die "could not record AK2_LAUNCH_AZ"
+  say "launch override: $SPEC_TYPE in $AZ_OVR, not the spec's $SPEC_AZ (documented by $(jq -r .evidence <<< "$AZ_EV"))"
+fi
+
 # ---- the bucket allow-list: AK2_DATASETS declares every bucket the spec may touch ----
 bucket_of() { local u=${1#s3://}; echo "${u%%/*}"; }
 bucket_region() {
@@ -257,7 +280,7 @@ jq --rawfile stub "$STUB" --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
    --arg expect "$EXPECT" --arg buckets "$BUCKETS" --arg allowed "$ALLOWED_BUCKETS" \
    --arg run "$RUN_ID" --arg gate "$GATE" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
    --arg purl "$PAYLOAD_URL" --arg cid "$COHORT_ID" --arg crank "$COHORT_RANK" --arg cn "$COHORT_N" \
-   --arg cprefix "$COHORT_PREFIX" '
+   --arg cprefix "$COHORT_PREFIX" --argjson azo "$AZ_OVR_JSON" '
   .task_id = $tid
   | .results_prefix = ($prefix + "/spawn")
   | .lifecycle.on_complete = "terminate"
@@ -268,6 +291,7 @@ jq --rawfile stub "$STUB" --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
   | if $cid != "" then .env += {AK2_COHORT_ID: $cid, AK2_COHORT_PREFIX: $cprefix,
         AK2_ENGINE_N: $cn, AK2_ENGINE_RANK: $crank, AK2_ENGINE_RENDEZVOUS: ($cprefix + "/rendezvous")} else . end
   | if .outputs then .outputs |= map(.destination |= gsub("\\$\\{AK2_OUT\\}"; $prefix + "/out")) else . end
+  | if $azo != null then .placement.availability_zone = $azo.availability_zone else . end
 ' "$SPEC" > "$LIVE_SPEC" && write_resolved || die "could not resolve spec"
 cp "$SPEC" "$RUN_DIR/spec.json"
 
@@ -291,7 +315,7 @@ if [ "$UD_GZ" -gt "$UD_MAX" ]; then
 fi
 
 # A ladder spec's PARAMS block (#51/#52; docs/ladder.md): manifest.params, else null.
-LAD_PARAMS=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC") && [ -n "$LAD_PARAMS" ] ||
+LAD_PARAMS=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" ${REP:+--rep "$REP"}) && [ -n "$LAD_PARAMS" ] ||
   { rm -rf "$RUN_DIR"; die "could not read the spec's ladder params (scripts/lib/ladder_levers.py spec-params)"; }
 jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" --argjson params "$LAD_PARAMS" \
   --arg spec_sha "$(shasum -a 256 "$SPEC" | cut -d' ' -f1)" --arg sha "$SHA" --argjson dirty "$DIRTY" \
@@ -302,7 +326,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --arg accref "$ACCESSIONS_REF" --arg acctsv "$ACCESSIONS_TSV" --arg accblob "$ACCESSIONS_BLOB" \
   --arg allowed "$ALLOWED_BUCKETS" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
   --arg pbytes "$(wc -c < "$PAYLOAD" | tr -d ' ')" --argjson ud "$UD" \
-  --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" '{
+  --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" --argjson azo "$AZ_OVR_JSON" '{
     gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha, params:$params,
     commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin, sha:$upin, describe:$udesc},
     tools:{spawn:$spawn_v, truffle:$truffle_v},
@@ -312,7 +336,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
     allowed_buckets:($allowed|split(" ")),
     payload:{uri:$puri, sha256:$psha, bytes:($pbytes|tonumber)}, user_data:$ud,
     datasets:$ds, bucket_payer:$payer, manifest_created_at:$created
-  }' > "$M" || die "could not write $M"
+  } | if $azo != null then .launch_override = $azo else . end' > "$M" || die "could not write $M"
 if [ -n "$COHORT_ID" ]; then
   mset_early() { local tmp; tmp=$(mktemp) && jq "$@" "$M" > "$tmp" && mv "$tmp" "$M"; }
   mset_early --arg id "$COHORT_ID" --argjson r "$COHORT_RANK" --argjson n "$COHORT_N" --arg p "$COHORT_PREFIX" \
@@ -477,6 +501,20 @@ for i in $(seq 1 24); do
   sleep 5
 done
 [ -n "$DESC" ] || say "WARNING: DescribeInstances never found $IID; instance fields stay null (scripts/refinalise.sh fills them after the run)"
+# The AZ asked for (AK2_LAUNCH_AZ, else the spec's pinned one) must be the AZ launched in: a run in
+# another AZ is not the run that was asked for (docs/run.md, "Launch overrides").
+WANT_AZ=${AZ_OVR:-$(q '.placement.availability_zone // empty')}
+GOT_AZ=$(echo "${DESC:-null}" | jq -r '.Placement.AvailabilityZone // empty')
+if [ -n "$WANT_AZ" ] && [ -n "$GOT_AZ" ] && [ "$GOT_AZ" != "$WANT_AZ" ]; then
+  say "spawn launched in $GOT_AZ, not the requested $WANT_AZ: terminating $IID"
+  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
+  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
+  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --arg got "$GOT_AZ" --arg want "$WANT_AZ" \
+    '.launch = {requested_at:$t, instance_id:$iid, region:$lr, az:$got, requested_az:$want, error:"launched in the wrong AZ; terminated by run.sh"}'
+  scripts/orphans.sh --own "$TASK_ID" "$IID"
+  die "launch AZ $GOT_AZ != requested $WANT_AZ"
+fi
+[ -n "$WANT_AZ" ] && [ -z "$GOT_AZ" ] && say "WARNING: the launch AZ could not be read; the requested $WANT_AZ is unchecked here (make ladder-campaign checks instance.az)"
 # The installed capacity utilisation is measured against (docs/run.md, "Utilisation"): vCPUs,
 # memory and the first network card's baseline and peak line rate, from describe-instance-types.
 TYPEINFO=null

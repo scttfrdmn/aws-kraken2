@@ -6,8 +6,14 @@
                                                     the rung's resolved PARAMs as shell-safe lines, for
                                                     scripts/g3/mkspec-ladder.sh; exit 3 if any value is
                                                     still a placeholder, 4 if the type cannot hold it
-  ladder_levers.py spec-params SPEC.json            the spec's `params` object for manifest.json and
-                                                    cohort.json (null if not a ladder spec)
+  ladder_levers.py spec-params SPEC.json [--rep N]  the spec's `params` object for manifest.json and
+                                                    cohort.json (null if not a ladder spec). --rep N
+                                                    (AK2_LADDER_REP, set by make ladder-campaign) adds
+                                                    rep N and rep_source; exit 3 on a non-ladder spec,
+                                                    a bad N, or a PARAMS block with another REP
+  ladder_levers.py az-alt TYPE AZ                   the AZ list (scripts/g3/ladder.azs.tsv) row for
+                                                    TYPE in AZ as JSON, its evidence checked; exit 3
+                                                    if it is not listed or its evidence does not hold
   ladder_levers.py --self-test
 
 Importable (the fuller ladder_check.py of #53 builds on it): load(), check(), resolve(), changed(),
@@ -33,6 +39,8 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 TSV = os.path.join(ROOT, "scripts", "g3", "ladder.levers.tsv")
 RESOLVED = os.path.join(ROOT, "scripts", "g3", "ladder.resolved.tsv")
 RUNS = os.path.join(ROOT, "results", "cohort", "PRJNA398089", "runs.tsv")
+AZS = os.path.join(ROOT, "scripts", "g3", "ladder.azs.tsv")
+REP_SOURCE = "AK2_LADDER_REP at launch (make ladder-campaign)"
 
 KEYS = ("CLASSIFIER THREADS PROCS DB_STAGE DB_PLACE DB_LOAD HOST_TUNES GUNZIP IN_FETCH IN_CLIENT IN_DEST "
         "OUT_UPLOAD REPLICAS SHARDS PLACEMENT INFLIGHT SETUP ETAG_CHECK").split()
@@ -545,6 +553,65 @@ def spec_params(spec):
     return None
 
 
+def spec_params_rep(spec, rep):
+    """spec_params with the launch's replicate number (AK2_LADDER_REP): rep and rep_source added.
+    Refuses (ValueError) a non-ladder spec, a rep that is not an integer >= 1, and a PARAMS block
+    that already names another REP. The spec's bytes are the same for every rep."""
+    p = spec_params(spec)
+    if p is None:
+        raise ValueError("AK2_LADDER_REP is set, but the spec has no ladder PARAMS block")
+    if not re.fullmatch(r"[1-9][0-9]*", str(rep)):
+        raise ValueError("AK2_LADDER_REP %r is not an integer >= 1" % (rep,))
+    rep = int(rep)
+    if "rep" in p and p["rep"] != rep:
+        raise ValueError("AK2_LADDER_REP %d, but the spec's PARAMS block says REP=%s" % (rep, p["rep"]))
+    p["rep"] = rep
+    p["rep_source"] = REP_SOURCE
+    return p
+
+
+def az_rows(path=AZS):
+    """The AZ list's rows in file order (the order is the preference order for a retry)."""
+    if not os.path.isfile(path):
+        return []
+    out = []
+    with open(path) as f:
+        hdr = None
+        for line in f:
+            line = line.rstrip("\n")
+            if not line or line.startswith("#"):
+                continue
+            cells = line.split("\t")
+            if hdr is None:
+                hdr = cells
+                continue
+            out.append(dict(zip(hdr, cells)))
+    return out
+
+
+def az_alt(itype, az, path=AZS, root=ROOT, tracked=True):
+    """The documented-AZ row for (itype, az) in scripts/g3/ladder.azs.tsv (columns type, az,
+    evidence), with its evidence checked: a committed (git-tracked) manifest under results/ whose
+    instance.type and instance.az are exactly these. Raises ValueError otherwise."""
+    for r in az_rows(path):
+        if r.get("type") == itype and r.get("az") == az:
+            ev = r.get("evidence", "")
+            full = os.path.normpath(os.path.join(root, ev))
+            if not ev.startswith("results/") or not ev.endswith("/manifest.json") or not os.path.isfile(full):
+                raise ValueError("%s %s: evidence %s is not a manifest under results/" % (itype, az, ev))
+            if tracked:
+                import subprocess
+                g = subprocess.run(["git", "-C", root, "ls-files", "--error-unmatch", ev], capture_output=True)
+                if g.returncode != 0:
+                    raise ValueError("%s %s: evidence %s is not committed (git ls-files)" % (itype, az, ev))
+            with open(full) as f:
+                inst = (json.load(f).get("instance") or {})
+            if inst.get("type") != itype or inst.get("az") != az:
+                raise ValueError("%s %s: evidence %s records %s in %s" % (itype, az, ev, inst.get("type"), inst.get("az")))
+            return {"type": itype, "az": az, "evidence": ev, "list": os.path.relpath(path, root)}
+    raise ValueError("%s in %s is not in %s" % (itype, az, os.path.relpath(path, root)))
+
+
 def _params_main(a):
     tsv, resd, mem, vcpus = TSV, RESOLVED, None, 96
     rung, cohort = a[0], a[1]
@@ -767,6 +834,49 @@ def _self_test():
                   "state": "cold", "source": "spec command[2] PARAMS block"}, sp
     assert spec_params({"command": ["bash", "-c", "# Parameters (scripts/g3/mkspec.sh):\nEXP=e1; COHORT=1\n"]}) is None
     assert spec_params({"command": ["bash", "-c"]}) is None
+    # The launch's rep (AK2_LADDER_REP): added with its source; refused on a non-ladder spec, a bad
+    # value, or a PARAMS block naming another REP.
+    sp1 = {"command": ["bash", "-c", "x\n" + PARAMS_MARK + " S S1 1):\nRUNG=S1; ARM=S; COHORT=1\n"]}
+    assert spec_params_rep(sp1, "2")["rep"] == 2 and spec_params_rep(sp1, 1)["rep_source"] == REP_SOURCE
+    for bad in ("0", "x", "-1", ""):
+        try:
+            spec_params_rep(sp1, bad)
+            raise AssertionError("rep %r accepted" % bad)
+        except ValueError:
+            pass
+    sp3 = {"command": ["bash", "-c", "x\n" + PARAMS_MARK + " S S1 1):\nRUNG=S1; REP=3\n"]}
+    assert spec_params_rep(sp3, 3)["rep"] == 3
+    for spec, r in ((sp3, 2), ({"command": ["bash", "-c", "echo"]}, 1)):
+        try:
+            spec_params_rep(spec, r)
+            raise AssertionError("refusal missed")
+        except ValueError:
+            pass
+    # The AZ list: a listed row whose evidence manifest holds is accepted; unlisted, or evidence that
+    # records another AZ, is refused.
+    with tempfile.TemporaryDirectory() as d:
+        os.makedirs(os.path.join(d, "results", "g3", "r1"))
+        with open(os.path.join(d, "results", "g3", "r1", "manifest.json"), "w") as f:
+            json.dump({"instance": {"type": "x8g.24xlarge", "az": "us-west-2c"}}, f)
+        azp = os.path.join(d, "azs.tsv")
+        with open(azp, "w") as f:
+            f.write("# c\ntype\taz\tevidence\nx8g.24xlarge\tus-west-2c\tresults/g3/r1/manifest.json\n"
+                    "x8g.24xlarge\tus-west-2a\tresults/g3/r1/manifest.json\n")
+        assert az_alt("x8g.24xlarge", "us-west-2c", azp, d, tracked=False)["evidence"] == "results/g3/r1/manifest.json"
+        try:   # the same evidence, not committed (the temp dir is no repo): refused
+            az_alt("x8g.24xlarge", "us-west-2c", azp, d)
+            raise AssertionError("untracked evidence accepted")
+        except ValueError as e:
+            assert "not committed" in str(e), e
+        for t, z in (("x8g.24xlarge", "us-west-2a"), ("x8g.24xlarge", "us-west-2d"), ("r8g.48xlarge", "us-west-2c")):
+            try:
+                az_alt(t, z, azp, d, tracked=False)
+                raise AssertionError("az %s %s accepted" % (t, z))
+            except ValueError:
+                pass
+    # The committed list's evidence holds.
+    for r in az_rows():
+        az_alt(r["type"], r["az"])
     print("ladder_levers: self-test ok (%d rows)" % len(rows))
     return 0
 
@@ -788,9 +898,24 @@ def main(a):
             return 1
         print("ladder_levers: %d rungs; every rung changes exactly one key-group" % len(rows))
         return 0
-    if a and a[0] == "spec-params" and len(a) == 2:
+    if a and a[0] == "spec-params" and (len(a) == 2 or (len(a) == 4 and a[2] == "--rep")):
         with open(a[1]) as f:
-            print(json.dumps(spec_params(json.load(f)), separators=(",", ":")))
+            spec = json.load(f)
+        if len(a) == 4:
+            try:
+                print(json.dumps(spec_params_rep(spec, a[3]), separators=(",", ":")))
+            except ValueError as e:
+                print("ladder_levers: refused: %s" % e, file=sys.stderr)
+                return 3
+            return 0
+        print(json.dumps(spec_params(spec), separators=(",", ":")))
+        return 0
+    if a and a[0] == "az-alt" and len(a) == 3:
+        try:
+            print(json.dumps(az_alt(a[1], a[2]), separators=(",", ":")))
+        except ValueError as e:
+            print("ladder_levers: refused: %s" % e, file=sys.stderr)
+            return 3
         return 0
     if a and a[0] == "params" and len(a) >= 3:
         return _params_main(a[1:])
