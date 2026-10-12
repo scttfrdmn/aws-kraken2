@@ -1,4 +1,604 @@
 arm	rung	cohort	metric	series	n	median	min	max	range	granularity_q	util_coverage	note
+O	O0	1	U_cpu		2	0.120811	0.111514	0.130108	0.018594		full	
+O	O0	1	U_mem_mean		2	0.284334	0.284055	0.284613	0.000558		full	
+O	O0	1	U_mem_peak		2	0.732316	0.732237	0.732395	0.000158		full	
+O	O0	1	U_net_baseline		2	0.515396	0.513796	0.516996	0.003200		full	
+O	O0	1	U_net_peak		2	0.515396	0.513796	0.516996	0.003200		full	
+O	O0	1	U_net_rx_baseline		2	0.513343	0.511826	0.514861	0.003035		full	
+O	O0	1	U_net_rx_peak		2	0.513343	0.511826	0.514861	0.003035		full	
+O	O0	1	U_net_tx_baseline		2	0.002053	0.001970	0.002136	0.000166		full	
+O	O0	1	U_net_tx_peak		2	0.002053	0.001970	0.002136	0.000166		full	
+O	O0	1	eff_cpu_net_usd	net (prorated)	2	10.023558	9.262319	10.784796	1.522477	0.046727	full	
+O	O0	1	eff_cpu_usd	gross	2	10.292890	9.511583	11.074197	1.562614	0.046727	full	
+O	O0	1	eff_mem_net_usd	net (prorated)	2	4.234030	4.233883	4.234177	0.000294	0.018344	full	
+O	O0	1	eff_mem_usd	gross	2	4.347811	4.347496	4.348125	0.000629	0.018344	full	
+O	O0	1	eff_net_baseline_net_usd	net (prorated)	2	2.335848	2.330969	2.340726	0.009757	0.010142	full	
+O	O0	1	eff_net_baseline_usd	gross	2	2.398618	2.393699	2.403538	0.009838	0.010142	full	
+O	O0	1	eff_net_peak_net_usd	net (prorated)	2	2.335848	2.330969	2.340726	0.009757	0.010142	full	
+O	O0	1	eff_net_peak_usd	gross	2	2.398618	2.393699	2.403538	0.009838	0.010142	full	
+O	O0	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.345185	2.340635	2.349736	0.009100	0.010181	full	
+O	O0	1	eff_net_rx_baseline_usd	gross	2	2.408207	2.403625	2.412789	0.009163	0.010181	full	
+O	O0	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.345185	2.340635	2.349736	0.009100	0.010181	full	
+O	O0	1	eff_net_rx_peak_usd	gross	2	2.408207	2.403625	2.412789	0.009163	0.010181	full	
+O	O0	1	eff_net_tx_baseline_net_usd	net (prorated)	2	587.335695	564.186245	610.485145	46.298900	2.645008	full	
+O	O0	1	eff_net_tx_baseline_usd	gross	2	603.118194	579.369382	626.867005	47.497623	2.645008	full	
+O	O0	1	eff_net_tx_peak_net_usd	net (prorated)	2	587.335695	564.186245	610.485145	46.298900	2.645008	full	
+O	O0	1	eff_net_tx_peak_usd	gross	2	603.118194	579.369382	626.867005	47.497623	2.645008	full	
+O	O0-cost	1	U_cpu		2	0.120811	0.111514	0.130108	0.018594		full	
+O	O0-cost	1	U_mem_mean		2	0.284334	0.284055	0.284613	0.000558		full	
+O	O0-cost	1	U_mem_peak		2	0.732316	0.732237	0.732395	0.000158		full	
+O	O0-cost	1	U_net_baseline		2	0.515396	0.513796	0.516996	0.003200		full	
+O	O0-cost	1	U_net_peak		2	0.515396	0.513796	0.516996	0.003200		full	
+O	O0-cost	1	U_net_rx_baseline		2	0.513343	0.511826	0.514861	0.003035		full	
+O	O0-cost	1	U_net_rx_peak		2	0.513343	0.511826	0.514861	0.003035		full	
+O	O0-cost	1	U_net_tx_baseline		2	0.002053	0.001970	0.002136	0.000166		full	
+O	O0-cost	1	U_net_tx_peak		2	0.002053	0.001970	0.002136	0.000166		full	
+O	O0-cost	1	eff_cpu_net_usd	net (prorated)	2	10.023558	9.262319	10.784796	1.522477	0.046727	full	
+O	O0-cost	1	eff_cpu_usd	gross	2	10.292890	9.511583	11.074197	1.562614	0.046727	full	
+O	O0-cost	1	eff_mem_net_usd	net (prorated)	2	4.234030	4.233883	4.234177	0.000294	0.018344	full	
+O	O0-cost	1	eff_mem_usd	gross	2	4.347811	4.347496	4.348125	0.000629	0.018344	full	
+O	O0-cost	1	eff_net_baseline_net_usd	net (prorated)	2	2.335848	2.330969	2.340726	0.009757	0.010142	full	
+O	O0-cost	1	eff_net_baseline_usd	gross	2	2.398618	2.393699	2.403538	0.009838	0.010142	full	
+O	O0-cost	1	eff_net_peak_net_usd	net (prorated)	2	2.335848	2.330969	2.340726	0.009757	0.010142	full	
+O	O0-cost	1	eff_net_peak_usd	gross	2	2.398618	2.393699	2.403538	0.009838	0.010142	full	
+O	O0-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.345185	2.340635	2.349736	0.009100	0.010181	full	
+O	O0-cost	1	eff_net_rx_baseline_usd	gross	2	2.408207	2.403625	2.412789	0.009163	0.010181	full	
+O	O0-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.345185	2.340635	2.349736	0.009100	0.010181	full	
+O	O0-cost	1	eff_net_rx_peak_usd	gross	2	2.408207	2.403625	2.412789	0.009163	0.010181	full	
+O	O0-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	587.335695	564.186245	610.485145	46.298900	2.645008	full	
+O	O0-cost	1	eff_net_tx_baseline_usd	gross	2	603.118194	579.369382	626.867005	47.497623	2.645008	full	
+O	O0-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	587.335695	564.186245	610.485145	46.298900	2.645008	full	
+O	O0-cost	1	eff_net_tx_peak_usd	gross	2	603.118194	579.369382	626.867005	47.497623	2.645008	full	
+O	O0b	1	U_cpu		2	0.077318	0.073310	0.081327	0.008017		full	
+O	O0b	1	U_mem_mean		2	0.241013	0.222253	0.259772	0.037519		full	
+O	O0b	1	U_mem_peak		2	0.745123	0.744812	0.745434	0.000622		full	
+O	O0b	1	U_net_baseline		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O0b	1	U_net_peak		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O0b	1	U_net_rx_baseline		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O0b	1	U_net_rx_peak		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O0b	1	U_net_tx_baseline		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O0b	1	U_net_tx_peak		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O0b	1	eff_cpu_net_usd	net (prorated)	2	16.716589	14.837585	18.595593	3.758008	0.071077	full	
+O	O0b	1	eff_cpu_usd	gross	2	17.114945	15.216755	19.013136	3.796381	0.071077	full	
+O	O0b	1	eff_mem_net_usd	net (prorated)	2	5.389478	4.645213	6.133744	1.488531	0.023445	full	
+O	O0b	1	eff_mem_usd	gross	2	5.517695	4.763920	6.271470	1.507550	0.023445	full	
+O	O0b	1	eff_net_baseline_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O0b	1	eff_net_baseline_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O0b	1	eff_net_peak_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O0b	1	eff_net_peak_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O0b	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O0b	1	eff_net_rx_baseline_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O0b	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O0b	1	eff_net_rx_peak_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O0b	1	eff_net_tx_baseline_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O0b	1	eff_net_tx_baseline_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O0b	1	eff_net_tx_peak_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O0b	1	eff_net_tx_peak_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O0b-cost	1	U_cpu		2	0.077318	0.073310	0.081327	0.008017		full	
+O	O0b-cost	1	U_mem_mean		2	0.241013	0.222253	0.259772	0.037519		full	
+O	O0b-cost	1	U_mem_peak		2	0.745123	0.744812	0.745434	0.000622		full	
+O	O0b-cost	1	U_net_baseline		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O0b-cost	1	U_net_peak		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O0b-cost	1	U_net_rx_baseline		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O0b-cost	1	U_net_rx_peak		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O0b-cost	1	U_net_tx_baseline		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O0b-cost	1	U_net_tx_peak		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O0b-cost	1	eff_cpu_net_usd	net (prorated)	2	16.716589	14.837585	18.595593	3.758008	0.071077	full	
+O	O0b-cost	1	eff_cpu_usd	gross	2	17.114945	15.216755	19.013136	3.796381	0.071077	full	
+O	O0b-cost	1	eff_mem_net_usd	net (prorated)	2	5.389478	4.645213	6.133744	1.488531	0.023445	full	
+O	O0b-cost	1	eff_mem_usd	gross	2	5.517695	4.763920	6.271470	1.507550	0.023445	full	
+O	O0b-cost	1	eff_net_baseline_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O0b-cost	1	eff_net_baseline_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O0b-cost	1	eff_net_peak_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O0b-cost	1	eff_net_peak_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O0b-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O0b-cost	1	eff_net_rx_baseline_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O0b-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O0b-cost	1	eff_net_rx_peak_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O0b-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O0b-cost	1	eff_net_tx_baseline_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O0b-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O0b-cost	1	eff_net_tx_peak_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O2	1	U_cpu		2	0.077318	0.073310	0.081327	0.008017		full	
+O	O2	1	U_mem_mean		2	0.241013	0.222253	0.259772	0.037519		full	
+O	O2	1	U_mem_peak		2	0.745123	0.744812	0.745434	0.000622		full	
+O	O2	1	U_net_baseline		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O2	1	U_net_peak		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O2	1	U_net_rx_baseline		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O2	1	U_net_rx_peak		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O2	1	U_net_tx_baseline		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O2	1	U_net_tx_peak		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O2	1	eff_cpu_net_usd	net (prorated)	2	16.716589	14.837585	18.595593	3.758008	0.071077	full	
+O	O2	1	eff_cpu_usd	gross	2	17.114945	15.216755	19.013136	3.796381	0.071077	full	
+O	O2	1	eff_mem_net_usd	net (prorated)	2	5.389478	4.645213	6.133744	1.488531	0.023445	full	
+O	O2	1	eff_mem_usd	gross	2	5.517695	4.763920	6.271470	1.507550	0.023445	full	
+O	O2	1	eff_net_baseline_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O2	1	eff_net_baseline_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O2	1	eff_net_peak_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O2	1	eff_net_peak_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O2	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O2	1	eff_net_rx_baseline_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O2	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O2	1	eff_net_rx_peak_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O2	1	eff_net_tx_baseline_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O2	1	eff_net_tx_baseline_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O2	1	eff_net_tx_peak_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O2	1	eff_net_tx_peak_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O2-cost	1	U_cpu		2	0.077318	0.073310	0.081327	0.008017		full	
+O	O2-cost	1	U_mem_mean		2	0.241013	0.222253	0.259772	0.037519		full	
+O	O2-cost	1	U_mem_peak		2	0.745123	0.744812	0.745434	0.000622		full	
+O	O2-cost	1	U_net_baseline		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O2-cost	1	U_net_peak		2	0.488860	0.461418	0.516303	0.054885		full	
+O	O2-cost	1	U_net_rx_baseline		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O2-cost	1	U_net_rx_peak		2	0.487399	0.460052	0.514747	0.054695		full	
+O	O2-cost	1	U_net_tx_baseline		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O2-cost	1	U_net_tx_peak		2	0.001460	0.001366	0.001555	0.000189		full	
+O	O2-cost	1	eff_cpu_net_usd	net (prorated)	2	16.716589	14.837585	18.595593	3.758008	0.071077	full	
+O	O2-cost	1	eff_cpu_usd	gross	2	17.114945	15.216755	19.013136	3.796381	0.071077	full	
+O	O2-cost	1	eff_mem_net_usd	net (prorated)	2	5.389478	4.645213	6.133744	1.488531	0.023445	full	
+O	O2-cost	1	eff_mem_usd	gross	2	5.517695	4.763920	6.271470	1.507550	0.023445	full	
+O	O2-cost	1	eff_net_baseline_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O2-cost	1	eff_net_baseline_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O2-cost	1	eff_net_peak_net_usd	net (prorated)	2	2.645825	2.337186	2.954464	0.617278	0.011293	full	
+O	O2-cost	1	eff_net_peak_usd	gross	2	2.708858	2.396912	3.020803	0.623891	0.011293	full	
+O	O2-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O2-cost	1	eff_net_rx_baseline_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O2-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.653744	2.344251	2.963237	0.618985	0.011326	full	
+O	O2-cost	1	eff_net_rx_peak_usd	gross	2	2.716965	2.404158	3.029773	0.625615	0.011326	full	
+O	O2-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O2-cost	1	eff_net_tx_baseline_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O2-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	886.996065	776.010471	997.981659	221.971187	3.814544	full	
+O	O2-cost	1	eff_net_tx_peak_usd	gross	2	908.115674	795.841158	1020.390190	224.549033	3.814544	full	
+O	O2-cost-r8g	1	U_cpu		2	0.048245	0.046269	0.050222	0.003953		full	
+O	O2-cost-r8g	1	U_mem_mean		2	0.231566	0.216058	0.247074	0.031016		full	
+O	O2-cost-r8g	1	U_mem_peak		2	0.755074	0.754814	0.755335	0.000521		full	
+O	O2-cost-r8g	1	U_net_baseline		2	0.388282	0.366511	0.410053	0.043542		full	
+O	O2-cost-r8g	1	U_net_peak		2	0.388282	0.366511	0.410053	0.043542		full	
+O	O2-cost-r8g	1	U_net_rx_baseline		2	0.387172	0.365461	0.408882	0.043421		full	
+O	O2-cost-r8g	1	U_net_rx_peak		2	0.387172	0.365461	0.408882	0.043421		full	
+O	O2-cost-r8g	1	U_net_tx_baseline		2	0.001110	0.001050	0.001171	0.000121		full	
+O	O2-cost-r8g	1	U_net_tx_peak		2	0.001110	0.001050	0.001171	0.000121		full	
+O	O2-cost-r8g	1	eff_cpu_net_usd	net (prorated)	2	32.370271	29.052531	35.688012	6.635481	0.135809	full	
+O	O2-cost-r8g	1	eff_cpu_usd	gross	2	33.186722	29.840906	36.532538	6.691632	0.135809	full	
+O	O2-cost-r8g	1	eff_mem_net_usd	net (prorated)	2	6.774020	5.905422	7.642617	1.737195	0.029084	full	
+O	O2-cost-r8g	1	eff_mem_usd	gross	2	6.944573	6.065673	7.823473	1.757801	0.029084	full	
+O	O2-cost-r8g	1	eff_net_baseline_net_usd	net (prorated)	2	4.031790	3.558262	4.505318	0.947056	0.017145	full	
+O	O2-cost-r8g	1	eff_net_baseline_usd	gross	2	4.133376	3.654820	4.611933	0.957112	0.017145	full	
+O	O2-cost-r8g	1	eff_net_peak_net_usd	net (prorated)	2	4.031790	3.558262	4.505318	0.947056	0.017145	full	
+O	O2-cost-r8g	1	eff_net_peak_usd	gross	2	4.133376	3.654820	4.611933	0.957112	0.017145	full	
+O	O2-cost-r8g	1	eff_net_rx_baseline_net_usd	net (prorated)	2	4.043358	3.568453	4.518262	0.949809	0.017194	full	
+O	O2-cost-r8g	1	eff_net_rx_baseline_usd	gross	2	4.145235	3.665287	4.625183	0.959896	0.017194	full	
+O	O2-cost-r8g	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.043358	3.568453	4.518262	0.949809	0.017194	full	
+O	O2-cost-r8g	1	eff_net_rx_peak_usd	gross	2	4.145235	3.665287	4.625183	0.959896	0.017194	full	
+O	O2-cost-r8g	1	eff_net_tx_baseline_net_usd	net (prorated)	2	1409.313220	1246.008716	1572.617724	326.609008	5.984508	full	
+O	O2-cost-r8g	1	eff_net_tx_baseline_usd	gross	2	1444.826524	1279.820666	1609.832381	330.011715	5.984508	full	
+O	O2-cost-r8g	1	eff_net_tx_peak_net_usd	net (prorated)	2	1409.313220	1246.008716	1572.617724	326.609008	5.984508	full	
+O	O2-cost-r8g	1	eff_net_tx_peak_usd	gross	2	1444.826524	1279.820666	1609.832381	330.011715	5.984508	full	
+O	O2-r8g	1	U_cpu		2	0.048245	0.046269	0.050222	0.003953		full	
+O	O2-r8g	1	U_mem_mean		2	0.231566	0.216058	0.247074	0.031016		full	
+O	O2-r8g	1	U_mem_peak		2	0.755074	0.754814	0.755335	0.000521		full	
+O	O2-r8g	1	U_net_baseline		2	0.388282	0.366511	0.410053	0.043542		full	
+O	O2-r8g	1	U_net_peak		2	0.388282	0.366511	0.410053	0.043542		full	
+O	O2-r8g	1	U_net_rx_baseline		2	0.387172	0.365461	0.408882	0.043421		full	
+O	O2-r8g	1	U_net_rx_peak		2	0.387172	0.365461	0.408882	0.043421		full	
+O	O2-r8g	1	U_net_tx_baseline		2	0.001110	0.001050	0.001171	0.000121		full	
+O	O2-r8g	1	U_net_tx_peak		2	0.001110	0.001050	0.001171	0.000121		full	
+O	O2-r8g	1	eff_cpu_net_usd	net (prorated)	2	32.370271	29.052531	35.688012	6.635481	0.135809	full	
+O	O2-r8g	1	eff_cpu_usd	gross	2	33.186722	29.840906	36.532538	6.691632	0.135809	full	
+O	O2-r8g	1	eff_mem_net_usd	net (prorated)	2	6.774020	5.905422	7.642617	1.737195	0.029084	full	
+O	O2-r8g	1	eff_mem_usd	gross	2	6.944573	6.065673	7.823473	1.757801	0.029084	full	
+O	O2-r8g	1	eff_net_baseline_net_usd	net (prorated)	2	4.031790	3.558262	4.505318	0.947056	0.017145	full	
+O	O2-r8g	1	eff_net_baseline_usd	gross	2	4.133376	3.654820	4.611933	0.957112	0.017145	full	
+O	O2-r8g	1	eff_net_peak_net_usd	net (prorated)	2	4.031790	3.558262	4.505318	0.947056	0.017145	full	
+O	O2-r8g	1	eff_net_peak_usd	gross	2	4.133376	3.654820	4.611933	0.957112	0.017145	full	
+O	O2-r8g	1	eff_net_rx_baseline_net_usd	net (prorated)	2	4.043358	3.568453	4.518262	0.949809	0.017194	full	
+O	O2-r8g	1	eff_net_rx_baseline_usd	gross	2	4.145235	3.665287	4.625183	0.959896	0.017194	full	
+O	O2-r8g	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.043358	3.568453	4.518262	0.949809	0.017194	full	
+O	O2-r8g	1	eff_net_rx_peak_usd	gross	2	4.145235	3.665287	4.625183	0.959896	0.017194	full	
+O	O2-r8g	1	eff_net_tx_baseline_net_usd	net (prorated)	2	1409.313220	1246.008716	1572.617724	326.609008	5.984508	full	
+O	O2-r8g	1	eff_net_tx_baseline_usd	gross	2	1444.826524	1279.820666	1609.832381	330.011715	5.984508	full	
+O	O2-r8g	1	eff_net_tx_peak_net_usd	net (prorated)	2	1409.313220	1246.008716	1572.617724	326.609008	5.984508	full	
+O	O2-r8g	1	eff_net_tx_peak_usd	gross	2	1444.826524	1279.820666	1609.832381	330.011715	5.984508	full	
+O	O3	1	U_cpu		2	0.160809	0.160705	0.160914	0.000209		full	
+O	O3	1	U_mem_mean		2	0.092402	0.092044	0.092761	0.000717		full	
+O	O3	1	U_mem_peak		2	0.334381	0.334077	0.334685	0.000608		full	
+O	O3	1	U_net_baseline		2	0.410146	0.408656	0.411636	0.002980		full	
+O	O3	1	U_net_peak		2	0.102537	0.102164	0.102909	0.000745		full	
+O	O3	1	U_net_rx_baseline		2	0.406542	0.405027	0.408057	0.003030		full	
+O	O3	1	U_net_rx_peak		2	0.101635	0.101257	0.102014	0.000757		full	
+O	O3	1	U_net_tx_baseline		2	0.003604	0.003579	0.003629	0.000050		full	
+O	O3	1	U_net_tx_peak		2	0.000901	0.000895	0.000907	0.000012		full	
+O	O3	1	eff_cpu_net_usd	net (prorated)	2	8.836223	8.801433	8.871013	0.069579	0.086463	full	
+O	O3	1	eff_cpu_usd	gross	2	8.836436	8.801668	8.871204	0.069537	0.086463	full	
+O	O3	1	eff_mem_net_usd	net (prorated)	2	15.377813	15.366937	15.388689	0.021752	0.150962	full	
+O	O3	1	eff_mem_usd	gross	2	15.378184	15.367346	15.389021	0.021675	0.150962	full	
+O	O3	1	eff_net_baseline_net_usd	net (prorated)	2	3.464607	3.436129	3.493085	0.056956	0.034002	full	
+O	O3	1	eff_net_baseline_usd	gross	2	3.464690	3.436220	3.493161	0.056940	0.034002	full	
+O	O3	1	eff_net_peak_net_usd	net (prorated)	2	13.858428	13.744516	13.972340	0.227825	0.136008	full	
+O	O3	1	eff_net_peak_usd	gross	2	13.858762	13.744881	13.972642	0.227761	0.136008	full	
+O	O3	1	eff_net_rx_baseline_net_usd	net (prorated)	2	3.495325	3.466267	3.524383	0.058116	0.034307	full	
+O	O3	1	eff_net_rx_baseline_usd	gross	2	3.495409	3.466359	3.524459	0.058100	0.034307	full	
+O	O3	1	eff_net_rx_peak_net_usd	net (prorated)	2	13.981298	13.865100	14.097496	0.232396	0.137226	full	
+O	O3	1	eff_net_rx_peak_usd	gross	2	13.981635	13.865469	14.097801	0.232331	0.137226	full	
+O	O3	1	eff_net_tx_baseline_net_usd	net (prorated)	2	394.277308	393.350829	395.203787	1.852958	3.882400	full	
+O	O3	1	eff_net_tx_baseline_usd	gross	2	394.286817	393.359328	395.214306	1.854978	3.882400	full	
+O	O3	1	eff_net_tx_peak_net_usd	net (prorated)	2	1577.105289	1573.837000	1580.373578	6.536578	15.525264	full	
+O	O3	1	eff_net_tx_peak_usd	gross	2	1577.143323	1573.871003	1580.415642	6.544639	15.525264	full	
+O	O3-cost	1	U_cpu		2	0.213624	0.213331	0.213918	0.000587		full	
+O	O3-cost	1	U_mem_mean		2	0.162190	0.161292	0.163088	0.001796		full	
+O	O3-cost	1	U_mem_peak		2	0.604203	0.603659	0.604747	0.001088		full	
+O	O3-cost	1	U_net_baseline		2	0.722324	0.721170	0.723477	0.002307		full	
+O	O3-cost	1	U_net_peak		2	0.180581	0.180292	0.180869	0.000577		full	
+O	O3-cost	1	U_net_rx_baseline		2	0.716031	0.714912	0.717149	0.002237		full	
+O	O3-cost	1	U_net_rx_peak		2	0.179007	0.178728	0.179287	0.000559		full	
+O	O3-cost	1	U_net_tx_baseline		2	0.006293	0.006258	0.006328	0.000070		full	
+O	O3-cost	1	U_net_tx_peak		2	0.001573	0.001564	0.001582	0.000018		full	
+O	O3-cost	1	eff_cpu_net_usd	net (prorated)	2	3.747586	3.736856	3.758316	0.021460	0.032567	full	
+O	O3-cost	1	eff_cpu_usd	gross	2	3.747686	3.736951	3.758422	0.021472	0.032567	full	
+O	O3-cost	1	eff_mem_net_usd	net (prorated)	2	4.936130	4.916151	4.956109	0.039957	0.043074	full	
+O	O3-cost	1	eff_mem_usd	gross	2	4.936263	4.916291	4.956235	0.039944	0.043074	full	
+O	O3-cost	1	eff_net_baseline_net_usd	net (prorated)	2	1.108336	1.104915	1.111756	0.006841	0.009634	full	
+O	O3-cost	1	eff_net_baseline_usd	gross	2	1.108366	1.104943	1.111788	0.006845	0.009634	full	
+O	O3-cost	1	eff_net_peak_net_usd	net (prorated)	2	4.433352	4.419667	4.447038	0.027371	0.038535	full	
+O	O3-cost	1	eff_net_peak_usd	gross	2	4.433471	4.419779	4.447163	0.027385	0.038535	full	
+O	O3-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.118076	1.114665	1.121488	0.006823	0.009718	full	
+O	O3-cost	1	eff_net_rx_baseline_usd	gross	2	1.118106	1.114693	1.121520	0.006827	0.009718	full	
+O	O3-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.472309	4.458665	4.485952	0.027287	0.038872	full	
+O	O3-cost	1	eff_net_rx_peak_usd	gross	2	4.472429	4.458778	4.486079	0.027301	0.038872	full	
+O	O3-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	127.221420	126.324383	128.118458	1.794074	1.110188	full	
+O	O3-cost	1	eff_net_tx_baseline_usd	gross	2	127.224838	126.327592	128.122084	1.794492	1.110188	full	
+O	O3-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	508.967599	505.297534	512.637665	7.340131	4.442171	full	
+O	O3-cost	1	eff_net_tx_peak_usd	gross	2	508.981270	505.310367	512.652174	7.341807	4.442171	full	
+O	O3-cost-n16	1	U_cpu		2	0.213624	0.213331	0.213918	0.000587		full	
+O	O3-cost-n16	1	U_mem_mean		2	0.162190	0.161292	0.163088	0.001796		full	
+O	O3-cost-n16	1	U_mem_peak		2	0.604203	0.603659	0.604747	0.001088		full	
+O	O3-cost-n16	1	U_net_baseline		2	0.722324	0.721170	0.723477	0.002307		full	
+O	O3-cost-n16	1	U_net_peak		2	0.180581	0.180292	0.180869	0.000577		full	
+O	O3-cost-n16	1	U_net_rx_baseline		2	0.716031	0.714912	0.717149	0.002237		full	
+O	O3-cost-n16	1	U_net_rx_peak		2	0.179007	0.178728	0.179287	0.000559		full	
+O	O3-cost-n16	1	U_net_tx_baseline		2	0.006293	0.006258	0.006328	0.000070		full	
+O	O3-cost-n16	1	U_net_tx_peak		2	0.001573	0.001564	0.001582	0.000018		full	
+O	O3-cost-n16	1	eff_cpu_net_usd	net (prorated)	2	3.747586	3.736856	3.758316	0.021460	0.032567	full	
+O	O3-cost-n16	1	eff_cpu_usd	gross	2	3.747686	3.736951	3.758422	0.021472	0.032567	full	
+O	O3-cost-n16	1	eff_mem_net_usd	net (prorated)	2	4.936130	4.916151	4.956109	0.039957	0.043074	full	
+O	O3-cost-n16	1	eff_mem_usd	gross	2	4.936263	4.916291	4.956235	0.039944	0.043074	full	
+O	O3-cost-n16	1	eff_net_baseline_net_usd	net (prorated)	2	1.108336	1.104915	1.111756	0.006841	0.009634	full	
+O	O3-cost-n16	1	eff_net_baseline_usd	gross	2	1.108366	1.104943	1.111788	0.006845	0.009634	full	
+O	O3-cost-n16	1	eff_net_peak_net_usd	net (prorated)	2	4.433352	4.419667	4.447038	0.027371	0.038535	full	
+O	O3-cost-n16	1	eff_net_peak_usd	gross	2	4.433471	4.419779	4.447163	0.027385	0.038535	full	
+O	O3-cost-n16	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.118076	1.114665	1.121488	0.006823	0.009718	full	
+O	O3-cost-n16	1	eff_net_rx_baseline_usd	gross	2	1.118106	1.114693	1.121520	0.006827	0.009718	full	
+O	O3-cost-n16	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.472309	4.458665	4.485952	0.027287	0.038872	full	
+O	O3-cost-n16	1	eff_net_rx_peak_usd	gross	2	4.472429	4.458778	4.486079	0.027301	0.038872	full	
+O	O3-cost-n16	1	eff_net_tx_baseline_net_usd	net (prorated)	2	127.221420	126.324383	128.118458	1.794074	1.110188	full	
+O	O3-cost-n16	1	eff_net_tx_baseline_usd	gross	2	127.224838	126.327592	128.122084	1.794492	1.110188	full	
+O	O3-cost-n16	1	eff_net_tx_peak_net_usd	net (prorated)	2	508.967599	505.297534	512.637665	7.340131	4.442171	full	
+O	O3-cost-n16	1	eff_net_tx_peak_usd	gross	2	508.981270	505.310367	512.652174	7.341807	4.442171	full	
+O	O3-cost-n2	1	U_cpu		2	0.096943	0.092993	0.100893	0.007900		full	
+O	O3-cost-n2	1	U_mem_mean		2	0.241303	0.241075	0.241531	0.000456		full	
+O	O3-cost-n2	1	U_mem_peak		2	0.755084	0.755029	0.755140	0.000111		full	
+O	O3-cost-n2	1	U_net_baseline		2	0.496167	0.493712	0.498622	0.004910		full	
+O	O3-cost-n2	1	U_net_peak		2	0.496167	0.493712	0.498622	0.004910		full	
+O	O3-cost-n2	1	U_net_rx_baseline		2	0.493259	0.490953	0.495565	0.004612		full	
+O	O3-cost-n2	1	U_net_rx_peak		2	0.493259	0.490953	0.495565	0.004612		full	
+O	O3-cost-n2	1	U_net_tx_baseline		2	0.002909	0.002759	0.003058	0.000299		full	
+O	O3-cost-n2	1	U_net_tx_peak		2	0.002909	0.002759	0.003058	0.000299		full	
+O	O3-cost-n2	1	eff_cpu_net_usd	net (prorated)	2	11.831520	11.335995	12.327046	0.991051	0.056033	full	
+O	O3-cost-n2	1	eff_cpu_usd	gross	2	11.831708	11.336188	12.327229	0.991041	0.056033	full	
+O	O3-cost-n2	1	eff_mem_net_usd	net (prorated)	2	4.745188	4.735303	4.755072	0.019769	0.021614	full	
+O	O3-cost-n2	1	eff_mem_usd	gross	2	4.745263	4.735384	4.755143	0.019759	0.021614	full	
+O	O3-cost-n2	1	eff_net_baseline_net_usd	net (prorated)	2	2.307812	2.293767	2.321858	0.028091	0.010554	full	
+O	O3-cost-n2	1	eff_net_baseline_usd	gross	2	2.307849	2.293806	2.321892	0.028086	0.010554	full	
+O	O3-cost-n2	1	eff_net_peak_net_usd	net (prorated)	2	2.307812	2.293767	2.321858	0.028091	0.010554	full	
+O	O3-cost-n2	1	eff_net_peak_usd	gross	2	2.307849	2.293806	2.321892	0.028086	0.010554	full	
+O	O3-cost-n2	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.321411	2.307916	2.334906	0.026989	0.010613	full	
+O	O3-cost-n2	1	eff_net_rx_baseline_usd	gross	2	2.321448	2.307956	2.334940	0.026985	0.010613	full	
+O	O3-cost-n2	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.321411	2.307916	2.334906	0.026989	0.010613	full	
+O	O3-cost-n2	1	eff_net_rx_peak_usd	gross	2	2.321448	2.307956	2.334940	0.026985	0.010613	full	
+O	O3-cost-n2	1	eff_net_tx_baseline_net_usd	net (prorated)	2	394.748552	374.009984	415.487120	41.477135	1.888607	full	
+O	O3-cost-n2	1	eff_net_tx_baseline_usd	gross	2	394.754823	374.016351	415.493295	41.476944	1.888607	full	
+O	O3-cost-n2	1	eff_net_tx_peak_net_usd	net (prorated)	2	394.748552	374.009984	415.487120	41.477135	1.888607	full	
+O	O3-cost-n2	1	eff_net_tx_peak_usd	gross	2	394.754823	374.016351	415.493295	41.476944	1.888607	full	
+O	O3-cost-n32	1	U_cpu		2	0.160809	0.160705	0.160914	0.000209		full	
+O	O3-cost-n32	1	U_mem_mean		2	0.092402	0.092044	0.092761	0.000717		full	
+O	O3-cost-n32	1	U_mem_peak		2	0.334381	0.334077	0.334685	0.000608		full	
+O	O3-cost-n32	1	U_net_baseline		2	0.410146	0.408656	0.411636	0.002980		full	
+O	O3-cost-n32	1	U_net_peak		2	0.102537	0.102164	0.102909	0.000745		full	
+O	O3-cost-n32	1	U_net_rx_baseline		2	0.406542	0.405027	0.408057	0.003030		full	
+O	O3-cost-n32	1	U_net_rx_peak		2	0.101635	0.101257	0.102014	0.000757		full	
+O	O3-cost-n32	1	U_net_tx_baseline		2	0.003604	0.003579	0.003629	0.000050		full	
+O	O3-cost-n32	1	U_net_tx_peak		2	0.000901	0.000895	0.000907	0.000012		full	
+O	O3-cost-n32	1	eff_cpu_net_usd	net (prorated)	2	8.836223	8.801433	8.871013	0.069579	0.086463	full	
+O	O3-cost-n32	1	eff_cpu_usd	gross	2	8.836436	8.801668	8.871204	0.069537	0.086463	full	
+O	O3-cost-n32	1	eff_mem_net_usd	net (prorated)	2	15.377813	15.366937	15.388689	0.021752	0.150962	full	
+O	O3-cost-n32	1	eff_mem_usd	gross	2	15.378184	15.367346	15.389021	0.021675	0.150962	full	
+O	O3-cost-n32	1	eff_net_baseline_net_usd	net (prorated)	2	3.464607	3.436129	3.493085	0.056956	0.034002	full	
+O	O3-cost-n32	1	eff_net_baseline_usd	gross	2	3.464690	3.436220	3.493161	0.056940	0.034002	full	
+O	O3-cost-n32	1	eff_net_peak_net_usd	net (prorated)	2	13.858428	13.744516	13.972340	0.227825	0.136008	full	
+O	O3-cost-n32	1	eff_net_peak_usd	gross	2	13.858762	13.744881	13.972642	0.227761	0.136008	full	
+O	O3-cost-n32	1	eff_net_rx_baseline_net_usd	net (prorated)	2	3.495325	3.466267	3.524383	0.058116	0.034307	full	
+O	O3-cost-n32	1	eff_net_rx_baseline_usd	gross	2	3.495409	3.466359	3.524459	0.058100	0.034307	full	
+O	O3-cost-n32	1	eff_net_rx_peak_net_usd	net (prorated)	2	13.981298	13.865100	14.097496	0.232396	0.137226	full	
+O	O3-cost-n32	1	eff_net_rx_peak_usd	gross	2	13.981635	13.865469	14.097801	0.232331	0.137226	full	
+O	O3-cost-n32	1	eff_net_tx_baseline_net_usd	net (prorated)	2	394.277308	393.350829	395.203787	1.852958	3.882400	full	
+O	O3-cost-n32	1	eff_net_tx_baseline_usd	gross	2	394.286817	393.359328	395.214306	1.854978	3.882400	full	
+O	O3-cost-n32	1	eff_net_tx_peak_net_usd	net (prorated)	2	1577.105289	1573.837000	1580.373578	6.536578	15.525264	full	
+O	O3-cost-n32	1	eff_net_tx_peak_usd	gross	2	1577.143323	1573.871003	1580.415642	6.544639	15.525264	full	
+O	O3-cost-n4	1	U_cpu		2	0.103836	0.102396	0.105277	0.002881		full	
+O	O3-cost-n4	1	U_mem_mean		2	0.178939	0.174388	0.183490	0.009102		full	
+O	O3-cost-n4	1	U_mem_peak		2	0.579568	0.578976	0.580160	0.001184		full	
+O	O3-cost-n4	1	U_net_baseline		2	0.455008	0.454830	0.455185	0.000355		full	
+O	O3-cost-n4	1	U_net_peak		2	0.455008	0.454830	0.455185	0.000355		full	
+O	O3-cost-n4	1	U_net_rx_baseline		2	0.451421	0.451299	0.451543	0.000244		full	
+O	O3-cost-n4	1	U_net_rx_peak		2	0.451421	0.451299	0.451543	0.000244		full	
+O	O3-cost-n4	1	U_net_tx_baseline		2	0.003586	0.003531	0.003642	0.000111		full	
+O	O3-cost-n4	1	U_net_tx_peak		2	0.003586	0.003531	0.003642	0.000111		full	
+O	O3-cost-n4	1	eff_cpu_net_usd	net (prorated)	2	12.183490	12.027020	12.339960	0.312940	0.067850	full	
+O	O3-cost-n4	1	eff_cpu_usd	gross	2	12.183725	12.027252	12.340199	0.312947	0.067850	full	
+O	O3-cost-n4	1	eff_mem_net_usd	net (prorated)	2	7.073087	6.900477	7.245697	0.345219	0.039840	full	
+O	O3-cost-n4	1	eff_mem_usd	gross	2	7.073224	6.900610	7.245837	0.345226	0.039840	full	
+O	O3-cost-n4	1	eff_net_baseline_net_usd	net (prorated)	2	2.779878	2.778099	2.781657	0.003559	0.015275	full	
+O	O3-cost-n4	1	eff_net_baseline_usd	gross	2	2.779932	2.778152	2.781711	0.003558	0.015275	full	
+O	O3-cost-n4	1	eff_net_peak_net_usd	net (prorated)	2	2.779878	2.778099	2.781657	0.003559	0.015275	full	
+O	O3-cost-n4	1	eff_net_peak_usd	gross	2	2.779932	2.778152	2.781711	0.003558	0.015275	full	
+O	O3-cost-n4	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.801964	2.799835	2.804093	0.004258	0.015395	full	
+O	O3-cost-n4	1	eff_net_rx_baseline_usd	gross	2	2.802018	2.799889	2.804147	0.004258	0.015395	full	
+O	O3-cost-n4	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.801964	2.799835	2.804093	0.004258	0.015395	full	
+O	O3-cost-n4	1	eff_net_rx_peak_usd	gross	2	2.802018	2.799889	2.804147	0.004258	0.015395	full	
+O	O3-cost-n4	1	eff_net_tx_baseline_net_usd	net (prorated)	2	352.752930	347.657494	357.848367	10.190873	1.967589	full	
+O	O3-cost-n4	1	eff_net_tx_baseline_usd	gross	2	352.759739	347.664195	357.855282	10.191086	1.967589	full	
+O	O3-cost-n4	1	eff_net_tx_peak_net_usd	net (prorated)	2	352.752930	347.657494	357.848367	10.190873	1.967589	full	
+O	O3-cost-n4	1	eff_net_tx_peak_usd	gross	2	352.759739	347.664195	357.855282	10.191086	1.967589	full	
+O	O3-cost-n8	1	U_cpu		2	0.176532	0.172057	0.181007	0.008950		full	
+O	O3-cost-n8	1	U_mem_mean		2	0.180495	0.175595	0.185395	0.009800		full	
+O	O3-cost-n8	1	U_mem_peak		2	0.590142	0.588552	0.591732	0.003180		full	
+O	O3-cost-n8	1	U_net_baseline		2	0.706465	0.703200	0.709730	0.006530		full	
+O	O3-cost-n8	1	U_net_peak		2	0.353233	0.351600	0.354865	0.003265		full	
+O	O3-cost-n8	1	U_net_rx_baseline		2	0.700538	0.697463	0.703614	0.006151		full	
+O	O3-cost-n8	1	U_net_rx_peak		2	0.350269	0.348731	0.351807	0.003076		full	
+O	O3-cost-n8	1	U_net_tx_baseline		2	0.005926	0.005737	0.006115	0.000378		full	
+O	O3-cost-n8	1	U_net_tx_peak		2	0.002963	0.002868	0.003058	0.000190		full	
+O	O3-cost-n8	1	eff_cpu_net_usd	net (prorated)	2	4.624824	4.502666	4.746982	0.244315	0.040379	full	
+O	O3-cost-n8	1	eff_cpu_usd	gross	2	4.624939	4.502771	4.747107	0.244336	0.040379	full	
+O	O3-cost-n8	1	eff_mem_net_usd	net (prorated)	2	4.523716	4.396095	4.651337	0.255241	0.039566	full	
+O	O3-cost-n8	1	eff_mem_usd	gross	2	4.523828	4.396197	4.651459	0.255262	0.039566	full	
+O	O3-cost-n8	1	eff_net_baseline_net_usd	net (prorated)	2	1.154911	1.148344	1.161478	0.013134	0.009880	full	
+O	O3-cost-n8	1	eff_net_baseline_usd	gross	2	1.154940	1.148371	1.161509	0.013138	0.009880	full	
+O	O3-cost-n8	1	eff_net_peak_net_usd	net (prorated)	2	2.309822	2.296688	2.322956	0.026269	0.019760	full	
+O	O3-cost-n8	1	eff_net_peak_usd	gross	2	2.309879	2.296741	2.323018	0.026277	0.019760	full	
+O	O3-cost-n8	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.164679	1.158326	1.171032	0.012706	0.009961	full	
+O	O3-cost-n8	1	eff_net_rx_baseline_usd	gross	2	1.164708	1.158352	1.171063	0.012710	0.009961	full	
+O	O3-cost-n8	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.329359	2.316651	2.342067	0.025416	0.019922	full	
+O	O3-cost-n8	1	eff_net_rx_peak_usd	gross	2	2.329417	2.316705	2.342129	0.025424	0.019922	full	
+O	O3-cost-n8	1	eff_net_tx_baseline_net_usd	net (prorated)	2	137.823364	133.281130	142.365598	9.084468	1.211008	full	
+O	O3-cost-n8	1	eff_net_tx_baseline_usd	gross	2	137.826788	133.284219	142.369357	9.085138	1.211008	full	
+O	O3-cost-n8	1	eff_net_tx_peak_net_usd	net (prorated)	2	275.649755	266.518675	284.780835	18.262160	2.422439	full	
+O	O3-cost-n8	1	eff_net_tx_peak_usd	gross	2	275.656604	266.524853	284.788354	18.263501	2.422439	full	
+O	O3-n16	1	U_cpu		2	0.213624	0.213331	0.213918	0.000587		full	
+O	O3-n16	1	U_mem_mean		2	0.162190	0.161292	0.163088	0.001796		full	
+O	O3-n16	1	U_mem_peak		2	0.604203	0.603659	0.604747	0.001088		full	
+O	O3-n16	1	U_net_baseline		2	0.722324	0.721170	0.723477	0.002307		full	
+O	O3-n16	1	U_net_peak		2	0.180581	0.180292	0.180869	0.000577		full	
+O	O3-n16	1	U_net_rx_baseline		2	0.716031	0.714912	0.717149	0.002237		full	
+O	O3-n16	1	U_net_rx_peak		2	0.179007	0.178728	0.179287	0.000559		full	
+O	O3-n16	1	U_net_tx_baseline		2	0.006293	0.006258	0.006328	0.000070		full	
+O	O3-n16	1	U_net_tx_peak		2	0.001573	0.001564	0.001582	0.000018		full	
+O	O3-n16	1	eff_cpu_net_usd	net (prorated)	2	3.747586	3.736856	3.758316	0.021460	0.032567	full	
+O	O3-n16	1	eff_cpu_usd	gross	2	3.747686	3.736951	3.758422	0.021472	0.032567	full	
+O	O3-n16	1	eff_mem_net_usd	net (prorated)	2	4.936130	4.916151	4.956109	0.039957	0.043074	full	
+O	O3-n16	1	eff_mem_usd	gross	2	4.936263	4.916291	4.956235	0.039944	0.043074	full	
+O	O3-n16	1	eff_net_baseline_net_usd	net (prorated)	2	1.108336	1.104915	1.111756	0.006841	0.009634	full	
+O	O3-n16	1	eff_net_baseline_usd	gross	2	1.108366	1.104943	1.111788	0.006845	0.009634	full	
+O	O3-n16	1	eff_net_peak_net_usd	net (prorated)	2	4.433352	4.419667	4.447038	0.027371	0.038535	full	
+O	O3-n16	1	eff_net_peak_usd	gross	2	4.433471	4.419779	4.447163	0.027385	0.038535	full	
+O	O3-n16	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.118076	1.114665	1.121488	0.006823	0.009718	full	
+O	O3-n16	1	eff_net_rx_baseline_usd	gross	2	1.118106	1.114693	1.121520	0.006827	0.009718	full	
+O	O3-n16	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.472309	4.458665	4.485952	0.027287	0.038872	full	
+O	O3-n16	1	eff_net_rx_peak_usd	gross	2	4.472429	4.458778	4.486079	0.027301	0.038872	full	
+O	O3-n16	1	eff_net_tx_baseline_net_usd	net (prorated)	2	127.221420	126.324383	128.118458	1.794074	1.110188	full	
+O	O3-n16	1	eff_net_tx_baseline_usd	gross	2	127.224838	126.327592	128.122084	1.794492	1.110188	full	
+O	O3-n16	1	eff_net_tx_peak_net_usd	net (prorated)	2	508.967599	505.297534	512.637665	7.340131	4.442171	full	
+O	O3-n16	1	eff_net_tx_peak_usd	gross	2	508.981270	505.310367	512.652174	7.341807	4.442171	full	
+O	O3-n2	1	U_cpu		2	0.096943	0.092993	0.100893	0.007900		full	
+O	O3-n2	1	U_mem_mean		2	0.241303	0.241075	0.241531	0.000456		full	
+O	O3-n2	1	U_mem_peak		2	0.755084	0.755029	0.755140	0.000111		full	
+O	O3-n2	1	U_net_baseline		2	0.496167	0.493712	0.498622	0.004910		full	
+O	O3-n2	1	U_net_peak		2	0.496167	0.493712	0.498622	0.004910		full	
+O	O3-n2	1	U_net_rx_baseline		2	0.493259	0.490953	0.495565	0.004612		full	
+O	O3-n2	1	U_net_rx_peak		2	0.493259	0.490953	0.495565	0.004612		full	
+O	O3-n2	1	U_net_tx_baseline		2	0.002909	0.002759	0.003058	0.000299		full	
+O	O3-n2	1	U_net_tx_peak		2	0.002909	0.002759	0.003058	0.000299		full	
+O	O3-n2	1	eff_cpu_net_usd	net (prorated)	2	11.831520	11.335995	12.327046	0.991051	0.056033	full	
+O	O3-n2	1	eff_cpu_usd	gross	2	11.831708	11.336188	12.327229	0.991041	0.056033	full	
+O	O3-n2	1	eff_mem_net_usd	net (prorated)	2	4.745188	4.735303	4.755072	0.019769	0.021614	full	
+O	O3-n2	1	eff_mem_usd	gross	2	4.745263	4.735384	4.755143	0.019759	0.021614	full	
+O	O3-n2	1	eff_net_baseline_net_usd	net (prorated)	2	2.307812	2.293767	2.321858	0.028091	0.010554	full	
+O	O3-n2	1	eff_net_baseline_usd	gross	2	2.307849	2.293806	2.321892	0.028086	0.010554	full	
+O	O3-n2	1	eff_net_peak_net_usd	net (prorated)	2	2.307812	2.293767	2.321858	0.028091	0.010554	full	
+O	O3-n2	1	eff_net_peak_usd	gross	2	2.307849	2.293806	2.321892	0.028086	0.010554	full	
+O	O3-n2	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.321411	2.307916	2.334906	0.026989	0.010613	full	
+O	O3-n2	1	eff_net_rx_baseline_usd	gross	2	2.321448	2.307956	2.334940	0.026985	0.010613	full	
+O	O3-n2	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.321411	2.307916	2.334906	0.026989	0.010613	full	
+O	O3-n2	1	eff_net_rx_peak_usd	gross	2	2.321448	2.307956	2.334940	0.026985	0.010613	full	
+O	O3-n2	1	eff_net_tx_baseline_net_usd	net (prorated)	2	394.748552	374.009984	415.487120	41.477135	1.888607	full	
+O	O3-n2	1	eff_net_tx_baseline_usd	gross	2	394.754823	374.016351	415.493295	41.476944	1.888607	full	
+O	O3-n2	1	eff_net_tx_peak_net_usd	net (prorated)	2	394.748552	374.009984	415.487120	41.477135	1.888607	full	
+O	O3-n2	1	eff_net_tx_peak_usd	gross	2	394.754823	374.016351	415.493295	41.476944	1.888607	full	
+O	O3-n32	1	U_cpu		2	0.160809	0.160705	0.160914	0.000209		full	
+O	O3-n32	1	U_mem_mean		2	0.092402	0.092044	0.092761	0.000717		full	
+O	O3-n32	1	U_mem_peak		2	0.334381	0.334077	0.334685	0.000608		full	
+O	O3-n32	1	U_net_baseline		2	0.410146	0.408656	0.411636	0.002980		full	
+O	O3-n32	1	U_net_peak		2	0.102537	0.102164	0.102909	0.000745		full	
+O	O3-n32	1	U_net_rx_baseline		2	0.406542	0.405027	0.408057	0.003030		full	
+O	O3-n32	1	U_net_rx_peak		2	0.101635	0.101257	0.102014	0.000757		full	
+O	O3-n32	1	U_net_tx_baseline		2	0.003604	0.003579	0.003629	0.000050		full	
+O	O3-n32	1	U_net_tx_peak		2	0.000901	0.000895	0.000907	0.000012		full	
+O	O3-n32	1	eff_cpu_net_usd	net (prorated)	2	8.836223	8.801433	8.871013	0.069579	0.086463	full	
+O	O3-n32	1	eff_cpu_usd	gross	2	8.836436	8.801668	8.871204	0.069537	0.086463	full	
+O	O3-n32	1	eff_mem_net_usd	net (prorated)	2	15.377813	15.366937	15.388689	0.021752	0.150962	full	
+O	O3-n32	1	eff_mem_usd	gross	2	15.378184	15.367346	15.389021	0.021675	0.150962	full	
+O	O3-n32	1	eff_net_baseline_net_usd	net (prorated)	2	3.464607	3.436129	3.493085	0.056956	0.034002	full	
+O	O3-n32	1	eff_net_baseline_usd	gross	2	3.464690	3.436220	3.493161	0.056940	0.034002	full	
+O	O3-n32	1	eff_net_peak_net_usd	net (prorated)	2	13.858428	13.744516	13.972340	0.227825	0.136008	full	
+O	O3-n32	1	eff_net_peak_usd	gross	2	13.858762	13.744881	13.972642	0.227761	0.136008	full	
+O	O3-n32	1	eff_net_rx_baseline_net_usd	net (prorated)	2	3.495325	3.466267	3.524383	0.058116	0.034307	full	
+O	O3-n32	1	eff_net_rx_baseline_usd	gross	2	3.495409	3.466359	3.524459	0.058100	0.034307	full	
+O	O3-n32	1	eff_net_rx_peak_net_usd	net (prorated)	2	13.981298	13.865100	14.097496	0.232396	0.137226	full	
+O	O3-n32	1	eff_net_rx_peak_usd	gross	2	13.981635	13.865469	14.097801	0.232331	0.137226	full	
+O	O3-n32	1	eff_net_tx_baseline_net_usd	net (prorated)	2	394.277308	393.350829	395.203787	1.852958	3.882400	full	
+O	O3-n32	1	eff_net_tx_baseline_usd	gross	2	394.286817	393.359328	395.214306	1.854978	3.882400	full	
+O	O3-n32	1	eff_net_tx_peak_net_usd	net (prorated)	2	1577.105289	1573.837000	1580.373578	6.536578	15.525264	full	
+O	O3-n32	1	eff_net_tx_peak_usd	gross	2	1577.143323	1573.871003	1580.415642	6.544639	15.525264	full	
+O	O3-n4	1	U_cpu		2	0.103836	0.102396	0.105277	0.002881		full	
+O	O3-n4	1	U_mem_mean		2	0.178939	0.174388	0.183490	0.009102		full	
+O	O3-n4	1	U_mem_peak		2	0.579568	0.578976	0.580160	0.001184		full	
+O	O3-n4	1	U_net_baseline		2	0.455008	0.454830	0.455185	0.000355		full	
+O	O3-n4	1	U_net_peak		2	0.455008	0.454830	0.455185	0.000355		full	
+O	O3-n4	1	U_net_rx_baseline		2	0.451421	0.451299	0.451543	0.000244		full	
+O	O3-n4	1	U_net_rx_peak		2	0.451421	0.451299	0.451543	0.000244		full	
+O	O3-n4	1	U_net_tx_baseline		2	0.003586	0.003531	0.003642	0.000111		full	
+O	O3-n4	1	U_net_tx_peak		2	0.003586	0.003531	0.003642	0.000111		full	
+O	O3-n4	1	eff_cpu_net_usd	net (prorated)	2	12.183490	12.027020	12.339960	0.312940	0.067850	full	
+O	O3-n4	1	eff_cpu_usd	gross	2	12.183725	12.027252	12.340199	0.312947	0.067850	full	
+O	O3-n4	1	eff_mem_net_usd	net (prorated)	2	7.073087	6.900477	7.245697	0.345219	0.039840	full	
+O	O3-n4	1	eff_mem_usd	gross	2	7.073224	6.900610	7.245837	0.345226	0.039840	full	
+O	O3-n4	1	eff_net_baseline_net_usd	net (prorated)	2	2.779878	2.778099	2.781657	0.003559	0.015275	full	
+O	O3-n4	1	eff_net_baseline_usd	gross	2	2.779932	2.778152	2.781711	0.003558	0.015275	full	
+O	O3-n4	1	eff_net_peak_net_usd	net (prorated)	2	2.779878	2.778099	2.781657	0.003559	0.015275	full	
+O	O3-n4	1	eff_net_peak_usd	gross	2	2.779932	2.778152	2.781711	0.003558	0.015275	full	
+O	O3-n4	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.801964	2.799835	2.804093	0.004258	0.015395	full	
+O	O3-n4	1	eff_net_rx_baseline_usd	gross	2	2.802018	2.799889	2.804147	0.004258	0.015395	full	
+O	O3-n4	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.801964	2.799835	2.804093	0.004258	0.015395	full	
+O	O3-n4	1	eff_net_rx_peak_usd	gross	2	2.802018	2.799889	2.804147	0.004258	0.015395	full	
+O	O3-n4	1	eff_net_tx_baseline_net_usd	net (prorated)	2	352.752930	347.657494	357.848367	10.190873	1.967589	full	
+O	O3-n4	1	eff_net_tx_baseline_usd	gross	2	352.759739	347.664195	357.855282	10.191086	1.967589	full	
+O	O3-n4	1	eff_net_tx_peak_net_usd	net (prorated)	2	352.752930	347.657494	357.848367	10.190873	1.967589	full	
+O	O3-n4	1	eff_net_tx_peak_usd	gross	2	352.759739	347.664195	357.855282	10.191086	1.967589	full	
+O	O3-n8	1	U_cpu		2	0.176532	0.172057	0.181007	0.008950		full	
+O	O3-n8	1	U_mem_mean		2	0.180495	0.175595	0.185395	0.009800		full	
+O	O3-n8	1	U_mem_peak		2	0.590142	0.588552	0.591732	0.003180		full	
+O	O3-n8	1	U_net_baseline		2	0.706465	0.703200	0.709730	0.006530		full	
+O	O3-n8	1	U_net_peak		2	0.353233	0.351600	0.354865	0.003265		full	
+O	O3-n8	1	U_net_rx_baseline		2	0.700538	0.697463	0.703614	0.006151		full	
+O	O3-n8	1	U_net_rx_peak		2	0.350269	0.348731	0.351807	0.003076		full	
+O	O3-n8	1	U_net_tx_baseline		2	0.005926	0.005737	0.006115	0.000378		full	
+O	O3-n8	1	U_net_tx_peak		2	0.002963	0.002868	0.003058	0.000190		full	
+O	O3-n8	1	eff_cpu_net_usd	net (prorated)	2	4.624824	4.502666	4.746982	0.244315	0.040379	full	
+O	O3-n8	1	eff_cpu_usd	gross	2	4.624939	4.502771	4.747107	0.244336	0.040379	full	
+O	O3-n8	1	eff_mem_net_usd	net (prorated)	2	4.523716	4.396095	4.651337	0.255241	0.039566	full	
+O	O3-n8	1	eff_mem_usd	gross	2	4.523828	4.396197	4.651459	0.255262	0.039566	full	
+O	O3-n8	1	eff_net_baseline_net_usd	net (prorated)	2	1.154911	1.148344	1.161478	0.013134	0.009880	full	
+O	O3-n8	1	eff_net_baseline_usd	gross	2	1.154940	1.148371	1.161509	0.013138	0.009880	full	
+O	O3-n8	1	eff_net_peak_net_usd	net (prorated)	2	2.309822	2.296688	2.322956	0.026269	0.019760	full	
+O	O3-n8	1	eff_net_peak_usd	gross	2	2.309879	2.296741	2.323018	0.026277	0.019760	full	
+O	O3-n8	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.164679	1.158326	1.171032	0.012706	0.009961	full	
+O	O3-n8	1	eff_net_rx_baseline_usd	gross	2	1.164708	1.158352	1.171063	0.012710	0.009961	full	
+O	O3-n8	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.329359	2.316651	2.342067	0.025416	0.019922	full	
+O	O3-n8	1	eff_net_rx_peak_usd	gross	2	2.329417	2.316705	2.342129	0.025424	0.019922	full	
+O	O3-n8	1	eff_net_tx_baseline_net_usd	net (prorated)	2	137.823364	133.281130	142.365598	9.084468	1.211008	full	
+O	O3-n8	1	eff_net_tx_baseline_usd	gross	2	137.826788	133.284219	142.369357	9.085138	1.211008	full	
+O	O3-n8	1	eff_net_tx_peak_net_usd	net (prorated)	2	275.649755	266.518675	284.780835	18.262160	2.422439	full	
+O	O3-n8	1	eff_net_tx_peak_usd	gross	2	275.656604	266.524853	284.788354	18.263501	2.422439	full	
+O	O4a	1	U_cpu		2	0.160337	0.158188	0.162486	0.004298		full	
+O	O4a	1	U_mem_mean		2	0.094441	0.094299	0.094583	0.000284		full	
+O	O4a	1	U_mem_peak		2	0.334954	0.331937	0.337971	0.006034		full	
+O	O4a	1	U_net_baseline		2	0.405946	0.403432	0.408460	0.005028		full	
+O	O4a	1	U_net_peak		2	0.101487	0.100858	0.102115	0.001257		full	
+O	O4a	1	U_net_rx_baseline		2	0.402368	0.399970	0.404766	0.004796		full	
+O	O4a	1	U_net_rx_peak		2	0.100592	0.099993	0.101191	0.001198		full	
+O	O4a	1	U_net_tx_baseline		2	0.003578	0.003462	0.003694	0.000232		full	
+O	O4a	1	U_net_tx_peak		2	0.000894	0.000865	0.000923	0.000058		full	
+O	O4a	1	eff_cpu_net_usd	net (prorated)	2	8.971202	8.822499	9.119906	0.297407	0.087839	full	
+O	O4a	1	eff_cpu_usd	gross	2	8.971476	8.822797	9.120154	0.297357	0.087839	full	
+O	O4a	1	eff_mem_net_usd	net (prorated)	2	15.227562	15.156344	15.298780	0.142436	0.147352	full	
+O	O4a	1	eff_mem_usd	gross	2	15.228027	15.156857	15.299197	0.142340	0.147352	full	
+O	O4a	1	eff_net_baseline_net_usd	net (prorated)	2	3.542785	3.509603	3.575967	0.066364	0.034442	full	
+O	O4a	1	eff_net_baseline_usd	gross	2	3.542893	3.509722	3.576065	0.066343	0.034442	full	
+O	O4a	1	eff_net_peak_net_usd	net (prorated)	2	14.171141	14.038413	14.303869	0.265457	0.137769	full	
+O	O4a	1	eff_net_peak_usd	gross	2	14.171573	14.038888	14.304259	0.265372	0.137769	full	
+O	O4a	1	eff_net_rx_baseline_net_usd	net (prorated)	2	3.574276	3.541633	3.606920	0.065287	0.034740	full	
+O	O4a	1	eff_net_rx_baseline_usd	gross	2	3.574385	3.541753	3.607018	0.065266	0.034740	full	
+O	O4a	1	eff_net_rx_peak_net_usd	net (prorated)	2	14.297104	14.166601	14.427606	0.261006	0.138961	full	
+O	O4a	1	eff_net_rx_peak_usd	gross	2	14.297540	14.167080	14.428000	0.260920	0.138961	full	
+O	O4a	1	eff_net_tx_baseline_net_usd	net (prorated)	2	402.391651	388.070518	416.712783	28.642264	4.013608	full	
+O	O4a	1	eff_net_tx_baseline_usd	gross	2	402.403899	388.083649	416.724148	28.640499	4.013608	full	
+O	O4a	1	eff_net_tx_peak_net_usd	net (prorated)	2	1610.468796	1553.122963	1667.814628	114.691665	16.063712	full	
+O	O4a	1	eff_net_tx_peak_usd	gross	2	1610.517815	1553.175515	1667.860116	114.684601	16.063712	full	
+O	O4a-cost	1	U_cpu		2	0.214293	0.211077	0.217510	0.006433		full	
+O	O4a-cost	1	U_mem_mean		2	0.164133	0.160983	0.167284	0.006301		full	
+O	O4a-cost	1	U_mem_peak		2	0.602330	0.602122	0.602538	0.000416		full	
+O	O4a-cost	1	U_net_baseline		2	0.723552	0.721076	0.726027	0.004951		full	
+O	O4a-cost	1	U_net_peak		2	0.180888	0.180269	0.181507	0.001238		full	
+O	O4a-cost	1	U_net_rx_baseline		2	0.717252	0.714941	0.719563	0.004622		full	
+O	O4a-cost	1	U_net_rx_peak		2	0.179313	0.178735	0.179891	0.001156		full	
+O	O4a-cost	1	U_net_tx_baseline		2	0.006299	0.006135	0.006464	0.000329		full	
+O	O4a-cost	1	U_net_tx_peak		2	0.001575	0.001534	0.001616	0.000082		full	
+O	O4a-cost	1	eff_cpu_net_usd	net (prorated)	2	3.733720	3.675146	3.792293	0.117147	0.032915	full	
+O	O4a-cost	1	eff_cpu_usd	gross	2	3.733813	3.675238	3.792389	0.117151	0.032915	full	
+O	O4a-cost	1	eff_mem_net_usd	net (prorated)	2	4.875475	4.778587	4.972363	0.193776	0.043157	full	
+O	O4a-cost	1	eff_mem_usd	gross	2	4.875597	4.778706	4.972488	0.193782	0.043157	full	
+O	O4a-cost	1	eff_net_baseline_net_usd	net (prorated)	2	1.105567	1.101035	1.110099	0.009064	0.009635	full	
+O	O4a-cost	1	eff_net_baseline_usd	gross	2	1.105595	1.101062	1.110127	0.009065	0.009635	full	
+O	O4a-cost	1	eff_net_peak_net_usd	net (prorated)	2	4.422265	4.404134	4.440397	0.036263	0.038540	full	
+O	O4a-cost	1	eff_net_peak_usd	gross	2	4.422376	4.404243	4.440508	0.036265	0.038540	full	
+O	O4a-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.115275	1.110926	1.119625	0.008699	0.009718	full	
+O	O4a-cost	1	eff_net_rx_baseline_usd	gross	2	1.115303	1.110953	1.119653	0.008700	0.009718	full	
+O	O4a-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.461102	4.443697	4.478507	0.034810	0.038871	full	
+O	O4a-cost	1	eff_net_rx_peak_usd	gross	2	4.461213	4.443808	4.478619	0.034812	0.038871	full	
+O	O4a-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	127.070955	123.666627	130.475283	6.808656	1.132446	full	
+O	O4a-cost	1	eff_net_tx_baseline_usd	gross	2	127.074137	123.669709	130.478566	6.808856	1.132446	full	
+O	O4a-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	508.241293	494.666508	521.816077	27.149569	4.529045	full	
+O	O4a-cost	1	eff_net_tx_peak_usd	gross	2	508.254021	494.678837	521.829205	27.150368	4.529045	full	
+O	O5	1	U_cpu		2	0.158652	0.157561	0.159742	0.002181		full	
+O	O5	1	U_mem_mean		2	0.094586	0.093883	0.095289	0.001406		full	
+O	O5	1	U_mem_peak		2	0.328533	0.328343	0.328723	0.000380		full	
+O	O5	1	U_net_baseline		2	0.404228	0.401325	0.407132	0.005807		full	
+O	O5	1	U_net_peak		2	0.101057	0.100331	0.101783	0.001452		full	
+O	O5	1	U_net_rx_baseline		2	0.400709	0.397787	0.403630	0.005843		full	
+O	O5	1	U_net_rx_peak		2	0.100178	0.099447	0.100908	0.001461		full	
+O	O5	1	U_net_tx_baseline		2	0.003521	0.003502	0.003539	0.000037		full	
+O	O5	1	U_net_tx_peak		2	0.000880	0.000875	0.000885	0.000010		full	
+O	O5	1	eff_cpu_net_usd	net (prorated)	2	9.094054	8.954856	9.233253	0.278396	0.088189	full	
+O	O5	1	eff_cpu_usd	gross	2	9.094470	8.955322	9.233617	0.278296	0.088189	full	
+O	O5	1	eff_mem_net_usd	net (prorated)	2	15.251970	15.236695	15.267245	0.030550	0.148005	full	
+O	O5	1	eff_mem_usd	gross	2	15.252668	15.237487	15.267848	0.030361	0.148005	full	
+O	O5	1	eff_net_baseline_net_usd	net (prorated)	2	3.569257	3.513521	3.624993	0.111473	0.034623	full	
+O	O5	1	eff_net_baseline_usd	gross	2	3.569420	3.513703	3.625137	0.111434	0.034623	full	
+O	O5	1	eff_net_peak_net_usd	net (prorated)	2	14.277046	14.054082	14.500010	0.445928	0.138493	full	
+O	O5	1	eff_net_peak_usd	gross	2	14.277698	14.054813	14.500583	0.445770	0.138493	full	
+O	O5	1	eff_net_rx_baseline_net_usd	net (prorated)	2	3.600620	3.544005	3.657235	0.113230	0.034931	full	
+O	O5	1	eff_net_rx_baseline_usd	gross	2	3.600784	3.544189	3.657379	0.113190	0.034931	full	
+O	O5	1	eff_net_rx_peak_net_usd	net (prorated)	2	14.402426	14.175949	14.628903	0.452954	0.139724	full	
+O	O5	1	eff_net_rx_peak_usd	gross	2	14.403083	14.176686	14.629481	0.452795	0.139724	full	
+O	O5	1	eff_net_tx_baseline_net_usd	net (prorated)	2	409.774030	408.471339	411.076720	2.605381	3.967764	full	
+O	O5	1	eff_net_tx_baseline_usd	gross	2	409.792770	408.492576	411.092964	2.600388	3.967764	full	
+O	O5	1	eff_net_tx_peak_net_usd	net (prorated)	2	1639.330696	1634.819005	1643.842388	9.023383	15.880127	full	
+O	O5	1	eff_net_tx_peak_usd	gross	2	1639.405672	1634.904000	1643.907345	9.003345	15.880127	full	
+O	O5-cost	1	U_cpu		2	0.212994	0.211252	0.214735	0.003483		full	
+O	O5-cost	1	U_mem_mean		2	0.162496	0.157633	0.167359	0.009726		full	
+O	O5-cost	1	U_mem_peak		2	0.598208	0.597795	0.598622	0.000827		full	
+O	O5-cost	1	U_net_baseline		2	0.723974	0.722405	0.725543	0.003138		full	
+O	O5-cost	1	U_net_peak		2	0.180994	0.180601	0.181386	0.000785		full	
+O	O5-cost	1	U_net_rx_baseline		2	0.717645	0.716170	0.719119	0.002949		full	
+O	O5-cost	1	U_net_rx_peak		2	0.179412	0.179043	0.179780	0.000737		full	
+O	O5-cost	1	U_net_tx_baseline		2	0.006330	0.006235	0.006424	0.000189		full	
+O	O5-cost	1	U_net_tx_peak		2	0.001583	0.001559	0.001606	0.000047		full	
+O	O5-cost	1	eff_cpu_net_usd	net (prorated)	2	3.753264	3.721569	3.784959	0.063390	0.032888	full	
+O	O5-cost	1	eff_cpu_usd	gross	2	3.753430	3.721722	3.785138	0.063416	0.032888	full	
+O	O5-cost	1	eff_mem_net_usd	net (prorated)	2	4.923664	4.777635	5.069694	0.292060	0.044074	full	
+O	O5-cost	1	eff_mem_usd	gross	2	4.923882	4.777861	5.069903	0.292042	0.044074	full	
+O	O5-cost	1	eff_net_baseline_net_usd	net (prorated)	2	1.104142	1.101452	1.106831	0.005378	0.009617	full	
+O	O5-cost	1	eff_net_baseline_usd	gross	2	1.104191	1.101498	1.106883	0.005385	0.009617	full	
+O	O5-cost	1	eff_net_peak_net_usd	net (prorated)	2	4.416567	4.405804	4.427330	0.021526	0.038469	full	
+O	O5-cost	1	eff_net_peak_usd	gross	2	4.416762	4.405985	4.427539	0.021554	0.038469	full	
+O	O5-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	1.113879	1.111292	1.116467	0.005175	0.009701	full	
+O	O5-cost	1	eff_net_rx_baseline_usd	gross	2	1.113929	1.111338	1.116520	0.005182	0.009701	full	
+O	O5-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	4.455508	4.445161	4.465855	0.020694	0.038804	full	
+O	O5-cost	1	eff_net_rx_peak_usd	gross	2	4.455706	4.445344	4.466067	0.020723	0.038804	full	
+O	O5-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	126.320732	124.400860	128.240604	3.839744	1.114283	full	
+O	O5-cost	1	eff_net_tx_baseline_usd	gross	2	126.326325	124.405978	128.246672	3.840694	1.114283	full	
+O	O5-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	505.241797	497.603438	512.880156	15.276717	4.456418	full	
+O	O5-cost	1	eff_net_tx_peak_usd	gross	2	505.264168	497.623910	512.904426	15.280516	4.456418	full	
 S	S0-T1	1	U_cpu		2	0.010578	0.010454	0.010701	0.000247		full	
 S	S0-T1	1	U_mem_mean		2	0.063217	0.062546	0.063887	0.001341		full	
 S	S0-T1	1	U_mem_peak		2	0.728375	0.728370	0.728380	0.000010		full	
@@ -199,6 +799,31 @@ S	S2d	1	eff_net_tx_baseline_net_usd	net (prorated)	2	2874.500005	2557.280884	319
 S	S2d	1	eff_net_tx_baseline_usd	gross	2	2878.173835	2560.727397	3195.620272	634.892875	11.857590	full	
 S	S2d	1	eff_net_tx_peak_net_usd	net (prorated)	2	2874.500005	2557.280884	3191.719126	634.438242	11.857590	full	
 S	S2d	1	eff_net_tx_peak_usd	gross	2	2878.173835	2560.727397	3195.620272	634.892875	11.857590	full	
+S	S4	1	U_cpu		0				n<2			
+S	S4	1	U_mem_mean		0				n<2			
+S	S4	1	U_mem_peak		0				n<2			
+S	S4	1	U_net_baseline		0				n<2			
+S	S4	1	U_net_peak		0				n<2			
+S	S4	1	U_net_rx_baseline		0				n<2			
+S	S4	1	U_net_rx_peak		0				n<2			
+S	S4	1	U_net_tx_baseline		0				n<2			
+S	S4	1	U_net_tx_peak		0				n<2			
+S	S4	1	eff_cpu_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_cpu_usd	gross	0				n<2			
+S	S4	1	eff_mem_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_mem_usd	gross	0				n<2			
+S	S4	1	eff_net_baseline_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_net_baseline_usd	gross	0				n<2			
+S	S4	1	eff_net_peak_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_net_peak_usd	gross	0				n<2			
+S	S4	1	eff_net_rx_baseline_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_net_rx_baseline_usd	gross	0				n<2			
+S	S4	1	eff_net_rx_peak_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_net_rx_peak_usd	gross	0				n<2			
+S	S4	1	eff_net_tx_baseline_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_net_tx_baseline_usd	gross	0				n<2			
+S	S4	1	eff_net_tx_peak_net_usd	net (prorated)	0				n<2			
+S	S4	1	eff_net_tx_peak_usd	gross	0				n<2			
 S	S5	1	U_cpu		2	0.148705	0.136434	0.160977	0.024543		full	
 S	S5	1	U_mem_mean		2	0.257950	0.257895	0.258006	0.000111		full	
 S	S5	1	U_mem_peak		2	0.732117	0.732055	0.732179	0.000124		full	
@@ -299,6 +924,31 @@ S	S7b	1	eff_net_tx_baseline_net_usd	net (prorated)	2	559.894574	543.880714	575.9
 S	S7b	1	eff_net_tx_baseline_usd	gross	2	574.989416	558.538218	591.440613	32.902395	2.495530	full	
 S	S7b	1	eff_net_tx_peak_net_usd	net (prorated)	2	559.894574	543.880714	575.908434	32.027720	2.495530	full	
 S	S7b	1	eff_net_tx_peak_usd	gross	2	574.989416	558.538218	591.440613	32.902395	2.495530	full	
+S	S8	1	U_cpu		0				n<2			
+S	S8	1	U_mem_mean		0				n<2			
+S	S8	1	U_mem_peak		0				n<2			
+S	S8	1	U_net_baseline		0				n<2			
+S	S8	1	U_net_peak		0				n<2			
+S	S8	1	U_net_rx_baseline		0				n<2			
+S	S8	1	U_net_rx_peak		0				n<2			
+S	S8	1	U_net_tx_baseline		0				n<2			
+S	S8	1	U_net_tx_peak		0				n<2			
+S	S8	1	eff_cpu_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_cpu_usd	gross	0				n<2			
+S	S8	1	eff_mem_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_mem_usd	gross	0				n<2			
+S	S8	1	eff_net_baseline_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_net_baseline_usd	gross	0				n<2			
+S	S8	1	eff_net_peak_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_net_peak_usd	gross	0				n<2			
+S	S8	1	eff_net_rx_baseline_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_net_rx_baseline_usd	gross	0				n<2			
+S	S8	1	eff_net_rx_peak_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_net_rx_peak_usd	gross	0				n<2			
+S	S8	1	eff_net_tx_baseline_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_net_tx_baseline_usd	gross	0				n<2			
+S	S8	1	eff_net_tx_peak_net_usd	net (prorated)	0				n<2			
+S	S8	1	eff_net_tx_peak_usd	gross	0				n<2			
 S	S9	1	U_cpu		2	0.148073	0.140817	0.155329	0.014512		full	
 S	S9	1	U_mem_mean		2	0.285256	0.284801	0.285711	0.000910		full	
 S	S9	1	U_mem_peak		2	0.732193	0.732122	0.732263	0.000141		full	
@@ -324,31 +974,31 @@ S	S9	1	eff_net_tx_baseline_net_usd	net (prorated)	2	525.687995	515.666074	535.70
 S	S9	1	eff_net_tx_baseline_usd	gross	2	539.818374	529.557461	550.079287	20.521826	2.321010	full	
 S	S9	1	eff_net_tx_peak_net_usd	net (prorated)	2	525.687995	515.666074	535.709917	20.043842	2.321010	full	
 S	S9	1	eff_net_tx_peak_usd	gross	2	539.818374	529.557461	550.079287	20.521826	2.321010	full	
-S	Sstar-cost	1	U_cpu		0				n<2			
-S	Sstar-cost	1	U_mem_mean		0				n<2			
-S	Sstar-cost	1	U_mem_peak		0				n<2			
-S	Sstar-cost	1	U_net_baseline		0				n<2			
-S	Sstar-cost	1	U_net_peak		0				n<2			
-S	Sstar-cost	1	U_net_rx_baseline		0				n<2			
-S	Sstar-cost	1	U_net_rx_peak		0				n<2			
-S	Sstar-cost	1	U_net_tx_baseline		0				n<2			
-S	Sstar-cost	1	U_net_tx_peak		0				n<2			
-S	Sstar-cost	1	eff_cpu_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_cpu_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_mem_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_mem_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_net_baseline_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_net_baseline_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_net_peak_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_net_peak_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_net_rx_baseline_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_net_rx_peak_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_net_rx_peak_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_net_tx_baseline_usd	gross	0				n<2			
-S	Sstar-cost	1	eff_net_tx_peak_net_usd	net (prorated)	0				n<2			
-S	Sstar-cost	1	eff_net_tx_peak_usd	gross	0				n<2			
+S	Sstar-cost	1	U_cpu		2	0.148073	0.140817	0.155329	0.014512		full	
+S	Sstar-cost	1	U_mem_mean		2	0.285256	0.284801	0.285711	0.000910		full	
+S	Sstar-cost	1	U_mem_peak		2	0.732193	0.732122	0.732263	0.000141		full	
+S	Sstar-cost	1	U_net_baseline		2	0.521791	0.521665	0.521918	0.000253		full	
+S	Sstar-cost	1	U_net_peak		2	0.521791	0.521665	0.521918	0.000253		full	
+S	Sstar-cost	1	U_net_rx_baseline		2	0.519503	0.519333	0.519673	0.000340		full	
+S	Sstar-cost	1	U_net_rx_peak		2	0.519503	0.519333	0.519673	0.000340		full	
+S	Sstar-cost	1	U_net_tx_baseline		2	0.002288	0.002245	0.002332	0.000087		full	
+S	Sstar-cost	1	U_net_tx_peak		2	0.002288	0.002245	0.002332	0.000087		full	
+S	Sstar-cost	1	eff_cpu_net_usd	net (prorated)	2	8.141248	7.741847	8.540650	0.798804	0.037003	full	
+S	Sstar-cost	1	eff_cpu_usd	gross	2	8.360069	7.950402	8.769737	0.819335	0.037003	full	
+S	Sstar-cost	1	eff_mem_net_usd	net (prorated)	2	4.215877	4.208915	4.222839	0.013924	0.018296	full	
+S	Sstar-cost	1	eff_mem_usd	gross	2	4.329203	4.322298	4.336108	0.013811	0.018296	full	
+S	Sstar-cost	1	eff_net_baseline_net_usd	net (prorated)	2	2.304754	2.304325	2.305183	0.000858	0.009989	full	
+S	Sstar-cost	1	eff_net_baseline_usd	gross	2	2.366708	2.366134	2.367282	0.001148	0.009989	full	
+S	Sstar-cost	1	eff_net_peak_net_usd	net (prorated)	2	2.304754	2.304325	2.305183	0.000858	0.009989	full	
+S	Sstar-cost	1	eff_net_peak_usd	gross	2	2.366708	2.366134	2.367282	0.001148	0.009989	full	
+S	Sstar-cost	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.314907	2.314280	2.315534	0.001254	0.010033	full	
+S	Sstar-cost	1	eff_net_rx_baseline_usd	gross	2	2.377134	2.376356	2.377912	0.001556	0.010033	full	
+S	Sstar-cost	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.314907	2.314280	2.315534	0.001254	0.010033	full	
+S	Sstar-cost	1	eff_net_rx_peak_usd	gross	2	2.377134	2.376356	2.377912	0.001556	0.010033	full	
+S	Sstar-cost	1	eff_net_tx_baseline_net_usd	net (prorated)	2	525.687995	515.666074	535.709917	20.043842	2.321010	full	
+S	Sstar-cost	1	eff_net_tx_baseline_usd	gross	2	539.818374	529.557461	550.079287	20.521826	2.321010	full	
+S	Sstar-cost	1	eff_net_tx_peak_net_usd	net (prorated)	2	525.687995	515.666074	535.709917	20.043842	2.321010	full	
+S	Sstar-cost	1	eff_net_tx_peak_usd	gross	2	539.818374	529.557461	550.079287	20.521826	2.321010	full	
 S	Sstar-r8g	1	U_cpu		2	0.241259	0.171955	0.310563	0.138608		full	
 S	Sstar-r8g	1	U_mem_mean		2	0.295023	0.290230	0.299817	0.009587		full	
 S	Sstar-r8g	1	U_mem_peak		2	0.734923	0.734886	0.734960	0.000074		full	
@@ -399,28 +1049,28 @@ S	Sstar-r8gd	1	eff_net_tx_baseline_net_usd	net (prorated)	2	2555.282688	2400.349
 S	Sstar-r8gd	1	eff_net_tx_baseline_usd	gross	2	2627.812235	2468.050066	2787.574405	319.524339	11.663492	full	
 S	Sstar-r8gd	1	eff_net_tx_peak_net_usd	net (prorated)	2	2555.282688	2400.349078	2710.216299	309.867221	11.663492	full	
 S	Sstar-r8gd	1	eff_net_tx_peak_usd	gross	2	2627.812235	2468.050066	2787.574405	319.524339	11.663492	full	
-S	Sstar-time	1	U_cpu		0				n<2			
-S	Sstar-time	1	U_mem_mean		0				n<2			
-S	Sstar-time	1	U_mem_peak		0				n<2			
-S	Sstar-time	1	U_net_baseline		0				n<2			
-S	Sstar-time	1	U_net_peak		0				n<2			
-S	Sstar-time	1	U_net_rx_baseline		0				n<2			
-S	Sstar-time	1	U_net_rx_peak		0				n<2			
-S	Sstar-time	1	U_net_tx_baseline		0				n<2			
-S	Sstar-time	1	U_net_tx_peak		0				n<2			
-S	Sstar-time	1	eff_cpu_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_cpu_usd	gross	0				n<2			
-S	Sstar-time	1	eff_mem_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_mem_usd	gross	0				n<2			
-S	Sstar-time	1	eff_net_baseline_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_net_baseline_usd	gross	0				n<2			
-S	Sstar-time	1	eff_net_peak_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_net_peak_usd	gross	0				n<2			
-S	Sstar-time	1	eff_net_rx_baseline_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_net_rx_baseline_usd	gross	0				n<2			
-S	Sstar-time	1	eff_net_rx_peak_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_net_rx_peak_usd	gross	0				n<2			
-S	Sstar-time	1	eff_net_tx_baseline_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_net_tx_baseline_usd	gross	0				n<2			
-S	Sstar-time	1	eff_net_tx_peak_net_usd	net (prorated)	0				n<2			
-S	Sstar-time	1	eff_net_tx_peak_usd	gross	0				n<2			
+S	Sstar-time	1	U_cpu		2	0.148073	0.140817	0.155329	0.014512		full	
+S	Sstar-time	1	U_mem_mean		2	0.285256	0.284801	0.285711	0.000910		full	
+S	Sstar-time	1	U_mem_peak		2	0.732193	0.732122	0.732263	0.000141		full	
+S	Sstar-time	1	U_net_baseline		2	0.521791	0.521665	0.521918	0.000253		full	
+S	Sstar-time	1	U_net_peak		2	0.521791	0.521665	0.521918	0.000253		full	
+S	Sstar-time	1	U_net_rx_baseline		2	0.519503	0.519333	0.519673	0.000340		full	
+S	Sstar-time	1	U_net_rx_peak		2	0.519503	0.519333	0.519673	0.000340		full	
+S	Sstar-time	1	U_net_tx_baseline		2	0.002288	0.002245	0.002332	0.000087		full	
+S	Sstar-time	1	U_net_tx_peak		2	0.002288	0.002245	0.002332	0.000087		full	
+S	Sstar-time	1	eff_cpu_net_usd	net (prorated)	2	8.141248	7.741847	8.540650	0.798804	0.037003	full	
+S	Sstar-time	1	eff_cpu_usd	gross	2	8.360069	7.950402	8.769737	0.819335	0.037003	full	
+S	Sstar-time	1	eff_mem_net_usd	net (prorated)	2	4.215877	4.208915	4.222839	0.013924	0.018296	full	
+S	Sstar-time	1	eff_mem_usd	gross	2	4.329203	4.322298	4.336108	0.013811	0.018296	full	
+S	Sstar-time	1	eff_net_baseline_net_usd	net (prorated)	2	2.304754	2.304325	2.305183	0.000858	0.009989	full	
+S	Sstar-time	1	eff_net_baseline_usd	gross	2	2.366708	2.366134	2.367282	0.001148	0.009989	full	
+S	Sstar-time	1	eff_net_peak_net_usd	net (prorated)	2	2.304754	2.304325	2.305183	0.000858	0.009989	full	
+S	Sstar-time	1	eff_net_peak_usd	gross	2	2.366708	2.366134	2.367282	0.001148	0.009989	full	
+S	Sstar-time	1	eff_net_rx_baseline_net_usd	net (prorated)	2	2.314907	2.314280	2.315534	0.001254	0.010033	full	
+S	Sstar-time	1	eff_net_rx_baseline_usd	gross	2	2.377134	2.376356	2.377912	0.001556	0.010033	full	
+S	Sstar-time	1	eff_net_rx_peak_net_usd	net (prorated)	2	2.314907	2.314280	2.315534	0.001254	0.010033	full	
+S	Sstar-time	1	eff_net_rx_peak_usd	gross	2	2.377134	2.376356	2.377912	0.001556	0.010033	full	
+S	Sstar-time	1	eff_net_tx_baseline_net_usd	net (prorated)	2	525.687995	515.666074	535.709917	20.043842	2.321010	full	
+S	Sstar-time	1	eff_net_tx_baseline_usd	gross	2	539.818374	529.557461	550.079287	20.521826	2.321010	full	
+S	Sstar-time	1	eff_net_tx_peak_net_usd	net (prorated)	2	525.687995	515.666074	535.709917	20.043842	2.321010	full	
+S	Sstar-time	1	eff_net_tx_peak_usd	gross	2	539.818374	529.557461	550.079287	20.521826	2.321010	full	
