@@ -51,6 +51,10 @@ S5_STATUS = ("n/a", "identical", "differs")
 S5_FALLBACK = ("none", "gzip")
 ARMS = ("S", "O")
 RUN_KINDS = ("ladder", "endpoint")
+# A conditional alias_cohorts entry's suffix (ladder_levers.COND), and alias_cohort_checks' prefix for
+# one whose two rungs resolve and differ: no alias there, the rung reads its own runs.
+ALIAS_COND = "(if same configuration)"
+NOT_ALIAS = "no alias here (conditional): "
 STATES = ("cold", "warm", "cold-local")
 ENDPOINT_TAGS = ("S*-time", "S*-cost", "O*-time", "O*-cost")
 RAPIDGZIP_LEVER = "rapidgzip"
@@ -232,8 +236,12 @@ def load_levers(path, rd):
         r["alias_of"] = [x.strip() for x in (f.get("alias_of") or "").split("|") if x.strip()]
         r["alias"] = st.lower().startswith("alias:") and bool(r["alias_of"])
         # `alias_cohorts` (`c1: O0;...`): at those cohorts the rung has another rung's configuration
-        # (the cost chain where it coincides with the time chain) and reads that rung's runs.
-        r["alias_cohorts"] = {c: t.strip() for c, t in parse_cohort_list(f.get("alias_cohorts") or "").items() if t.strip()}
+        # (the cost chain where it coincides with the time chain) and reads that rung's runs. An entry
+        # `c1: O3-n2 (if same configuration)` is conditional (`alias_cond`): an alias only where the
+        # two resolve to one configuration (alias_cohort_checks decides it, by the generator's rule).
+        ac = {c: t.strip() for c, t in parse_cohort_list(f.get("alias_cohorts") or "").items() if t.strip()}
+        r["alias_cond"] = {c for c, t in ac.items() if t.endswith(ALIAS_COND)}
+        r["alias_cohorts"] = {c: (t[:-len(ALIAS_COND)].strip() if c in r["alias_cond"] else t) for c, t in ac.items()}
         # A host that moves with the lever (the `derived` column's `instance:` clause; the generator
         # honours it only for O3's right-sized candidates and their alias): the delta includes it.
         r["derived_host"] = re.search(r"(?:^|; )instance: ", f.get("derived") or "") is not None
@@ -263,10 +271,12 @@ def cite_problem(cites, rd, repo):
 
 def alias_cohort_checks(levers_path, resolved_path, levers):
     """((rung, cohort) -> why the alias_cohorts pair does not verify, or ''), DEFECTs): each
-    declaration is checked by the generator's own rule (ladder_levers.alias_cohort_problems, on
-    the lever table's resolved values under ladder.resolved.tsv's rows) before its target's runs
-    are read. A pair whose configurations differ is a DEFECT (levers); one that cannot be resolved
-    is not verified. Either way the rung reads no runs there."""
+    declaration is checked by the generator's own rule (ladder_levers.alias_state and
+    alias_cohort_problems, on the lever table's resolved values under ladder.resolved.tsv's rows)
+    before its target's runs are read. An unconditional pair whose configurations differ is a DEFECT
+    (levers); one that cannot be resolved is not verified. Either way the rung reads no runs there.
+    A conditional pair (`(if same configuration)`) whose configurations differ is no alias there:
+    NOT_ALIAS + why, and the rung reads its own runs; one that cannot be resolved is not verified."""
     out, defects = {}, []
     pairs = [(r, c, t) for r, lv in sorted(levers.items()) for c, t in sorted((lv.get("alias_cohorts") or {}).items())]
     if not pairs:
@@ -285,6 +295,14 @@ def alias_cohort_checks(levers_path, resolved_path, levers):
             out[(r, c)] = f"not verified: the lever table cannot be resolved ({e})"
         return out, defects
     for r, c, t in pairs:
+        if c in (levers[r].get("alias_cond") or set()):
+            try:
+                st, _, why = LL.alias_state(rows, names[r], c, res)
+            except (ValueError, KeyError) as e:
+                out[(r, c)] = f"not verified: {e}"
+                continue
+            out[(r, c)] = {"alias": "", "own": NOT_ALIAS + why}.get(st, f"not verified (conditional): {why}")
+            continue
         try:
             a, abad = LL._values(rows, names[r], c, res)
             b, bbad = LL._values(rows, names[t], c, res)
@@ -301,6 +319,15 @@ def alias_cohort_checks(levers_path, resolved_path, levers):
         else:
             out[(r, c)] = ""
     return out, defects
+
+
+def pair_alias(levers, pair_checks, rung, cohort):
+    """The rung RUNG's alias_cohorts entry names at COHORT, or '' where it has none or where a
+    conditional entry is no alias (alias_cohort_checks: NOT_ALIAS)."""
+    t = ((levers.get(rung) or {}).get("alias_cohorts") or {}).get(cohort)
+    if t and (pair_checks or {}).get((rung, cohort), "").startswith(NOT_ALIAS):
+        return ""
+    return t or ""
 
 
 def load_resolved(path, rd, levers, repo=ROOT):
@@ -1114,12 +1141,13 @@ class Groups:
             if r in seen:
                 return None, "alias unresolved: a loop through " + " -> ".join(seen + [r])
             seen.append(r)
-            if cohort in (lv.get("alias_cohorts") or {}):
+            if pair_alias(self.levers, self.pair_checks, r, cohort):
                 t = lv["alias_cohorts"][cohort]
                 why = self.pair_checks.get((r, cohort), "not verified")
                 if why:
                     return None, f"alias unresolved: {r}'s alias_cohorts pair with {t} at c{cohort} does not verify: {why}"
-                notes.append(f"alias: same configuration as {t} at c{cohort} (alias_cohorts)")
+                cond = ", conditional: it holds" if cohort in (lv.get("alias_cond") or set()) else ""
+                notes.append(f"alias: same configuration as {t} at c{cohort} (alias_cohorts{cond})")
                 r = t
                 continue
             if lv.get("alias"):
@@ -1183,7 +1211,7 @@ def alias_step(G, rung, cohort):
     """For an alias rung: (skip, note). Skip when its winner is its own run predecessor (the alias
     then adds no lever: its runs are the predecessor's)."""
     lv = G.levers.get(rung) or {}
-    if not (lv.get("alias") or cohort in (lv.get("alias_cohorts") or {})):
+    if not (lv.get("alias") or pair_alias(G.levers, G.pair_checks, rung, cohort)):
         return False, ""
     w, note = G.alias(rung, cohort)
     if w is None:
@@ -1464,7 +1492,7 @@ def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_
     keys = sorted(keys | {(r, c) for r, lv in levers.items() if lv.get("alias") for c in cs}
                   | {(r, c) for r, lv in levers.items() for c in (lv.get("alias_cohorts") or {}) if c in cs})
     for (rung, c), rs in sorted(G.g.items()):
-        t = ((levers.get(rung) or {}).get("alias_cohorts") or {}).get(c)
+        t = pair_alias(levers, G.pair_checks, rung, c)
         if t:
             notes.append(f"{len(rs)} run(s) of {rung} at c{c}, where it is an alias of {t} (alias_cohorts): not used; "
                          f"{rung} reads {t}'s runs there")
@@ -1677,7 +1705,10 @@ def main(argv=None):
     pchk, pdef = alias_cohort_checks(a.levers, a.resolved, levers)
     T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved, pchk)
     defects += pdef
-    notes += [f"{r} at c{c}: alias_cohorts pair not used: {why}" for (r, c), why in sorted(pchk.items()) if why]
+    notes += [f"{r} at c{c}: alias_cohorts pair not used: {why}" for (r, c), why in sorted(pchk.items())
+              if why and not why.startswith(NOT_ALIAS)]
+    notes += [f"{r} at c{c}: conditional alias_cohorts entry: {why[len(NOT_ALIAS):]}, so it reads its own runs"
+              for (r, c), why in sorted(pchk.items()) if why.startswith(NOT_ALIAS)]
     notes += [f"{r} at c{c}: {note}" for (r, c), (w, note) in sorted(resolved.items()) if w is None and "cites do not verify" in note]
     defects += [("modelled", f"refused: {x}") for x in refused] + [("resolved", x) for x in rerrs]
     if not levers:
