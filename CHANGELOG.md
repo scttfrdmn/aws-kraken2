@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Conditional `alias_cohorts` entries** (`c<C>: <rung> (if same configuration)`;
+  ladder_levers.py `alias_state`, ladder_tables.py `alias_cohort_checks`; docs/ladder.md, "The
+  cost chain reads the time chain"). Such an entry is an alias where the two rungs resolve to one
+  configuration. Where they resolve and differ, the rung is an ordinary rung: generated, and read
+  from its own runs. While either is unresolved, it is refused (undecided). An unconditional entry
+  that differs is still refused, and an undeclared coincidence still is too. The tables apply the
+  same rule. `make ladder-check` lists each conditional entry's state.
+  - At c1, O3-cost-n2 … O3-cost-n32, O4a-cost and O5-cost are declared conditional aliases of
+    their time counterparts. O3-cost-n\<K\> is an alias there, since O2 → O1 and O2-cost → O1-cost
+    are both on x8g. O4a-cost and O5-cost stay undecided until O3 and O3-cost are selected.
+  - Tests: the self-test covers the alias, own, undecided and false-unconditional cases. N3 in
+    `ladder_levers_tables_test.py` checks that the tables read the target's runs where the pair
+    holds, the rung's own runs where it differs, and that the same pairs declared unconditionally
+    are a DEFECT.
+- c1 specs `runs/g3-l-o3-n{2,4,8,16,32}-c1.json`: 2 × x8g.12xlarge, 4 × x8g.8xlarge,
+  8 × x8g.4xlarge, 16 × x8g.2xlarge and 32 × x8g.2xlarge.
 - `make ladder-types [CHECK=1]` (`scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`)
   writes `scripts/g3/ladder.types.tsv` from truffle, recording the truffle version and the query.
   With CHECK=1 it compares the committed table with truffle's current answer. `make test` validates

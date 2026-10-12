@@ -158,13 +158,53 @@ def candidates_of(rows):
     return {c: r["rung"] for r in rows if r["status"].startswith("alias:") for c in r["alias_of"].split("|") if c}
 
 
-def alias_at(row, cohort):
-    """The rung whose runs ROW reads at COHORT (`alias_cohorts`: c<C>: <rung>), or ''."""
+# An alias_cohorts entry is `c<C>: <rung>` (unconditional: the two are one configuration there, and
+# a declaration that turns out false is refused) or `c<C>: <rung> (if same configuration)`
+# (conditional: an alias exactly where the two resolve to one configuration, an ordinary rung where
+# they resolve and differ, and refused while either is unresolved).
+COND = " (if same configuration)"
+ALIAS_ENTRY = re.compile(r"c([1-9][0-9]*): (\S+)(%s)?" % re.escape(COND))
+
+
+def alias_decl(row, cohort):
+    """(the rung ROW's alias_cohorts entry names at COHORT, conditional?), or ('', False). Static:
+    whether a conditional entry is an alias at COHORT is alias_state's to say."""
     for d in [d.strip() for d in row.get("alias_cohorts", "").split(";") if d.strip()]:
         c, _, t = d.partition(":")
         if c.strip() == "c%s" % cohort:
-            return t.strip()
-    return ""
+            t = t.strip()
+            return (t[:-len(COND)], True) if t.endswith(COND) else (t, False)
+    return "", False
+
+
+def alias_at(row, cohort):
+    """The rung ROW's alias_cohorts entry names at COHORT, or '' (the declaration, conditional or
+    not; alias_state decides a conditional one)."""
+    return alias_decl(row, cohort)[0]
+
+
+def alias_state(rows, row, cohort, res, depth=0):
+    """(state, target, why) of ROW's alias_cohorts entry at COHORT under resolutions RES:
+    ('none', '', '') without one; ('alias', t, '') for an unconditional entry, or a conditional one
+    whose two rungs resolve to one configuration; ('own', t, why) for a conditional one whose two
+    rungs resolve and differ (the rung is an ordinary rung there); ('undecided', t, why) for a
+    conditional one while either rung is unresolved."""
+    t, cond = alias_decl(row, cohort)
+    if not t:
+        return "none", "", ""
+    if not cond:
+        return "alias", t, ""
+    names = by_name(rows)
+    if t not in names:
+        return "undecided", t, "no rung %s" % t
+    a, abad = _values(rows, row, cohort, res, depth + 1)
+    b, bbad = _values(rows, names[t], cohort, res, depth + 1)
+    if abad or bbad:
+        return "undecided", t, "unresolved: %s" % ", ".join(["%s %s" % (row["rung"], x) for x in abad] +
+                                                             ["%s %s" % (t, x) for x in bbad])
+    if same_config(a, b):
+        return "alias", t, ""
+    return "own", t, "configurations differ in %s" % ",".join(k for k in KEYS + ["instance"] if a[k] != b[k])
 
 
 def check(rows):
@@ -210,10 +250,15 @@ def check(rows):
         if r["not_run_cohorts"] and not (r["select"] or n in candidate_of or derives):
             probs.append("%s: not run at some cohorts, but it makes, is or derives from no selection there" % n)
         for d in [d.strip() for d in r.get("alias_cohorts", "").split(";") if d.strip()]:
-            m = re.fullmatch(r"c([1-9][0-9]*): (\S+)", d)
+            m = ALIAS_ENTRY.fullmatch(d)
             if not m:
-                probs.append("%s: alias_cohorts entry %r is not c<cohort>: <rung>" % (n, d))
+                probs.append("%s: alias_cohorts entry %r is not c<cohort>: <rung>[%s]" % (n, d, COND))
                 continue
+            # A conditional entry is decided on the two rungs' resolved values, so the rung must make
+            # no selection of its own (its values would then depend on runs it may never have).
+            own = r["select"] or any((token(r[k], k) or ("", ""))[0] == n for k in KEYS + ["instance"])
+            if m.group(3) and own:
+                probs.append("%s: a conditional alias_cohorts entry (c%s) on a rung that makes a selection" % (n, m.group(1)))
             t = names.get(m.group(2))
             if t is None or t["rung"] == n or t["arm"] != r["arm"] or t["status"].startswith("not-run"):
                 probs.append("%s: alias_cohorts c%s names %s, not another rung of arm %s that is run" % (n, m.group(1), m.group(2), r["arm"]))
@@ -478,16 +523,18 @@ def alias_winner(rows, o, cohort, res):
 
 def config_row(rows, row, cohort, res, seen=None):
     """The rung whose runs give ROW's configuration at COHORT: ROW itself or, following each in turn,
-    its run predecessor if it is not run there, its alias_cohorts target, or its alias winner (RES).
-    None if an alias on the way is unresolved."""
+    its run predecessor if it is not run there, its alias_cohorts target (a conditional entry where
+    it holds), or its alias winner (RES). None if an alias on the way is unresolved or undecided."""
     names, seen = by_name(rows), seen or []
     if row is None or row["rung"] in seen:
         return None
     seen = seen + [row["rung"]]
     if not_run_at(row, cohort):
         return config_row(rows, run_pred_at(rows, row, cohort), cohort, res, seen)
-    t = alias_at(row, cohort)
-    if t:
+    st, t, _ = alias_state(rows, row, cohort, res)
+    if st == "undecided":
+        return None
+    if st == "alias":
         return config_row(rows, names.get(t), cohort, res, seen)
     if row["status"].startswith("alias:"):
         a = alias_winner(rows, row, cohort, res)
@@ -498,7 +545,8 @@ def config_row(rows, row, cohort, res, seen=None):
 def _values(rows, r, cohort, res, depth=0):
     """Every PARAM and the instance of row r at cohort under resolutions res: (values, unresolved).
     A token @select:<origin>[:KEY] resolves, in this order: an origin not run at the cohort to its
-    run predecessor's value; an origin aliased there (alias_cohorts) to its target's; an alias origin
+    run predecessor's value; an origin aliased there (alias_cohorts; a conditional entry where it
+    holds, unresolved while it is undecided) to its target's; an alias origin
     (status alias) to its winner's value of that key, the winner named in res; any other origin to
     res's (origin, cohort, KEY) row."""
     if depth > 40:
@@ -531,8 +579,11 @@ def _values(rows, r, cohort, res, depth=0):
                     # Not run at this cohort: its selection has one candidate, its predecessor's value.
                     src = run_pred_at(rows, o, cohort)
                     how = "not run at c%s: %s's value" % (cohort, src["rung"] if src else "-")
-                elif o is not None and alias_at(o, cohort):
-                    src, how = names.get(alias_at(o, cohort)), "alias at c%s of %s" % (cohort, alias_at(o, cohort))
+                elif o is not None and alias_at(o, cohort) and alias_state(rows, o, cohort, res, depth + 1)[0] != "own":
+                    # An alias there (or a conditional entry not yet decided: unresolved, not guessed).
+                    ast, at, _ = alias_state(rows, o, cohort, res, depth + 1)
+                    if ast == "alias":
+                        src, how = names.get(at), "alias at c%s of %s" % (cohort, at)
                 elif o is not None and o["status"].startswith("alias:"):
                     a = alias_winner(rows, o, cohort, res)   # the alias's winner, then its value of the key
                     if a:
@@ -604,13 +655,14 @@ def time_counterpart(rows, rung):
 
 
 def alias_cohort_problems(rows, cohort, res):
-    """Each alias_cohorts declaration at COHORT must name a rung whose resolved configuration equals
-    the declaring rung's. One that cannot be resolved yet is not a problem here (the generator
-    refuses either rung until it is)."""
+    """Each unconditional alias_cohorts declaration at COHORT must name a rung whose resolved
+    configuration equals the declaring rung's. One that cannot be resolved yet is not a problem here
+    (the generator refuses either rung until it is). A conditional one (`... (if same configuration)`)
+    is never false: it is an alias where the two coincide and an ordinary rung where they differ."""
     names, out = by_name(rows), []
     for r in rows:
-        t = alias_at(r, cohort)
-        if not t or t not in names:
+        t, cond = alias_decl(r, cohort)
+        if not t or cond or t not in names:
             continue
         a, abad = _values(rows, r, cohort, res)
         b, bbad = _values(rows, names[t], cohort, res)
@@ -695,10 +747,14 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, why))
     if r["status"] != "run":
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
-    if alias_at(r, cohort):
-        raise Unresolved("%s is alias: same configuration as %s at c%s (alias_cohorts): no spec is generated for it; "
-                         "%s's runs are read" % (rung, alias_at(r, cohort), cohort, alias_at(r, cohort)))
     res = read_resolved(resolved, root, rows) if resolved is not None else {}
+    st, at, why = alias_state(rows, r, cohort, res)
+    if st == "alias":
+        raise Unresolved("%s is alias: same configuration as %s at c%s (alias_cohorts%s): no spec is generated for it; "
+                         "%s's runs are read" % (rung, at, cohort, ", conditional: it holds" if alias_decl(r, cohort)[1] else "", at))
+    if st == "undecided":
+        raise Unresolved("%s at c%s: its conditional alias_cohorts entry (%s%s) is undecided (%s): it is generated "
+                         "only once both resolve and differ" % (rung, cohort, at, COND, why))
     probs = alias_cohort_problems(rows, cohort, res)
     if probs:
         raise Unresolved("; ".join(probs))
@@ -708,11 +764,13 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
     # The cost chain reads the time chain where the two coincide (alias_cohorts), so a cost rung
     # equal to its time counterpart must be declared there, not run twice.
     tc = time_counterpart(rows, rung)
-    if tc is not None and names[tc]["status"] == "run" and not not_run_at(names[tc], cohort) and not alias_at(names[tc], cohort):
+    if (tc is not None and names[tc]["status"] == "run" and not not_run_at(names[tc], cohort)
+            and alias_state(rows, names[tc], cohort, res)[0] == "none"):
         tv, tbad = _values(rows, names[tc], cohort, res)
         if not tbad and same_config(dict(out), tv):
             raise Unresolved("%s at cohort %s has the configuration of its time counterpart %s: declare alias_cohorts "
-                             "'c%s: %s' (it reads %s's runs) instead of running it" % (rung, cohort, tc, cohort, tc, tc))
+                             "'c%s: %s' (it reads %s's runs) instead of running it, or 'c%s: %s%s' where the "
+                             "coincidence depends on a selection" % (rung, cohort, tc, cohort, tc, tc, cohort, tc, COND))
     # A candidate outside its alias's bracket at this cohort (O3's N around the #26 fit) is not run.
     al = candidates_of(rows).get(rung)
     if al is not None:
@@ -720,7 +778,7 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
         if b is not None and rung not in b[0]:
             raise Unresolved("%s at cohort %s is outside %s's bracket (%s): not a candidate there" % (rung, cohort, al, b[1]))
     p = run_pred_at(rows, r, cohort)
-    if p is not None and (p["status"].startswith("alias:") or alias_at(p, cohort)):
+    if p is not None and (p["status"].startswith("alias:") or alias_state(rows, p, cohort, res)[0] != "none"):
         p = config_row(rows, p, cohort, res) or p
     if p is not None:
         pv, pbad = _values(rows, p, cohort, res)
@@ -1155,6 +1213,59 @@ def _self_test():
         t = _copy(rows)
         by_name(t)["O0-cost"]["alias_cohorts"] = "c1: O9"
         assert any("alias_cohorts c1 names O9" in x for x in check(t)), check(t)
+        # Conditional entries (`c1: O3-n2 (if same configuration)`: O3-cost-n<K>, O4a-cost, O5-cost):
+        # whether the cost chain coincides with the time chain there depends on O2's and O2-cost's
+        # selections. One family (O2 -> O1, O2-cost -> O1-cost, both O0b's x8g): an alias, never
+        # generated, and its selection reads O3-n2's runs. Two families (O2 -> O2-r8g): its own
+        # configuration, generated, and no declaration is false. O2-cost resolved but O2 not: undecided, refused.
+        ONE = [("Sstar-time", "1", "alias", "S9", src), ("Sstar-cost", "1", "alias", "S9", src),
+               ("O2", "1", "alias", "O1", src), ("O2-cost", "1", "alias", "O1-cost", src)]
+        try:
+            resolve(rows, "O3-cost-n2", 1, resfile(ONE), root)
+            raise AssertionError("O3-cost-n2 generated where it is O3-n2's configuration")
+        except Unresolved as e:
+            assert "same configuration as O3-n2 at c1 (alias_cohorts, conditional: it holds)" in str(e), e
+        assert resolve(rows, "O3-n2", 1, resfile(ONE), root)["instance"] == "x8g.12xlarge"
+        assert config_row(rows, names["O3-cost-n2"], 1, read_resolved(resfile(ONE), root))["rung"] == "O3-n2"
+        assert alias_state(rows, names["O4a-cost"], 1, read_resolved(resfile(ONE), root))[0] == "undecided"   # O3, O3-cost unselected
+        TWO = [("Sstar-time", "1", "alias", "S9", src), ("Sstar-cost", "1", "alias", "S9", src),
+               ("O2", "1", "alias", "O2-r8g", src), ("O2-cost", "1", "alias", "O1-cost", src)]
+        st2 = alias_state(rows, names["O3-cost-n2"], 1, read_resolved(resfile(TWO), root))
+        assert st2[0] == "own" and "instance" in st2[2], st2
+        assert alias_cohort_problems(rows, 1, read_resolved(resfile(TWO), root)) == []
+        assert resolve(rows, "O3-cost-n2", 1, resfile(TWO), root)["instance"] == "x8g.12xlarge"
+        assert resolve(rows, "O3-n2", 1, resfile(TWO), root)["instance"] == "r8g.24xlarge"
+        assert config_row(rows, names["O3-cost-n2"], 1, read_resolved(resfile(TWO), root))["rung"] == "O3-cost-n2"
+        HALF = [("Sstar-time", "1", "alias", "S9", src), ("Sstar-cost", "1", "alias", "S9", src),
+                ("O2-cost", "1", "alias", "O1-cost", src)]
+        try:
+            resolve(rows, "O3-cost-n2", 1, resfile(HALF), root)
+            raise AssertionError("an undecided conditional entry was generated")
+        except Unresolved as e:
+            assert "is undecided" in str(e) and "O3-n2" in str(e), e
+        assert config_row(rows, names["O3-cost-n2"], 1, read_resolved(resfile(HALF), root)) is None
+        # The same pair declared unconditionally is false under TWO: refused, as any false declaration.
+        t = _copy(rows)
+        by_name(t)["O3-cost-n2"]["alias_cohorts"] = "c1: O3-n2"
+        assert any("O3-cost-n2 at c1 is declared an alias of O3-n2" in x for x in alias_cohort_problems(t, 1, read_resolved(resfile(TWO), root)))
+        # Without any declaration, the coincidence under ONE is refused, naming both forms.
+        by_name(t)["O3-cost-n2"]["alias_cohorts"] = ""
+        try:
+            resolve(t, "O3-cost-n2", 1, resfile(ONE), root)
+            raise AssertionError("an undeclared coincidence was generated")
+        except Unresolved as e:
+            assert "declare alias_cohorts 'c1: O3-n2'" in str(e) and "'c1: O3-n2 (if same configuration)'" in str(e), e
+        # check(): a malformed entry, and a conditional entry on a rung that makes a selection.
+        by_name(t)["O3-cost-n2"]["alias_cohorts"] = "c1: O3-n2 (if same)"
+        assert any("alias_cohorts entry 'c1: O3-n2 (if same)' is not" in x for x in check(t)), check(t)
+        by_name(t)["O3-cost-n2"]["alias_cohorts"] = ""
+        by_name(t)["O0b-cost"]["alias_cohorts"] = "c1: O0b (if same configuration)"
+        assert check(t) == [], check(t)
+        by_name(t)["O2-cost-r8g"]["alias_cohorts"] = ""
+        x = collections.OrderedDict(by_name(t)["O4b"])
+        x.update(rung="O4b-x", not_run_cohorts="", alias_cohorts="c1: O4a (if same configuration)")
+        t.append(x)
+        assert any("O4b-x: a conditional alias_cohorts entry (c1) on a rung that makes a selection" in p for p in check(t)), check(t)
         # O2 at c1: O1 is not run (O0b's configuration), O2-x8g is O1's own type (not run), O2-r8g runs.
         o2 = resolve(rows, "O2-r8g", 1, al, root)
         assert (o2["instance"], o2["params"]["SHARDS"], o2["params"]["INFLIGHT"]) == ("r8g.48xlarge", "1", "1"), o2
@@ -1380,8 +1491,17 @@ def main(a):
         if probs:
             print("ladder_levers: %d problem(s):\n  %s" % (len(probs), "\n  ".join(probs)), file=sys.stderr)
             return 1
-        print("ladder_levers: %d rungs; every rung changes exactly one key-group; every alias_cohorts pair that resolves "
-              "is one configuration" % len(rows))
+        # Each conditional entry's state under RES (an alias, its own configuration, or undecided).
+        cst = []
+        for r in rows:
+            for d in [d.strip() for d in r["alias_cohorts"].split(";") if d.strip()]:
+                c = d.split(":")[0].strip().lstrip("c")
+                if alias_decl(r, c)[1]:
+                    st, t, why = alias_state(rows, r, c, res)
+                    cst.append("%s c%s -> %s: %s%s" % (r["rung"], c, t, st, " (%s)" % why if why else ""))
+        print("ladder_levers: %d rungs; every rung changes exactly one key-group; every unconditional alias_cohorts pair "
+              "that resolves is one configuration; %d conditional entr%s%s" % (len(rows), len(cst), "y" if len(cst) == 1 else "ies",
+                                                                             "".join("\n  " + x for x in cst)))
         return 0
     if a and a[0] == "spec-params" and (len(a) == 2 or (len(a) == 4 and a[2] == "--rep")):
         with open(a[1]) as f:

@@ -181,6 +181,52 @@ try:
                 rc3 = LL.main(["check", lev2, "--resolved", resd3])
             check("N2: ladder_levers check <a given table> --resolved verifies its alias_cohorts (%s declarations: exit %d)" % (name, want),
                   rc3 == want and (want == 0 or "O0-cost at c1 is declared an alias of O0" in e3.getvalue()))
+    # N3: the committed table's conditional entries (`c1: O3-n4 (if same configuration)`, and O4a-cost,
+    # O5-cost). Where O2 and O2-cost choose one family (WIN) they hold: O3-cost-n4 reads O3-n4's runs.
+    # Where they choose different families (O2 -> O2-r8g, O2-cost -> O1-cost: O0b's x8g) the cost
+    # rungs are their own configurations: no DEFECT, each reads its own runs, and a note says so.
+    # The copy's unconditional declarations of the same pairs are false there: a DEFECT (levers).
+    lv0 = lt.load_levers(LEV, lt.Reader())
+    check("N3: the committed O3-cost-n<K>, O4a-cost and O5-cost entries at c1 are conditional",
+          all(1 in (lv0[r].get("alias_cond") or set()) and lv0[r]["alias_cohorts"][1] == r.replace("-cost", "")
+              for r in ("O3-cost-n2", "O3-cost-n4", "O3-cost-n8", "O3-cost-n16", "O3-cost-n32", "O4a-cost", "O5-cost")))
+    out4 = os.path.join(tmp, "out4")
+    rc4 = quiet_main(["--results", res_dir, "--levers", LEV, "--resolved", resd, "--out", out4])
+    rr4 = {(r["rung"], r["axis"]): r for r in csv.DictReader(open(os.path.join(out4, "rungs.tsv")), delimiter="\t") if r["cohort"] == "1"}
+    check("N3: one family: the conditional entry holds, O3-cost-n4 reads O3-n4's runs (labelled conditional)",
+          rc4 == 0 and rr4[("O3-cost-n4", "wall_s")]["median"] == rr4[("O3-n4", "wall_s")]["median"] != ""
+          and "same configuration as O3-n4 at c1 (alias_cohorts, conditional: it holds)" in rr4[("O3-cost-n4", "wall_s")]["basis"])
+    WIN2 = dict(WIN, **{"Sstar-time": "S9", "Sstar-cost": "S9", "O2-cost": "O1-cost"})   # O0b on S9's x8g.24xlarge
+    res5 = os.path.join(tmp, "synthetic5")
+    shutil.copytree(res_dir, res5)
+    for i, r in enumerate(("O3-cost-n4", "O4a-cost", "O5-cost")):
+        for rep in (1, 2):
+            n += 1
+            T.single(res5, "20261010-%06d-aaaaaaa" % n, "O", r, rep, 1500 - 10 * i + (0.5 if rep == 2 else 0), PH,
+                     start=n * 3000, samples=[T.sample("O", r, s5="identical")])
+    resd5 = os.path.join(tmp, "ladder.resolved.two.tsv")
+    with open(resd5, "w") as f:
+        f.write("origin\tcohort\tkey\tvalue\tsource\n")
+        for a, w in WIN2.items():
+            f.write("%s\t1\talias\t%s\tresults/g3/synthetic/tables/rungs.tsv\n" % (a, w))
+    out5, e5 = os.path.join(tmp, "out5"), io.StringIO()
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(e5):
+        rc5 = lt.main(["--results", res5, "--levers", LEV, "--resolved", resd5, "--out", out5])
+    rr5 = {(r["rung"], r["axis"]): r for r in csv.DictReader(open(os.path.join(out5, "rungs.tsv")), delimiter="\t") if r["cohort"] == "1"}
+    summ = open(os.path.join(out5, "summary.md")).read()
+    check("N3: two families: the conditional entries do not hold, no DEFECT, and O3-cost-n4, O4a-cost and O5-cost "
+          "read their own runs (O3-cost reads O3-cost-n4's)",
+          rc5 == 0 and "DEFECT" not in e5.getvalue()
+          and all(rr5[(r, "wall_s")]["n"] == "2" and "alias: same configuration" not in rr5[(r, "wall_s")]["basis"]
+                  for r in ("O3-cost-n4", "O4a-cost", "O5-cost"))
+          and rr5[("O3-cost", "wall_s")]["median"] == rr5[("O3-cost-n4", "wall_s")]["median"] != rr5[("O3-n4", "wall_s")]["median"]
+          and "O3-cost-n4 at c1: conditional alias_cohorts entry: configurations differ in instance" in summ)
+    out6, e6 = os.path.join(tmp, "out6"), io.StringIO()
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(e6):
+        rc6 = lt.main(["--results", res5, "--levers", lev2, "--resolved", resd5, "--out", out6])
+    check("N3: the same pairs declared unconditionally are false there: a DEFECT (levers), and not read",
+          rc6 == 1 and "O3-cost-n4 at c1 is declared an alias of O3-n4 (alias_cohorts), but their configurations differ in instance"
+          in e6.getvalue())
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 print("ladder_levers_tables_test: %d failure(s)" % NF)

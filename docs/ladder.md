@@ -222,7 +222,7 @@ Each of S\*-time, S\*-cost, O\*-time and O\*-cost is declared for cohorts 1, 10,
 exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). An alias's candidates are run (or alias)
 rungs with the alias's predecessor and group, or the predecessor itself. An `alias_cohorts` entry
 names another run rung of the same arm, on a rung whose status is `run`, and at a cohort that is
-not also in its `not_run_cohorts`. On the committed table, every `alias_cohorts` declaration whose
+not also in its `not_run_cohorts`. On the committed table, every unconditional `alias_cohorts` declaration whose
 two rungs resolve under the committed `ladder.resolved.tsv` must be one configuration. The module is
 importable (`load`, `check`, `resolve`, `changed`, `coupled_keys`, `spec_params`, `config_row`,
 `alias_cohort_problems`, `bracket`) for #53's `ladder_check.py`.
@@ -312,26 +312,55 @@ PARAMS and host equal its time-chain counterpart's (its name without `-cost`), i
 `alias: same configuration as <rung> at c<C>` there and reads that rung's runs.
 - At c1 these are O0-cost (O0) and O0b-cost (O0b), because both S\* endpoints chose S9, and
   O2-cost-r8g (O2-r8g).
+- **Two forms.** `c<C>: <rung>` is *unconditional*: a claim that the two are one configuration
+  there, refused wherever it turns out false. `c<C>: <rung> (if same configuration)` is
+  *conditional* (`alias_state`). It is an alias where the two rungs resolve to one configuration,
+  and an ordinary rung, generated and read from its own runs, where they resolve and differ. While
+  either rung is unresolved it is *undecided*, and the rung is refused. A conditional entry is not
+  allowed on a rung that makes a selection, because its values would then depend on runs it might
+  never have. The conditional form is for pairs whose coincidence depends on a selection that is
+  still to be made, or that a test varies. At c1 the conditional pairs are O3-cost-n\<K\>
+  (O3-n\<K\>), O4a-cost (O4a) and O5-cost (O5):
+  - O3-cost-n\<K\> is an alias there because O2 chose O1 and O2-cost chose O1-cost, both O0b's
+    x8g.24xlarge, so each pair has the same right-sized x8g type. Had O2 chosen O2-r8g, each pair
+    would differ in instance, and O3-cost-n\<K\> would run on its own type;
+  - O4a-cost and O5-cost stay undecided until O3 and O3-cost are selected.
+- **Why not static declarations with test fixtures.** A static declaration is a statement about
+  one set of selections. Made true for the committed resolutions, it becomes false, and blocks
+  every generation, under any other set. That includes the selections the tests exercise against
+  the real table (ladder_select_test's O2 → O2-r8g, O2-cost → O1-cost). Giving those tests their
+  own copy of the table would make them stop testing the committed table, and every later
+  selection would need a hand edit of `alias_cohorts`. The conditional form keeps both
+  invariants:
+  - nothing runs twice, because a coinciding pair is never generated, and an undecided one is
+    never generated either;
+  - nothing is aliased wrongly, because the alias holds only on equal resolved configurations,
+    by the same `same_config` that refuses a false unconditional entry.
 - **The generator** refuses to generate a rung at a cohort where it is aliased ("no spec is
-  generated for it; <rung>'s runs are read"). It refuses any generation at a cohort where a
-  declaration whose two rungs resolve differs in any PARAM or the host. It refuses a cost rung
-  whose resolved configuration equals its time counterpart's without the declaration ("declare
-  alias_cohorts 'c<C>: <rung>'"), so a coincidence that a later selection creates (O3-cost's N
-  equal to O3's, say) cannot run twice.
-- `make ladder-check` (`ladder_levers.py check [TSV] [--resolved RES]`) verifies every declaration
-  that resolves. It checks any table it is given, under the committed `ladder.resolved.tsv` or
+  generated for it; <rung>'s runs are read"), or where its conditional entry is undecided. It
+  refuses any generation at a cohort where an unconditional declaration whose two rungs resolve
+  differs in any PARAM or the host. It refuses a cost rung whose resolved configuration equals its
+  time counterpart's without a declaration ("declare alias_cohorts 'c<C>: <rung>' ... or 'c<C>:
+  <rung> (if same configuration)'"), so a coincidence that a later selection creates cannot run
+  twice.
+- `make ladder-check` (`ladder_levers.py check [TSV] [--resolved RES]`) verifies every
+  unconditional declaration that resolves, and lists each conditional entry's state (alias, own,
+  or undecided). It checks any table it is given, under the committed `ladder.resolved.tsv` or
   `--resolved`.
 - **The tables verify each pair before reading the target's runs** (`alias_cohort_checks`). They use
-  the generator's own rule, on the lever table's values resolved under `ladder.resolved.tsv`'s
-  rows:
-  - a pair whose configurations differ is a DEFECT (levers);
-  - a pair that cannot be resolved there is not verified.
+  the generator's own rule (`alias_state`, `same_config`), on the lever table's values resolved
+  under `ladder.resolved.tsv`'s rows:
+  - an unconditional pair whose configurations differ is a DEFECT (levers);
+  - a pair that cannot be resolved there, conditional or not, is not verified.
 
   Either way the rung is "alias unresolved" at that cohort, reads no runs, and a note says so.
+  A conditional pair whose configurations differ is no alias there and no DEFECT. The rung reads
+  its own runs, and a note says so ("conditional alias_cohorts entry: configurations differ in
+  instance, so it reads its own runs").
 - **A verified pair:** the rung reads the target's runs (rungs.tsv basis "alias: same configuration
-  as O0 at c1 (alias_cohorts)"). Its delta is taken against its own predecessor, and the pairs skip
-  it when the two read the same runs. A run of the rung itself at such a cohort is not used, and a
-  note says so.
+  as O0 at c1 (alias_cohorts)", or "(alias_cohorts, conditional: it holds)"). Its delta is taken
+  against its own predecessor, and the pairs skip it when the two read the same runs. A run of the
+  rung itself at such a cohort is not used, and a note says so.
 
 **Selection rules** (the `select` column, registered before any run; every `@select:<rung>`
 selection has one, and a rule names the candidates, the axis and the ties):
@@ -1225,7 +1254,7 @@ comments. Columns are read by name:
 | `status` (optional) | empty or `run` for a run rung. `alias: <rule>`, with `alias_of` set, marks an **alias rung** (Sstar-time, Sstar-cost): it has no runs of its own, and at each cohort its runs are those of the winner that `scripts/g3/ladder.resolved.tsv` names for it (below). An alias with no resolution at a cohort, or whose named winner is not one of its `alias_of`, gives the status "alias unresolved" in rungs.tsv, deltas.tsv and pairs.tsv, never a silent empty. A ladder.resolved.tsv row whose winner is outside `alias_of`, and a second row for the same (rung, cohort), are each a DEFECT (resolved) and leave the alias unresolved there. An alias left unresolved at a cohort where any of its candidates has runs gets a note. An alias whose winner is its own predecessor adds no lever: its delta row says "<rung> is an alias of its predecessor <rung>: no lever", and the pairs skip it. Otherwise the alias's delta is its winner's runs against the alias's predecessor, labelled "alias of <winner>". A rung that takes an alias as its predecessor (O0) is measured against the winner's runs. |
 | `status`, continued | `not-run: <reason>` (read from this column only) means the rung is not run, for example `not-run: no parameter change` for S3 when the tune probe chose `none`. It has its own deltas row labelled with that text and no numbers. Its successor's delta is taken against the **nearest run ancestor**, and labelled with that ancestor and with the skipped rung's text (deltas.tsv `predecessor_basis` and status; pairs.tsv lever-row note). The pairs skip the rung. A run on such a rung gets a note. |
 | `not_run_cohorts` (optional) | the cohorts at which the rung is not run, as `c1: <reason>;c10: <reason>` (#51's form) or a bare `1;10`. At a listed cohort the rung is treated exactly as `status: not-run`: its own deltas row carries "not-run at c<k>: <reason> (not_run_cohorts)", the pairs skip it, and its successor's delta is against the nearest ancestor that ran there. At other cohorts it is an ordinary rung. (S4 and S8 at c1, where their only candidate is the predecessor's configuration.) |
-| `alias_cohorts` (optional) | `c1: O0;...`: at those cohorts the rung has the named rung's configuration (the cost chain where it coincides with the time chain) and reads its runs: rungs.tsv basis "alias: same configuration as O0 at c1 (alias_cohorts)", its delta against its own predecessor, skipped in the pairs when the two read the same runs. A run of the rung itself there is not used (a note). The generator checks that the two resolve to one configuration ("The cost chain reads the time chain", above). |
+| `alias_cohorts` (optional) | `c1: O0;...`: at those cohorts the rung has the named rung's configuration (the cost chain where it coincides with the time chain) and reads its runs: rungs.tsv basis "alias: same configuration as O0 at c1 (alias_cohorts)", its delta against its own predecessor, skipped in the pairs when the two read the same runs. A run of the rung itself there is not used (a note). The generator checks that the two resolve to one configuration ("The cost chain reads the time chain", above). An entry `c1: O3-n2 (if same configuration)` is conditional: an alias only where the two resolve to one configuration; where they resolve and differ the rung reads its own runs (a note, no DEFECT); while either is unresolved it reads none. |
 
 The **stock rungs** are the S root whose lever is `stock` (S0-T1) and its `threads` child
 (S0-Tv). They are the sources of pairs 1 and 2, and the candidates for the Law 1 reference.
