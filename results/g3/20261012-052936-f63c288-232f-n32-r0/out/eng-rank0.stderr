@@ -1,0 +1,29 @@
+Loading database information...ak2-timing	opts	0.002381	0.000506	13	0	0.000075	0.000000
+ak2-timing	taxo	0.002896	0.547025	87882	0	0.027114	0.082700
+ak2-engine	mem	t_s	15.0	rss_kib	26109240	hwm_kib	26109240	heap_inuse	394289152	sys	409713000	avail_kib	100350356
+ak2-timing	shard-load-0	0.724922	20.369597	22184	0	18.787315	19.416897
+ak2-timing	etag	21.526993	8.397840	4716	0	63.642438	0.000000
+ak2-engine	mem	t_s	30.0	rss_kib	36695436	hwm_kib	36695436	heap_inuse	414973952	sys	431016312	avail_kib	90045200
+ak2-engine	mem	t_s	45.0	rss_kib	36711492	hwm_kib	36711496	heap_inuse	432021504	sys	443664760	avail_kib	90233936
+ak2-engine	mem	t_s	60.0	rss_kib	36720764	hwm_kib	36720768	heap_inuse	441401344	sys	456313208	avail_kib	90269848
+ak2-engine	mem	t_s	75.0	rss_kib	36725620	hwm_kib	36725624	heap_inuse	446111744	sys	461031800	avail_kib	90307364
+ak2-timing	rendezvous	29.925072	48.217025	8007	0	0.173532	0.000000
+ak2-timing	connect	78.143111	0.035207	9	0	0.002158	0.000000
+ak2-timing	hash	0.549969	77.628363	37260	0	82.612353	19.429992
+ done.
+10532910 sequences (1945.09 Mbp) processed in 11.620s (54386.8 Kseq/m, 10043.50 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-sample	batch	0	name	SRR5935740	mode	parallel	s3client	-	rank	0	role	home	inflight	1	threads	8	start_s	78.178377	wall_s	11.729461	setup_s	0.000040	classify_s	11.620009	close_s	0.000027	report_s	0.091563	status	0	sequences	10532910	bases	1945093294	classified	9366399	place	lpt	weight	10532910
+ak2-engine	mem	t_s	90.0	rss_kib	39730176	hwm_kib	39730176	heap_inuse	2429935616	sys	3596460632	avail_kib	85384860
+ak2-timing	batch-barrier-0	89.907874	0.827904	49	0	0.010235	0.001558
+ak2-engine	shard	0	n	32	lo	0	hi	9289778685	tail	302	full	false	empty_at	9289778693	keys	12991581	batches	276	probe_s	0.417187	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	90.7	rss_kib	39730232	hwm_kib	39730232	heap_inuse	2430795776	sys	3596460632	avail_kib	85384020
+ak2-engine	rendezvous	puts	2	gets	639
+ak2-engine	s3	client	sdk	put	2	get	639	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	19194676	cross_bytes	19197092	hash_s	8.397835	combine_s	0.000996
+ak2-engine	load	seconds	20.369592	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	276	keys	415804127	batches	8832	route_s	4.247692	wait_s	10.269297	gather_s	0.881418
+ak2-engine	worker	scan_s	32.054294	lookup_s	15.398621	classify_s	39.708285
+ak2-timing	total	0.000002	90.805609	906968	0	145.682538	22.249706

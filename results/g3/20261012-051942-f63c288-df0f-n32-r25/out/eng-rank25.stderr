@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002298	0.000570	6	0	0.000037	0.000000
+ak2-timing	taxo	0.002879	0.592486	87881	5	0.062486	0.056795
+ak2-engine	mem	t_s	15.0	rss_kib	25122244	hwm_kib	25122244	heap_inuse	395157504	sys	409729384	avail_kib	102687272
+ak2-timing	shard-load-25	0.730753	21.143117	22363	0	26.602655	35.089117
+ak2-engine	mem	t_s	30.3	rss_kib	36769976	hwm_kib	36770008	heap_inuse	492462080	sys	506337672	avail_kib	91145324
+ak2-timing	etag	22.333302	9.643835	23632	0	64.028160	0.000000
+ak2-timing	rendezvous	31.977391	12.855454	1000	6	0.030834	0.000000
+ak2-timing	connect	44.834685	0.130420	20	0	0.002213	0.000000
+ak2-timing	hash	0.595443	44.369679	49275	14	90.669267	35.104005
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36776080	hwm_kib	36776084	heap_inuse	499023872	sys	510597512	avail_kib	91223628
+ak2-timing	batch-barrier-0	44.965130	12.515070	1613	0	0.427308	0.000000
+ak2-engine	shard	0	n	32	lo	232244467142	hi	241534245827	tail	302	full	false	empty_at	9289778696	keys	12994938	batches	276	probe_s	0.326067	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	57.5	rss_kib	36781540	hwm_kib	36781544	heap_inuse	504651776	sys	518986120	avail_kib	91234656
+ak2-engine	rendezvous	puts	2	gets	126
+ak2-engine	s3	client	sdk	put	2	get	126	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	96439324	cross_bytes	173685148	hash_s	9.643828	combine_s	0.001820
+ak2-engine	load	seconds	21.143113	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	57.549761	138803	19	91.228170	35.160844

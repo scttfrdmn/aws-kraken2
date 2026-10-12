@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.001258	0.000351	11	0	0.000055	0.000000
+ak2-timing	taxo	0.001618	0.594884	87876	4	0.068840	0.074035
+ak2-engine	mem	t_s	15.0	rss_kib	26115432	hwm_kib	26115436	heap_inuse	394674176	sys	409651544	avail_kib	101658984
+ak2-timing	shard-load-24	0.732686	20.282288	22244	0	18.850597	20.952826
+ak2-engine	mem	t_s	30.2	rss_kib	36750904	hwm_kib	36750908	heap_inuse	472711168	sys	489482616	avail_kib	91184008
+ak2-timing	etag	21.451932	9.314888	18922	0	63.956442	0.000000
+ak2-engine	mem	t_s	45.2	rss_kib	36757408	hwm_kib	36757412	heap_inuse	479371264	sys	493742456	avail_kib	91260196
+ak2-timing	rendezvous	30.767120	15.073388	1520	0	0.041894	0.000000
+ak2-timing	connect	45.841290	0.182421	196	0	0.005772	0.000000
+ak2-timing	hash	0.596572	45.427159	45148	14	82.873328	20.953957
+ done.
+ak2-timing	batch-barrier-0	46.023744	11.547698	1130	0	0.436388	0.000000
+ak2-engine	shard	0	n	32	lo	222954688456	hi	232244467142	tail	302	full	false	empty_at	9289778690	keys	12971710	batches	276	probe_s	0.327954	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	57.6	rss_kib	36763112	hwm_kib	36763116	heap_inuse	485195776	sys	498198904	avail_kib	91256060
+ak2-engine	rendezvous	puts	2	gets	154
+ak2-engine	s3	client	sdk	put	2	get	154	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	77243408	cross_bytes	135293320	hash_s	9.314883	combine_s	0.000765
+ak2-engine	load	seconds	20.282284	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	57.641952	134198	18	83.449576	21.028042

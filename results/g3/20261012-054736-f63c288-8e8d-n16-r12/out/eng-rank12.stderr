@@ -1,0 +1,24 @@
+Loading database information...ak2-timing	opts	0.003816	0.000512	3	0	0.000000	0.000053
+ak2-timing	taxo	0.004336	0.544199	87866	4	0.024151	0.091561
+ak2-engine	mem	t_s	15.0	rss_kib	26139920	hwm_kib	26139924	heap_inuse	394616832	sys	409721192	avail_kib	101593240
+ak2-engine	mem	t_s	30.0	rss_kib	53333332	hwm_kib	53333336	heap_inuse	396935168	sys	409721192	avail_kib	74392308
+ak2-timing	shard-load-12	0.712899	40.235357	40579	1	37.230658	37.628560
+ak2-engine	mem	t_s	45.4	rss_kib	73060608	hwm_kib	73060612	heap_inuse	494919680	sys	510589320	avail_kib	54634660
+ak2-timing	etag	41.355698	17.824196	23617	0	127.544692	0.000000
+ak2-engine	mem	t_s	60.4	rss_kib	73063132	hwm_kib	73063136	heap_inuse	497303552	sys	514783624	avail_kib	54860352
+ak2-timing	rendezvous	59.180159	7.354261	718	0	0.019552	0.000000
+ak2-timing	connect	66.535145	0.013032	4	0	0.000863	0.000000
+ak2-timing	hash	0.548632	65.999558	67209	10	164.812611	37.631548
+ done.
+ak2-engine	mem	t_s	75.4	rss_kib	73072988	hwm_kib	73072992	heap_inuse	507609088	sys	523172232	avail_kib	54886660
+ak2-timing	batch-barrier-0	66.548197	12.321292	2199	0	0.828780	0.000000
+ak2-engine	shard	0	n	16	lo	222954688456	hi	241534245827	tail	302	full	false	empty_at	18579557382	keys	25966648	batches	276	probe_s	0.691182	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	78.9	rss_kib	73073164	hwm_kib	73073168	heap_inuse	507772928	sys	523172232	avail_kib	54821364
+ak2-engine	rendezvous	puts	2	gets	76
+ak2-engine	s3	client	sdk	put	2	get	76	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	554	requests	1	retries	0	bytes	96439324	cross_bytes	154489236	hash_s	17.824190	combine_s	0.000710
+ak2-engine	load	seconds	40.235352	requests	1126	retries	0	bytes	74318296292
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	79.015882	157305	15	165.812094	37.723599

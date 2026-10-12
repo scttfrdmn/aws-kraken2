@@ -1,0 +1,25 @@
+Loading database information...ak2-timing	opts	0.003725	0.000560	10	0	0.000000	0.000059
+ak2-timing	taxo	0.004295	0.542677	87895	4	0.028651	0.087550
+ak2-engine	mem	t_s	15.0	rss_kib	26107084	hwm_kib	26107088	heap_inuse	394387456	sys	409729384	avail_kib	101675064
+ak2-engine	mem	t_s	30.0	rss_kib	53298652	hwm_kib	53298656	heap_inuse	396664832	sys	409991528	avail_kib	74383640
+ak2-timing	shard-load-6	0.718723	40.384497	40575	1	35.548670	37.521828
+ak2-engine	mem	t_s	45.3	rss_kib	72966576	hwm_kib	72966580	heap_inuse	398622720	sys	414251368	avail_kib	54804468
+ak2-timing	etag	41.532400	16.672776	100	0	127.129975	0.000000
+ak2-engine	mem	t_s	60.3	rss_kib	72970416	hwm_kib	72970420	heap_inuse	402423808	sys	418445672	avail_kib	54976580
+ak2-engine	mem	t_s	75.3	rss_kib	72974044	hwm_kib	72974048	heap_inuse	406331392	sys	418445672	avail_kib	54973020
+ak2-timing	rendezvous	58.205415	19.363190	1881	5	0.045416	0.000000
+ak2-timing	connect	77.573240	0.023860	6	0	0.001036	0.000000
+ak2-timing	hash	0.547049	77.050071	44860	18	162.734429	37.536235
+ done.
+ak2-engine	mem	t_s	90.3	rss_kib	72988028	hwm_kib	72988032	heap_inuse	420446208	sys	435222888	avail_kib	54951484
+ak2-timing	batch-barrier-0	77.597127	13.569472	3302	0	0.839363	0.000000
+ak2-engine	shard	0	n	16	lo	111477344228	hi	130056901599	tail	302	full	false	empty_at	18579557370	keys	26008438	batches	276	probe_s	0.690996	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	91.2	rss_kib	72988052	hwm_kib	72988056	heap_inuse	420454400	sys	435222888	avail_kib	54950908
+ak2-engine	rendezvous	puts	2	gets	184
+ak2-engine	s3	client	sdk	put	2	get	184	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	553	requests	1	retries	0	bytes	306092	cross_bytes	96440500	hash_s	16.672771	combine_s	0.004619
+ak2-engine	load	seconds	40.384493	requests	1126	retries	0	bytes	74318296292
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	91.306735	136099	23	163.742807	37.624172

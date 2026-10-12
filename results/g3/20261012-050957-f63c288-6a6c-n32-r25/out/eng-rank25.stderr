@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002784	0.000397	6	0	0.000044	0.000000
+ak2-timing	taxo	0.003190	0.511689	87888	4	0.033077	0.086428
+ak2-engine	mem	t_s	15.0	rss_kib	26250680	hwm_kib	26250680	heap_inuse	394715136	sys	409713000	avail_kib	101458212
+ak2-timing	shard-load-25	0.650676	20.204171	22258	0	17.936807	20.442036
+ak2-engine	mem	t_s	30.2	rss_kib	36769856	hwm_kib	36769856	heap_inuse	492027904	sys	506321288	avail_kib	91113928
+ak2-timing	etag	21.276479	9.553351	23604	1	63.996972	0.000000
+ak2-timing	rendezvous	30.830080	10.940992	1169	7	0.033591	0.000000
+ak2-timing	connect	41.771868	0.181450	24	0	0.002583	0.000000
+ak2-timing	hash	0.514961	41.438375	49387	18	81.976958	20.454370
+ done.
+ak2-engine	mem	t_s	45.2	rss_kib	36780608	hwm_kib	36780612	heap_inuse	503250944	sys	515037576	avail_kib	91201880
+ak2-timing	batch-barrier-0	41.953348	12.538988	1927	0	0.430035	0.000000
+ak2-engine	shard	0	n	32	lo	232244467142	hi	241534245827	tail	302	full	false	empty_at	9289778696	keys	12994938	batches	276	probe_s	0.329448	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	54.5	rss_kib	36783232	hwm_kib	36783236	heap_inuse	505946112	sys	519231880	avail_kib	91203844
+ak2-engine	rendezvous	puts	2	gets	137
+ak2-engine	s3	client	sdk	put	2	get	137	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	96439324	cross_bytes	173685148	hash_s	9.553346	combine_s	0.000777
+ak2-engine	load	seconds	20.204167	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000003	54.580292	139240	23	82.528495	20.540874

@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002188	0.000438	11	0	0.000067	0.000000
+ak2-timing	taxo	0.002636	0.464482	87886	3	0.034096	0.101605
+ak2-engine	mem	t_s	15.0	rss_kib	25265380	hwm_kib	25267428	heap_inuse	394633216	sys	409643352	avail_kib	102523700
+ak2-timing	shard-load-27	0.638560	21.642134	22186	0	28.308588	39.876129
+ak2-engine	mem	t_s	30.3	rss_kib	36675876	hwm_kib	36675888	heap_inuse	396132352	sys	409643352	avail_kib	91211436
+ak2-timing	etag	23.310774	8.587082	179	0	63.595907	0.000000
+ak2-timing	rendezvous	31.898102	7.019848	887	5	0.021998	0.000000
+ak2-timing	connect	38.918714	0.098603	22	0	0.002339	0.000000
+ak2-timing	hash	0.467151	38.550187	25613	18	91.934454	39.890263
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36685676	hwm_kib	36685680	heap_inuse	406192128	sys	418167144	avail_kib	91321248
+ak2-timing	batch-barrier-0	39.017346	12.748616	1923	0	0.413423	0.000000
+ak2-engine	shard	0	n	32	lo	250824024513	hi	260113803199	tail	302	full	false	empty_at	9289778690	keys	13011132	batches	276	probe_s	0.321031	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	51.8	rss_kib	36688172	hwm_kib	36688176	heap_inuse	408748032	sys	422361448	avail_kib	91296632
+ak2-engine	rendezvous	puts	2	gets	109
+ak2-engine	s3	client	sdk	put	2	get	109	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	276	requests	1	retries	0	bytes	613420	cross_bytes	116251072	hash_s	8.587076	combine_s	0.000745
+ak2-engine	load	seconds	21.642131	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	51.833934	115449	22	92.450367	39.991901
