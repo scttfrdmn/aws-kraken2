@@ -186,14 +186,14 @@ def verdict(run_spec, committed_spec, classifier, rows=None):
 # ---------------------------------------------------------------- git history and the check
 
 def versions():
-    """{sha256: (commit or 'worktree', text)} of every version of the body in git history."""
+    """{sha256: (commit or 'worktree', text)} of every version of the body in HEAD's history."""
     out = {}
     p = os.path.join(ROOT, BODY)
     if os.path.isfile(p):
         with open(p, "rb") as f:
             b = f.read()
         out[sha256(b)] = ("worktree", b.decode())
-    r = git("log", "--all", "--format=%H", "--", BODY)
+    r = git("log", "HEAD", "--format=%H", "--", BODY)   # this branch's history only, not other refs
     for h in r.stdout.decode().split():
         s = git("show", "%s:%s" % (h, BODY))
         if s.returncode == 0:
@@ -232,12 +232,31 @@ def hunks(a, b):
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
         if tag == "equal":
             continue
+        # Each line is labelled from its own side's file: an inserted line by where it sits in the new
+        # version (inside a function or not), a removed one by where it sat in the old. No neighbour
+        # relabelling: a line inserted after a function's closing brace is top level.
         ch = [("-", i + 1, la[i]) + ra[i] for i in range(i1, i2)] + [("+", j + 1, lb[j]) + rb[j] for j in range(j1, j2)]
-        if tag == "insert" and j1 > 0:
-            # a pure insertion inside a function: the line before it says where
-            ch = [c if c[4] else c[:3] + rb[j1 - 1] for c in ch]
         out.append(("@@ -%d,%d +%d,%d @@" % (i1 + 1, i2 - i1, j1 + 1, j2 - j1), ch))
     return out
+
+
+def scope_problems(a, b, functions, out=print):
+    """Why the change a -> b is not confined to `functions` inside the stream-test block (empty if it
+    is); prints the hunks and the functions they are in."""
+    probs = []
+    hs = hunks(a, b)
+    if not hs:
+        probs.append("the two versions are identical")
+    for hdr, ch in hs:
+        fns = sorted({c[4] or "<top level>" for c in ch})
+        out("  %s in %s" % (hdr, ", ".join(fns)))
+        for side, n, text, inblock, fn in ch:
+            out("    %s%5d %s" % (side, n, text))
+            if not inblock:
+                probs.append("%s line %d is outside the block ladder_stream_test.sh drives, so case X cannot probe it" % (side, n))
+            elif fn not in functions:
+                probs.append("%s line %d is in %s, not in the row's functions %s" % (side, n, fn or "<top level>", ",".join(functions)))
+    return probs
 
 
 def check(path=TSV, out=print):
@@ -259,6 +278,8 @@ def check(path=TSV, out=print):
             if s not in vs:
                 probs.append("body %s is not a version of %s in git history" % (s[:12], BODY))
         cs = git("show", "%s:%s" % (r["commit"], BODY))
+        if git("merge-base", "--is-ancestor", r["commit"], "HEAD").returncode != 0:
+            probs.append("commit %s is not an ancestor of HEAD" % r["commit"])
         if cs.returncode != 0:
             probs.append("commit %s has no %s" % (r["commit"], BODY))
         elif sha256(cs.stdout) != t:
@@ -266,18 +287,7 @@ def check(path=TSV, out=print):
         out("ladder_body_compat: line %d: %s -> %s (commit %s): unaffected %s; affected %s; %s" % (
             r["line"], f[:12], t[:12], r["commit"][:12], ",".join(r["unaffected"]), ",".join(r["affected"]), r["reason"]))
         if f in vs and t in vs:
-            hs = hunks(vs[f][1], vs[t][1])
-            if not hs:
-                probs.append("the two versions are identical")
-            for hdr, ch in hs:
-                fns = sorted({c[4] or "<top level>" for c in ch})
-                out("  %s in %s" % (hdr, ", ".join(fns)))
-                for side, n, text, inblock, fn in ch:
-                    out("    %s%5d %s" % (side, n, text))
-                    if not inblock:
-                        probs.append("%s line %d is outside the block ladder_stream_test.sh drives, so case X cannot probe it" % (side, n))
-                    elif fn not in r["functions"]:
-                        probs.append("%s line %d is in %s, not in the row's functions %s" % (side, n, fn or "<top level>", ",".join(r["functions"])))
+            probs += scope_problems(vs[f][1], vs[t][1], r["functions"], out)
         for p in probs:
             out("  PROBLEM: %s" % p)
         bad += bool(probs)
@@ -330,6 +340,27 @@ def self_test():
     run(base[:5] + ["lad_engine"] + base[6:], 1, "changes outside the row's functions are refused")
     run([base[0], base[0]] + base[2:], 1, "a to sha that is not the body at the commit is refused")
     run(base[:4] + [""] + base[5:], 1, "unaffected and affected that do not cover every classifier are refused")
+    run(base[:2] + ["0" * 40] + base[3:], 1, "a commit that is not an ancestor of HEAD is refused")
+
+    # Synthetic scope cases on the current body: an insertion inside lad_one is in lad_one; one
+    # right after lad_one's closing brace is top level (the reviewer's case) and must be refused.
+    with open(os.path.join(ROOT, BODY)) as fh:
+        cur = fh.read()
+    ls = cur.split("\n")
+    start = ls.index("lad_one() {")
+    end = ls.index("}", start)
+
+    def scope(lines, want_refused, what):
+        nonlocal fails
+        pr = scope_problems(cur, "\n".join(lines), ["lad_one"], out=lambda l: None)
+        good = bool(pr) == want_refused
+        fails += not good
+        print("ladder_body_compat: self-test %s %s%s" % ("ok  " if good else "FAIL", what, (": " + pr[0]) if pr else ""))
+
+    scope(ls[:start + 1] + ["  : inserted"] + ls[start + 1:], False, "an insertion inside lad_one is in lad_one")
+    scope(ls[:end + 1] + [": inserted after lad_one's closing brace"] + ls[end + 1:], True,
+          "an insertion right after lad_one's closing brace is top level, refused")
+    scope(ls[:end] + ["  : before the brace"] + ls[end:], False, "an insertion before lad_one's closing brace is in lad_one")
     return 1 if fails else 0
 
 

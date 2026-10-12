@@ -20,7 +20,9 @@
 #   P  ours' plain path under a cohort node's engine env: it runs without AK2_ENGINE_* (else it
 #      takes the engine path, a resident copy of the table; O0 at c1); P-mut removes the strip and must fail;
 #   X  every ladder.body-compat.tsv row: both body versions, each classifier under the node's env;
-#      identical invocations for an unaffected classifier, different ones for an affected one;
+#      for an unaffected classifier identical invocations (argv, whole env) and records (phase
+#      markers, lad-sample fields, rc handling); different invocations for an affected one; X-mut
+#      shows both comparisons fail on a planted difference;
 #   N  negative control: the reverse redirection order (> /dev/null 2> >(...)) streams nothing,
 #      while the file still gets every line, so A's streaming check can fail.
 set +e
@@ -48,8 +50,9 @@ ARGS0="$*"
 out="" rep="" in=()
 while [ $# -gt 0 ]; do case $1 in --output) out=$2; shift 2 ;; --report) rep=$2; shift 2 ;; --db|--threads) shift 2 ;; -*) shift ;; *) in+=("$1"); shift ;; esac; done
 echo "$(perl -MTime::HiRes=time -e 'printf "%.3f", time') start $out" >> "$FAKE_LOG"
-# Case P: the engine env and the command line this invocation saw.
-[ -n "${FAKE_ENVLOG:-}" ] && { printf 'args %s\n' "$(basename "$0") ${ARGS0:-}" >> "$FAKE_ENVLOG"; env | grep -E '^AK2_(ENGINE_|COHORT=|COHORT_CHECK=|DECOMPRESS=)' | sed 's/^/env /' >> "$FAKE_ENVLOG"; }
+# Cases P and X: the command line and the whole environment this invocation saw (less the volatile
+# PWD, SHLVL, _ and OLDPWD).
+[ -n "${FAKE_ENVLOG:-}" ] && { mkdir -p "$FAKE_ENVLOG.d"; { printf 'args %s\n' "$(basename "$0") ${ARGS0:-}"; env | grep -vE '^(PWD|SHLVL|_|OLDPWD)=' | sed 's/^/env /'; } > "$FAKE_ENVLOG.d/$$"; }
 # As upstream's wrapper: one `gzip -dc FILE` per mate, found on PATH.
 if [ "${FAKE_GZ:-0}" = 1 ]; then for f in "${in[@]}"; do gzip -dc "$f" > /dev/null; done; fi
 printf 'Loading database information...' >&2; sleep 0.3; echo ' done.' >&2
@@ -66,7 +69,7 @@ cat > "$TD/bin/fake-engine" << 'EOF'
 # A stand-in for the cohort-mode engine at rank 0 of 2: its timing lines, then one home sample (A,
 # whose outputs it writes), one sample homed on rank 1 (B: a peer line here) and A's report.
 o="$FAKE_OUT"
-[ -n "${FAKE_ENVLOG:-}" ] && { printf 'args %s\n' "$(basename "$0") $*" >> "$FAKE_ENVLOG"; env | grep -E '^AK2_(ENGINE_|COHORT=|COHORT_CHECK=|DECOMPRESS=)' | sed 's/^/env /' >> "$FAKE_ENVLOG"; }
+[ -n "${FAKE_ENVLOG:-}" ] && { mkdir -p "$FAKE_ENVLOG.d"; { printf 'args %s\n' "$(basename "$0") $*"; env | grep -vE '^(PWD|SHLVL|_|OLDPWD)=' | sed 's/^/env /'; } > "$FAKE_ENVLOG.d/$$"; }
 tl() { printf 'ak2-timing\t%s\t%s\t%s\t0\t0\t0\t0\n' "$1" "$2" "$3" >&2; }
 echo "Loading database information..." >&2
 sleep 0.4; tl shard-load-0 0.1 0.4
@@ -337,6 +340,7 @@ penv() {  # CASE FN: case P's ours-plain lanes with the node's engine env export
   setup_case "$1"; export FAKE_ENVLOG="$C/env.log"; : > "$FAKE_ENVLOG"
   ( export AK2_ENGINE_N=1 AK2_ENGINE_RANK=0 AK2_ENGINE_RENDEZVOUS=s3://b/x/rendezvous AK2_COHORT_ID=x
     CASE_CLASSIFIER=ours-plain CASE_FN=$2 run_case "$1" 0 awscp-default 1 )
+  cat "$FAKE_ENVLOG.d"/* > "$C/env.log" 2> /dev/null
   unset FAKE_ENVLOG
 }
 penv P "$FN"
@@ -352,20 +356,37 @@ penv Pmut "$TD/fn-engenv.sh"
 check "P-mut: without the strip ours' plain path sees AK2_ENGINE_N=1 (the probe resolves it)" "[ \$(grep -c '^env AK2_ENGINE_N=1\$' '$C/env.log') = 3 ]"
 
 # ---- X: every scripts/g3/ladder.body-compat.tsv row, by behaviour ----
-# Both body versions a row names, each classifier under a cohort node's env (as P): the invocations
-# (argv, the AK2_* env) of each unaffected classifier must be identical between the two, and those of
-# each affected classifier must differ (so the probe resolves the change it declares harmless).
-# ladder_body_compat.py check confines a row's changes to this block, so this probe covers them.
-xprobe() {  # CASE FN CLASSIFIER: the classifier invocations, normalised, into $C/env.norm
+# Both body versions a row names, each classifier under a cohort node's env (as P). For each
+# unaffected classifier the two must agree on:
+#   - the invocations: argv and the whole environment (less PWD, SHLVL, _ and OLDPWD);
+#   - the body's records around them: the phase markers (ak2_phase, lad-phase), the lad-sample lines'
+#     field set with accession, rung, arm and rc, the per-sample done records' rc, and the case's
+#     CRC/FAIL/NDONE (rc handling). Times and sha256s are volatile and not compared.
+# For each affected classifier the invocations must differ (the probe resolves the change it declares
+# harmless). ladder_body_compat.py check confines a row's changes to this block, inside the row's
+# functions, so this probe covers them; X-mut shows each comparison fails on a planted difference.
+xrec() {  # CASE DIR: the run's records, normalised, into DIR/rec.norm
+  local c=$1
+  { echo "phases: $(tr '\n' ' ' < "$c/phases.txt" 2> /dev/null)"
+    sed -n 's/^lad-phase //p' "$c/run.log" | jq -c '{phase, how}' | sed 's/^/lad-phase /'
+    sed -n 's/^lad-sample //p' "$c/run.log" | jq -c '{accession, rung, arm, classifier, rc, fields: ([paths(scalars) | map(tostring) | join(".")] | sort)}' | sort | sed 's/^/lad-sample /'
+    for f in "$c"/sd/done/*; do [ -f "$f" ] && echo "done $(basename "$f") rc $(awk '{print $1}' "$f")"; done | sort
+    grep '^case-end ' "$c/run.log"
+  } > "$c/rec.norm"
+}
+xprobe() {  # CASE FN CLASSIFIER: the classifier invocations, normalised, into $C/env.norm; records into $C/rec.norm
   setup_case "$1"; export FAKE_ENVLOG="$C/env.log"; : > "$FAKE_ENVLOG"
+  cp "$2" "$TD/fn-xprobe.sh"   # one path for every version: CASE_FN reaches the classifier's env
   ( export AK2_ENGINE_N=1 AK2_ENGINE_RANK=0 AK2_ENGINE_RENDEZVOUS=s3://b/x/rendezvous AK2_COHORT_ID=x
     case $3 in
-      upstream) CASE_FN=$2 run_case "$1" 0 awscp-default 1 ;;
-      ours-plain) CASE_CLASSIFIER=ours-plain CASE_FN=$2 run_case "$1" 0 awscp-default 1 ;;
-      ours-engine) CASE_FN=$2 run_case "$1" 1 s5cmd-overlap 0 ;;
+      upstream) CASE_FN=$TD/fn-xprobe.sh run_case "$1" 0 awscp-default 1 ;;
+      ours-plain) CASE_CLASSIFIER=ours-plain CASE_FN=$TD/fn-xprobe.sh run_case "$1" 0 awscp-default 1 ;;
+      ours-engine) CASE_FN=$TD/fn-xprobe.sh run_case "$1" 1 s5cmd-overlap 0 ;;
     esac )
   unset FAKE_ENVLOG
-  sed "s#$C#C#g" "$C/env.log" | sort > "$C/env.norm"
+  # one line per invocation: its argv and env lines, the case dir normalised, sorted within it
+  for f in "$C/env.log.d"/*; do [ -f "$f" ] && { sed "s#$C#C#g" "$f" | LC_ALL=C sort | tr '\n' '\036'; echo; }; done | LC_ALL=C sort > "$C/env.norm"
+  xrec "$C"
 }
 XN=0
 while IFS=$'\t' read -r xf xt xun xaff; do
@@ -376,16 +397,32 @@ while IFS=$'\t' read -r xf xt xun xaff; do
     mkfn "$TD/body-$v.sh" > "$TD/fn-$v.sh"
   done
   for cl in ${xun//,/ } ${xaff//,/ }; do
-    xprobe "X$XN-$cl-from" "$TD/fn-$xf.sh" "$cl"; a="$C/env.norm"
-    xprobe "X$XN-$cl-to" "$TD/fn-$xt.sh" "$cl"; b="$C/env.norm"
-    check "X$XN ($cl): the probe saw the classifier run" "grep -q '^args ' '$a' && grep -q '^args ' '$b'"
+    xprobe "X$XN-$cl-from" "$TD/fn-$xf.sh" "$cl"; a="$C/env.norm"; ra="$C/rec.norm"
+    xprobe "X$XN-$cl-to" "$TD/fn-$xt.sh" "$cl"; b="$C/env.norm"; rb="$C/rec.norm"
+    check "X$XN ($cl): the probe saw the classifier run, and its records" "grep -q '^args ' '$a' && grep -q '^args ' '$b' && grep -q '^lad-sample ' '$ra' && grep -q '^case-end ' '$ra'"
     case ",$xun," in
-      *",$cl,"*) check "X$XN ${xf:0:12} -> ${xt:0:12}: $cl (declared unaffected) runs with the same argv and env" "cmp -s '$a' '$b'" ;;
+      *",$cl,"*)
+        check "X$XN ${xf:0:12} -> ${xt:0:12}: $cl (declared unaffected) runs with the same argv and whole env" "cmp -s '$a' '$b'"
+        check "X$XN ${xf:0:12} -> ${xt:0:12}: $cl (declared unaffected) leaves the same phase markers, lad-sample fields and rc handling" "cmp -s '$ra' '$rb'" ;;
       *) check "X$XN ${xf:0:12} -> ${xt:0:12}: $cl (declared affected) runs differently" "! cmp -s '$a' '$b'" ;;
     esac
   done
 done < <(python3 "$ROOT/scripts/lib/ladder_body_compat.py" rows)
 check "X: ladder.body-compat.tsv has rows to probe" "[ $XN -gt 0 ]"
+# X-mut: the comparisons resolve. On the current body, upstream: one extra env var for the
+# classifier must change the env comparison; a done record that writes rc 1 must change the records.
+xmut() {  # OUT OLD NEW: the body with one exact replacement
+  python3 -c 'import sys; o, a, b = sys.argv[1:4]; s = open(sys.argv[4]).read(); assert s.count(a) == 1, a; open(o, "w").write(s.replace(a, b))' "$@" "$BODY"
+}
+xmut "$TD/body-xenv.sh" '  local -a cmd=("$K2") noeng=()' '  local -a cmd=(env AK2_XMUT=1 "$K2") noeng=()'
+xmut "$TD/body-xrc.sh" "  printf '%s %s %s %s\n' \"\$rc\" \"\$t0\"" "  printf '%s %s %s %s\n' 1 \"\$t0\""
+check "X-mut: both mutations applied" "! cmp -s '$BODY' '$TD/body-xenv.sh' && ! cmp -s '$BODY' '$TD/body-xrc.sh'"
+mkfn "$BODY" > "$TD/fn-xcur.sh"; mkfn "$TD/body-xenv.sh" > "$TD/fn-xenv.sh"; mkfn "$TD/body-xrc.sh" > "$TD/fn-xrc.sh"
+xprobe Xm-cur "$TD/fn-xcur.sh" upstream; mca="$C/env.norm"; mcr="$C/rec.norm"
+xprobe Xm-env "$TD/fn-xenv.sh" upstream
+check "X-mut: an extra env var for upstream's invocation fails the env comparison" "! cmp -s '$mca' '$C/env.norm'"
+xprobe Xm-rc "$TD/fn-xrc.sh" upstream
+check "X-mut: a done record with another rc fails the record comparison" "! cmp -s '$mcr' '$C/rec.norm'"
 
 # ---- N: negative control ----
 setup_case N

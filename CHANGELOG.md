@@ -16,11 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   committed one only in the body, when a chain of rows covers its classifier. Anything else in
   the spec must still be byte-identical.
   - The rows are checked mechanically (`make ladder-compat-check`, in make test). Both versions
-    must be in git history, with `commit` holding the newer one. The classifier lists must split
-    the three classifiers. Every changed line must lie inside the block the stream test drives,
-    in the row's functions.
-  - `make ladder-stream-test` case X runs both versions per classifier. Invocations must be
-    identical for each unaffected classifier and differ for each affected one.
+    must be in HEAD's history, with `commit` an ancestor of HEAD holding the newer one. The
+    classifier lists must split the three classifiers. Every changed line must lie inside the
+    block the stream test drives, in the row's functions. A line inserted after a function's
+    closing `}` counts as top level, and `--self-test` checks that this case is refused.
+  - `make ladder-stream-test` case X runs both versions per classifier. For each unaffected
+    classifier, both must match:
+    - the invocations (argv and the whole env, less PWD, SHLVL, `_` and OLDPWD);
+    - the body's records around them (phase markers, lad-sample field set and rc, done records'
+      rc, CRC/FAIL/NDONE).
+
+    Invocations must differ for each affected classifier. X-mut shows that both comparisons
+    resolve. The measurement code around the invocation is covered by this comparison and by
+    review.
   - `make ladder-campaign-test`'s compat scenario covers the refusals: an affected classifier, an
     undeclared change, a change beyond the body, a `spec.json` that is not the recorded bytes, and
     a row that does not cover the run's classifier.
@@ -231,8 +239,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   `lad_one` now strips `AK2_ENGINE_*`, `AK2_COHORT` and `AK2_COHORT_CHECK` from ours-plain's
   environment. `make ladder-stream-test` case P checks this by behaviour, and P-mut restores the
-  leak and must fail. Ours' `-M` itself was not at fault. Peak anonymous RSS over upstream's `-M`
-  is about 65 MB, flat from 8 to 96 threads. The new `chash.Table.Mapped` reports Mmap's mapping.
+  leak and must fail. Ours' `-M` itself was not at fault. On the viral DB on a tmpfs, peak
+  RssAnon over upstream's `-M` is 52.0 to 65.6 MiB at 8, 32 and 96 threads, not growing with
+  threads. The table's RssShmem is the same for both. Under the leaked engine env, ours `-M` holds
+  1.8 GiB anonymous and no shmem. Source: results/g1/mmap-rss-20261012-9911a93/ (manifest.json,
+  peaks.tsv). The new `chash.Table.Mapped` reports Mmap's mapping.
   `TestMmapSharedReadOnly` asserts that the mapping is shared, read-only and never a copy: the
   cells alias the mapping, a write faults, and on Linux smaps shows `ms`, no `wr`/`mw` and 0 kB
   anonymous after a full scan, with Load as the negative control.

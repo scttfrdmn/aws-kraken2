@@ -642,15 +642,32 @@ gives:
 - `reason`.
 
 `check` refuses a row in any of these cases:
-- a version is not in git history;
-- `commit` does not hold `to`;
+- a version is not in HEAD's history;
+- `commit` is not an ancestor of HEAD, or does not hold `to`;
 - the two lists do not partition the classifiers;
 - any changed line is outside the block that `ladder-stream-test` drives (between its "load and
   classify" and "end of the functions" markers), or outside the row's functions.
 
-Case X then runs both versions for every classifier under a cohort node's engine env. The
-invocations (argv and the `AK2_*` env) must be identical for each unaffected classifier, and must
-differ for each affected one.
+Case X then runs both versions for every classifier under a cohort node's engine env. For each
+unaffected classifier, the two versions must agree on:
+- the invocations: argv and the whole environment, less the volatile `PWD`, `SHLVL`, `_` and
+  `OLDPWD`;
+- the body's records around them: the phase markers (`ak2_phase` and `lad-phase`), each
+  lad-sample line's field set with its accession, rung, arm, classifier and rc, the per-sample
+  done records' rc, and the run's CRC/FAIL/NDONE. Times and sha256s vary between runs, so they are
+  not compared.
+
+For each affected classifier, the invocations must differ. X-mut shows that each comparison fails
+on a planted difference: an extra env var, and a done record with another rc.
+
+The measurement code around the invocation (timing, records, rc handling) is covered by this
+comparison and by review. Nothing proves that a change elsewhere in the body leaves the
+measurements alone, which is why `check` refuses one.
+
+`check` labels each changed line by where it sits in its own version of the body. A line inserted
+right after a function's closing `}` is top level, not part of that function. `--self-test`
+refuses that case: an insertion after `lad_one`'s `}`. It also refuses a `commit` that is not an
+ancestor of HEAD; versions come from HEAD's history only (`git log HEAD`).
 
 **The done check.** A finished run whose `spec_sha256` is not the committed spec's still counts
 when all of the following hold:
