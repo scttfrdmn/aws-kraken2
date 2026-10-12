@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002742	0.000471	12	0	0.000000	0.000103
+ak2-timing	taxo	0.003222	0.576436	87871	4	0.060498	0.084007
+ak2-engine	mem	t_s	15.0	rss_kib	25371724	hwm_kib	25371724	heap_inuse	393879552	sys	409975144	avail_kib	102535808
+ak2-timing	shard-load-22	0.748035	20.763917	22155	0	28.481978	41.419178
+ak2-engine	mem	t_s	30.4	rss_kib	36713288	hwm_kib	36713292	heap_inuse	433635328	sys	451987832	avail_kib	91261416
+ak2-timing	etag	22.209298	8.879353	9530	0	63.778076	0.000000
+ak2-engine	mem	t_s	45.4	rss_kib	36720152	hwm_kib	36720156	heap_inuse	440909824	sys	456509816	avail_kib	91315260
+ak2-timing	rendezvous	31.088934	14.344937	1602	7	0.044152	0.000000
+ak2-timing	connect	45.435420	0.023806	4	0	0.001790	0.000000
+ak2-timing	hash	0.579739	44.879502	35651	17	92.316594	41.429765
+ done.
+ak2-timing	batch-barrier-0	45.459247	12.604393	1530	0	0.430991	0.000000
+ak2-engine	shard	0	n	32	lo	204375131085	hi	213664909770	tail	302	full	false	empty_at	9289778684	keys	12995469	batches	276	probe_s	0.330164	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	58.1	rss_kib	36726732	hwm_kib	36726736	heap_inuse	447578112	sys	464898424	avail_kib	91301928
+ak2-engine	rendezvous	puts	2	gets	171
+ak2-engine	s3	client	sdk	put	2	get	171	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	38851584	cross_bytes	58509668	hash_s	8.879345	combine_s	0.001530
+ak2-engine	load	seconds	20.763912	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000003	58.150813	125097	22	92.895491	41.514138

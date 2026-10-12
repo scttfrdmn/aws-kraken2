@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002674	0.000499	12	0	0.000060	0.000000
+ak2-timing	taxo	0.003181	0.569826	87889	4	0.029547	0.110392
+ak2-engine	mem	t_s	15.0	rss_kib	26090760	hwm_kib	26090760	heap_inuse	394182656	sys	409713000	avail_kib	101655976
+ak2-timing	shard-load-23	0.746246	20.245905	22206	2	18.642137	19.644557
+ak2-engine	mem	t_s	30.3	rss_kib	36732256	hwm_kib	36732256	heap_inuse	453107712	sys	468502904	avail_kib	91171460
+ak2-timing	etag	21.425390	9.099933	14220	0	63.843978	0.000000
+ak2-timing	rendezvous	30.525555	14.265179	1546	5	0.042565	0.000000
+ak2-timing	connect	44.791513	0.180527	22	0	0.002922	0.000000
+ak2-timing	hash	0.573059	44.398999	40302	18	82.543936	19.654646
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36740252	hwm_kib	36740256	heap_inuse	461594624	sys	473024888	avail_kib	91260788
+ak2-timing	batch-barrier-0	44.972066	12.476467	1750	0	0.427109	0.000000
+ak2-engine	shard	0	n	32	lo	213664909770	hi	222954688456	tail	302	full	false	empty_at	9289778686	keys	13049250	batches	276	probe_s	0.324081	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	57.4	rss_kib	36746308	hwm_kib	36746312	heap_inuse	467935232	sys	481413496	avail_kib	91303832
+ak2-engine	rendezvous	puts	2	gets	164
+ak2-engine	s3	client	sdk	put	2	get	164	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	58047496	cross_bytes	96901496	hash_s	9.099927	combine_s	0.000760
+ak2-engine	load	seconds	20.245901	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	57.516584	130003	23	83.068936	19.765071

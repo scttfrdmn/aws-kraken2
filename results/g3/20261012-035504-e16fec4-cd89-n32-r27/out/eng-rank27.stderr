@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002622	0.000555	11	0	0.000000	0.000070
+ak2-timing	taxo	0.003185	0.567983	87900	4	0.041182	0.095869
+ak2-engine	mem	t_s	15.0	rss_kib	26088872	hwm_kib	26088876	heap_inuse	394772480	sys	409721192	avail_kib	101675364
+ak2-timing	shard-load-27	0.739963	20.230045	22213	0	19.058841	19.664986
+ak2-timing	etag	21.430131	8.373404	182	0	63.545825	0.000000
+ak2-engine	mem	t_s	30.0	rss_kib	36677320	hwm_kib	36677324	heap_inuse	397058048	sys	409983336	avail_kib	91204452
+ak2-timing	rendezvous	29.803766	7.784455	798	5	0.027227	0.000000
+ak2-timing	connect	37.588999	0.119248	26	0	0.002172	0.000000
+ak2-timing	hash	0.571244	37.137023	25590	15	82.653000	19.666170
+ done.
+ak2-engine	mem	t_s	45.0	rss_kib	36685780	hwm_kib	36685784	heap_inuse	406233088	sys	422701432	avail_kib	91294576
+ak2-timing	batch-barrier-0	37.708273	11.575410	1382	0	0.433800	0.000000
+ak2-engine	shard	0	n	32	lo	250824024513	hi	260113803199	tail	302	full	false	empty_at	9289778690	keys	13011132	batches	276	probe_s	0.322627	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	49.3	rss_kib	36685920	hwm_kib	36685924	heap_inuse	406355968	sys	422701432	avail_kib	91274048
+ak2-engine	rendezvous	puts	2	gets	110
+ak2-engine	s3	client	sdk	put	2	get	110	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	276	requests	1	retries	0	bytes	613420	cross_bytes	116251072	hash_s	8.373398	combine_s	0.000759
+ak2-engine	load	seconds	20.230041	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	49.352534	114910	20	83.201311	19.762362

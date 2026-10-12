@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002783	0.000461	4	0	0.000000	0.000041
+ak2-timing	taxo	0.003252	0.550657	87903	3	0.015156	0.101258
+ak2-engine	mem	t_s	15.0	rss_kib	25424440	hwm_kib	25424440	heap_inuse	393863168	sys	409913688	avail_kib	102252104
+ak2-timing	shard-load-23	0.721371	20.837983	22090	0	24.478660	31.840389
+ak2-engine	mem	t_s	30.3	rss_kib	36731496	hwm_kib	36731500	heap_inuse	452853760	sys	468703592	avail_kib	91224528
+ak2-timing	etag	21.964303	8.988505	14228	0	63.857418	0.000000
+ak2-engine	mem	t_s	45.3	rss_kib	36738884	hwm_kib	36738888	heap_inuse	460480512	sys	472963432	avail_kib	91262724
+ak2-timing	rendezvous	30.953081	16.969123	1804	7	0.047626	0.000000
+ak2-timing	connect	47.922969	0.129140	19	0	0.001883	0.000000
+ak2-timing	hash	0.553967	47.498161	40407	18	88.409638	31.841583
+ done.
+ak2-timing	batch-barrier-0	48.052133	11.507814	1404	0	0.422732	0.000000
+ak2-engine	shard	0	n	32	lo	213664909770	hi	222954688456	tail	302	full	false	empty_at	9289778686	keys	13049250	batches	276	probe_s	0.318085	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	59.6	rss_kib	36745264	hwm_kib	36745268	heap_inuse	466952192	sys	481421688	avail_kib	91275088
+ak2-engine	rendezvous	puts	2	gets	182
+ak2-engine	s3	client	sdk	put	2	get	182	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	58047496	cross_bytes	96901496	hash_s	8.988500	combine_s	0.000747
+ak2-engine	load	seconds	20.837979	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	59.635763	129746	22	88.923522	31.943181

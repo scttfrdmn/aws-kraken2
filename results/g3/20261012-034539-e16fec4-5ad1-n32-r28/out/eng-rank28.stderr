@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.002661	0.000598	3	0	0.000036	0.000000
+ak2-timing	taxo	0.003270	0.435203	87858	5	0.035519	0.081425
+ak2-engine	mem	t_s	15.0	rss_kib	26293644	hwm_kib	26293648	heap_inuse	394846208	sys	409467240	avail_kib	101499188
+ak2-timing	shard-load-28	0.623908	20.164442	22266	0	17.298469	19.647411
+ak2-timing	etag	21.236482	8.405849	4878	0	63.623310	0.000000
+ak2-engine	mem	t_s	30.0	rss_kib	36696684	hwm_kib	36696684	heap_inuse	417046528	sys	430508408	avail_kib	91258448
+ak2-timing	rendezvous	29.642592	5.592648	716	6	0.023008	0.000000
+ak2-timing	connect	35.236023	0.160852	11	0	0.002431	0.000000
+ak2-timing	hash	0.438552	34.958346	30180	19	80.954809	19.659627
+ done.
+ak2-engine	mem	t_s	45.0	rss_kib	36704612	hwm_kib	36704616	heap_inuse	425844736	sys	439224696	avail_kib	91319108
+ak2-timing	batch-barrier-0	35.396904	12.578420	1641	0	0.428650	0.000000
+ak2-engine	shard	0	n	32	lo	260113803199	hi	269403581884	tail	302	full	false	empty_at	9289778685	keys	13013010	batches	276	probe_s	0.323148	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	48.0	rss_kib	36705256	hwm_kib	36705260	heap_inuse	426467328	sys	439224696	avail_kib	91257672
+ak2-engine	rendezvous	puts	2	gets	102
+ak2-engine	s3	client	sdk	put	2	get	102	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	19809336	cross_bytes	20425172	hash_s	8.405844	combine_s	0.000764
+ak2-engine	load	seconds	20.164438	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	48.043736	119714	24	81.487917	19.741117

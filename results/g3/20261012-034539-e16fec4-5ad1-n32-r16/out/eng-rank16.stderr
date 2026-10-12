@@ -1,0 +1,23 @@
+Loading database information...ak2-timing	opts	0.003183	0.000681	5	0	0.000036	0.000000
+ak2-timing	taxo	0.003871	0.549758	87870	4	0.010282	0.105600
+ak2-engine	mem	t_s	15.0	rss_kib	25445556	hwm_kib	25445560	heap_inuse	394813440	sys	409721192	avail_kib	102322136
+ak2-timing	shard-load-16	0.714874	20.816209	22264	0	25.784436	35.242683
+ak2-engine	mem	t_s	30.2	rss_kib	36732056	hwm_kib	36732060	heap_inuse	453656576	sys	468511096	avail_kib	91184068
+ak2-timing	etag	21.936277	8.956710	14183	0	63.826475	0.000000
+ak2-engine	mem	t_s	45.2	rss_kib	36744676	hwm_kib	36744680	heap_inuse	466608128	sys	481421688	avail_kib	91251328
+ak2-engine	mem	t_s	60.2	rss_kib	36748728	hwm_kib	36748732	heap_inuse	470753280	sys	485615992	avail_kib	91248752
+ak2-timing	rendezvous	30.893204	30.184840	4136	7	0.089332	0.000000
+ak2-timing	connect	61.078788	0.024331	8	0	0.001659	0.000000
+ak2-timing	hash	0.553714	60.549426	42870	17	89.707095	35.256634
+ done.
+ak2-timing	batch-barrier-0	61.103148	12.629641	2121	0	0.408646	0.000000
+ak2-engine	shard	0	n	32	lo	148636458971	hi	157926237656	tail	302	full	false	empty_at	9289778688	keys	12990019	batches	276	probe_s	0.314445	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	73.7	rss_kib	36757748	hwm_kib	36757752	heap_inuse	479838208	sys	494070136	avail_kib	91243252
+ak2-engine	rendezvous	puts	2	gets	363
+ak2-engine	s3	client	sdk	put	2	get	363	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	57893832	cross_bytes	96594164	hash_s	8.956703	combine_s	0.000726
+ak2-engine	load	seconds	20.816204	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	73.798906	132898	22	90.191206	35.362342

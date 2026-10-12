@@ -1,0 +1,27 @@
+Loading database information...ak2-timing	opts	0.003658	0.000527	11	0	0.000057	0.000000
+ak2-timing	taxo	0.004194	0.577408	87901	3	0.034077	0.107452
+ak2-engine	mem	t_s	15.0	rss_kib	25919212	hwm_kib	25919216	heap_inuse	397352960	sys	416004456	avail_kib	230698172
+ak2-engine	mem	t_s	30.0	rss_kib	53106176	hwm_kib	53106180	heap_inuse	399810560	sys	420264296	avail_kib	203488256
+ak2-engine	mem	t_s	45.0	rss_kib	80283100	hwm_kib	80283104	heap_inuse	401825792	sys	420264296	avail_kib	176229068
+ak2-engine	mem	t_s	60.0	rss_kib	107474748	hwm_kib	107474752	heap_inuse	404160512	sys	420264296	avail_kib	148992536
+ak2-engine	mem	t_s	75.0	rss_kib	134662268	hwm_kib	134662272	heap_inuse	406495232	sys	424458600	avail_kib	121817380
+ak2-timing	shard-load-2	0.815316	80.562212	77947	1	76.032539	73.693821
+ak2-engine	mem	t_s	90.3	rss_kib	145645280	hwm_kib	145645284	heap_inuse	503529472	sys	521066888	avail_kib	110972444
+ak2-timing	etag	82.877793	17.525157	23572	0	254.655944	0.000000
+ak2-engine	mem	t_s	105.3	rss_kib	145647852	hwm_kib	145647856	heap_inuse	506249216	sys	525261192	avail_kib	110998052
+ak2-timing	rendezvous	100.403225	14.500692	2247	5	0.066440	0.000000
+ak2-timing	connect	114.905061	0.014963	0	0	0.000484	0.000000
+ak2-timing	hash	0.581693	114.338345	106093	18	330.773298	73.696116
+ done.
+ak2-engine	mem	t_s	120.3	rss_kib	145663084	hwm_kib	145663088	heap_inuse	521904128	sys	537844104	avail_kib	110967032
+ak2-timing	batch-barrier-0	114.920043	6.007082	2175	0	1.567261	0.000000
+ak2-engine	shard	0	n	8	lo	74318229485	hi	111477344228	tail	302	full	false	empty_at	37159114742	keys	52023124	batches	276	probe_s	1.422525	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	120.9	rss_kib	145663664	hwm_kib	145663664	heap_inuse	186933248	sys	538401160	avail_kib	110967156
+ak2-engine	rendezvous	puts	2	gets	102
+ak2-engine	s3	client	sdk	put	2	get	102	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	1108	requests	1	retries	0	bytes	96131992	cross_bytes	115482748	hash_s	17.525148	combine_s	0.001126
+ak2-engine	load	seconds	80.562207	requests	2233	retries	0	bytes	148636525780
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	121.199253	196248	22	332.646821	73.803657

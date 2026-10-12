@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.001890	0.000457	5	0	0.000000	0.000039
+ak2-timing	taxo	0.002355	0.558656	87856	4	0.046207	0.087385
+ak2-engine	mem	t_s	15.0	rss_kib	26131428	hwm_kib	26131432	heap_inuse	394764288	sys	409729384	avail_kib	101719600
+ak2-timing	shard-load-30	0.728101	20.248762	22220	0	18.114307	19.131068
+ak2-engine	mem	t_s	30.3	rss_kib	36731988	hwm_kib	36731992	heap_inuse	453672960	sys	468449640	avail_kib	91214148
+ak2-timing	etag	21.401645	9.102875	14255	0	63.834052	0.000000
+ak2-timing	rendezvous	30.504755	1.585418	532	5	0.013375	0.000000
+ak2-timing	connect	32.090950	0.050916	10	0	0.002218	0.000000
+ak2-timing	hash	0.561041	31.580842	39345	15	81.982279	19.132090
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36743808	hwm_kib	36743812	heap_inuse	465698816	sys	481429880	avail_kib	91229044
+ak2-timing	batch-barrier-0	32.141890	13.802865	2161	0	0.420049	0.000000
+ak2-engine	shard	0	n	32	lo	278693360570	hi	287983139256	tail	302	full	false	empty_at	9289778689	keys	12998970	batches	276	probe_s	0.316954	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	45.9	rss_kib	36743840	hwm_kib	36743844	heap_inuse	465707008	sys	481429880	avail_kib	91269796
+ak2-engine	rendezvous	puts	2	gets	112
+ak2-engine	s3	client	sdk	put	2	get	112	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	58201160	cross_bytes	97208824	hash_s	9.102869	combine_s	0.000758
+ak2-engine	load	seconds	20.248758	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	46.011172	129380	19	82.515133	19.219689

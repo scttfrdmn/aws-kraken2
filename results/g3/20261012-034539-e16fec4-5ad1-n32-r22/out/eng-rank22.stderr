@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.004785	0.000561	4	0	0.000047	0.000000
+ak2-timing	taxo	0.005354	0.543243	87900	5	0.029038	0.087226
+ak2-engine	mem	t_s	15.0	rss_kib	26139784	hwm_kib	26139788	heap_inuse	394649600	sys	414169448	avail_kib	101674348
+ak2-timing	shard-load-22	0.721997	20.253667	22178	1	18.695437	18.775828
+ak2-engine	mem	t_s	30.1	rss_kib	36713140	hwm_kib	36713144	heap_inuse	434249728	sys	456112488	avail_kib	91223824
+ak2-timing	etag	21.393385	8.755773	9510	0	63.736781	0.000000
+ak2-engine	mem	t_s	45.1	rss_kib	36721008	hwm_kib	36721012	heap_inuse	442482688	sys	456178024	avail_kib	91288292
+ak2-timing	rendezvous	30.149392	16.421649	1912	5	0.048692	0.000000
+ak2-timing	connect	46.571864	0.168448	26	0	0.002519	0.000000
+ak2-timing	hash	0.548671	46.191661	35955	17	82.485962	18.792938
+ done.
+ak2-timing	batch-barrier-0	46.740341	12.498222	2326	0	0.433273	0.000000
+ak2-engine	shard	0	n	32	lo	204375131085	hi	213664909770	tail	302	full	false	empty_at	9289778684	keys	12995469	batches	276	probe_s	0.323354	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	59.2	rss_kib	36731060	hwm_kib	36731064	heap_inuse	452665344	sys	468830584	avail_kib	91255320
+ak2-engine	rendezvous	puts	2	gets	189
+ak2-engine	s3	client	sdk	put	2	get	189	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	38851584	cross_bytes	58509668	hash_s	8.755767	combine_s	0.000806
+ak2-engine	load	seconds	20.253663	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	59.306162	126215	25	83.016425	18.880262

@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.003282	0.000604	12	0	0.000060	0.000000
+ak2-timing	taxo	0.003895	0.565310	87874	4	0.036841	0.100420
+ak2-engine	mem	t_s	15.0	rss_kib	25110060	hwm_kib	25110060	heap_inuse	394592256	sys	409459048	avail_kib	102722260
+ak2-timing	shard-load-29	0.734808	21.920253	22315	0	28.471470	38.781036
+ak2-engine	mem	t_s	30.3	rss_kib	36713916	hwm_kib	36713920	heap_inuse	434528256	sys	451664232	avail_kib	91232040
+ak2-timing	etag	23.124341	8.826492	9565	0	63.726865	0.000000
+ak2-timing	rendezvous	31.951082	0.984705	458	5	0.010966	0.000000
+ak2-timing	connect	32.936553	0.051462	23	0	0.002180	0.000000
+ak2-timing	hash	0.569281	32.418753	34723	15	92.215614	38.796282
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36723576	hwm_kib	36723588	heap_inuse	444620800	sys	456448360	avail_kib	91289108
+ak2-timing	batch-barrier-0	32.988041	12.872428	1702	0	0.412097	0.000000
+ak2-engine	shard	0	n	32	lo	269403581884	hi	278693360570	tail	302	full	false	empty_at	9289778695	keys	12978623	batches	276	probe_s	0.312730	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	45.9	rss_kib	36723600	hwm_kib	36723604	heap_inuse	444628992	sys	456448360	avail_kib	91285784
+ak2-engine	rendezvous	puts	2	gets	107
+ak2-engine	s3	client	sdk	put	2	get	107	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	39005248	cross_bytes	58817000	hash_s	8.826487	combine_s	0.000748
+ak2-engine	load	seconds	21.920249	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	45.926182	124375	20	92.730784	38.896768

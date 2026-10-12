@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.003164	0.000591	12	0	0.000020	0.000041
+ak2-timing	taxo	0.003764	0.567118	87881	4	0.039371	0.103470
+ak2-engine	mem	t_s	15.0	rss_kib	25373860	hwm_kib	25373868	heap_inuse	394682368	sys	409975144	avail_kib	102401616
+ak2-timing	shard-load-26	0.735124	20.761660	22233	0	27.490278	38.571903
+ak2-engine	mem	t_s	30.5	rss_kib	36788484	hwm_kib	36788520	heap_inuse	511172608	sys	527554952	avail_kib	91131812
+ak2-timing	etag	21.911585	9.930963	28317	0	64.103702	0.000000
+ak2-timing	rendezvous	31.842801	6.788986	890	5	0.024588	0.000000
+ak2-timing	connect	38.632565	0.041147	19	0	0.001792	0.000000
+ak2-timing	hash	0.570961	38.102768	53775	16	91.627099	38.585434
+ done.
+ak2-engine	mem	t_s	45.5	rss_kib	36799572	hwm_kib	36799576	heap_inuse	522747904	sys	536009096	avail_kib	91230308
+ak2-timing	batch-barrier-0	38.673735	12.591564	2111	0	0.429897	0.000000
+ak2-engine	shard	0	n	32	lo	241534245827	hi	250824024513	tail	302	full	false	empty_at	9289778688	keys	13001252	batches	276	probe_s	0.323031	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	51.3	rss_kib	36801468	hwm_kib	36801472	heap_inuse	524648448	sys	536009096	avail_kib	91185360
+ak2-engine	rendezvous	puts	2	gets	117
+ak2-engine	s3	client	sdk	put	2	get	117	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	115635236	cross_bytes	212076976	hash_s	9.930957	combine_s	0.000759
+ak2-engine	load	seconds	20.761655	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	51.334232	143844	21	92.165953	38.689174

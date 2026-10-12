@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.003439	0.000542	11	0	0.000062	0.000000
+ak2-timing	taxo	0.003989	0.567572	87888	4	0.039674	0.098145
+ak2-engine	mem	t_s	15.0	rss_kib	26062280	hwm_kib	26062280	heap_inuse	394870784	sys	409983336	avail_kib	101733156
+ak2-timing	shard-load-25	0.747727	20.205603	22280	1	18.537853	19.243152
+ak2-engine	mem	t_s	30.2	rss_kib	36770052	hwm_kib	36770092	heap_inuse	492273664	sys	506591624	avail_kib	91128584
+ak2-timing	etag	21.375750	9.488294	23618	0	63.978845	0.000000
+ak2-timing	rendezvous	30.864271	12.066686	1184	5	0.033093	0.000000
+ak2-timing	connect	42.931711	0.023367	18	0	0.001527	0.000000
+ak2-timing	hash	0.571640	42.383461	49456	18	82.570059	19.244313
+ done.
+ak2-engine	mem	t_s	45.2	rss_kib	36779420	hwm_kib	36779424	heap_inuse	501972992	sys	515045768	avail_kib	91233172
+ak2-timing	batch-barrier-0	42.955108	11.656938	1446	0	0.412264	0.000000
+ak2-engine	shard	0	n	32	lo	232244467142	hi	241534245827	tail	302	full	false	empty_at	9289778696	keys	12994938	batches	276	probe_s	0.314811	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	54.6	rss_kib	36781588	hwm_kib	36781592	heap_inuse	504176640	sys	519240072	avail_kib	91175256
+ak2-engine	rendezvous	puts	2	gets	145
+ak2-engine	s3	client	sdk	put	2	get	145	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	96439324	cross_bytes	173685148	hash_s	9.488289	combine_s	0.000735
+ak2-engine	load	seconds	20.205598	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	54.677975	138833	23	83.088469	19.342523

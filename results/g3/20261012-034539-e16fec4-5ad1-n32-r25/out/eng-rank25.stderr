@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.003030	0.000612	12	0	0.000000	0.000064
+ak2-timing	taxo	0.003651	0.568198	87884	3	0.037122	0.106055
+ak2-engine	mem	t_s	15.0	rss_kib	25087600	hwm_kib	25087600	heap_inuse	395345920	sys	409975144	avail_kib	102790092
+ak2-timing	shard-load-25	0.749996	21.291606	22316	0	26.644661	34.451277
+ak2-engine	mem	t_s	30.3	rss_kib	36770024	hwm_kib	36770024	heap_inuse	492609536	sys	506583432	avail_kib	91180708
+ak2-timing	etag	22.438538	9.701410	23599	0	64.030736	0.000000
+ak2-timing	rendezvous	32.140221	9.870707	1167	5	0.031032	0.000000
+ak2-timing	connect	42.011707	0.049868	13	0	0.002307	0.000000
+ak2-timing	hash	0.571941	41.489650	49403	16	90.728100	34.452615
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36779904	hwm_kib	36779908	heap_inuse	502874112	sys	515037576	avail_kib	91223356
+ak2-timing	batch-barrier-0	42.061597	13.811648	2058	0	0.428890	0.000000
+ak2-engine	shard	0	n	32	lo	232244467142	hi	241534245827	tail	302	full	false	empty_at	9289778696	keys	12994938	batches	276	probe_s	0.323312	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	55.9	rss_kib	36783820	hwm_kib	36783824	heap_inuse	506896384	sys	519231880	avail_kib	91226992
+ak2-engine	rendezvous	puts	2	gets	157
+ak2-engine	s3	client	sdk	put	2	get	157	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	96439324	cross_bytes	173685148	hash_s	9.701405	combine_s	0.000762
+ak2-engine	load	seconds	21.291601	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	55.940058	139388	20	91.261183	34.558935

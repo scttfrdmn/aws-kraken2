@@ -1,0 +1,110 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-12T03:11:45Z] wrapper start
+spawn: [2026-10-12T03:11:45Z] stage-in start
+spawn: [2026-10-12T03:11:45Z] stage-in done rc=0
+spawn: [2026-10-12T03:11:45Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 7b8eda7888bb6229251bb45d3e58da0264bc331b5f337cdbed3a43def42e858f); exec
+ak2: log tee up
+ak2-phase	2026-10-12T03:11:45Z	1791774705	preamble	no
+ak2: [2026-10-12T03:11:45Z] util sampler running (pid 15986, 2 ticks so far) -> log/util.tsv
+ak2: [2026-10-12T03:11:45Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-12T03:11:45Z] after set +e $-=hBc
+ak2: [2026-10-12T03:11:45Z] gate=g3 run=20261012-031114-e16fec4-4a76-n2-r1
+ak2: [2026-10-12T03:11:45Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-12T03:11:45Z] imds region=us-west-2 az=us-west-2b instance=i-0fe7b908326c048e1 type=x8g.12xlarge ami=ami-09325776a00699513
+ak2: [2026-10-12T03:11:45Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-12T03:11:46Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-12T03:11:46Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-12T03:11:46Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-12T03:11:46Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-12T03:11:46Z] region assert passed
+ak2: [2026-10-12T03:11:46Z] drop_caches_ok=true
+ak2: [2026-10-12T03:11:47Z] preamble done; spec body starts
+ak2-phase	2026-10-12T03:11:47Z	1791774707	body	no
+ak2: [2026-10-12T03:11:47Z] drop_caches done; next phase is cold
+ak2: [2026-10-12T03:11:47Z] ladder O3-n2 (O, ours-engine) cohort 1: rank 1 of 2 (replica 0, shard 1 of 2); commit e16fec4; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+ak2-phase	2026-10-12T03:11:47Z	1791774707	setup	yes
+ak2: [2026-10-12T03:12:19Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+ht-apply 1 2026-10-12T03:12:19Z none enabled madvise - madvise kept
+ht-apply 1 2026-10-12T03:12:19Z none defrag madvise - madvise kept
+ht-apply 1 2026-10-12T03:12:19Z none proactiveness 20 - 20 kept
+ht-record {"kind":"ht","label":"setup","t":1791774739.816991199,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":793629085696,"free_huge_bytes":793457459200,"free_huge_frac":0.999784,"buddy":[17087,5677,283,69,166,67,25,20,11,6,189172],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3712,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":775027152,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":8192,"FilePmdMapped":0}}
+upstream-cohort: shell flags huB
+lever {"kind":"tool","t":1791774743.592,"name":"rapidgzip","version":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5","path":"/home/ec2-user/ak2/lever/rg-venv/bin/rapidgzip","source":"pip --require-hashes rapidgzip==0.14.5 (rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl)","wheel":"rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl","wheel_sha256":"499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee","extension":"/home/ec2-user/ak2/lever/rg-venv/lib/python3.9/site-packages/rapidgzip.cpython-39-aarch64-linux-gnu.so","extension_sha256":"dc59275f9ab7a22aa81cdcf5c09c4e13f0ff100d8598a56051e0ae81a26217b7"}
+lever {"kind":"gunzip-shim","t":1791774743.621,"mode":"rapidgzip-P16","threads":16,"threads_paired":32,"paired":"upstream's wrapper opens one gzip -dc per mate, so paired input runs 2 shims at once: 32 decompression threads","shim":true,"shim_path":"/home/ec2-user/ak2/lever/gzbin/gzip","shim_sha256":"f4c524cb97d1de800a4f4bcb0b4faeebb13cc707c9d4c34ca7d85e66fd78ef7e","rapidgzip":"/home/ec2-user/ak2/lever/rg-venv/bin/rapidgzip","rapidgzip_version":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5","gzip":"/usr/bin/gzip","gzip_version":"gzip 1.12","calls":"/home/ec2-user/ak2/lever/gzip-shim.calls"}
+lad-config {"kind":"config","rung":"O3-n2","arm":"O","classifier":"ours-engine","cohort":1,"rank":1,"fleet":2,"replica":0,"shard":1,"instance_type":"x8g.12xlarge","nproc":48,"mem_total_kb":"778233988","threads":48,"params":"THREADS=vcpus PROCS=1 DB_STAGE=ranged-get DB_PLACE=memory DB_LOAD=resident HOST_TUNES=none GUNZIP=rapidgzip-Pauto IN_FETCH=lanes16 IN_CLIENT=default IN_DEST=tmpfs OUT_UPLOAD=s5cmd-overlap REPLICAS=1 SHARDS=2 PLACEMENT=mod INFLIGHT=1 SETUP=overlap ETAG_CHECK=on","gunzip_mode":"rapidgzip-P16","ours_decompress":"AK2_DECOMPRESS=pipe","db_dir":"/home/ec2-user/ak2/db","work_dir":"/mnt/ak2-ramdb/inputs","replica_samples":[0],"replica_input_bytes":997180954,"resolved":{"threads":48,"procs":1,"inflight":"1","gunzip_P":16,"nproc":48}}
+ak2-phase	2026-10-12T03:12:24Z	1791774744	fetch-db	no
+lever {"kind":"tool","t":1791774745.219,"name":"s5cmd","version":"v2.3.0-991c9fb","path":"/home/ec2-user/ak2/lever/s5cmd-2.3.0/s5cmd","sha256":"c6edd41e0658795b92f783c55887782e73c51b15057e8bce011d945d22d2615d","tarball_sha256":"1439f0d00ecedcd2a2f1f2c6749bbb0152b2257bf5086f29646ec8ae38798e24","source":"github.com/peak/s5cmd v2.3.0 s5cmd_2.3.0_Linux-arm64.tar.gz, sha256 equal to the pin"}
+cp s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d /home/ec2-user/ak2/db/opts.k2d
+lever {"kind":"s5","t":1791774746.103,"args":"--no-sign-request --numworkers 256 cp --concurrency 128 --part-size 64 s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d /home/ec2-user/ak2/db/opts.k2d","sub":"cp","rc":0,"seconds":0.077,"requests":"HeadObject 1 GetObject 1 (part 64 MiB, 56 bytes)"}
+lever {"kind":"stage-db","t":1791774746.122,"mode":"s5cmd","file":"opts.k2d","url":"s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/opts.k2d","dest":"/home/ec2-user/ak2/db/opts.k2d","etag":"24fb1753eb45d74643ef13f16562df6b","object_bytes":56,"bytes":56,"anonymous":true,"rc":0,"seconds":0.097,"gbps":0.000,"fstype":"xfs","requests":"HeadObject 1 GetObject 1 (part 64 MiB, 56 bytes)","estimate":false,"client":"s5cmd --numworkers 256 cp --concurrency 128 --part-size 64"}
+cp s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d /home/ec2-user/ak2/db/taxo.k2d
+lever {"kind":"s5","t":1791774748.269,"args":"--no-sign-request --numworkers 256 cp --concurrency 128 --part-size 64 s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d /home/ec2-user/ak2/db/taxo.k2d","sub":"cp","rc":0,"seconds":1.417,"requests":"HeadObject 1 GetObject 3 (part 64 MiB, 179150665 bytes)"}
+lever {"kind":"stage-db","t":1791774748.291,"mode":"s5cmd","file":"taxo.k2d","url":"s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/taxo.k2d","dest":"/home/ec2-user/ak2/db/taxo.k2d","etag":"9ee988cb814f39881e29623b9c8007cd-22","object_bytes":179150665,"bytes":179150665,"anonymous":true,"rc":0,"seconds":1.441,"gbps":0.124,"fstype":"xfs","requests":"HeadObject 1 GetObject 3 (part 64 MiB, 179150665 bytes)","estimate":false,"client":"s5cmd --numworkers 256 cp --concurrency 128 --part-size 64"}
+ak2: [2026-10-12T03:12:29Z] hash.k2d etag=f80959f9556b50d76b3e744afdd3b22a-8860 size=1189091671800: loaded by the engine's ranged GETs
+ak2-phase	2026-10-12T03:12:29Z	1791774749	fetch-inputs	no
+ak2: [2026-10-12T03:12:29Z] placement: shard 1 of 2 is home to 0 of the replica's 1 samples
+ak2: [2026-10-12T03:12:29Z] inputs: 0 samples of 1 in replica 0, into /mnt/ak2-ramdb/inputs/in (tmpfs)
+ak2-phase	2026-10-12T03:12:29Z	1791774749	build-wait	no
+ak2: [2026-10-12T03:12:30Z] ours built at e16fec47024ec28823b6e7082aafc9e948aaf31d; go: on PATH in the build only
+lad-build {"kind":"build","classifier":"ours-engine","setup":"overlap","waited_in_phase":"build-wait","wait_start":1791774749.879,"wait_end":1791774750.357,"wait_s":0.4780001640319824,"build_end":1791774750.353}
+ak2-phase	2026-10-12T03:12:30Z	1791774750	identity	no
+ak2: [2026-10-12T03:12:30Z] identity: 0 inputs at -P 16 on 48 CPUs; 0 samples not output-preserving
+ak2: [2026-10-12T03:12:41Z] drop_caches done; next phase is cold
+ak2-phase	2026-10-12T03:12:41Z	1791774761	load	yes
+lad-mem {"kind":"mem","label":"load-start","MemTotal_kb":778233988,"MemAvailable_kb":773838208,"Cached_kb":128320,"Dirty_kb":3420,"Writeback_kb":0,"Shmem_kb":928,"AnonHugePages_kb":0,"ShmemHugePages_kb":0}
+ht-record {"kind":"ht","label":"load","t":1791774761.105619764,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":794994823168,"free_huge_bytes":791892983808,"free_huge_frac":0.996098,"buddy":[92167,69015,37724,16112,4954,2013,633,271,111,58,188773],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3712,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":0,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":1,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":1,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":776366476,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+lever {"kind":"upload-start","t":1791774762.395,"mode":"s5cmd-overlap","tool":"s5","overlap":true,"session":"1791774762392344811","lane_pid":"52072","estimate":false,"client":"s5cmd --numworkers 256 cp --concurrency 16 --part-size 64, one background lane"}
+ak2: [2026-10-12T03:12:42Z] load: 1 classifier process(es), 48 threads each, uploads s5cmd-overlap
+[O3-n2] ak2-timing	taxo	0.002450	0.587564	87801	2	0.015160	0.092013
+[O3-n2] ak2-engine	mem	t_s	15.0	rss_kib	37355064	hwm_kib	37355068	heap_inuse	406863872	sys	445573496	avail_kib	736629040
+[O3-n2] ak2-engine	mem	t_s	30.0	rss_kib	76965628	hwm_kib	76965632	heap_inuse	409305088	sys	445835640	avail_kib	696967476
+[O3-n2] ak2-engine	mem	t_s	45.0	rss_kib	116529332	hwm_kib	116529336	heap_inuse	412073984	sys	446097784	avail_kib	657305232
+[O3-n2] ak2-engine	mem	t_s	60.0	rss_kib	156139524	hwm_kib	156141576	heap_inuse	416112640	sys	454486392	avail_kib	617593016
+[O3-n2] ak2-engine	mem	t_s	75.0	rss_kib	194697996	hwm_kib	194698000	heap_inuse	418906112	sys	454486392	avail_kib	578974284
+[O3-n2] ak2-engine	mem	t_s	90.0	rss_kib	234256304	hwm_kib	234256308	heap_inuse	422371328	sys	458680696	avail_kib	539323540
+[O3-n2] ak2-engine	mem	t_s	105.0	rss_kib	273743904	hwm_kib	273743908	heap_inuse	427155456	sys	467331448	avail_kib	499797180
+[O3-n2] ak2-engine	mem	t_s	120.0	rss_kib	313648576	hwm_kib	313648580	heap_inuse	437542912	sys	475720056	avail_kib	459809980
+[O3-n2] ak2-engine	mem	t_s	135.0	rss_kib	353737308	hwm_kib	353737308	heap_inuse	219602944	sys	475801976	avail_kib	419660892
+[O3-n2] ak2-engine	mem	t_s	150.0	rss_kib	393892692	hwm_kib	393892692	heap_inuse	223150080	sys	475801976	avail_kib	379434116
+[O3-n2] ak2-engine	mem	t_s	165.0	rss_kib	434080952	hwm_kib	434080956	heap_inuse	226951168	sys	475801976	avail_kib	339160300
+[O3-n2] ak2-engine	mem	t_s	180.0	rss_kib	474305880	hwm_kib	474305884	heap_inuse	230498304	sys	475801976	avail_kib	298850852
+[O3-n2] ak2-engine	mem	t_s	195.0	rss_kib	514565768	hwm_kib	514565772	heap_inuse	235741184	sys	475801976	avail_kib	258485336
+[O3-n2] ak2-engine	mem	t_s	210.0	rss_kib	554788576	hwm_kib	554788576	heap_inuse	244318208	sys	475801976	avail_kib	218212048
+[O3-n2] ak2-timing	shard-load-1	0.888441	219.482353	298338	0	428.215385	472.790657
+ak2-phase	2026-10-12T03:16:22Z	1791774982	etag-hash.k2d	no
+lad-phase {"kind":"phase","phase":"etag-hash.k2d","t":1791774982.998,"how":"engine shard-load line (its in-memory ETag check follows)"}
+[O3-n2] ak2-engine	mem	t_s	225.3	rss_kib	581035012	hwm_kib	581035012	heap_inuse	246947840	sys	475801976	avail_kib	191967980
+[O3-n2] ak2-engine	mem	t_s	240.5	rss_kib	581035020	hwm_kib	581035020	heap_inuse	247021568	sys	475801976	avail_kib	192119764
+[O3-n2] ak2-timing	etag	222.154296	21.604843	117	0	1018.855293	0.000000
+[O3-n2] ak2-engine	mem	t_s	255.5	rss_kib	580872516	hwm_kib	581033884	heap_inuse	212164608	sys	475810168	avail_kib	192252556
+[O3-n2] ak2-timing	rendezvous	243.759506	11.926940	1598	0	0.299360	0.000000
+[O3-n2] ak2-timing	connect	255.687095	0.000914	0	0	0.000339	0.000000
+[O3-n2] ak2-timing	hash	0.590113	255.097910	302064	9	1447.388127	472.791571
+ak2-phase	2026-10-12T03:16:58Z	1791775018	classify	no
+lad-phase {"kind":"phase","phase":"classify","t":1791775018.333,"how":"engine connect line (ETag verified on every shard)"}
+[O3-n2] ak2-timing	batch-barrier-0	255.688030	3.788470	48017	0	6.435096	0.000000
+[O3-n2] ak2-engine	shard	0	n	2	lo	148636458971	hi	297272917942	tail	302	full	false	empty_at	148636458970	keys	207888832	batches	276	probe_s	6.095223	tail_probes	0	wrap_probes	0
+[O3-n2] ak2-engine	mem	t_s	259.5	rss_kib	581070712	hwm_kib	581070712	heap_inuse	407592960	sys	534608264	avail_kib	192067080
+[O3-n2] ak2-engine	rendezvous	puts	2	gets	26
+[O3-n2] ak2-engine	s3	client	sdk	put	2	get	26	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+[O3-n2] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+[O3-n2] ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	4430	requests	0	retries	0	bytes	0	cross_bytes	38700332	hash_s	21.604834	combine_s	0.000620
+[O3-n2] ak2-engine	load	seconds	219.482350	requests	8879	retries	0	bytes	594545902692
+[O3-n2] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+[O3-n2] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+[O3-n2] ak2-timing	total	0.000001	260.589784	438326	11	1454.951402	472.886174
+[O3-n2 stderr] Loading database information...ak2-timing	opts	0.001936	0.000505	4	0	0.000000	0.000047
+[O3-n2 stderr]  done.
+lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+ak2-phase	2026-10-12T03:17:06Z	1791775026	upload-drain	no
+lever {"kind":"upload-drain","t":1791775026.835,"mode":"s5cmd-overlap","session":"1791774762392344811","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1791775026.643,"drain_wait_s":0.176}
+ak2-phase	2026-10-12T03:17:07Z	1791775027	push	no
+lad-net {"v":1,"rank":1,"critical_measurement_s":0.008,"identity_s":0.008,"sha_get_s":0,"sha_critical_s":0}
+ht-record {"kind":"ht","label":"end","t":1791775028.320938857,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":795148505088,"free_huge_bytes":791169466368,"free_huge_frac":0.994996,"buddy":[15007,42531,34322,23779,11383,4376,1246,603,253,123,188568],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3712,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":283501,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":1,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":1,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":776511992,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+upstream-cohort: shell flags huB
+ak2: [2026-10-12T03:17:09Z] ladder O3-n2 rank 1 done: 0 samples, FAIL=0
+spawn: [2026-10-12T03:17:11Z] command exit rc=0

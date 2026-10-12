@@ -1,0 +1,26 @@
+Loading database information...ak2-timing	opts	0.004677	0.000575	4	0	0.000026	0.000026
+ak2-timing	taxo	0.005261	0.543923	87923	4	0.049872	0.067318
+ak2-engine	mem	t_s	15.0	rss_kib	26093288	hwm_kib	26093292	heap_inuse	397000704	sys	415488360	avail_kib	230523692
+ak2-engine	mem	t_s	30.0	rss_kib	53284224	hwm_kib	53284228	heap_inuse	399450112	sys	420010344	avail_kib	203221540
+ak2-engine	mem	t_s	45.0	rss_kib	80463100	hwm_kib	80463100	heap_inuse	401334272	sys	420010344	avail_kib	175963708
+ak2-engine	mem	t_s	60.0	rss_kib	107646684	hwm_kib	107646688	heap_inuse	403824640	sys	420010344	avail_kib	148758460
+ak2-engine	mem	t_s	75.0	rss_kib	134825808	hwm_kib	134825812	heap_inuse	405987328	sys	424204648	avail_kib	121530312
+ak2-timing	shard-load-5	0.730754	80.514262	77917	1	77.022778	73.512425
+ak2-engine	mem	t_s	90.4	rss_kib	145607736	hwm_kib	145607740	heap_inuse	464986112	sys	482994552	avail_kib	111030180
+ak2-timing	etag	81.645461	17.223543	14251	0	254.494294	0.000000
+ak2-timing	rendezvous	98.869282	6.054550	566	5	0.015179	0.000000
+ak2-timing	connect	104.924594	0.011364	0	0	0.000731	0.000000
+ak2-timing	hash	0.549262	104.386707	95090	17	331.547324	73.517431
+ done.
+ak2-engine	mem	t_s	105.4	rss_kib	145616428	hwm_kib	145616432	heap_inuse	473784320	sys	491383160	avail_kib	111038232
+ak2-timing	batch-barrier-0	104.935974	6.049976	3724	0	1.631530	0.000000
+ak2-engine	shard	0	n	8	lo	185795573713	hi	222954688456	tail	302	full	false	empty_at	37159114743	keys	51968403	batches	276	probe_s	1.425807	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	111.0	rss_kib	145625892	hwm_kib	145625896	heap_inuse	483516416	sys	499841416	avail_kib	111027460
+ak2-engine	rendezvous	puts	2	gets	51
+ak2-engine	s3	client	sdk	put	2	get	51	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	1107	requests	1	retries	0	bytes	58047496	cross_bytes	173531484	hash_s	17.223539	combine_s	0.000746
+ak2-engine	load	seconds	80.514259	requests	2233	retries	0	bytes	148636525780
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	111.276126	186771	24	333.519309	73.585020

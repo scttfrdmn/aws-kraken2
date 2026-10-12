@@ -1,0 +1,22 @@
+Loading database information...ak2-timing	opts	0.003630	0.000573	12	0	0.000000	0.000061
+ak2-timing	taxo	0.004211	0.568522	87860	4	0.046787	0.092396
+ak2-engine	mem	t_s	15.0	rss_kib	25384608	hwm_kib	25384612	heap_inuse	394887168	sys	409721192	avail_kib	102335056
+ak2-timing	shard-load-26	0.737538	20.898185	22302	1	26.418454	35.269317
+ak2-engine	mem	t_s	30.3	rss_kib	36788960	hwm_kib	36788976	heap_inuse	511401984	sys	527301000	avail_kib	91135920
+ak2-timing	etag	22.137875	9.831137	28321	0	64.067248	0.000000
+ak2-timing	rendezvous	31.969276	7.652979	836	5	0.024268	0.000000
+ak2-timing	connect	39.624137	0.108137	31	0	0.002326	0.000000
+ak2-timing	hash	0.572811	39.159480	53863	17	90.525638	35.277128
+ done.
+ak2-engine	mem	t_s	45.3	rss_kib	36798576	hwm_kib	36798580	heap_inuse	521404416	sys	536017288	avail_kib	91185148
+ak2-timing	batch-barrier-0	39.732299	11.555411	1361	0	0.391653	0.000000
+ak2-engine	shard	0	n	32	lo	241534245827	hi	250824024513	tail	302	full	false	empty_at	9289778688	keys	13001252	batches	276	probe_s	0.313547	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	51.3	rss_kib	36798836	hwm_kib	36798840	heap_inuse	521666560	sys	536017288	avail_kib	91177008
+ak2-engine	rendezvous	puts	2	gets	109
+ak2-engine	s3	client	sdk	put	2	get	109	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	115635236	cross_bytes	212076976	hash_s	9.831131	combine_s	0.001848
+ak2-engine	load	seconds	20.898181	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	51.370936	143130	22	91.047595	35.369851
