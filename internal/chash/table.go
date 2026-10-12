@@ -35,6 +35,7 @@ type Table struct {
 	cells32 []uint32 // CompactHashCell cells (4-byte layout), aliases region
 	cells40 []byte   // CompactHashCell40 cells (5-byte packed layout), aliases region
 	region  []byte   // the mapping that backs the cells; released by Close
+	mapped  bool     // region is Mmap's read-only shared mapping of the file, not a copy
 	mask    uint32
 	shiftK  uint // 64 - key_bits
 }
@@ -175,8 +176,16 @@ func Mmap(path string, opt Options) (*Table, error) {
 	if err != nil {
 		return nil, fmt.Errorf("chash: mmap %s: %w", path, err)
 	}
-	return newTable(h, l, opt.Mode, m[HeaderSize:], m)
+	t, err := newTable(h, l, opt.Mode, m[HeaderSize:], m)
+	if t != nil {
+		t.mapped = true
+	}
+	return t, err
 }
+
+// Mapped reports whether the cells are Mmap's read-only, shared mapping of hash.k2d itself
+// (upstream's --memory-mapping), rather than memory the process filled with a copy.
+func (t *Table) Mapped() bool { return t.mapped }
 
 // FromBytes builds a table over an in-memory hash.k2d image (header plus cells). The image is
 // aliased, not copied. Intended for tests and small tables.

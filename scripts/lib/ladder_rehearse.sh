@@ -437,6 +437,8 @@ mut_nofallback() { mutate "$1" '    [ "$ok" = true ] || S5BAD[$s]=1' '    :'; }
 mut_net() { mutate "$1" '(($id|tonumber) + ($sg|tonumber) + ($sc|tonumber))' '(($sg|tonumber) + ($sc|tonumber))'; }
 mut_law1() { mutate "$1" '--paired --threads "$T" --output' '--paired --minimum-hit-groups 3 --threads "$T" --output'; }
 mut_noline() { mutate "$1" '2> >(tee "$W/eng.stderr" |' '2> >(grep --line-buffered -v $'"'"'\tname\tERR478965\t'"'"' | tee "$W/eng.stderr" |'; }
+# mut_engenv: lad_one at 843e958, which passed the node's engine env on to ours' plain path.
+mut_engenv() { mutate "$1" 'cmd=(env "${noeng[@]}" "${DECOMP[@]}" "$OURS")' 'cmd=(env "${DECOMP[@]}" "$OURS")'; }
 mut_nb1() { mutate "$1" '    if [ -n "${LV_UP_TSV:-}" ] && [ -f "$LV_UP_TSV" ]; then' '    if false; then'; }
 # Tree mutations (AK2T_MUTATE, run by the git stub on the fresh clone): pyfix NAME FILE OLD NEW,
 # OLD and NEW as python string literals; the script fails unless OLD occurs exactly once.
@@ -953,6 +955,8 @@ case $MODE in
         say "tables of the rehearsal record: results/rehearse/ladder-$TS-$SHA-tables/"
       cp -R "$LADREH_RECORD" "$T/record-neg" && rm -rf "$T/record-neg/ladder"
       LADREH_RECORD="$T/record-neg" MUTF=mut_law1 EXPECTFAIL=law1 spec_case runs/g3-l-s1-c1.json law1mut
+      # The plain-path check sees the engine env leak (O0 at c1, 843e958) when it is planted back.
+      [ -f runs/g3-l-o0-c1.json ] && LADREH_RECORD= MUTF=mut_engenv EXPECTFAIL=plain spec_case runs/g3-l-o0-c1.json engenvmut
       tables_neg "$T/record-neg"
     fi
     [ -n "$(ls "$T"/cases/*/case.json 2> /dev/null)" ] && across_arms

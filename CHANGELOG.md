@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Body-compatibility declarations** (`scripts/g3/ladder.body-compat.tsv`,
+  `scripts/lib/ladder_body_compat.py`; docs/ladder.md, "Body changes and finished runs"). A row
+  declares that one version of the ladder body and the next leave named classifiers unaffected.
+  `make ladder-campaign`'s done check then counts a finished run whose spec differs from the
+  committed one only in the body, when a chain of rows covers its classifier. Anything else in
+  the spec must still be byte-identical.
+  - The rows are checked mechanically (`make ladder-compat-check`, in make test). Both versions
+    must be in HEAD's history, with `commit` an ancestor of HEAD holding the newer one. The
+    classifier lists must split the three classifiers. Every changed line must lie inside the
+    block the stream test drives, in the row's functions. A line inserted after a function's
+    closing `}` counts as top level, and `--self-test` checks that this case is refused.
+  - `make ladder-stream-test` case X runs both versions per classifier. For each unaffected
+    classifier, both must match:
+    - the invocations (argv and the whole env, less PWD, SHLVL, `_` and OLDPWD);
+    - the body's records around them (phase markers, lad-sample field set and rc, done records'
+      rc, CRC/FAIL/NDONE).
+
+    Invocations must differ for each affected classifier. X-mut shows that both comparisons
+    resolve. The measurement code around the invocation is covered by this comparison and by
+    review.
+  - `make ladder-campaign-test`'s compat scenario covers the refusals: an affected classifier, an
+    undeclared change, a change beyond the body, a `spec.json` that is not the recorded bytes, and
+    a row that does not cover the run's classifier.
+  - The first row (9126a6f) keeps upstream and ours-engine; ours-plain is affected.
+  - CI checks out full history for case X.
+- `make ladder-respec [COHORT=]` (`scripts/g3/ladder-respec.sh`) regenerates every committed ladder
+  spec from its own PARAMS header and prints what changed beyond the body. All 18 c1 specs were
+  regenerated after the fix below: body-only changes.
+- The ladder rehearsal's **plain** check: an ours-plain case writes nothing under the cohort's
+  rendezvous prefix, and counts no Rendezvous-PutObject. The containers already carried the
+  node's cohort engine env, but no check could see ours-plain run the engine on the viral DB.
+  `spec-o0-engenvmut` plants the leak back and must fail it.
 - `make ladder-types [CHECK=1]` (`scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`)
   writes `scripts/g3/ladder.types.tsv` from truffle, recording the truffle version and the query.
   With CHECK=1 it compares the committed table with truffle's current answer. `make test` validates
@@ -196,6 +228,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Ladder ours-plain ran the engine** (scripts/g3/ladder.body.sh `lad_one`). The cohort env that
+  `make run` gives every node (`AK2_ENGINE_N`, `_RANK`, `_RENDEZVOUS`) reached ours' plain path,
+  and ours takes the engine path whenever `AK2_ENGINE_N` is set. The engine's shards are resident
+  and it ignores `--memory-mapping`. So O0 at c1 (843e958, x8g.24xlarge) read an anonymous copy
+  of RODA v205's 1.1 TB table on top of the same table in tmpfs:
+  - memory in use rose about 58 GiB/s on 8 read streams to a peak of 1466 GiB;
+  - the run was OOM-killed (rc 137) before "done.";
+  - upstream's S9 on the same configuration peaked at 1125 GiB.
+
+  `lad_one` now strips `AK2_ENGINE_*`, `AK2_COHORT` and `AK2_COHORT_CHECK` from ours-plain's
+  environment. `make ladder-stream-test` case P checks this by behaviour, and P-mut restores the
+  leak and must fail. Ours' `-M` itself was not at fault. On the viral DB on a tmpfs, peak
+  RssAnon over upstream's `-M` is 52.0 to 65.6 MiB at 8, 32 and 96 threads, not growing with
+  threads. The table's RssShmem is the same for both. Under the leaked engine env, ours `-M` holds
+  1.8 GiB anonymous and no shmem. Source: results/g1/mmap-rss-20261012-9911a93/ (manifest.json,
+  peaks.tsv). The new `chash.Table.Mapped` reports Mmap's mapping.
+  `TestMmapSharedReadOnly` asserts that the mapping is shared, read-only and never a copy: the
+  cells alias the mapping, a write faults, and on Linux smaps shows `ms`, no `wr`/`mw` and 0 kB
+  anonymous after a full scan, with Load as the negative control.
+  `TestMemoryMappingIndex` asserts which path `-M` selects.
 - `run-multi.sh`: the cohort's exit and `orphans_rc` came from the global orphan check, which
   fails whenever any other ak2 instance is alive. A cohort that ran beside another run therefore
   exited 3. Each member's scoped check (`orphans.sh --own`) now decides
