@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Body-compatibility declarations** (`scripts/g3/ladder.body-compat.tsv`,
+  `scripts/lib/ladder_body_compat.py`; docs/ladder.md, "Body changes and finished runs"). A row
+  declares that one version of the ladder body and the next leave named classifiers unaffected.
+  `make ladder-campaign`'s done check then counts a finished run whose spec differs from the
+  committed one only in the body, when a chain of rows covers its classifier. Anything else in
+  the spec must still be byte-identical.
+  - The rows are checked mechanically (`make ladder-compat-check`, in make test). Both versions
+    must be in git history, with `commit` holding the newer one. The classifier lists must split
+    the three classifiers. Every changed line must lie inside the block the stream test drives,
+    in the row's functions.
+  - `make ladder-stream-test` case X runs both versions per classifier. Invocations must be
+    identical for each unaffected classifier and differ for each affected one.
+  - `make ladder-campaign-test`'s compat scenario covers the refusals: an affected classifier, an
+    undeclared change, a change beyond the body, a `spec.json` that is not the recorded bytes, and
+    a row that does not cover the run's classifier.
+  - The first row (9126a6f) keeps upstream and ours-engine; ours-plain is affected.
+  - CI checks out full history for case X.
+- `make ladder-respec [COHORT=]` (`scripts/g3/ladder-respec.sh`) regenerates every committed ladder
+  spec from its own PARAMS header and prints what changed beyond the body. All 18 c1 specs were
+  regenerated after the fix below: body-only changes.
+- The ladder rehearsal's **plain** check: an ours-plain case writes nothing under the cohort's
+  rendezvous prefix, and counts no Rendezvous-PutObject. The containers already carried the
+  node's cohort engine env, but no check could see ours-plain run the engine on the viral DB.
+  `spec-o0-engenvmut` plants the leak back and must fail it.
 - `make ladder-types [CHECK=1]` (`scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`)
   writes `scripts/g3/ladder.types.tsv` from truffle, recording the truffle version and the query.
   With CHECK=1 it compares the committed table with truffle's current answer. `make test` validates

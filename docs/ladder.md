@@ -618,6 +618,55 @@ The full local rehearsal is #53 ("The rehearsal", below).
 **Not covered locally:** real NVMe devices (`lv_nvme` uses its seam), real S3 and RODA, and an
 instance's CPU count and memory (the rehearsal's VM has 8 vCPUs and 8 GiB).
 
+## Body changes and finished runs
+
+Every spec embeds the body in `command[2]`, with the rung's parameter block in place of `@PARAMS@`.
+So a change to `scripts/g3/ladder.body.sh` changes every spec's sha256. Without a declaration,
+the campaign's done check would rerun every finished run, including those on arms the change cannot
+affect.
+
+```bash
+make ladder-respec                 # regenerate every committed runs/g3-l-*.json (COHORT=<n> for one cohort); prints what changed beyond the body
+make ladder-compat-check           # every ladder.body-compat.tsv row against git history, with its hunks; and no spec is stale
+```
+
+Both run in `make test`, with `ladder-stream-test` case X.
+
+**The declaration.** Each row of `scripts/g3/ladder.body-compat.tsv` (`scripts/lib/ladder_body_compat.py`)
+gives:
+- `from_body_sha256` and `to_body_sha256`: sha256 of the body file;
+- `commit`, which must hold the `to` version;
+- `unaffected` and `affected`: comma lists of classifiers, splitting `upstream`, `ours-plain` and
+  `ours-engine`;
+- `functions`: where every changed line is;
+- `reason`.
+
+`check` refuses a row in any of these cases:
+- a version is not in git history;
+- `commit` does not hold `to`;
+- the two lists do not partition the classifiers;
+- any changed line is outside the block that `ladder-stream-test` drives (between its "load and
+  classify" and "end of the functions" markers), or outside the row's functions.
+
+Case X then runs both versions for every classifier under a cohort node's engine env. The
+invocations (argv and the `AK2_*` env) must be identical for each unaffected classifier, and must
+differ for each affected one.
+
+**The done check.** A finished run whose `spec_sha256` is not the committed spec's still counts
+when all of the following hold:
+- its member `spec.json` hashes to that `spec_sha256`;
+- it differs from the committed spec only in the body; the parameter block and everything outside
+  `command[2]` are byte-identical;
+- a chain of rows from its body to the committed body names its classifier unaffected.
+
+The plan prints the cited row. Any other difference reruns the run. `make ladder-campaign-test`'s
+compat scenario covers each refusal: an affected classifier, an undeclared change, a TTL change,
+a `spec.json` that is not the recorded bytes, and a row that does not cover the run's classifier.
+
+**The row at 9126a6f.** `lad_one` strips the engine env from ours-plain. Upstream's invocation is
+unchanged, and ours-engine never calls `lad_one`. So S-arm and engine runs at 843e958 still count,
+and O0 (ours-plain) reruns.
+
 ## The campaign: `make ladder-campaign`
 
 **What:** every committed ladder spec of one cohort, `REPS` times, in the run order above,
@@ -1052,6 +1101,13 @@ container's stdout and the bucket):
   - each replica has its own rendezvous;
   - the shard addresses are the nodes' own;
   - at N > 1, every shard homes samples.
+- **Plain** (ours-plain only): nothing is written under the cohort's `rendezvous/` prefix, and
+  Rendezvous-PutObject is 0. The containers carry the node's real cohort env
+  (`AK2_ENGINE_N`/`RANK`/`RENDEZVOUS`, as make run sets it). If that env leaked into ours' plain
+  path, ours would run the engine and rendezvous there. That leak is what O0 at c1 hit at
+  843e958, and the earlier rehearsals passed it: on the viral DB the outputs are identical and the
+  extra copy is small. The `specs` group's `spec-o0-engenvmut` plants the leak back (`mut_engenv`)
+  and must fail this check.
 - **S5:**
   - one identity line per input, at the run's -P;
   - `input_defect` as expected;

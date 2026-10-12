@@ -1,0 +1,8 @@
+# Ladder body changes that leave named classifiers' behaviour unchanged (scripts/lib/ladder_body_compat.py;
+# docs/ladder.md, "Body changes and finished runs"). make ladder-campaign counts a finished run whose spec differs from the
+# committed one only in the body when a chain of rows covers its classifier. make ladder-compat-check checks every row.
+# Columns: from_body_sha256 to_body_sha256 (sha256 of scripts/g3/ladder.body.sh), commit (holds the to version),
+# unaffected and affected (comma lists splitting upstream, ours-plain, ours-engine), functions (where every changed line is),
+# reason.
+from_body_sha256	to_body_sha256	commit	unaffected	affected	functions	reason
+3462208d51e817272013ce276e478770d8694260596d689d0b8f46574ddc78c9	9f0ad65b7b841d12e8f780f36fa4c6c731157d9a83fbb817eaa607409aa85704	9126a6f49bc485eca54b75619b60564058ff1d86	upstream,ours-engine	ours-plain	lad_one	lad_one strips AK2_ENGINE_*, AK2_COHORT and AK2_COHORT_CHECK from the env of ours plain path only (the cmd for CLASSIFIER != upstream); upstream runs the same argv and env as before; ours-engine never calls lad_one (lad_engine)

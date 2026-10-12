@@ -19,6 +19,8 @@
 #      a corrupt input is an input_defect, a garbage tail (gzip exit 2) a gz_warning only; I-mut restores B1's bug and must fail;
 #   P  ours' plain path under a cohort node's engine env: it runs without AK2_ENGINE_* (else it
 #      takes the engine path, a resident copy of the table; O0 at c1); P-mut removes the strip and must fail;
+#   X  every ladder.body-compat.tsv row: both body versions, each classifier under the node's env;
+#      identical invocations for an unaffected classifier, different ones for an affected one;
 #   N  negative control: the reverse redirection order (> /dev/null 2> >(...)) streams nothing,
 #      while the file still gets every line, so A's streaming check can fail.
 set +e
@@ -64,6 +66,7 @@ cat > "$TD/bin/fake-engine" << 'EOF'
 # A stand-in for the cohort-mode engine at rank 0 of 2: its timing lines, then one home sample (A,
 # whose outputs it writes), one sample homed on rank 1 (B: a peer line here) and A's report.
 o="$FAKE_OUT"
+[ -n "${FAKE_ENVLOG:-}" ] && { printf 'args %s\n' "$(basename "$0") $*" >> "$FAKE_ENVLOG"; env | grep -E '^AK2_(ENGINE_|COHORT=|COHORT_CHECK=|DECOMPRESS=)' | sed 's/^/env /' >> "$FAKE_ENVLOG"; }
 tl() { printf 'ak2-timing\t%s\t%s\t%s\t0\t0\t0\t0\n' "$1" "$2" "$3" >&2; }
 echo "Loading database information..." >&2
 sleep 0.4; tl shard-load-0 0.1 0.4
@@ -347,6 +350,42 @@ check "P-mut: the mutation removed the strip" "! grep -q 'noeng\[@\]' '$TD/body-
 mkfn "$TD/body-engenv.sh" > "$TD/fn-engenv.sh"
 penv Pmut "$TD/fn-engenv.sh"
 check "P-mut: without the strip ours' plain path sees AK2_ENGINE_N=1 (the probe resolves it)" "[ \$(grep -c '^env AK2_ENGINE_N=1\$' '$C/env.log') = 3 ]"
+
+# ---- X: every scripts/g3/ladder.body-compat.tsv row, by behaviour ----
+# Both body versions a row names, each classifier under a cohort node's env (as P): the invocations
+# (argv, the AK2_* env) of each unaffected classifier must be identical between the two, and those of
+# each affected classifier must differ (so the probe resolves the change it declares harmless).
+# ladder_body_compat.py check confines a row's changes to this block, so this probe covers them.
+xprobe() {  # CASE FN CLASSIFIER: the classifier invocations, normalised, into $C/env.norm
+  setup_case "$1"; export FAKE_ENVLOG="$C/env.log"; : > "$FAKE_ENVLOG"
+  ( export AK2_ENGINE_N=1 AK2_ENGINE_RANK=0 AK2_ENGINE_RENDEZVOUS=s3://b/x/rendezvous AK2_COHORT_ID=x
+    case $3 in
+      upstream) CASE_FN=$2 run_case "$1" 0 awscp-default 1 ;;
+      ours-plain) CASE_CLASSIFIER=ours-plain CASE_FN=$2 run_case "$1" 0 awscp-default 1 ;;
+      ours-engine) CASE_FN=$2 run_case "$1" 1 s5cmd-overlap 0 ;;
+    esac )
+  unset FAKE_ENVLOG
+  sed "s#$C#C#g" "$C/env.log" | sort > "$C/env.norm"
+}
+XN=0
+while IFS=$'\t' read -r xf xt xun xaff; do
+  XN=$((XN + 1))
+  for v in "$xf" "$xt"; do
+    python3 "$ROOT/scripts/lib/ladder_body_compat.py" body-at "$v" > "$TD/body-$v.sh" ||
+      { bad "X$XN: body ${v:0:12} is not in git history (CI needs fetch-depth 0)"; continue 2; }
+    mkfn "$TD/body-$v.sh" > "$TD/fn-$v.sh"
+  done
+  for cl in ${xun//,/ } ${xaff//,/ }; do
+    xprobe "X$XN-$cl-from" "$TD/fn-$xf.sh" "$cl"; a="$C/env.norm"
+    xprobe "X$XN-$cl-to" "$TD/fn-$xt.sh" "$cl"; b="$C/env.norm"
+    check "X$XN ($cl): the probe saw the classifier run" "grep -q '^args ' '$a' && grep -q '^args ' '$b'"
+    case ",$xun," in
+      *",$cl,"*) check "X$XN ${xf:0:12} -> ${xt:0:12}: $cl (declared unaffected) runs with the same argv and env" "cmp -s '$a' '$b'" ;;
+      *) check "X$XN ${xf:0:12} -> ${xt:0:12}: $cl (declared affected) runs differently" "! cmp -s '$a' '$b'" ;;
+    esac
+  done
+done < <(python3 "$ROOT/scripts/lib/ladder_body_compat.py" rows)
+check "X: ladder.body-compat.tsv has rows to probe" "[ $XN -gt 0 ]"
 
 # ---- N: negative control ----
 setup_case N
