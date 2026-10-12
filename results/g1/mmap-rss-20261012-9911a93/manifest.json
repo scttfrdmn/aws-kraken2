@@ -1,0 +1,18 @@
+{
+  "what": "peak memory of upstream classify -M vs ours --memory-mapping (and ours -M under a cohort node's engine env, and both without -M) on a tmpfs-staged table; the measurement behind 9126a6f (ladder O0 at c1: the engine env leaked into ours-plain)",
+  "commit": "9911a93",
+  "ours_binary": {"build": "GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath -ldflags \"-X main.upstreamPin=2731b35f7abb26ec926517274f3d87e78d42fd76\" ./cmd/aws-kraken2 at 9911a93 (cmd/ and internal/ as at 9126a6f)", "sha256": "cc32782d5d65bde9f4da987c183dd1b8561340ea4fd9c05f6cd6dc0d0765523d"},
+  "upstream": {"pin": "2731b35f7abb26ec926517274f3d87e78d42fd76", "git_describe": "2.17.2-20-g2731b35", "binary": "src/classify built in the container (make -C src classify)", "sha256": "729a4e2c99df25b051dd7c969fd92ffe85e1919be25352916c8705ef68250e28"},
+  "platform": {"host": "macOS, podman 5.8.2 machine (8 vCPU, 8 GiB)", "kernel": "6.12.13-200.fc41.aarch64", "image": "public.ecr.aws/amazonlinux/amazonlinux:2023@sha256:bdaba6be6ef19640b0a8149f845972d8b2b5189c44cd5ed9b3402cc4269ff71d"},
+  "database": {"name": "k2_viral_20260626", "hash_k2d_bytes": 648733288, "placement": "tmpfs (--tmpfs /mnt/ram, size=2g)"},
+  "sample": {"reads": "SRR062634_200000_1.fq SRR062634_200000_2.fq (.cache/reads)", "paired": true},
+  "method": "mmap-rss.sh (this directory): /proc/PID/status VmRSS, RssAnon, RssFile, RssShmem sampled every 20 ms, peaks; one run per row, warm (table in tmpfs)",
+  "start": "2026-10-12T01:37:26Z",
+  "stop": "2026-10-12T01:38:19Z",
+  "files": {"output.txt": "the container's full output", "peaks.tsv": "the result rows", "mmap-rss.sh": "the script"},
+  "derived": {
+    "ours_minus_upstream_RssAnon_kB": {"T=8": 67160, "T=32": 53284, "T=96": 56800},
+    "note": "ours -M peak RssAnon over upstream -M: 52.0 to 65.6 MiB, not growing with threads (8, 32, 96); RssShmem (the table) equal; ours -M under AK2_ENGINE_N=1 RANK=0 RENDEZVOUS: 1888368 kB anonymous and no shmem (the engine's resident copy)"
+  },
+  "not_measured_here": "byte identity (make oracle, results/g1/oracle-*-20261012T00*); Standard-8 or RODA (do not fit the VM's 8 GiB on tmpfs)"
+}

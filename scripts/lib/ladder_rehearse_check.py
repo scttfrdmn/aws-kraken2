@@ -238,7 +238,7 @@ def check(c, expect_fail):
             K.need("net", sid > 0, f"r{r}: the samples carry their share of identity (s5-identity sum {sid})")
 
     # ---- requests ----
-    tot_up, tot_head = 0, 0
+    tot_up, tot_head, tot_rv = 0, 0, 0
     for n in nodes:
         r = n["rank"]
         rq = read_tsv(os.path.join(outs[r], "requests.tsv"))
@@ -253,6 +253,7 @@ def check(c, expect_fail):
             ops[op] += v
         up = sum(v for op, v in ops.items() if re.fullmatch(r"(PutObject|CompleteMultipartUpload)(-estimate)?", op)) - ops["Rendezvous-PutObject"]
         tot_up += up
+        tot_rv += ops["Rendezvous-PutObject"]
         tot_head += sum(v for (ph, op), v in cnt.items() if ph == "fetch-inputs" and op == "HeadObject")
         if eng:
             K.need("requests", ops["GetObject-range"] > 0, f"r{r}: the shard load's ranged GETs counted (GetObject-range {ops['GetObject-range']})")
@@ -261,6 +262,17 @@ def check(c, expect_fail):
             K.need("requests", st >= 3, f"r{r}: the database staging counted ({st} GetObject requests in fetch-db)")
     K.need("requests", tot_up == 2 * len(samples), f"output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = {tot_up} (want {2 * len(samples)}, the objects)")
     K.need("requests", tot_head == 2 * len(samples), f"input fetches counted: fetch.sh's HeadObject = {tot_head} (want {2 * len(samples)}, one per input file)")
+
+    # ---- plain: ours' plain path ran as the plain path (O0 at c1, 843e958) ----
+    # The node's env carries the cohort's AK2_ENGINE_N/RANK/RENDEZVOUS (make run, and this rehearsal's
+    # containers); a leak into ours' plain path makes ours run the engine, which rendezvouses under the
+    # cohort's prefix. The plain path writes nothing there and counts no rendezvous request.
+    if p["CLASSIFIER"] == "ours-plain":
+        rv = os.path.join(c["bucket"], c["cid"], "rendezvous")
+        found = sorted(os.path.relpath(os.path.join(dp, f), rv) for dp, _, fs in os.walk(rv) for f in fs) if os.path.isdir(rv) else []
+        K.need("plain", not found and tot_rv == 0,
+               f"ours' plain path: no rendezvous under the cohort prefix ({found[:3] or 'none'}) and Rendezvous-PutObject {tot_rv} (want 0): "
+               "it did not inherit the node's engine env")
 
     # ---- engine: the ETag check ran on the loaded table ----
     if eng:

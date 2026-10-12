@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-select ladder-select-test ladder-types
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-select ladder-select-test ladder-types
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -27,6 +27,9 @@ test:
 	bash scripts/lib/run_sh_test.sh
 	python3 scripts/lib/ladder_levers.py --self-test
 	python3 scripts/lib/ladder_levers.py check
+	python3 scripts/lib/ladder_body_compat.py --self-test
+	python3 scripts/lib/ladder_body_compat.py check
+	python3 scripts/lib/ladder_body_compat.py fresh
 	bash scripts/tests/ladder_stream_test.sh
 	python3 scripts/tests/ladder_levers_tables_test.py
 	python3 scripts/tests/ladder_campaign_test.py
@@ -247,6 +250,17 @@ ladder-spec:
 
 ladder-check:
 	python3 scripts/lib/ladder_levers.py check
+
+# After any change to scripts/g3/ladder.body.sh (docs/ladder.md, "Body changes and finished runs"):
+# ladder-respec regenerates every committed runs/g3-l-*-c<COHORT>.json (all cohorts by default) and
+# prints what changed beyond the body; ladder-compat-check checks every scripts/g3/ladder.body-compat.tsv
+# row against git history and prints its hunks (both also in make test, with ladder-stream-test case X).
+ladder-respec:
+	scripts/g3/ladder-respec.sh $(COHORT)
+
+ladder-compat-check:
+	python3 scripts/lib/ladder_body_compat.py check
+	python3 scripts/lib/ladder_body_compat.py fresh
 
 ladder-stream-test:
 	bash scripts/tests/ladder_stream_test.sh

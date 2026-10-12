@@ -16,7 +16,9 @@ The plan:
     TTL x on-demand price, an estimate). Ties go in ladder order (ladder.levers.tsv);
   - rep 2 is rep 1 reversed (rep k: reversed when k is even);
   - a (rung, cohort, rep) that already has a done run is skipped. Done: the run's spec_sha256 is
-    the committed spec's sha256 and its params match the spec's (all keys but source, rep and
+    the committed spec's sha256 (or its spec.json differs from the committed spec only in the body,
+    and scripts/g3/ladder.body-compat.tsv declares that body change harmless for the run's
+    classifier: scripts/lib/ladder_body_compat.py) and its params match the spec's (all keys but source, rep and
     rep_source); the record is clean (record_problems: every member exit 0, own_gone, ended
     "members done" without fail fast, the prefix fetched, no sweep or abort failures, the scoped
     orphan check 0); ladder_tables keeps it in the attribution; not in scripts/lib/g3_defects.tsv.
@@ -58,6 +60,7 @@ ROOT = os.path.normpath(os.path.join(HERE, "..", ".."))
 sys.dont_write_bytecode = True   # a __pycache__ under scripts/ would make run.sh refuse the tree
 sys.path.insert(0, HERE)
 import ladder_levers as LL  # noqa: E402
+import ladder_body_compat as BC  # noqa: E402
 
 DEFECTS = os.path.join(ROOT, "scripts", "lib", "g3_defects.tsv")
 CAMPAIGN_DIR = os.path.join(ROOT, "results", "g3", "ladder-campaign")
@@ -195,7 +198,7 @@ def record_problems(cdir, cj, mans, want_az=None):
     return why
 
 
-def scan_record(defects, spec_sha):
+def scan_record(defects, spec_sha, compat=None):
     """Every ladder run under results/<gate>/<yyyymmdd>-* (cohort dirs, and single runs that are
     not cohort members) with the reasons it is not done (attribution added by plan)."""
     runs = []
@@ -224,8 +227,23 @@ def scan_record(defects, spec_sha):
             if (m.get("orphan_check") or {}).get("own_gone") is not True:
                 why.append("own_gone not true")
             ssha, spec, cost = m.get("spec_sha256"), m.get("spec"), m.get("cost_usd")
+        note = None
         if spec in spec_sha and ssha != spec_sha[spec]:
-            why.append("spec_sha256 %s is not the committed %s's %s" % ((ssha or "none")[:12], spec, spec_sha[spec][:12]))
+            # A body change the record's run predates: counted only where the run's own spec.json
+            # differs from the committed spec in nothing but the body, and ladder.body-compat.tsv
+            # declares that change harmless for the run's classifier.
+            rdir = os.path.join(os.path.dirname(d), "%s-r0" % b) if kind == "cohort" else d
+            rp = os.path.join(rdir, "spec.json")
+            rs = load_json(rp)
+            if rs is None or sha256(rp) != ssha:
+                why.append("spec_sha256 %s is not the committed %s's %s (and %s is %s)" % (
+                    (ssha or "none")[:12], spec, spec_sha[spec][:12], rel(rp), "missing" if rs is None else "not that spec"))
+            else:
+                ok, v = BC.verdict(rs, load_json(os.path.join(ROOT, spec)), params.get("classifier"), compat)
+                if ok:
+                    note = "spec_sha256 %s, not the committed %s's %s: %s" % (ssha[:12], spec, spec_sha[spec][:12], v)
+                else:
+                    why.append("spec_sha256 %s is not the committed %s's %s: %s" % (ssha[:12], spec, spec_sha[spec][:12], v))
         hit = [i for i in ids if i in defects]
         if hit:
             why.append("recorded defect (g3_defects.tsv %s: %s)" % (hit[0], defects[hit[0]]))
@@ -237,7 +255,7 @@ def scan_record(defects, spec_sha):
         runs.append({"dir": rel(d), "id": b, "kind": kind, "params": params, "rung": params["rung"],
                      "cohort": params.get("cohort"), "rep": rep,
                      "rep_basis": "params.rep" if "rep" in params else "rep 1 by default (no params.rep)",
-                     "ok": not why, "why": why, "cost": cost})
+                     "ok": not why, "why": why, "cost": cost, "note": note})
     return runs
 
 
@@ -285,7 +303,7 @@ def load_specs(cohort, rungs=None):
 def plan(cohort, reps, rungs, attr):
     """attr: ladder_tables' in_attribution by run id (a done run must be 'yes')."""
     specs, notes = load_specs(cohort, rungs)
-    record = [r for r in scan_record(read_defects(), {s["spec"]: s["sha256"] for s in specs})
+    record = [r for r in scan_record(read_defects(), {s["spec"]: s["sha256"] for s in specs}, BC.load())
               if r["cohort"] == cohort and r["rung"] in {s["rung"] for s in specs}]
     by_rung = {s["rung"]: s for s in specs}
     for r in record:
@@ -316,8 +334,9 @@ def plan(cohort, reps, rungs, attr):
             it = dict(s, rep=rep, order=len(items) + 1, az_override=None, retried=False, tried_azs=[s["az"]])
             if done:
                 it["action"] = "skip"
-                it["why"] = "done: %s (spec sha256 and params match, clean record, in the attribution, not a recorded defect, %s)" % (
-                    done[0]["dir"], done[0]["rep_basis"])
+                it["why"] = "done: %s (%s, params match, clean record, in the attribution, not a recorded defect, %s)" % (
+                    done[0]["dir"], "body-compatible spec (ladder.body-compat.tsv)" if done[0].get("note") else "spec sha256 matches",
+                    done[0]["rep_basis"])
                 it["done_dir"] = done[0]["dir"]
             else:
                 it["action"] = "launch"
@@ -346,7 +365,8 @@ def print_plan(cohort, reps, items, record, notes, conc, limits, out=None):
         w("  (none)")
     for r in record:
         w("  %-52s %-10s rep %d (%s): %s" % (r["dir"], r["rung"], r["rep"], r["rep_basis"],
-                                             "counted" if r["ok"] else "not counted: " + "; ".join(r["why"])))
+                                             ("counted" + ("; " + r["note"] if r.get("note") else "")) if r["ok"]
+                                             else "not counted: " + "; ".join(r["why"])))
     la = [i for i in items if i["action"] == "launch"]
     w("ladder-campaign: %d launch(es), %d skipped; cost basis of the launches $%.2f (an upper bound where estimated)" % (
         len(la), len(items) - len(la), sum(i["cost"] for i in la)))

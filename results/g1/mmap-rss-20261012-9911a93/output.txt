@@ -1,0 +1,15 @@
+shell flags hB
+upstream classify sha256 729a4e2c99df25b051dd7c969fd92ffe85e1919be25352916c8705ef68250e28
+ours sha256 cc32782d5d65bde9f4da987c183dd1b8561340ea4fd9c05f6cd6dc0d0765523d
+kernel 6.12.13-200.fc41.aarch64; nproc 8; MemTotal:        8102060 kB
+tmpfs -rw-r--r--. 1 root root 648733288 Oct 12 01:38 /mnt/ram/db/hash.k2d
+--- results (peak, kB)
+upstream -M T=8	rc=0	VmRSS_kB=783312	RssAnon_kB=144936	RssFile_kB=3436	RssShmem_kB=634940
+ours -M T=8	rc=0	VmRSS_kB=852512	RssAnon_kB=212096	RssFile_kB=6948	RssShmem_kB=633468
+upstream -M T=32	rc=0	VmRSS_kB=784568	RssAnon_kB=146268	RssFile_kB=3424	RssShmem_kB=634876
+ours -M T=32	rc=0	VmRSS_kB=840072	RssAnon_kB=199552	RssFile_kB=7052	RssShmem_kB=633468
+upstream -M T=96	rc=0	VmRSS_kB=784484	RssAnon_kB=146080	RssFile_kB=3424	RssShmem_kB=634980
+ours -M T=96	rc=0	VmRSS_kB=843284	RssAnon_kB=202880	RssFile_kB=7064	RssShmem_kB=633340
+ours -M T=8, node env (AK2_ENGINE_N=1 RANK=0 RENDEZVOUS)	rc=0	VmRSS_kB=1896148	RssAnon_kB=1888368	RssFile_kB=7780	RssShmem_kB=0
+upstream (no -M) T=8	rc=0	VmRSS_kB=784452	RssAnon_kB=781072	RssFile_kB=3380	RssShmem_kB=0
+ours (no -M) T=8	rc=0	VmRSS_kB=847492	RssAnon_kB=840632	RssFile_kB=6860	RssShmem_kB=0

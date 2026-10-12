@@ -304,8 +304,13 @@ lad_mem() {
 lad_one() {
   local j=$1 lane=$2 s=${SAMPLES[$1]} d t0 t1 rc
   d="$OUTD/$s"; mkdir -p "$d"
-  local -a cmd=("$K2")
-  [ "$CLASSIFIER" != upstream ] && cmd=(env "${DECOMP[@]}" "$OURS")
+  local -a cmd=("$K2") noeng=()
+  # Ours' plain path runs without the engine env. make run gives every cohort node AK2_ENGINE_N,
+  # _RANK and _RENDEZVOUS (scripts/run.sh), and ours takes the engine path whenever AK2_ENGINE_N
+  # is set: resident shards, --memory-mapping ignored. O0 at c1 (843e958) so read a second,
+  # anonymous copy of the 1.1 TB tmpfs table and was OOM-killed (rc 137) during the load.
+  local v; for v in $(compgen -e); do case $v in AK2_ENGINE_*|AK2_COHORT|AK2_COHORT_CHECK) noeng+=(-u "$v") ;; esac; done
+  [ "$CLASSIFIER" != upstream ] && cmd=(env "${noeng[@]}" "${DECOMP[@]}" "$OURS")
   local -a mm=(); [ "$DB_LOAD" = mmap ] && mm=(--memory-mapping)
   t0=$(now)
   printf '%s\n' "$t0" > "$SD/start/$j"   # its classify span starts (lad_crit reads the spans)

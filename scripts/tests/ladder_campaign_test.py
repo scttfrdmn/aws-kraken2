@@ -8,6 +8,9 @@ stubs (the driver's AK2_CAMPAIGN_* seams). The run stub writes a cohort dir as r
 (params from the real `ladder_levers.py spec-params --rep $AK2_LADDER_REP`, member manifests with
 spec_sha256 and instance.az) and models run-multi's old orphan exit: rc 3 whenever another run is
 in flight, with a clean record. The tables stub writes runs.tsv and its summary line. Scenarios:
+  compat      a finished run whose spec differs only in a body change ladder.body-compat.tsv declares
+              harmless for its classifier is done; an affected classifier, an undeclared change, a
+              spec that differs elsewhere too, or a spec.json that is not the recorded bytes is rerun;
   plan        ordering (cost, then ladder order), rep 2 reversed, the done check (and why each
               record run is or is not counted: failed, a recorded defect, params, spec sha256,
               prefix not fetched, excluded by ladder_tables; an old global orphans_rc 1 is not
@@ -199,12 +202,36 @@ def done(rung, ok=True, cost=1.24, sha=None, **cj_over):
     return cj, {"spec": spec, "spec_sha256": s, "params": p, "instance": {"az": "us-west-2b"}, "cohort": {}}
 
 
-def scratch(rungs, record=(), defects=(), excluded=()):
+def old_spec(rung, body_edit=lambda b: b.replace("\nlad_one() {\n", "\nlad_one() {\n  # an older body\n", 1), spec_edit=None):
+    """(spec.json bytes, from body sha256, to body sha256): the committed spec of rung with its body
+    changed by body_edit (and the rest by spec_edit), as an older body would have generated it."""
+    sys.path.insert(0, os.path.join(HERE, "scripts", "lib"))
+    import ladder_body_compat as BC
+    spec = json.load(open(spec_path(HERE, rung)))
+    rest, block, body = BC.split_spec(spec)
+    nb = body_edit(body)
+    assert nb != body
+    lines = nb[:-1].split("\n")
+    i = lines.index("@PARAMS@")
+    spec["command"][2] = "\n".join(lines[:i] + block + lines[i + 1:])
+    if spec_edit:
+        spec_edit(spec)
+    return (json.dumps(spec, indent=2) + "\n").encode(), BC.sha256(nb), BC.sha256(body)
+
+
+def done_old(rung, rd_spec, **kw):
+    """done() for a run that ran the older spec rd_spec (its spec.json written in the member dir)."""
+    cj, m0 = done(rung, sha=hashlib.sha256(rd_spec).hexdigest(), **kw)
+    m0["_spec_json"] = rd_spec
+    return cj, m0
+
+
+def scratch(rungs, record=(), defects=(), excluded=(), compat=()):
     d = tempfile.mkdtemp(prefix="ladder-campaign-test.")
     R = os.path.join(d, "repo")
     for sub in ("scripts/lib", "scripts/g3", "runs", "results/g3", "stub"):
         os.makedirs(os.path.join(R, sub), exist_ok=True)
-    for f in ("scripts/lib/ladder_campaign.py", "scripts/lib/ladder_levers.py", "scripts/lib/quota_check.sh",
+    for f in ("scripts/lib/ladder_campaign.py", "scripts/lib/ladder_levers.py", "scripts/lib/ladder_body_compat.py", "scripts/lib/quota_check.sh",
               "scripts/g3/ladder.levers.tsv", "scripts/g3/ladder-campaign.sh"):
         shutil.copy2(os.path.join(HERE, f), os.path.join(R, f))
     for r in rungs:
@@ -221,9 +248,16 @@ def scratch(rungs, record=(), defects=(), excluded=()):
             os.makedirs(e)
             json.dump({"instance": {"type": t, "az": z}}, open(os.path.join(e, "manifest.json"), "w"))
             f.write("%s\t%s\tresults/ev/%s-%s/manifest.json\n" % (t, z, t, z))
+    with open(os.path.join(R, "scripts/g3/ladder.body-compat.tsv"), "w") as f:
+        f.write("# scratch\nfrom_body_sha256\tto_body_sha256\tcommit\tunaffected\taffected\tfunctions\treason\n")
+        for row in compat:
+            f.write("\t".join(row) + "\n")
     for rd, (cj, m0) in record:
         os.makedirs(os.path.join(R, "results", "g3", rd))
         os.makedirs(os.path.join(R, "results", "g3", rd + "-r0"))
+        sj = m0.pop("_spec_json", None)
+        if sj is not None:
+            open(os.path.join(R, "results", "g3", rd + "-r0", "spec.json"), "wb").write(sj)
         json.dump(cj, open(os.path.join(R, "results", "g3", rd, "cohort.json"), "w"))
         json.dump(m0, open(os.path.join(R, "results", "g3", rd + "-r0", "manifest.json"), "w"))
     for name, body in (("run", STUB_RUN), ("orphans", STUB_ORPHANS), ("g3ladder", STUB_G3), ("quota", STUB_QUOTA)):
@@ -317,6 +351,46 @@ def main():
        "plan: an old cohort's global orphans_rc 1 (a concurrent run) does not disqualify it; own_gone is the scoped verdict", out[-2000:])
     ok(not os.path.exists(os.path.join(R, "results", "g3", "ladder-campaign")) and not os.path.exists(os.path.join(S, "events.jsonl")),
        "plan: DRY_RUN writes nothing in the repo and launches nothing")
+    shutil.rmtree(d)
+
+    # ---- compat: finished runs whose spec differs from the committed one only in the body
+    # (ladder.body-compat.tsv; scripts/lib/ladder_body_compat.py). Counted only where a row covers the
+    # run's classifier and nothing but the body differs.
+    rs = ["S2a", "S5", "S6", "O0", "O0b"]
+    up, f1, t1 = old_spec("S2a")                                        # upstream, covered
+    eng, _, _ = old_spec("O0b")                                         # ours-engine, covered
+    plain, _, _ = old_spec("O0")                                        # ours-plain, affected: rerun
+    ttl, _, _ = old_spec("S5", spec_edit=lambda sp: sp["lifecycle"].update(ttl="121m"))   # body and TTL differ: rerun
+    unk, f2, _ = old_spec("S6", body_edit=lambda b: b.replace("\nlad_one() {\n", "\nlad_one() {\n  # undeclared\n", 1))  # no row
+    lie = bytearray(old_spec("S2a")[0])                                 # spec.json is not the bytes the manifest names
+    rec = [("20261011-000011-aaaaaaa-0011-n1", done_old("S2a", up)),
+           ("20261011-000012-aaaaaaa-0012-n1", done_old("O0b", eng)),
+           ("20261011-000013-aaaaaaa-0013-n1", done_old("O0", plain)),
+           ("20261011-000014-aaaaaaa-0014-n1", done_old("S5", ttl)),
+           ("20261011-000015-aaaaaaa-0015-n1", done_old("S6", unk)),
+           ("20261011-000016-aaaaaaa-0016-n1", done_old("S2a", up, params=params_of("S2a", rep=2)))]
+    rec[5][1][1]["_spec_json"] = bytes(lie) + b" "
+    row = (f1, t1, "0" * 40, "upstream,ours-engine", "ours-plain", "lad_one", "test")
+    d, R, S = scratch(rs, record=rec, compat=[row])
+    rc, out, _ = campaign(R, S, "plan", rs)
+    got = {(rep, rung): a for rep, rung, a in plan_rows(out)}
+    ok(rc == 0 and got.get((1, "S2a")) == "skip" and got.get((1, "O0b")) == "skip",
+       "compat: an upstream and an ours-engine run whose spec differs only in a declared body change are done", "rc %d %s\n%s" % (rc, got, out[-3000:]))
+    ok(got.get((1, "O0")) == "launch" and "does not declare that change harmless for ours-plain" in out,
+       "compat: the same body change on ours-plain (an affected classifier) forces a rerun", out[-3000:])
+    ok(got.get((1, "S5")) == "launch" and "spec differs beyond the body: lifecycle.ttl" in out,
+       "compat: a spec that differs in the body and elsewhere (TTL) forces a rerun", out[-3000:])
+    ok(got.get((1, "S6")) == "launch" and ("(%s -> " % f2[:12]) in out and "does not declare that change harmless for upstream" in out,
+       "compat: a body change with no row forces a rerun", out[-3000:])
+    ok(got.get((2, "S2a")) == "launch" and "20261011-000016-aaaaaaa-0016-n1/../" not in out and "is not that spec" in out,
+       "compat: a run whose spec.json is not the bytes of its recorded spec_sha256 forces a rerun", out[-3000:])
+    ok("ladder.body-compat.tsv line(s) 3: upstream unaffected" in out and "body-compatible spec (ladder.body-compat.tsv)" in out,
+       "compat: the plan says why a body-only difference was accepted, citing the row", out[-3000:])
+    shutil.rmtree(d)
+    d, R, S = scratch(["S2a"], record=[rec[0]], compat=[(f1, t1, "0" * 40, "ours-engine", "upstream,ours-plain", "lad_one", "test")])
+    rc, out, _ = campaign(R, S, "plan", ["S2a"])
+    ok(dict(((r, g), a) for r, g, a in plan_rows(out)).get((1, "S2a")) == "launch",
+       "compat: a row that does not cover upstream does not keep the upstream run (mutation of the row)", out[-2000:])
     shutil.rmtree(d)
 
     # ---- skip (run mode): S2a rep 1 is done

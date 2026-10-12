@@ -23,6 +23,10 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: make test's ladder-stream-test case X runs every body version that
+          # scripts/g3/ladder.body-compat.tsv names (scripts/lib/ladder_body_compat.py body-at).
+          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
