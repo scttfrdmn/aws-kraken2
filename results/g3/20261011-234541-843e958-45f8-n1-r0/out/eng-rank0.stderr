@@ -1,0 +1,42 @@
+Loading database information...ak2-timing	opts	0.003900	0.000582	0	0	0.000037	0.000000
+ak2-timing	taxo	0.004492	0.542875	87912	2	0.001302	0.103663
+ak2-engine	mem	t_s	15.0	rss_kib	62592352	hwm_kib	62592352	heap_inuse	416309248	sys	477477224	avail_kib	1486095944
+ak2-engine	mem	t_s	30.0	rss_kib	128618632	hwm_kib	128618632	heap_inuse	419176448	sys	478263656	avail_kib	1420254372
+ak2-engine	mem	t_s	45.0	rss_kib	194909072	hwm_kib	194909072	heap_inuse	424288256	sys	479082856	avail_kib	1354012076
+ak2-engine	mem	t_s	60.0	rss_kib	260947344	hwm_kib	260947348	heap_inuse	429170688	sys	487868792	avail_kib	1287886072
+ak2-engine	mem	t_s	75.0	rss_kib	327447704	hwm_kib	327449756	heap_inuse	457629696	sys	519326072	avail_kib	1221327116
+ak2-engine	mem	t_s	90.0	rss_kib	392177748	hwm_kib	392177752	heap_inuse	461422592	sys	519850360	avail_kib	1156466888
+ak2-engine	mem	t_s	105.0	rss_kib	457874364	hwm_kib	457874364	heap_inuse	466755584	sys	528828792	avail_kib	1090631164
+ak2-engine	mem	t_s	120.0	rss_kib	523455752	hwm_kib	523455752	heap_inuse	471252992	sys	533072248	avail_kib	1024931132
+ak2-engine	mem	t_s	135.0	rss_kib	588733056	hwm_kib	588733056	heap_inuse	221061120	sys	537766264	avail_kib	959577964
+ak2-engine	mem	t_s	150.0	rss_kib	654384396	hwm_kib	654384396	heap_inuse	247414784	sys	538290552	avail_kib	893745772
+ak2-engine	mem	t_s	165.0	rss_kib	720561720	hwm_kib	720561720	heap_inuse	252788736	sys	538290552	avail_kib	827459044
+ak2-engine	mem	t_s	180.0	rss_kib	786798228	hwm_kib	786798228	heap_inuse	258211840	sys	538356088	avail_kib	761117292
+ak2-engine	mem	t_s	195.0	rss_kib	852115124	hwm_kib	852115124	heap_inuse	262897664	sys	538356088	avail_kib	695678980
+ak2-engine	mem	t_s	210.0	rss_kib	917257936	hwm_kib	917257936	heap_inuse	268427264	sys	538356088	avail_kib	630430672
+ak2-engine	mem	t_s	225.0	rss_kib	982265936	hwm_kib	982265936	heap_inuse	292839424	sys	538421624	avail_kib	565305248
+ak2-engine	mem	t_s	240.0	rss_kib	1048176800	hwm_kib	1048176800	heap_inuse	300261376	sys	538421624	avail_kib	499334068
+ak2-engine	mem	t_s	255.0	rss_kib	1113987644	hwm_kib	1113987644	heap_inuse	219906048	sys	538626424	avail_kib	433223616
+ak2-timing	shard-load-0	0.815263	265.373141	588514	0	575.108365	550.648465
+ak2-engine	mem	t_s	270.3	rss_kib	1161565288	hwm_kib	1161565288	heap_inuse	223051776	sys	538626424	avail_kib	385643652
+ak2-engine	mem	t_s	285.6	rss_kib	1161565300	hwm_kib	1161565300	heap_inuse	223100928	sys	538626424	avail_kib	385863740
+ak2-timing	etag	267.803017	21.664289	83	0	2033.816579	0.000000
+ak2-timing	rendezvous	289.467579	0.142156	27	7	0.005538	0.000000
+ak2-timing	connect	289.610358	0.000005	0	0	0.000004	0.000000
+ak2-timing	hash	0.547422	289.062951	590589	18	2608.933153	550.667913
+ done.
+10532910 sequences (1945.09 Mbp) processed in 4.108s (153836.0 Kseq/m, 28408.62 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-sample	batch	0	name	SRR5935740	mode	parallel	s3client	-	rank	0	role	home	inflight	1	threads	96	start_s	289.610387	wall_s	4.240713	setup_s	0.000229	classify_s	4.108106	close_s	0.000021	report_s	0.083008	status	0	sequences	10532910	bases	1945093294	classified	9366399	place	mod	weight	10532910
+ak2-timing	batch-barrier-0	293.851124	0.072138	2	0	0.002388	0.000487
+ak2-engine	shard	0	n	1	lo	0	hi	297272917942	tail	0	full	true	empty_at	297272917942	keys	415804127	batches	276	probe_s	15.931007	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	293.9	rss_kib	1183533880	hwm_kib	1183533880	heap_inuse	18037587968	sys	23603969360	avail_kib	356595360
+ak2-engine	rendezvous	puts	2	gets	2
+ak2-engine	s3	client	sdk	put	2	get	2	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	8860	requests	0	retries	0	bytes	0	cross_bytes	0	hash_s	21.664275	combine_s	0.000593
+ak2-engine	load	seconds	265.373138	requests	17737	retries	0	bytes	1189091737368
+ak2-engine	route	transport	nodes	calls	276	keys	415804127	batches	276	route_s	2.797299	wait_s	15.950601	gather_s	1.721001
+ak2-engine	worker	scan_s	50.649601	lookup_s	20.469118	classify_s	33.719232
+ak2-timing	total	0.000002	296.101786	6203923	22	2715.880296	555.583594

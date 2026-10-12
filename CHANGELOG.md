@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `make ladder-types [CHECK=1]` (`scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`)
+  writes `scripts/g3/ladder.types.tsv` from truffle, recording the truffle version and the query.
+  With CHECK=1 it compares the committed table with truffle's current answer. `make test` validates
+  the table offline.
+- **Review fixes to O3 right-sizing:**
+  - `derived_host` is honoured only for `@floor:<predecessor>`, or for `@select:<self>` on an alias
+    whose candidates all qualify. The reviewer's three probes are refused in the self-test.
+  - O3's delta and lever rows state that they include the per-N host right-sizing (vCPUs, memory
+    and network).
+  - The quota wait clock excludes time spent on the campaign's own sibling runs, with a new test.
+  - `permanent_quota` and the dead `ns` in `bracket()` are removed.
+  - The self-test now asserts that O5 inherits the right-sized host.
+  - A stale docs sentence is fixed.
+- **O3 right-sized per N** (Scott, 2026-10-11, #25).
+  - **The type:** each O3-n\<K\> and O3-cost-n\<K\> (`instance @floor:O2`, `@floor:O2-cost`) runs
+    on the smallest non-metal type of O2's winning family that holds table/K by `fits()`. The types
+    come from the new `scripts/g3/ladder.types.tsv` (truffle, 2026-10-11). At c1 this gives
+    x8g.4xlarge at 8, x8g.2xlarge at 16 and 32, and r8g.4xlarge at 16, all tested.
+  - **The one-lever check:** the host change is coupled to SHARDS as a derived move. It is declared
+    in the `derived` column's `instance:` clause, and without that clause it is refused. The O3
+    alias's own host is its winner's (`@select:O3`), so O4a and O5 inherit it.
+  - **The bracket:** it predicts each N on its own type. Its grid is the candidates' N, {1, 2, 4,
+    8, 16, 32}: 64 is dropped, with no O3-n64 added, and a grid with an N that no row has is
+    refused.
+  - **O2:** the rule text records Scott's ruling of one candidate per family.
+- **Campaign quota refusals** (`ladder_campaign.py` `pick()`):
+  - a request that exceeds the quota on its own is permanent: the rung stops at once and is
+    reported, and the rest of its family carries on;
+  - a refusal caused by running instances is waited for, at most `AK2_CAMPAIGN_QUOTA_MAX_WAIT_S`
+    in total (default 6 h).
+
+  Two new stub-test cases cover these.
+- **`make ladder-select`:** the rule's candidates must be alias_of exactly, every rung and no
+  other (N5).
+- **`alias_cohorts` checks:**
+  - `ladder_tables.py` verifies each pair with the generator's rule before reading the target's
+    runs. A pair whose configurations differ is a DEFECT (levers), and one that cannot be verified
+    is not read (N1);
+  - `ladder_levers.py check [TSV] [--resolved RES]` verifies the declarations of any table it is
+    given (N2).
 - **Candidate rungs for every selection** (docs/ladder.md, "Candidate rungs"). S4, S8, O2,
   O2-cost, O3 and O3-cost are aliases over candidate rungs named `<rung>-<short value>`. Each
   candidate changes only its selecting rung's key-group, the predecessor counts as a candidate, and

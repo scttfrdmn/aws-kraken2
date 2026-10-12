@@ -40,6 +40,7 @@ TSV = os.path.join(ROOT, "scripts", "g3", "ladder.levers.tsv")
 RESOLVED = os.path.join(ROOT, "scripts", "g3", "ladder.resolved.tsv")
 RUNS = os.path.join(ROOT, "results", "cohort", "PRJNA398089", "runs.tsv")
 AZS = os.path.join(ROOT, "scripts", "g3", "ladder.azs.tsv")
+TYPES = os.path.join(ROOT, "scripts", "g3", "ladder.types.tsv")
 REP_SOURCE = "AK2_LADDER_REP at launch (make ladder-campaign)"
 
 KEYS = ("CLASSIFIER THREADS PROCS DB_STAGE DB_PLACE DB_LOAD HOST_TUNES GUNZIP IN_FETCH IN_CLIENT IN_DEST "
@@ -120,6 +121,28 @@ def instance_of(rows, row):
         p = pred_of(rows, row)
         return "@unresolved-predecessor" if p is None else instance_of(rows, p)
     return i
+
+
+def derived_host(rows, row, _seen=None):
+    """Whether the rung's host is a derived move with its lever (O3-n<K>: the family's smallest type
+    that holds table/K moves with SHARDS, as S4's vCPU ratios move with the host). The one-lever
+    check then counts the host change as derived, not as the HOST group. Honoured only when all of
+    these hold:
+      - its `derived` column declares it, as an `instance: ...` clause;
+      - its instance is `@floor:<its own predecessor>` (the predecessor's family, right-sized), or
+        it is an alias whose instance is `@select:<itself>` and every candidate other than its
+        predecessor qualifies the same way.
+    Any other host change (a fixed type, a floor on another rung's family) stays the HOST group."""
+    if re.search(r"(?:^|; )instance: ", row.get("derived", "")) is None:
+        return False
+    inst = row.get("instance", "")
+    if inst == "@floor:%s" % row.get("predecessor", ""):
+        return True
+    if inst == "@select:%s" % row["rung"] and row.get("status", "").startswith("alias:"):
+        names, seen = by_name(rows), (_seen or set()) | {row["rung"]}
+        cands = [c for c in row.get("alias_of", "").split("|") if c and c != row.get("predecessor")]
+        return bool(cands) and all(c in names and c not in seen and derived_host(rows, names[c], seen) for c in cands)
+    return False
 
 
 def changed(rows, row, pred):
@@ -234,7 +257,7 @@ def check(rows):
             continue
         ch = changed(rows, r, p)
         co = coupled_keys(r)
-        free = [k for k in ch if k not in co]
+        free = [k for k in ch if k not in co and not (k == "instance" and derived_host(rows, r))]
         groups = sorted({GROUP[k] for k in free})
         if st.startswith("not-run"):
             if ch:
@@ -484,6 +507,20 @@ def _values(rows, r, cohort, res, depth=0):
     bad, out = [], {}
     for k in KEYS + ["instance"]:
         v = instance_of(rows, r) if k == "instance" else r[k]
+        if k == "instance" and v.startswith("@floor:"):
+            # The family of <origin>'s resolved host; this rung's host is that family's smallest
+            # type that holds it at this cohort (fits(), with every other PARAM as resolved here).
+            o = names.get(v[len("@floor:"):])
+            ov = _values(rows, o, cohort, res, depth + 1)[0] if o is not None else {}
+            if bad or "instance" not in ov:
+                bad.append("instance=%s (%s)" % (v, "its own values are unresolved" if bad else "its origin's host is unresolved"))
+                continue
+            t, why = floor_type(ov["instance"].split(".")[0], out, cohort)
+            if t is None:
+                bad.append("instance=%s (%s)" % (v, why))
+                continue
+            out[k] = t
+            continue
         if v.startswith("@"):
             t = token(v, k)
             hit = None
@@ -516,6 +553,39 @@ def _values(rows, r, cohort, res, depth=0):
             bad.append("%s=%s (not a shell-safe word)" % (k, v))
         out[k] = v
     return out, bad
+
+
+def load_types(path=None):
+    """type -> (vcpus, memory_mib) from scripts/g3/ladder.types.tsv (the families O2 and O3 choose among)."""
+    out = {}
+    with open(path or TYPES) as f:
+        head = None
+        for line in f:
+            if line.startswith("#") or not line.strip():
+                continue
+            c = line.rstrip("\n").split("\t")
+            if head is None:
+                head = c
+                continue
+            d = dict(zip(head, c))
+            out[d["type"]] = (int(d["vcpus"]), int(d["memory_mib"]))
+    return out
+
+
+def floor_type(family, params, cohort, types=None):
+    """(the smallest non-metal type of FAMILY that holds a rung with PARAMS at COHORT by fits(), with
+    every vcpus form resolved at that type, or None, why). Smallest: by memory, then vCPUs."""
+    types = load_types() if types is None else types
+    cands = sorted(((m, v, t) for t, (v, m) in types.items() if t.split(".")[0] == family and "metal" not in t))
+    if not cands:
+        return None, "no %s types in %s" % (family, os.path.relpath(TYPES, ROOT))
+    for m, v, t in cands:
+        try:
+            if not fits({"params": params, "instance": t}, int(cohort), m, v):
+                return t, ""
+        except (ValueError, KeyError) as e:
+            return None, "fits() cannot judge %s: %s" % (t, e)
+    return None, "no %s type holds it at c%s (the largest, %s, does not)" % (family, cohort, cands[-1][2])
 
 
 def same_config(a, b):
@@ -555,14 +625,16 @@ def alias_cohort_problems(rows, cohort, res):
 
 def bracket(rows, alias_row, cohort, res, root=ROOT):
     """For an alias whose select rule has a `bracket:` clause on the #26 fit ("... within a factor 2
-    of fit <F>'s time|cost-optimal N over {1, 2, ...} for ... type ..., widened to every candidate
-    where that prediction is extrapolated or the type has none"): (the candidate names inside the
-    bracket at COHORT, how, [cited files]). None if the rule has no bracket. Raises Unresolved while
-    the candidates' type is not resolved."""
+    of fit <F>'s time|cost-optimal N over {1, 2, ...}, each N on its own type, ... widened to every
+    candidate where that prediction is not within data or a type has none"): (the candidate names
+    inside the bracket at COHORT, how, [cited files]). None if the rule has no bracket. Each
+    candidate is predicted on its own resolved host (O3-n<K>: its family's smallest type that holds
+    table/K), and the grid must be the candidates' N (the predecessor's own N may be 1 and absent
+    from the rows). Raises Unresolved while a candidate is unresolved or the grid is not the candidates'."""
     m = re.search(r"bracket: .*?fit (\S+)'s (time|cost)-optimal N over \{([0-9, ]+)\}", alias_row["select"])
     if not m:
         return None
-    fit, obj, grid = m.group(1), m.group(2), [int(x) for x in m.group(3).split(",")]
+    fit, obj, grid = m.group(1), m.group(2), {int(x) for x in m.group(3).split(",")}
     names = by_name(rows)
     cands = [c for c in alias_row["alias_of"].split("|") if c]
     vals = {}
@@ -572,29 +644,30 @@ def bracket(rows, alias_row, cohort, res, root=ROOT):
             raise Unresolved("%s at c%s: candidate %s is unresolved (%s), so its bracket cannot be computed"
                              % (alias_row["rung"], cohort, c, ", ".join(bad)))
         vals[c] = v
-    types = {v["instance"] for v in vals.values()}
-    if len(types) != 1:
-        raise Unresolved("%s at c%s: its candidates are on more than one type (%s)" % (alias_row["rung"], cohort, ", ".join(sorted(types))))
-    itype = types.pop()
+    rowns = {int(names[c]["SHARDS"]) for c in cands if re.fullmatch(r"[0-9]+", names[c]["SHARDS"])}
+    if not rowns <= grid or not grid - rowns <= {1}:
+        raise Unresolved("%s: the bracket's grid {%s} is not its candidate rows' N {%s} (plus the predecessor's 1)"
+                         % (alias_row["rung"], ", ".join(map(str, sorted(grid))), ", ".join(map(str, sorted(rowns)))))
     path = os.path.join("results", "g3", "fit26", "predictions.tsv")
     full = os.path.join(root, path)
-    best = None
+    pred = {}
     if os.path.isfile(full):
         import csv
         with open(full) as f:
             for p in csv.DictReader(f, delimiter="\t"):
-                if p["fit"] == fit and p["type"] == itype and p["cohort"] == str(cohort) and int(p["N"]) in grid:
-                    y = float(p["T_pred_s"] if obj == "time" else p["usd_run_NpT"])
-                    if best is None or (y, int(p["N"])) < (best[0], best[1]):
-                        best = (y, int(p["N"]), p["status"])
+                if p["fit"] == fit and p["cohort"] == str(cohort):
+                    pred[(p["type"], int(p["N"]))] = (float(p["T_pred_s"] if obj == "time" else p["usd_run_NpT"]), p["status"])
     cited = [path] if os.path.isfile(full) else []
-    if best is None:
-        return set(cands), "widened: fit %s has no %s prediction for %s at c%s" % (fit, obj, itype, cohort), cited
-    if best[2] != "within data":
-        return set(cands), "widened: fit %s's %s-optimal N for %s at c%s is %d, %s" % (fit, obj, itype, cohort, best[1], best[2]), cited
-    inside = {c for c in cands if best[1] / 2 <= int(vals[c]["SHARDS"]) <= 2 * best[1]}
-    return inside, "fit %s's %s-optimal N for %s at c%s is %d (within data): N in [%g, %d]" % (
-        fit, obj, itype, cohort, best[1], best[1] / 2, 2 * best[1]), cited
+    on = {c: (vals[c]["instance"], int(vals[c]["SHARDS"])) for c in cands}
+    missing = sorted("%s at N=%d" % tn for c, tn in on.items() if tn not in pred and tn[1] in grid)
+    if missing:
+        return set(cands), "widened: fit %s has no %s prediction at c%s for %s" % (fit, obj, cohort, ", ".join(missing)), cited
+    best = min((pred[tn][0], tn[1], tn[0], pred[tn][1]) for tn in on.values() if tn[1] in grid)
+    if best[3] != "within data":
+        return set(cands), "widened: fit %s's %s-optimal N at c%s is %d on %s, %s" % (fit, obj, cohort, best[1], best[2], best[3]), cited
+    inside = {c for c in cands if best[1] / 2 <= on[c][1] <= 2 * best[1]}
+    return inside, "fit %s's %s-optimal N at c%s is %d on %s (within data): N in [%g, %d]" % (
+        fit, obj, cohort, best[1], best[2], best[1] / 2, 2 * best[1]), cited
 
 
 def notrun_resolution_warnings(rows, res):
@@ -657,7 +730,7 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
         ch = [k for k in KEYS if not same_value(k, out[k], out["instance"], pv[k], pv["instance"])]
         if out["instance"] != pv["instance"]:
             ch.append("instance")
-        free = [k for k in ch if k not in coupled_keys(r)]
+        free = [k for k in ch if k not in coupled_keys(r) and not (k == "instance" and derived_host(rows, r))]
         groups = sorted({GROUP[k] for k in free})
         if not ch:
             raise Unresolved("%s at cohort %s: the resolution makes it identical to %s (mark it not-run instead)"
@@ -1092,10 +1165,73 @@ def _self_test():
         os.makedirs(os.path.join(root, "results", "g3", "fit26"))
         with open(os.path.join(root, "results", "g3", "fit26", "predictions.tsv"), "w") as f:
             f.write("fit\tfamily\ttype\tcohort\tN\tT_pred_s\tusd_run_NpT\tstatus\n")
-            for n, tp in ((1, 500), (2, 400), (4, 300), (8, 310), (16, 320), (32, 330), (64, 340)):
-                f.write("R\tr8g\tr8g.48xlarge\t1\t%d\t%d\t%d\twithin data\n" % (n, tp, n))
+            # Each N on its own right-sized type (the prediction is looked up per candidate).
+            for t, n, tp in (("r8g.48xlarge", 1, 500), ("r8g.24xlarge", 2, 400), ("r8g.12xlarge", 4, 300), ("r8g.8xlarge", 8, 310),
+                             ("r8g.4xlarge", 16, 320), ("r8g.4xlarge", 32, 330), ("r8g.48xlarge", 4, 100)):
+                f.write("R\tr8g\t%s\t1\t%d\t%d\t%d\twithin data\n" % (t, n, tp, n))
         b = bracket(rows, names["O3"], 1, o3res, root)
-        assert b[0] == {"O3-n2", "O3-n4", "O3-n8"}, b
+        assert b[0] == {"O3-n2", "O3-n4", "O3-n8"} and "is 4 on r8g.12xlarge" in b[1], b   # not r8g.48xlarge's N=4 row
+        # The grid must be the candidates' N: a grid with 64 (no O3-n64 row) is refused.
+        t = _copy(rows)
+        by_name(t)["O3"]["select"] = by_name(t)["O3"]["select"].replace("{1, 2, 4, 8, 16, 32}", "{1, 2, 4, 8, 16, 32, 64}")
+        try:
+            bracket(t, by_name(t)["O3"], 1, o3res, root)
+            raise AssertionError("a grid beyond the candidate rows was accepted")
+        except Unresolved as e:
+            assert "is not its candidate rows' N" in str(e), e
+        # O3 right-sized per N (Scott, 2026-10-11): each O3-n<K> on the smallest type of O2's winning
+        # family that holds table/K by fits(); the reviewer's types: x8g.4xlarge at 8, x8g.2xlarge at
+        # 16 and 32, r8g.4xlarge at 16 (and r8g at 8 and 32 by the same rule).
+        want = {("O1", 8): "x8g.4xlarge", ("O1", 16): "x8g.2xlarge", ("O1", 32): "x8g.2xlarge",
+                ("O2-r8g", 8): "r8g.8xlarge", ("O2-r8g", 16): "r8g.4xlarge", ("O2-r8g", 32): "r8g.4xlarge"}
+        for (w, k), typ in sorted(want.items()):
+            rs = {("Sstar-time", "1", "alias"): ("S9", src), ("O2", "1", "alias"): (w, src)}
+            for o3n in ("O3-n%d" % k, ):
+                got = _values(rows, names[o3n], 1, rs)[0].get("instance")
+                assert got == typ, (w, k, got, typ)
+            gotc = _values(rows, names["O3-cost-n%d" % k], 1, {("Sstar-cost", "1", "alias"): ("S9", src),
+                                                                ("O2-cost", "1", "alias"): ({"O1": "O1-cost", "O2-r8g": "O2-cost-r8g"}[w], src)})[0].get("instance")
+            assert gotc == typ, ("cost", w, k, gotc, typ)
+        rx = resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O1", src)])
+        os.unlink(os.path.join(root, "results", "g3", "fit26", "predictions.tsv"))   # no fit: the bracket widens
+        r16 = resolve(rows, "O3-n16", 1, rx, root)
+        assert (r16["instance"], r16["want_n"], r16["params"]["THREADS"]) == ("x8g.2xlarge", 16, "vcpus"), r16
+        # The host change is derived from SHARDS (the derived column's instance clause): without it,
+        # the one-lever check counts it as the HOST group and refuses.
+        t = _copy(rows)
+        by_name(t)["O3-n16"]["derived"] = ""
+        assert any(p.startswith("O3-n16: changes SHARDS,instance") for p in check(t)), check(t)
+        try:
+            resolve(t, "O3-n16", 1, rx, root)
+            raise AssertionError("a host change without its derived declaration was accepted")
+        except Unresolved as e:
+            assert "not just the group REPLICAS+SHARDS" in str(e), e
+        # O4a and O5 inherit O3's winner's right-sized host.
+        w8 = {("Sstar-time", "1", "alias"): ("S9", src), ("O2", "1", "alias"): ("O1", src), ("O3", "1", "alias"): ("O3-n8", src)}
+        assert _values(rows, names["O4a"], 1, w8)[0]["instance"] == "x8g.4xlarge"
+        assert _values(rows, names["O5"], 1, w8)[0]["instance"] == "x8g.4xlarge"
+        # derived_host is honoured only for @floor:<predecessor> (or @select:<self> on an alias whose
+        # candidates all qualify). The reviewer's probes, each refused by the one-lever check:
+        assert derived_host(rows, names["O3-n2"]) and derived_host(rows, names["O3"]) and derived_host(rows, names["O3-cost"])
+        for rung, inst, der, want in (("S5", "r8g.48xlarge", "instance: a changed host", "S5: changes GUNZIP,instance"),
+                                      ("O3-n2", "@floor:Sstar-time", None, "O3-n2: changes SHARDS,instance"),
+                                      ("O3-n2", "c8g.48xlarge", None, "O3-n2: changes SHARDS,instance")):
+            t = _copy(rows)
+            x = by_name(t)[rung]
+            x["instance"] = inst
+            if der is not None:
+                x["derived"] = der
+            assert not derived_host(t, x), (rung, inst)
+            assert any(p.startswith(want) for p in check(t)), (rung, inst, check(t))
+            # ... and the O3 alias no longer qualifies once one of its candidates does not.
+            if rung == "O3-n2":
+                assert not derived_host(t, by_name(t)["O3"])
+                assert any(p.startswith("O3: changes") for p in check(t)), check(t)
+        with open(os.path.join(root, "results", "g3", "fit26", "predictions.tsv"), "w") as f:
+            f.write("fit\tfamily\ttype\tcohort\tN\tT_pred_s\tusd_run_NpT\tstatus\n")
+            for t_, n, tp in (("r8g.48xlarge", 1, 500), ("r8g.24xlarge", 2, 400), ("r8g.12xlarge", 4, 300), ("r8g.8xlarge", 8, 310),
+                              ("r8g.4xlarge", 16, 320), ("r8g.4xlarge", 32, 330)):
+                f.write("R\tr8g\t%s\t1\t%d\t%d\t%d\twithin data\n" % (t_, n, tp, n))
         try:
             resolve(rows, "O3-n16", 1, resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O2-r8g", src)]), root)
             raise AssertionError("a candidate outside the bracket was generated")
@@ -1214,7 +1350,17 @@ def main(a):
     if a and a[0] == "--self-test":
         return _self_test()
     if a and a[0] == "check":
-        rows = load(a[1] if len(a) > 1 else TSV)
+        # check [TSV] [--resolved RES]: any table given is checked in full, its alias_cohorts
+        # declarations against RES (default: the committed ladder.resolved.tsv).
+        args, resd = a[1:], RESOLVED
+        if "--resolved" in args:
+            i = args.index("--resolved")
+            if i + 1 >= len(args):
+                print("ladder_levers: --resolved needs a file", file=sys.stderr)
+                return 2
+            resd = args[i + 1]
+            args = args[:i] + args[i + 2:]
+        rows = load(args[0] if args else TSV)
         probs = check(rows)
         for r in rows:
             if r["predecessor"] == "-":
@@ -1222,16 +1368,15 @@ def main(a):
             co = coupled_keys(r)
             print("%-11s %-26s from %-11s %s" % (r["rung"], r["group"], r["predecessor"],
                                                  "coupled: " + "+".join(sorted(co)) if co else ""))
-        # Every alias_cohorts declaration whose two rungs resolve (with the committed ladder.resolved.tsv,
-        # for the committed table only) must be the same configuration.
-        if len(a) == 1 and not probs:
+        # Every alias_cohorts declaration whose two rungs resolve must be the same configuration.
+        if not probs:
             try:
-                res = read_resolved(RESOLVED, ROOT, rows)
+                res = read_resolved(resd, ROOT, rows)
                 for c in sorted({int(d.split(":")[0].strip().lstrip("c")) for r in rows
                                  for d in r["alias_cohorts"].split(";") if d.strip()}):
                     probs += alias_cohort_problems(rows, c, res)
             except ValueError as e:
-                probs.append("scripts/g3/ladder.resolved.tsv: %s" % e)
+                probs.append("%s: %s" % (os.path.relpath(resd, ROOT) if os.path.isabs(resd) else resd, e))
         if probs:
             print("ladder_levers: %d problem(s):\n  %s" % (len(probs), "\n  ".join(probs)), file=sys.stderr)
             return 1
