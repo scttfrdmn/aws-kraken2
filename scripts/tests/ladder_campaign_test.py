@@ -145,14 +145,32 @@ raise SystemExit(1)
 '''
 
 STUB_QUOTA = r'''#!/usr/bin/env python3
-import os, sys, time
+import json, os, sys, time
 S = os.environ["AK2T"]
 log = os.path.join(S, "quota.log")
 n = sum(1 for _ in open(log)) if os.path.exists(log) else 0
 refuse = int(open(os.path.join(S, "quota_refuse")).read()) if os.path.exists(os.path.join(S, "quota_refuse")) else 0
 rc = 1 if n < refuse else 0
+rd = lambda f: open(os.path.join(S, f)).read().split() if os.path.exists(os.path.join(S, f)) else []
+typ = sys.argv[2]
+perm, always = typ in rd("quota_perm"), typ in rd("quota_always")
+if typ in rd("quota_busy"):   # refused while any run of this type is in flight (the campaign's own)
+    EV = os.path.join(S, "events.jsonl")
+    evs = [json.loads(l) for l in open(EV)] if os.path.exists(EV) else []
+    always = sum(1 if e["ev"] == "start" else -1 for e in evs if e["ev"] in ("start", "end") and e["type"] == typ) > 0
+if perm or always:
+    rc = 1
 open(log, "a").write("%f %d %s\n" % (time.time(), rc, " ".join(sys.argv[1:])))
-print("quota_check: %s: stub" % ("REFUSED" if rc else "ok"), file=sys.stderr)
+if perm:    # the request alone exceeds the quota (quota_check.sh's JSON record and message)
+    print('{"requested_vcpus": 384, "quota_vcpus": 256, "running_vcpus": 0}')
+    print("quota_check: REFUSED: 4 x %s = 384 vCPU, plus 0 vCPU already running in 0 on-demand X instance(s) = 384 of the X "
+          "on-demand quota L-7295265B (256 vCPU) in us-west-2. Lower NODES" % typ, file=sys.stderr)
+elif always:   # refused only because other instances run
+    print('{"requested_vcpus": 96, "quota_vcpus": 256, "running_vcpus": 192}')
+    print("quota_check: REFUSED: 1 x %s = 96 vCPU, plus 192 vCPU already running in 2 on-demand X instance(s) = 288 of the X "
+          "on-demand quota L-7295265B (256 vCPU) in us-west-2. Lower NODES" % typ, file=sys.stderr)
+else:
+    print("quota_check: %s: stub" % ("REFUSED" if rc else "ok"), file=sys.stderr)
 raise SystemExit(rc)
 '''
 
@@ -319,6 +337,50 @@ def main():
     ok(rc == 0 and len([e for e in evs if e["ev"] == "start"]) == 6 and concurrency(evs, lambda e: True) == 1,
        "default: CONCURRENCY=1, never two runs in flight (peak %d)" % concurrency(evs, lambda e: True), "rc %d\n%s" % (rc, out[-2000:]))
     ok("CONCURRENCY=1 (runs in flight at once)" in out, "default: the plan states CONCURRENCY=1")
+    shutil.rmtree(d)
+
+    # ---- quota: a request over the quota on its own stops its rung at once (permanent), and the
+    # family is not held up: S5 (the same X family) is asked in the same pass; S1 (r8gd) runs.
+    rs = ["S1", "S2a", "S5"]
+    d, R, S = scratch(rs)
+    rc, out, evs = campaign(R, S, "run", rs, files={"quota_perm": "x8g.24xlarge"})
+    starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
+    q = [l.split() for l in open(os.path.join(S, "quota.log"))]
+    xq = [x for x in q if x[3] == "x8g.24xlarge"]
+    ok(rc == 1 and starts == [("S1", 1), ("S1", 2)] and len(xq) == 2,
+       "quota-permanent: S2a and S5 (each over the X quota on its own) stop at their first refusal, without waiting; S1 runs (exit 1)",
+       "rc %d starts %s x8g quota calls %d\n%s" % (rc, starts, len(xq), out[-2000:]))
+    ok("exceeds the X on-demand quota of 256 vCPU on its own (permanent" in out and "not launched: S2a rep 2" in out,
+       "quota-permanent: the stop is reported with the vCPUs, and the rung's later rep is not launched", out[-2000:])
+    shutil.rmtree(d)
+    # ---- quota: a refusal because other instances run is waited for, but only up to the bound.
+    d, R, S = scratch(rs)
+    os.environ["AK2_CAMPAIGN_QUOTA_MAX_WAIT_S"] = "0.4"
+    try:
+        rc, out, evs = campaign(R, S, "run", rs, files={"quota_always": "x8g.24xlarge"})
+    finally:
+        del os.environ["AK2_CAMPAIGN_QUOTA_MAX_WAIT_S"]
+    starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
+    xq = [l.split() for l in open(os.path.join(S, "quota.log")) if " x8g.24xlarge " in l]
+    ok(rc == 1 and starts == [("S1", 1), ("S1", 2)] and len(xq) > 2 and "over the 0 s bound" in out,
+       "quota-wait: refused for running instances, S2a is asked again (%d calls) until the 0.4 s bound, then stops; S1 runs" % len(xq),
+       "rc %d starts %s\n%s" % (rc, starts, out[-2000:]))
+    shutil.rmtree(d)
+
+    # ---- quota: refused while the campaign's own x8g run is in flight, longer than the bound: that
+    # time is the schedule, not the quota, so S5 is not stopped; it launches once S2a ends.
+    d, R, S = scratch(rs)
+    os.environ["AK2_CAMPAIGN_QUOTA_MAX_WAIT_S"] = "0.3"
+    try:
+        rc, out, evs = campaign(R, S, "run", rs, conc=3, behave={"S2a:1": {"s": 1.5}, "S2a:2": {"s": 1.5}, "S5:1": {"s": 1.5},
+                                                                 "S5:2": {"s": 1.5}}, files={"quota_busy": "x8g.24xlarge"})
+    finally:
+        del os.environ["AK2_CAMPAIGN_QUOTA_MAX_WAIT_S"]
+    starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
+    busy = [l for l in open(os.path.join(S, "quota.log")) if " x8g.24xlarge " in l and l.split()[1] == "1"]
+    ok(rc == 0 and len(starts) == 6 and len(busy) >= 2 and "over the" not in out,
+       "quota-siblings: %d refusals while the campaign's own x8g run was in flight (over 1 s against a 0.3 s bound) do not "
+       "stop S5; all 6 launch" % len(busy), "rc %d starts %s\n%s" % (rc, starts, out[-2000:]))
     shutil.rmtree(d)
 
     # ---- normal, CONCURRENCY=4

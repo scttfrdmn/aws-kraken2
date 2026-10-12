@@ -318,12 +318,20 @@ PARAMS and host equal its time-chain counterpart's (its name without `-cost`), i
   whose resolved configuration equals its time counterpart's without the declaration ("declare
   alias_cohorts 'c<C>: <rung>'"), so a coincidence that a later selection creates (O3-cost's N
   equal to O3's, say) cannot run twice.
-- `make ladder-check` verifies every declaration that resolves under the committed
-  `ladder.resolved.tsv`.
-- **The tables** read the target's runs at that cohort (rungs.tsv basis "alias: same configuration
-  as O0 at c1 (alias_cohorts)"). They take the rung's delta against its own predecessor, and skip it
-  in the pairs when the two read the same runs. A run of the rung itself at such a cohort is not
-  used, and a note says so.
+- `make ladder-check` (`ladder_levers.py check [TSV] [--resolved RES]`) verifies every declaration
+  that resolves. It checks any table it is given, under the committed `ladder.resolved.tsv` or
+  `--resolved`.
+- **The tables verify each pair before reading the target's runs** (`alias_cohort_checks`). They use
+  the generator's own rule, on the lever table's values resolved under `ladder.resolved.tsv`'s
+  rows:
+  - a pair whose configurations differ is a DEFECT (levers);
+  - a pair that cannot be resolved there is not verified.
+
+  Either way the rung is "alias unresolved" at that cohort, reads no runs, and a note says so.
+- **A verified pair:** the rung reads the target's runs (rungs.tsv basis "alias: same configuration
+  as O0 at c1 (alias_cohorts)"). Its delta is taken against its own predecessor, and the pairs skip
+  it when the two read the same runs. A run of the rung itself at such a cohort is not used, and a
+  note says so.
 
 **Selection rules** (the `select` column, registered before any run; every `@select:<rung>`
 selection has one, and a rule names the candidates, the axis and the ties):
@@ -335,7 +343,7 @@ selection has one, and a rule names the candidates, the axis and the ties):
 | Sstar-time | S9, Sstar-r8g, Sstar-r8gd (alias) | median wall_s | fewer vCPUs |
 | Sstar-cost | S9, Sstar-r8g, Sstar-r8gd (alias) | median billed_usd | fewer vCPUs |
 | O2 / O2-cost (alias) | O1 (O1-cost), O2-r8g (O2-cost-r8g, r8g.48xlarge), O2-x8g (O2-cost-x8g, x8g.24xlarge): per family of c8g, c9g, r8g and x8g, its smallest type that holds 1/N of the table at O1's N (metal twins excluded; c8g and c9g end at 384 GiB); the rows are N = 1's, not run at c10 and above until S8 gives N there | median wall_s / billed_usd | fewer fleet vCPUs |
-| O3 / O3-cost (alias) | O2 (O2-cost) and O3-n2, -n4, -n8, -n16, -n32 (O3-cost-n…): N shards on O2's type; **bracket:** per cohort, the N within a factor 2 of fit R's time- (cost-)optimal N over {1, 2, 4, …, 64} for that type (`results/g3/fit26/predictions.tsv`), widened to all of them where that prediction is not "within data" or the type has none | median wall_s / billed_usd (measured, not the fit) | fewer nodes |
+| O3 / O3-cost (alias) | O2 (O2-cost) and O3-n2, -n4, -n8, -n16, -n32 (O3-cost-n…): N = K shards, **each on the smallest non-metal type of O2's winning family that holds table/K by `fits()`** (Scott, 2026-10-11, #25; below); **bracket:** per cohort, the N within a factor 2 of fit R's time- (cost-)optimal N over {1, 2, 4, 8, 16, 32}, each N predicted on its own type (`results/g3/fit26/predictions.tsv`), widened to all of them where that prediction is not "within data" or a type has none | median wall_s / billed_usd (measured, not the fit) | fewer nodes |
 | O4b / O4b-cost | INFLIGHT 1 … vCPUs / THREADS on O3's type, memory permitting (no candidate rungs yet: below) | median wall_s / billed_usd | fewer in flight |
 
 **Candidate rungs** (Scott via the coordinator, 2026-10-11). Each selection is an alias over its
@@ -346,12 +354,60 @@ candidates, as S\* is:
 - the predecessor counts as a candidate. A predecessor not run at the cohort stands for the
   configuration it has there (O1 at c1 is O0b's);
 - `@select:<alias>[:KEY]` resolves any key to the winner's value (`_values`), so S5 takes S4's
-  winner's THREADS and PROCS, and O3's candidates (`instance =pred`) take O2's winner's type.
+  winner's THREADS and PROCS, and O3's candidates (`instance @floor:O2`) take the smallest type of
+  O2's winner's family that holds table/K (below).
+
+**O2 is one candidate per family** (Scott, 2026-10-11, #25; in the rule text): the family's smallest
+type holding 1/N of the table (the #26 fit's memory floor), metal twins excluded.
+
+**O3 is right-sized per N** (Scott, 2026-10-11, #25). Each O3-n\<K\> and O3-cost-n\<K\> has `instance
+@floor:O2` (`@floor:O2-cost`).
+- **The type** is the smallest non-metal type of O2's winning family, from
+  `scripts/g3/ladder.types.tsv` (written and checked by `make ladder-types`, below), that holds the
+  rung at that cohort by `fits()`. That is the engine
+  shard table/K × 1.15 + 8 GB + 7.5 GB per sample in flight, the inputs and outputs, and 16 GiB of
+  slack, with every other PARAM as resolved. The types table holds the families' types, vCPUs and
+  memory from truffle on 2026-10-11.
+- **At c1 and INFLIGHT = 1:**
+  - x8g: x8g.12xlarge at 2, x8g.8xlarge at 4, x8g.4xlarge at 8, x8g.2xlarge at 16 and 32;
+  - r8g: r8g.24xlarge at 2, r8g.12xlarge at 4, r8g.8xlarge at 8, r8g.4xlarge at 16 and 32.
+- **The one-lever check counts the host change as derived.** It moves with SHARDS inside O3's lever,
+  as S4's vCPU ratios move with the host. It is declared in the `derived` column as an `instance:
+  …` clause, and `derived_host` honours the clause only in two cases:
+  - the rung's instance is `@floor:<its own predecessor>`;
+  - the rung is an alias whose instance is `@select:<itself>` and every candidate other than its
+    predecessor qualifies.
+
+  Any other host change is the HOST group and is refused, clause or not. The tests refuse three
+  cases: S5 with a changed host plus the clause, `@floor:Sstar-time` on O3-n2, and a fixed
+  c8g.48xlarge on O3-n2. The last two also stop the O3 alias from qualifying.
+- **O3's delta includes the host right-sizing.** Each N runs on its own type, so O3's delta is not
+  the shard count alone: the vCPUs, the memory and the network change with N as well. deltas.tsv
+  (`predecessor_basis`) and the pairs.tsv lever row (`note`) say so on O3 and O3-cost: "the delta
+  includes the per-N host right-sizing (…)".
+- **The O3 alias's own host** is `@select:O3`, its winner's host, also declared as derived. So O4a
+  and O5 (`=pred`) inherit the winner's right-sized type.
+- **The bracket's grid is the candidates' N:** {1, 2, 4, 8, 16, 32}, where 1 is O2's own N at
+  K = 1. 64 is dropped rather than an O3-n64 added. The candidate rows end at 32, as the
+  coordinator set them, and a grid with an N that no row has is refused.
+
+**The types table** (`make ladder-types`, `scripts/g3/ladder-types.sh`, `scripts/lib/ladder_types.py`):
+
+```bash
+make ladder-types           # rewrite scripts/g3/ladder.types.tsv from truffle (read-only: nothing is launched)
+make ladder-types CHECK=1   # compare the committed table with truffle's answer now; exit 1 on any difference
+```
+
+- **Write** queries `truffle find 'c8g.*' 'c9g.*' 'r8g.*' 'x8g.*' --regions us-west-2 --show-price -o
+  json` and keeps the four families exactly (no d, b or n variants): type, vCPUs, memory and the
+  on-demand price. It records `truffle version`, the query and the time in the header (truffle
+  0.57.1 on 2026-10-11).
+- **Check** compares every type, vCPU count, memory and price, and reports both truffle versions.
+- `make test` runs `ladder_types.py validate` offline. It checks the shape, that each family has a
+  non-metal type, and that the header records the version and the query.
+- The table is under `scripts/g3/`, so it must be committed before the next launch.
 
 **What the registered rules leave open:**
-- **O2:** the rule says "types". The rows read it as one candidate per family, its smallest type
-  holding 1/N of the table (the #26 fit's memory floor), with metal twins excluded. Scott should
-  confirm this reading.
 - **N = 2 rows for O2:** O2's rows for N = 2 (r8g.24xlarge, x8g.12xlarge) wait for S8 at c10 and
   above.
 - **O4b:** its candidates (INFLIGHT up to vCPUs / THREADS on O3's type) depend on S4's T and on
@@ -640,8 +696,16 @@ waits until all of these hold:
   `.launch` (so the next quota check sees its instances);
 - fewer than CONCURRENCY runs are in flight, and the family and first-run rules above hold;
 - the rung's earlier rep has ended;
-- `quota_check.sh REGION TYPE NODES` exits 0. Exit 1 means wait, and the family is asked again
-  after 60 s. Exit 2 (cannot judge) stops launching.
+- `quota_check.sh REGION TYPE NODES` exits 0. Exit 2 (cannot judge) stops launching. Exit 1 is
+  read from quota_check's own record (its JSON on stdout, else its message):
+  - **the request alone exceeds the quota** (requested vCPUs > the quota): permanent. The rung stops
+    at once and is reported ("exceeds the X on-demand quota of 256 vCPU on its own"). The rest of
+    its family is still asked in the same pass;
+  - **the request fits but running instances fill the quota:** wait. The family is asked again
+    after 60 s, for at most `AK2_CAMPAIGN_QUOTA_MAX_WAIT_S` in total per item (default 6 h).
+    After that the rung stops. The clock counts only the time between refusals during which none
+    of the campaign's own runs of that family is in flight, to within the retry interval. A wait
+    on its own sibling runs is the schedule, not the quota.
 
 The tree must be clean under run.sh's paths before every launch; otherwise launching stops.
 
@@ -774,8 +838,9 @@ in the attribution. Their count must equal the median's n.
 **What it selects: every alias rung** (S4, S8, Sstar-time, Sstar-cost, O2, O2-cost, O3, O3-cost),
 in table order, so that a selection made in the same run (O2, say) reaches the rules after it
 (O3's bracket).
-- **The candidates** are the alias's `alias_of`. Each must be named in the rule's `candidates:`
-  clause. At the cohort, the set leaves out:
+- **The candidates** are the alias's `alias_of`, which must be exactly the rungs the rule's
+  `candidates:` clause names: every one, and no other. A rung named in the possessive ("O2's
+  family") is not a candidate. At the cohort, the set leaves out:
   - a candidate not run there, unless it is the alias's own predecessor, which stands for the
     configuration it has there (O1 at c1 is O0b's);
   - a candidate outside the rule's bracket (O3).
