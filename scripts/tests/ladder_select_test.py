@@ -320,6 +320,49 @@ try:
     check("tables: O2-cost reads O0b's runs (via O1-cost, O0b-cost) and O0-cost reads O0's",
           rr[("O2-cost", "wall_s")]["median"] == rr[("O0b", "wall_s")]["median"] and rr[("O0-cost", "wall_s")]["median"] == rr[("O0", "wall_s")]["median"]
           and "same configuration as O0b at c1" in rr[("O2-cost", "wall_s")]["basis"], (rr.get(("O2-cost", "wall_s")), rr.get(("O0-cost", "wall_s"))))
+
+    # 15. O4b's in-flight range at c10 (INFLIGHT 1 .. vCPUs / THREADS on O4a's host). Hypothetical
+    # selections up to O3, written with a source in the scratch root: S4 -> S4-t12 (THREADS 12) and
+    # O3 -> O3-n2 (x8g.12xlarge, 48 vCPUs) leave O4a (INFLIGHT 4), O4b-if1 and O4b-if2; with no runs of
+    # them, the rule is not selected. S4 -> S2a (THREADS = vcpus) leaves only O4a: the row names O4a
+    # without a measurement, and O5 then takes O4a's INFLIGHT.
+    def hypo(root, s4):
+        os.makedirs(os.path.join(root, "results", "g3", "hypo"), exist_ok=True)
+        with open(os.path.join(root, "results", "g3", "hypo", "manifest.json"), "w") as f:
+            f.write("{}")
+        with open(resd(root), "w") as f:
+            f.write("origin\tcohort\tkey\tvalue\tsource\n")
+            for o, v in (("S4", s4), ("S8", "S7b"), ("Sstar-time", "S9"), ("O2", "O1"), ("O3", "O3-n2")):
+                f.write("%s\t10\talias\t%s\tresults/g3/hypo/manifest.json\n" % (o, v))
+    r9 = mkroot({"S2a": [1000, 1001]}, cohort=10)
+    roots.append(r9)
+    hypo(r9, "S4-t12")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        rc = LS.main(["select", "10", "--root", r9, "--rung", "O4b"])
+    out = out.getvalue()
+    check("O4b at c10 (THREADS 12 on x8g.12xlarge): candidates O4a, O4b-if1, O4b-if2 in range, none measured: exit 3",
+          rc == 3 and "O4b-if1 has n = 0" in out and "O4b-if2 has n = 0" in out and "O4b-if4" not in out.split("left out")[0], (rc, out))
+    rows9 = LL.load(os.path.join(r9, "scripts", "g3", "ladder.levers.tsv"))
+    res9 = LL.read_resolved(resd(r9), r9, rows9)
+    try:
+        LS.select_alias(rows9, LL.by_name(rows9)["O4b"], 10, [], [], {}, r9, res9)
+        ok = "selected"
+    except LS.Refused as e:
+        ok = str(e)
+    check("... the candidates asked for are exactly O4a, O4b-if1 and O4b-if2 (O4b-if4 is O4a's own, O4b-if8 above the bound)",
+          all("%s has n = 0" % c in ok for c in ("O4a", "O4b-if1", "O4b-if2")) and "O4b-if4" not in ok and "O4b-if8" not in ok, ok)
+    hypo(r9, "S2a")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        rc = LS.main(["select", "10", "--root", r9, "--rung", "O4b"])
+    out = out.getvalue()
+    t = rows_of(r9).get(("O4b", "10"))
+    check("O4b at c10 with THREADS = vcpus (S4 -> S2a): the only candidate O4a is selected without a measurement",
+          rc == 0 and t and t["value"] == "O4a" and t["margin"].startswith("single candidate") and "1 .. 1" in t["note"]
+          and "O4b-if1 (outside the range: INFLIGHT 1 is O4a's own" in t["note"], (rc, out, t))
+    o5 = LL.resolve(LL.load(os.path.join(r9, "scripts", "g3", "ladder.levers.tsv")), "O5", 10, resd(r9), r9)["params"]
+    check("... and O5 at c10 takes O4a's INFLIGHT (S2a's PROCS 1)", o5["INFLIGHT"] == "1", o5)
 finally:
     for r in roots:
         shutil.rmtree(r, ignore_errors=True)

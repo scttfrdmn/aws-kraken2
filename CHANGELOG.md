@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **TTL estimates above c1** (`scripts/lib/ladder_ttl.py`; docs/ladder.md, "TTL above c1"). Above
+  c1, `mkspec-ladder.sh` no longer needs `TTL=`. It estimates each rung's wall from the record's c1
+  runs of the rung, or of its nearest measured relative (`config_row` at c1, then its predecessors).
+  - **The model:** a fixed part, plus per-sample parts scaled by the samples' real pairs and bytes.
+    The per-sample parts are the per-invocation time (classify − classify-process), classification,
+    serial upload, fetch-inputs and identity. They are split over replicas and PROCS/INFLIGHT lanes,
+    with a thread slowdown.
+  - **TTL** = max(30 min, 2.5 × estimate), rounded up to 10 min. cost_limit = TTL × price. A TTL
+    above `AK2_MAX_TTL_S` is refused (exit 5).
+  - The estimate and its basis go into the spec's TTL comment. `make ladder-respec` re-estimates
+    such specs.
+  - The self-test works the model by hand. On the committed record, S0-T1 at c10 gets 320 min
+    (7589 s), under the 8 h limit.
+- **O4b and O4b-cost candidate rungs.** O4b and O4b-cost are now aliases over O4a (O4a-cost) and
+  O4b-if1 … O4b-if128 (O4b-cost-if…), INFLIGHT k.
+  - Statically, every candidate is not run at c1, and none is run where k > cohort.
+  - Above c1, a new `range:` clause in the rule (`ladder_levers.inflight_range`) leaves out a
+    candidate above max(1, vCPUs // THREADS) on O4a's host, or at O4a's own INFLIGHT. The generator
+    refuses it, and ladder-select leaves it out.
+  - Where only O4a is left, ladder-select writes O4a as the winner (margin `single candidate`, no
+    runs needed). With S4 → S2a (THREADS = vcpus), O4b can never vary at that cohort.
+- **c10 conditional `alias_cohorts` entries** on the cost chain's run rungs (O0-cost, O0b-cost,
+  O1-cost, O3-cost-n\<K\>, O4a-cost, O4b-cost-if1…8, O5-cost), so a cost rung that coincides with
+  its time counterpart at c10 reads its runs instead of being refused.
+- **`make ladder-advance COHORT=<c> [DRY_RUN=1]`** (`scripts/g3/ladder-advance.sh`,
+  `scripts/lib/ladder_advance.py`; docs/ladder.md, "Advancing a cohort"). One step of a cohort above
+  c1, stage by stage:
+  - it runs ladder-select, generates every spec now determined and not committed, and runs the
+    static checks;
+  - it prints the stage plan: the rungs per stage with their state and why, the pending and BLOCKED
+    selections, the blockers, and the rehearsal classes;
+  - it gives each stage's summed cost_limit as an upper bound. For a pending rung, that is the
+    largest over the combinations of the pending selections;
+  - it writes `results/g3/ladder-advance/c<c>.plan.tsv`;
+  - it stops for the coordinator. It never launches or commits.
+
+  `make ladder-advance-test` is in `make test`.
+- `make rehearse SPEC=` accepts specs above c1. It runs the cohort's C samples (the real read sets
+  repeated under distinct names, each checked against its oracle), and makes the nodes' `nproc`
+  report the spec type's vCPUs (`OMP_NUM_THREADS`), so vcpus ratios give the spec's lanes.
+
 - **Conditional `alias_cohorts` entries** (`c<C>: <rung> (if same configuration)`;
   ladder_levers.py `alias_state`, ladder_tables.py `alias_cohort_checks`; docs/ladder.md, "The
   cost chain reads the time chain"). Such an entry is an alias where the two rungs resolve to one

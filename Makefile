@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-select ladder-select-test ladder-types
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -35,6 +35,8 @@ test:
 	python3 scripts/tests/ladder_campaign_test.py
 	python3 scripts/tests/ladder_select_test.py
 	python3 scripts/lib/ladder_types.py validate
+	python3 scripts/lib/ladder_ttl.py --self-test
+	python3 scripts/tests/ladder_advance_test.py
 
 lint:
 	$(GO) vet $(PKGS)
@@ -286,6 +288,17 @@ ladder-select:
 
 ladder-select-test:
 	python3 scripts/tests/ladder_select_test.py
+
+# One step of a cohort above c1, stage by stage (docs/ladder.md, "Advancing a cohort"): make
+# ladder-select at the cohort, then every spec now fully determined and not committed is generated
+# (TTL estimated from the c1 record, scripts/lib/ladder_ttl.py), the static checks run, and the stage
+# plan (rungs, pending selections and why, summed cost_limit as an upper bound) is printed and written
+# to results/g3/ladder-advance/c<COHORT>.plan.tsv. DRY_RUN=1 writes nothing. Launches and commits nothing.
+ladder-advance:
+	DRY_RUN="$(DRY_RUN)" scripts/g3/ladder-advance.sh "$(COHORT)"
+
+ladder-advance-test:
+	python3 scripts/tests/ladder_advance_test.py
 
 # The instance types O2 and O3 choose among (scripts/g3/ladder.types.tsv: c8g, c9g, r8g, x8g), from
 # truffle with its version recorded; CHECK=1 compares the committed table with truffle's answer and

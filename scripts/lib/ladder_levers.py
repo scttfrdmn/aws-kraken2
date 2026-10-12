@@ -606,10 +606,29 @@ def _values(rows, r, cohort, res, depth=0):
     return out, bad
 
 
+_FILE_CACHE = {}
+
+
+def _cached(path, parse):
+    """PARSE(path), kept while the file's mtime and size are unchanged (make ladder-advance's plan
+    resolves many hypothetical selections)."""
+    st = os.stat(path)
+    key = (parse.__name__, os.path.abspath(path))
+    hit = _FILE_CACHE.get(key)
+    if hit is None or hit[0] != (st.st_mtime_ns, st.st_size):
+        hit = ((st.st_mtime_ns, st.st_size), parse(path))
+        _FILE_CACHE[key] = hit
+    return hit[1]
+
+
 def load_types(path=None):
     """type -> (vcpus, memory_mib) from scripts/g3/ladder.types.tsv (the families O2 and O3 choose among)."""
+    return dict(_cached(path or TYPES, _parse_types))
+
+
+def _parse_types(path):
     out = {}
-    with open(path or TYPES) as f:
+    with open(path) as f:
         head = None
         for line in f:
             if line.startswith("#") or not line.strip():
@@ -722,6 +741,54 @@ def bracket(rows, alias_row, cohort, res, root=ROOT):
         fit, obj, cohort, best[1], best[2], best[1] / 2, 2 * best[1]), cited
 
 
+RANGE_RE = re.compile(r"(?:^|; )range: INFLIGHT 1 \.\. vCPUs / THREADS at the predecessor's host")
+
+
+def inflight_range(rows, alias_row, cohort, res, types=None):
+    """For an alias whose select rule has the in-flight `range:` clause (O4b, O4b-cost): ({candidate:
+    why it is left out}, how) at COHORT, every other alias_of candidate being in range. The bound is
+    max(1, vCPUs // THREADS) at the predecessor's resolved host (O4a's: O3's winning type), with
+    THREADS as resolved there. A candidate is left out when its INFLIGHT is above the bound, equal to
+    the predecessor's own INFLIGHT (the predecessor itself), or (memory permitting) does not fit the
+    host by fits(). None if the rule has no range clause. Raises Unresolved while the predecessor is
+    unresolved (the bound needs its host and THREADS)."""
+    if not RANGE_RE.search(alias_row.get("select", "")):
+        return None
+    names = by_name(rows)
+    p = names.get(alias_row["predecessor"])
+    if p is None:
+        raise Unresolved("%s: its predecessor %s is not in the table" % (alias_row["rung"], alias_row["predecessor"]))
+    pv, bad = _values(rows, p, cohort, res)
+    if bad:
+        raise Unresolved("%s at c%s: its predecessor %s is unresolved (%s), so its in-flight range cannot be computed"
+                         % (alias_row["rung"], cohort, p["rung"], ", ".join(bad)))
+    v = vcpus_of(pv["instance"])
+    if not v:
+        raise Unresolved("%s at c%s: no vCPUs for the predecessor's host %s" % (alias_row["rung"], cohort, pv["instance"]))
+    t = vc(pv["THREADS"], v)
+    bound = max(1, v // t)
+    pk = 1 if pv["INFLIGHT"] == "-" else vc(pv["INFLIGHT"], v)
+    types = load_types() if types is None else types
+    mem = types.get(pv["instance"], (None, None))[1]
+    out = {}
+    for c in [c for c in alias_row["alias_of"].split("|") if c and c != alias_row["predecessor"]]:
+        cv, cbad = _values(rows, names[c], cohort, res)
+        if cbad:
+            raise Unresolved("%s at c%s: candidate %s is unresolved (%s)" % (alias_row["rung"], cohort, c, ", ".join(cbad)))
+        k = vc(cv["INFLIGHT"], vcpus_of(cv["instance"]) or v)
+        if k > bound:
+            out[c] = "INFLIGHT %d > vCPUs / THREADS = %d // %d = %d on %s" % (k, v, t, bound, pv["instance"])
+        elif k == pk:
+            out[c] = "INFLIGHT %d is %s's own (%s on %s)" % (k, p["rung"], pv["INFLIGHT"], pv["instance"])
+        elif k > pk and mem is not None:
+            pr = fits({"params": cv, "instance": cv["instance"]}, int(cohort), mem, v)
+            if pr:
+                out[c] = "memory: " + "; ".join(pr)
+    how = ("INFLIGHT 1 .. %d (vCPUs / THREADS = %d // %d on %s, %s's host); %s's own INFLIGHT is %d"
+           % (bound, v, t, pv["instance"], p["rung"], p["rung"], pk))
+    return out, how
+
+
 def notrun_resolution_warnings(rows, res):
     """Warnings for resolution rows given for a rung at a cohort where it is not run: at such a
     cohort its tokens resolve to its predecessor's values, so the row is never used."""
@@ -733,11 +800,13 @@ def notrun_resolution_warnings(rows, res):
     return out
 
 
-def resolve(rows, rung, cohort, resolved=None, root=ROOT):
+def resolve(rows, rung, cohort, resolved=None, root=ROOT, res=None):
     """{'params': {K: v}, 'instance', 'az', 'ttl_c1', 'arm', 'want_n'}; raises Unresolved. After
     resolving, the one-lever rule is checked again on the resolved values against the resolved
     predecessor (an alias predecessor is its winner, a not-run one is skipped): a resolution that
-    makes the rung identical to its predecessor, or changes another key-group, is refused."""
+    makes the rung identical to its predecessor, or changes another key-group, is refused. RES, when
+    given, is the resolutions themselves ((origin, cohort, key) -> (value, source)), in place of the
+    file RESOLVED: make ladder-advance's plan resolves under hypothetical selections this way."""
     names = by_name(rows)
     if rung not in names:
         raise KeyError("no rung %s in the table" % rung)
@@ -747,7 +816,8 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, why))
     if r["status"] != "run":
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
-    res = read_resolved(resolved, root, rows) if resolved is not None else {}
+    if res is None:
+        res = read_resolved(resolved, root, rows) if resolved is not None else {}
     st, at, why = alias_state(rows, r, cohort, res)
     if st == "alias":
         raise Unresolved("%s is alias: same configuration as %s at c%s (alias_cohorts%s): no spec is generated for it; "
@@ -777,6 +847,10 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
         b = bracket(rows, names[al], cohort, res, root)
         if b is not None and rung not in b[0]:
             raise Unresolved("%s at cohort %s is outside %s's bracket (%s): not a candidate there" % (rung, cohort, al, b[1]))
+        # A candidate outside its alias's in-flight range (O4b's INFLIGHT 1 .. vCPUs / THREADS) is not run.
+        rg = inflight_range(rows, names[al], cohort, res)
+        if rg is not None and rung in rg[0]:
+            raise Unresolved("%s at cohort %s is outside %s's range (%s; %s): not a candidate there" % (rung, cohort, al, rg[0][rung], rg[1]))
     p = run_pred_at(rows, r, cohort)
     if p is not None and (p["status"].startswith("alias:") or alias_state(rows, p, cohort, res)[0] != "none"):
         p = config_row(rows, p, cohort, res) or p
@@ -801,14 +875,18 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT):
     return {"params": out, "instance": inst, "az": r["az"], "ttl_c1": r["ttl_min_c1"], "arm": r["arm"], "want_n": want}
 
 
-def cohort_runs(cohort, path=RUNS):
+def _parse_runs(path):
     rows = []
     with open(path) as f:
         head = f.readline().rstrip("\n").split("\t")
         for l in f:
             d = dict(zip(head, l.rstrip("\n").split("\t")))
-            if int(d["rank"]) <= cohort:
-                rows.append((d["run"], int(d["read_count"]), int(d["bytes_1"]) + int(d["bytes_2"])))
+            rows.append((int(d["rank"]), d["run"], int(d["read_count"]), int(d["bytes_1"]) + int(d["bytes_2"])))
+    return rows
+
+
+def cohort_runs(cohort, path=RUNS):
+    rows = [(r, w, b) for k, r, w, b in _cached(path, _parse_runs) if k <= cohort]
     if len(rows) != cohort:
         raise ValueError("runs.tsv has %d of ranks 1-%d" % (len(rows), cohort))
     return rows
@@ -1349,6 +1427,39 @@ def _self_test():
         except Unresolved as e:
             assert "outside O3's bracket" in str(e), e
         assert resolve(rows, "O3-n4", 1, resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O2-r8g", src)]), root)["want_n"] == 4
+        # O4b's in-flight range (INFLIGHT 1 .. vCPUs / THREADS at O4a's host, O3's winning type). At c10
+        # with S4 -> S4-t12 (THREADS 12) and O3 -> O3-n2 on x8g.12xlarge (48 vCPUs): the bound is 4, O4a's
+        # own INFLIGHT (vcpus/12) is 4, so O4b-if1 and O4b-if2 are candidates, O4b-if4 is O4a itself and
+        # O4b-if8 is above the bound (O4b-if16 and up are not run at c10: k > cohort).
+        h = {("S4", "10", "alias"): ("S4-t12", src), ("S8", "10", "alias"): ("S7b", src), ("Sstar-time", "10", "alias"): ("S9", src),
+             ("O2", "10", "alias"): ("O1", src), ("O3", "10", "alias"): ("O3-n2", src)}
+        assert _values(rows, names["O4a"], 10, h)[0]["instance"] == "x8g.12xlarge"
+        rg = inflight_range(rows, names["O4b"], 10, h)
+        assert set(rg[0]) == {"O4b-if4", "O4b-if8", "O4b-if16", "O4b-if32", "O4b-if64", "O4b-if128"} and "1 .. 4" in rg[1], rg
+        assert "O4a's own" in rg[0]["O4b-if4"] and "> vCPUs / THREADS = 48 // 12 = 4" in rg[0]["O4b-if8"], rg
+        r2 = resolve(rows, "O4b-if2", 10, res=h)
+        assert (r2["instance"], r2["params"]["INFLIGHT"], r2["params"]["THREADS"]) == ("x8g.12xlarge", "2", "12"), r2
+        for rung, want in (("O4b-if4", "is O4a's own"), ("O4b-if8", "outside O4b's range"), ("O4b-if16", "not-run at c10")):
+            try:
+                resolve(rows, rung, 10, res=h)
+                raise AssertionError("%s resolved at c10" % rung)
+            except Unresolved as e:
+                assert want in str(e), (rung, e)
+        # THREADS = vcpus (S4 -> S2a): vCPUs / THREADS is 1 on every host, so every candidate is out and
+        # O4b's only candidate is O4a (its selection then names O4a without a measurement).
+        h2 = dict(h)
+        h2[("S4", "10", "alias")] = ("S2a", src)
+        rg = inflight_range(rows, names["O4b"], 10, h2)
+        assert set(rg[0]) == set(names["O4b"]["alias_of"].split("|")[1:]) and "1 .. 1" in rg[1], rg
+        # ... and O4a unresolved (O3 not selected): the range cannot be computed.
+        h3 = dict(h)
+        del h3[("O3", "10", "alias")]
+        try:
+            inflight_range(rows, names["O4b"], 10, h3)
+            raise AssertionError("a range with O4a unresolved")
+        except Unresolved as e:
+            assert "its predecessor O4a is unresolved" in str(e), e
+        assert inflight_range(rows, names["O3"], 10, h) is None   # no range clause
         # An alias's host is its winner's, and the winner must be one of alias_of.
         alias = resfile([("Sstar-time", "1", "alias", "Sstar-r8g", src)])
         assert _values(rows, names["Sstar-time"], 1, read_resolved(alias, root))[0]["instance"] == "r8g.48xlarge"
