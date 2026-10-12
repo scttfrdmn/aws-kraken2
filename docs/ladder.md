@@ -1275,6 +1275,10 @@ the scratch dir. The tree must be committed: the nodes clone HEAD.
   spec's own lanes on the 8-vCPU VM, oversubscribed. Without this, S4-t12's vcpus/12 would be one
   lane there. Every classifier and decompressor is called with an explicit thread count, so the
   variable reaches only the body's own `nproc`.
+- **On a per-sample node** (one replica, one shard), the case also expects the spec's lanes,
+  min(PROCS at those vCPUs, C), to run at once: the `order` check, with distinct lanes whose
+  classify spans overlap. Under a serial upload mode, each lane's next sample must start after the
+  previous one's uploads end.
 - **Not covered:** the samples' real sizes. The rehearsal checks behaviour (lanes, Law 1, streaming,
   phases), not time.
 

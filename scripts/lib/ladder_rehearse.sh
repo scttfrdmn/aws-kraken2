@@ -530,6 +530,20 @@ spec_case() {   # SPEC [SUFFIX]; MUTF and EXPECTFAIL as for arm (a negative cont
     tv=$(python3 -c 'import sys; sys.path.insert(0, "scripts/lib"); import ladder_levers as L; print(L.vcpus_of(sys.argv[1]) or "")' "$type")
     [ -n "$tv" ] && extra=(OMP_NUM_THREADS="$tv")
     say "$c: cohort $coh: samples $sam (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: ${tv:-that of the VM} (the vCPUs of $type, the spec type)"
+    # On one per-sample node: the spec's lanes (PROCS at those vCPUs, at most the samples) must run
+    # at once, and under a serial upload mode each lane's next sample waits for the previous uploads.
+    local exl
+    exl=$(python3 -c 'import sys, json; sys.path.insert(0, "scripts/lib"); import ladder_levers as L
+kv = dict(x.split("=", 1) for x in sys.argv[1].split("; ") if "=" in x); v, c, ex = int(sys.argv[2] or 8), int(sys.argv[3]), {}
+if kv["CLASSIFIER"] != "ours-engine" and kv["REPLICAS"] == "1" and kv["SHARDS"] == "1":
+    p = min(L.vc(kv["PROCS"], v), c)
+    if p > 1:
+        ex["lanes"] = p
+    if kv["OUT_UPLOAD"] in ("awscp-default", "s5cmd-serial"):
+        ex["order"] = "serial"
+print(json.dumps(ex))' "$line" "$tv" "$coh") || return 1
+    ex=$(jq -c ". + $exl" <<< "$ex")
+    say "$c: expected on the node: $exl"
   fi
   launch "$c" "$T/cases/$c/payload.sh" "$wn" "$type" "${coh:-1}" cohort "$sam" "$wts" ${extra[@]+"${extra[@]}"}
   casejson "$c" "$rung" "$line" "$sam" "$type" "$ex" "$refmap"
