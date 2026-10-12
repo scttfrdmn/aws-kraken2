@@ -53,8 +53,8 @@ SHA=$(git rev-parse --short=7 HEAD)
 TS=$(date -u +%Y%m%dT%H%M%SZ)
 SPEC=""
 if [ "$MODE" = spec ]; then
-  SPEC=${1:?spec mode needs runs/g3-l-<rung>-c1.json}
-  [[ $SPEC =~ ^runs/g3-l-[a-z0-9-]+-c1\.json$ ]] && [ -f "$SPEC" ] || { echo "ladder-rehearse: SPEC $SPEC: want a committed runs/g3-l-<rung>-c1.json" >&2; exit 2; }
+  SPEC=${1:?spec mode needs runs/g3-l-<rung>-c<cohort>.json}
+  [[ $SPEC =~ ^runs/g3-l-[a-z0-9-]+-c[1-9][0-9]*\.json$ ]] && [ -f "$SPEC" ] || { echo "ladder-rehearse: SPEC $SPEC: want a committed runs/g3-l-<rung>-c<cohort>.json" >&2; exit 2; }
 fi
 if [ "$MODE" = tables ]; then
   TREC=${1:?tables mode needs the record dir (LADREH_RECORD of the spec runs)}
@@ -489,9 +489,15 @@ arm() {
 # ---- cases ----
 EX_OK='{"exit":"ok","pipefail_off":true}'
 ex() { jq -c ". + $1" <<< "$EX_OK"; }
-# Every committed c1 spec, as make rehearse SPEC= runs it.
+# Every committed c1 spec, as make rehearse SPEC= runs it. A spec above c1 (COHORT=C in its PARAMS)
+# runs C samples: the three real read sets in turn, the k-th repeat named <accession><letter> (b, c,
+# ...) and checked against its read set's oracle (the refmap), so every name is distinct and every
+# output is checked. Its nodes report the spec's type's vCPUs from nproc (OMP_NUM_THREADS, which GNU
+# nproc honours), so PROCS=vcpus/<T> and INFLIGHT=vcpus/<T> give the spec's lanes on the 8-vCPU VM,
+# oversubscribed; every classifier is called with an explicit thread count.
 spec_case() {   # SPEC [SUFFIX]; MUTF and EXPECTFAIL as for arm (a negative control of the tables)
-  local spec=$1 c rung type line wn ex
+  local spec=$1 c rung type line wn ex coh sam wts refmap='{}' i j nm tv letters=bcdefghijklmnopqrstuvwxyz
+  local -a extra=()
   c=spec-$(basename "$spec" .json | sed 's/^g3-l-//; s/-c1$//')${2:+-$2}
   rung=$(git show "HEAD:$spec" | jq -r '.command[2]' | sed -n 's/^RUNG=\([^;]*\);.*/\1/p' | head -1)
   line=$(git show "HEAD:$spec" | jq -r '.command[2]' | grep -m1 '^RUNG=')
@@ -508,8 +514,25 @@ spec_case() {   # SPEC [SUFFIX]; MUTF and EXPECTFAIL as for arm (a negative cont
   say "$c: $spec sha256 $(git show "HEAD:$spec" | shasum -a 256 | cut -d' ' -f1) (HEAD $SHA)"
   say "$c: $line"
   ex=$EX_OK; [[ $line == *GUNZIP=rapidgzip* ]] && ex=$(ex '{"s5":{}}')
-  launch "$c" "$T/cases/$c/payload.sh" "$wn" "$type" 1 cohort "${SRC[0]}" "${WEIGHTS[0]}"
-  casejson "$c" "$rung" "$line" "${SRC[0]}" "$type" "$ex"
+  coh=$(sed -n 's/.*COHORT=\([0-9]*\);.*/\1/p' <<< "$line")
+  sam=${SRC[0]}; wts=${WEIGHTS[0]}
+  if [ "${coh:-1}" -gt 1 ]; then
+    sam=""; wts=""
+    for ((i = 0; i < coh; i++)); do
+      j=$((i % ${#SRC[@]})); nm=${SRC[$j]}
+      if [ "$i" -ge "${#SRC[@]}" ]; then
+        nm="${SRC[$j]}${letters:$((i / ${#SRC[@]} - 1)):1}"
+        put cohort "$nm" "$K2_READS/${SRC[$j]}_200000_1.fq.gz" "$K2_READS/${SRC[$j]}_200000_2.fq.gz" || return 1
+      fi
+      sam="$sam${sam:+ }$nm"; wts="$wts${wts:+ }${WEIGHTS[$j]}"
+      refmap=$(jq -c --arg a "$nm" --arg r "${SRC[$j]}" '. + {($a): $r}' <<< "$refmap")
+    done
+    tv=$(python3 -c 'import sys; sys.path.insert(0, "scripts/lib"); import ladder_levers as L; print(L.vcpus_of(sys.argv[1]) or "")' "$type")
+    [ -n "$tv" ] && extra=(OMP_NUM_THREADS="$tv")
+    say "$c: cohort $coh: samples $sam (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: ${tv:-that of the VM} (the vCPUs of $type, the spec type)"
+  fi
+  launch "$c" "$T/cases/$c/payload.sh" "$wn" "$type" "${coh:-1}" cohort "$sam" "$wts" ${extra[@]+"${extra[@]}"}
+  casejson "$c" "$rung" "$line" "$sam" "$type" "$ex" "$refmap"
   runcheck "$c" ${EXPECTFAIL:+--expect-fail "$EXPECTFAIL"}; local rc=$?
   [ "$same" = yes ] || { echo "FAIL $c: body: the spec's body is not the committed body plus its parameters" >> "$T/cases/$c/check.txt"; rc=1; }
   [ "$same" = yes ] && echo "ok   $c: body: the spec's body is the committed body plus its parameter block" >> "$T/cases/$c/check.txt"

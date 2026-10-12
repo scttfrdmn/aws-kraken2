@@ -196,7 +196,8 @@ O\*: ours), the table of every rung, and the generator that turns a rung into a 
 ```bash
 make ladder-check                                   # one key-group per rung, counterparts, endpoints
 make ladder-spec ARM=S RUNG=S1 COHORT=1             # runs/g3-l-s1-c1.json
-make ladder-spec ARM=S RUNG=S1 COHORT=10 TTL=240    # other cohorts give TTL (minutes)
+make ladder-spec ARM=S RUNG=S1 COHORT=10            # above c1 the TTL is estimated from the c1 record ("TTL above c1")
+make ladder-advance COHORT=10 [DRY_RUN=1]           # a cohort above c1, stage by stage ("Advancing a cohort")
 make dryrun-userdata                                # DRY_RUN=1 of every committed spec, recorded
 make run GATE=g3 SPEC=runs/g3-l-s1-c1.json NODES=1  # NODES = WANT_N (REPLICAS x SHARDS)
 make ladder-stream-test                             # the body's launch and watch functions (in make test)
@@ -302,7 +303,7 @@ selection (an `@select` token). At c1:
 - O1 and O1-cost: N = S8's K = 1, which is O0b's (O0b-cost's) own configuration;
 - O4b and O4b-cost: INFLIGHT 1 … vCPUs / THREADS with THREADS = vcpus leaves only 1, O4a's (O4a-cost's);
 - the candidate rungs whose value the cohort excludes: every S4-t\<T\> (P = 96 / T > 1), S8-k2,
-  O2-x8g and O2-cost-x8g (O1's own type at c1).
+  O2-x8g and O2-cost-x8g (O1's own type at c1), and every O4b-if\<k\> and O4b-cost-if\<k\>.
 
 The tables must skip a rung at the cohorts it lists, as they skip `status: not-run`.
 
@@ -325,6 +326,15 @@ PARAMS and host equal its time-chain counterpart's (its name without `-cost`), i
     x8g.24xlarge, so each pair has the same right-sized x8g type. Had O2 chosen O2-r8g, each pair
     would differ in instance, and O3-cost-n\<K\> would run on its own type;
   - O4a-cost and O5-cost stay undecided until O3 and O3-cost are selected.
+- **At c10** (added 2026-10-12, the same ruling applied to the next cohort) every cost-chain run
+  rung that is run there has a conditional entry for its time counterpart:
+  - O0-cost (O0), O0b-cost (O0b) and O1-cost (O1);
+  - O3-cost-n\<K\> (O3-n\<K\>), O4a-cost (O4a), O4b-cost-if\<k\> for k ≤ 8 (O4b-if\<k\>) and O5-cost (O5).
+
+  Each is undecided until both chains' selections upstream of it are made. It is then an alias
+  where Sstar-cost (and later O2-cost, O3-cost, O4b-cost) chose what the time chain chose. Without
+  these entries, a coincidence at c10 would be refused ("declare alias_cohorts …"). O2-cost-r8g and
+  O2-cost-x8g are not run at c10, so they have none. c100 and c1000 have no entries yet.
 - **Why not static declarations with test fixtures.** A static declaration is a statement about
   one set of selections. Made true for the committed resolutions, it becomes false, and blocks
   every generation, under any other set. That includes the selections the tests exercise against
@@ -373,7 +383,7 @@ selection has one, and a rule names the candidates, the axis and the ties):
 | Sstar-cost | S9, Sstar-r8g, Sstar-r8gd (alias) | median billed_usd | fewer vCPUs |
 | O2 / O2-cost (alias) | O1 (O1-cost), O2-r8g (O2-cost-r8g, r8g.48xlarge), O2-x8g (O2-cost-x8g, x8g.24xlarge): per family of c8g, c9g, r8g and x8g, its smallest type that holds 1/N of the table at O1's N (metal twins excluded; c8g and c9g end at 384 GiB); the rows are N = 1's, not run at c10 and above until S8 gives N there | median wall_s / billed_usd | fewer fleet vCPUs |
 | O3 / O3-cost (alias) | O2 (O2-cost) and O3-n2, -n4, -n8, -n16, -n32 (O3-cost-n…): N = K shards, **each on the smallest non-metal type of O2's winning family that holds table/K by `fits()`** (Scott, 2026-10-11, #25; below); **bracket:** per cohort, the N within a factor 2 of fit R's time- (cost-)optimal N over {1, 2, 4, 8, 16, 32}, each N predicted on its own type (`results/g3/fit26/predictions.tsv`), widened to all of them where that prediction is not "within data" or a type has none | median wall_s / billed_usd (measured, not the fit) | fewer nodes |
-| O4b / O4b-cost | INFLIGHT 1 … vCPUs / THREADS on O3's type, memory permitting (no candidate rungs yet: below) | median wall_s / billed_usd | fewer in flight |
+| O4b / O4b-cost (alias) | O4a (O4a-cost) and O4b-if1, -if2, -if4, … -if128 (O4b-cost-if…): k samples in flight on O4a's host (O3's winning type) at its THREADS, k ≤ cohort (`not_run_cohorts` where k > cohort); **range:** INFLIGHT 1 … vCPUs / THREADS at the predecessor's host, memory permitting (below) | median wall_s / billed_usd | fewer in flight |
 
 **Candidate rungs** (Scott via the coordinator, 2026-10-11). Each selection is an alias over its
 candidates, as S\* is:
@@ -439,9 +449,30 @@ make ladder-types CHECK=1   # compare the committed table with truffle's answer 
 **What the registered rules leave open:**
 - **N = 2 rows for O2:** O2's rows for N = 2 (r8g.24xlarge, x8g.12xlarge) wait for S8 at c10 and
   above.
-- **O4b:** its candidates (INFLIGHT up to vCPUs / THREADS on O3's type) depend on S4's T and on
-  O3's type, which no cohort above c1 has resolved yet. O4b and O4b-cost therefore stay selecting
-  rungs, not run at c1. Their candidate rows are added once S4 and O3 are selected at a cohort.
+- **O4b's candidates exist; whether it can vary depends on S4 and O3** (the review's design, added
+  2026-10-12). O4b and O4b-cost are aliases over O4a (O4a-cost) and O4b-if\<k\> (O4b-cost-if\<k\>),
+  k = 1, 2, 4, … 128. The largest bound, 192 vCPUs / 1 thread, needs at most 128.
+  - **Static entries.** Every O4b-if\<k\> is not run at c1. At c1, THREADS is vcpus everywhere, so
+    vCPUs / THREADS is 1 and k = 1 is O4a itself. Each is also not run at the cohorts below k
+    (c10 for k ≥ 16, c100 for k = 128).
+  - **The range clause** (`range: INFLIGHT 1 .. vCPUs / THREADS at the predecessor's host`,
+    `ladder_levers.inflight_range`). Above c1 it decides which candidates apply, from O4a's
+    resolved values. The bound is max(1, vCPUs // THREADS) on O4a's host. A candidate is out of
+    range there when:
+    - its k is above the bound;
+    - its k is O4a's own INFLIGHT, which is O4a itself (O4a's INFLIGHT is S4's PROCS = vcpus/T, so
+      it is the bound wherever S4 chose a T);
+    - or, for a k above O4a's, it does not fit by `fits()`.
+  - **The generator** refuses an out-of-range candidate ("outside O4b's range … not a candidate
+    there"). ladder-select leaves it out.
+  - **Where the range leaves only O4a**, ladder-select writes O4b's row with O4a as the winner,
+    margin `single candidate: …`, and no runs needed. The tables then read O4b as "an alias of its
+    predecessor: no lever", and O5 takes O4a's INFLIGHT.
+  - **Consequence:** if S4 selects S2a (THREADS = vcpus) at a cohort, vCPUs / THREADS is 1 on every
+    host, so O4b can never vary there. Varying it would need a THREADS change, which is a decision.
+    If S4 selects a T, O4b varies only where O3's winning type has at least 2T vCPUs. At c10, for
+    example, that is O3 → O2 itself on x8g.24xlarge or r8g.48xlarge, or O3-n2 on x8g.12xlarge with
+    T ≤ 24. On O3-n16/n32's x8g.2xlarge (8 vCPUs) it never varies.
 
 Ladder 1 is one chain until S\*, so S4 and S8 select on time. On one host, billed $ is price × wall,
 so S4's two axes give the same order; S8's do not, and its cost side is left to the S\*-cost
@@ -544,9 +575,12 @@ with NODES = WANT_N), 60 GiB disk, and `cost_limit` = TTL × the truffle on-dema
 to the cent. It refuses: a table that fails the check; ARM other than the rung's; any placeholder;
 a type whose memory (or one NVMe device) cannot hold the rung at that cohort (the table on tmpfs
 or in the process, inputs and outputs at 150 B per pair, 16 GiB of slack; the engine by
-mkspec.sh's rule); a cohort other than 1 without TTL. The same table, cohort and price give the
-same bytes. Each spec's body opens with a comment giving its TTL and cost_limit as runaway backstops sized by
-estimate, and noting that the classic `aws s3 cp` rate is unmeasured. `run.sh` and `run-multi.sh` write the PARAMS block into `manifest.params` and
+mkspec.sh's rule); above c1 without TTL, a rung whose TTL cannot be estimated (exit 1) or whose
+estimated TTL is above `AK2_MAX_TTL_S` (8 h, exit 5; "TTL above c1", below). The same table, cohort,
+record and price give the same bytes. Each spec's body opens with a one-line comment giving its TTL
+and cost_limit as runaway backstops sized by estimate: at c1, the table's `ttl_min_c1`, noting that
+the classic `aws s3 cp` rate is unmeasured; above c1, the estimate, its basis rung and runs, and its
+parts. `TTL=` overrides either, by decision only. `run.sh` and `run-multi.sh` write the PARAMS block into `manifest.params` and
 `cohort.json` `params` (`ladder_levers.py spec-params`: lowercase keys, ints for cohort, want_n,
 replicas and shards, `run_kind: ladder`, `state: cold`); other specs get `params: null`.
 
@@ -562,6 +596,144 @@ these reasons:
 - O1, O1-cost, O4b, O4b-cost, O2-x8g and O2-cost-x8g are not run there;
 - O3's candidates, O4a and O5 wait for O2's selection (O2-r8g's runs). The cost side waits the
   same way for O2-cost's.
+
+## TTL above c1 (`scripts/lib/ladder_ttl.py`)
+
+```bash
+python3 scripts/lib/ladder_ttl.py estimate S0-T1 10   # EST_S, TTL, BASIS, TTLNOTE (what mkspec-ladder.sh puts in the spec)
+python3 scripts/lib/ladder_ttl.py --self-test         # in make test
+```
+
+The table's `ttl_min_c1` is cohort 1's TTL, and a c1 spec keeps it. Above c1, mkspec-ladder.sh
+estimates each rung's wall from the record's c1 runs (a fresh make g3-ladder: cold ladder runs in
+the attribution).
+
+**The basis** is the rung's own c1 runs. If it has none, it is its nearest measured relative:
+- its configuration's rung at c1 (`config_row`): a rung not run there stands for its run
+  predecessor (S4-t12 for S2a, O4b-if2 for O4a), an alias for its winner, and an alias_cohorts
+  rung for its target;
+- failing that, its predecessors in turn.
+
+**The parts of each basis run**, from its lad-sample lines and manifest phases (run phases are the
+max over its nodes):
+
+| part | what | scales with |
+|---|---|---|
+| per-invocation `inv` | classify − classify-process, per sample: upstream's per-sample load and setup (0 on the engine, which has no classify-process) | the samples a lane runs |
+| classification `proc` | classify-process (else classify) | the pairs, × the thread slowdown |
+| upload | the lad-sample `upload` phase (serial upload modes), serial on the node | the pairs |
+| fetch-inputs, identity | the run phases | the input bytes |
+| fixed `F` | wall − (the samples' span + upload + fetch-inputs + identity): boot, setup, staging the table, its load where that is not per sample, push. A negative F is clamped to 0, with a note | nothing |
+
+**The target**, at cohort C (ranks 1..C of `results/cohort/PRJNA398089/runs.tsv`, with their pairs
+and bytes):
+1. The samples split over REPLICAS by PLACEMENT, then within a replica over W lanes by PLACEMENT.
+   W is PROCS on the per-sample path and INFLIGHT on the engine, as resolved on the target's host.
+2. A lane runs its samples one after another:
+   lane = Σ (inv + proc per pair × pairs × slowdown).
+3. The slowdown is max(1, e_basis / e_target), where e = min(threads, vCPUs / W) is the cores one
+   sample has. The basis ran one sample, so its W is 1. On the engine it is also × max(1, N_basis /
+   N_target) shards.
+4. replica = its busiest lane + upload per pair × its pairs + (fetch-inputs + identity) per byte ×
+   its bytes.
+5. estimate = F + the busiest replica. The largest estimate over the basis runs is used.
+
+This is the per-sample model `fixed + per-sample × C/1`, with PROCS and INFLIGHT parallelism and
+the samples' real sizes (c10 has 10.46 × c1's pairs). It is linear and serial within a lane, and it
+leaves out contention between lanes beyond the thread slowdown. That is what the factor 2.5 is for.
+
+**TTL = max(30 min, 2.5 × estimate), rounded up to 10 min**; cost_limit = TTL × the on-demand price,
+as at c1. The spec's TTL comment records the estimate, the basis rung and its runs, the fixed and
+per-sample parts, the lanes and the slowdown. `make ladder-advance` puts the same numbers in its
+plan table. `make ladder-respec` re-estimates a spec whose comment cites ladder_ttl.py, so it comes
+out the same unless the c1 record changed, and keeps any other TTL.
+
+The test (`--self-test`) works the model by hand on synthetic runs (Law 3: unit test only). It
+covers serial, two lanes at half the threads, two replicas, the engine with in-flight samples and a
+shard ratio, the clamp and the rounding. It then checks the basis of S4-t12 (S2a) and O4b-if2
+(O4a). On the committed record it gives **S0-T1 at c10 (10 serial samples at T = 1) 320 min**
+(estimate 7589 s), under the 8 h limit.
+
+## Advancing a cohort: `make ladder-advance`
+
+```bash
+make ladder-advance COHORT=10 DRY_RUN=1   # the stage plan; nothing selected, generated or written
+make ladder-advance COHORT=10             # select, generate the determined specs, check, plan table; stop
+python3 scripts/lib/ladder_advance.py plan 10   # the plan only (no select)
+make ladder-advance-test                  # its test (in make test; about 25 s)
+```
+
+Above c1 the selections are not forced: S4's P × T, S8's K, the S\* hosts, O2's family, O3's N and
+O4b's in-flight count all wait on measurements at the cohort. A rung can be generated only once
+every selection upstream of it is made, so a cohort's specs come in stages.
+
+`scripts/g3/ladder-advance.sh` (`set +e`, logs `$-`) runs `scripts/lib/ladder_advance.py`. One
+invocation does this:
+1. **Select:** `make ladder-select COHORT=<c>`, with DRY_RUN passed on. The selections the record
+   now allows are written to `ladder.resolved.tsv`. Its refusal (a Law 1 DEFECT, say) stops
+   everything with exit 3.
+2. **Generate:** it resolves every run rung at the cohort and generates, with `mkspec-ladder.sh`,
+   every spec that is fully determined and not committed (not under DRY_RUN). It repeats until a
+   pass generates nothing new.
+3. **Check:** `ladder_levers.py check`, `ladder_body_compat.py check` and `fresh`.
+4. **Report:** the stage plan, the selections and the blockers, and the rehearsal classes of the
+   new specs. It writes the plan table `results/g3/ladder-advance/c<c>.plan.tsv` (not under DRY_RUN).
+5. **Stop.** The coordinator must:
+   - commit the new specs and any new resolved rows;
+   - run `make rehearse SPEC=` on the representative of each class;
+   - run `make dryrun-userdata` with nothing in flight;
+   - run `make ladder-campaign COHORT=<c>`;
+   - then run `make ladder-advance COHORT=<c>` again, which selects from the new runs first.
+
+It never launches, commits or pushes. Exit 0; 1 if a generation failed; 3 if ladder-select or a
+check refused; 2 usage.
+
+**States of a run rung:**
+
+| state | meaning |
+|---|---|
+| committed | its spec is in git. A committed spec whose PARAMS line is no longer the resolution's is flagged STALE |
+| new | generated now (or would be, under DRY_RUN) |
+| pending | waits on a selection, named in `waits_on` |
+| not-run | `not_run_cohorts` or its status |
+| alias | an alias_cohorts entry holds there |
+| out | outside its alias's bracket or in-flight range |
+| collapsed | resolves identical to its predecessor: a selection made it a no-op, and the table needs a `not_run_cohorts` entry for that cohort (a decision) |
+| blocked | any other refusal: memory, a TTL above `AK2_MAX_TTL_S`, a failed generation, an undeclared coincidence |
+
+**Stages** come from the table, statically. A rung with no pending selection upstream is stage 1.
+Any other rung is one more than the latest stage among the candidates of the selections it depends
+on (through its `@select` and `@floor` tokens, its `=pred` host, and its conditional alias_cohorts
+target).
+
+**Selections:** each one is resolved, not run at the cohort, pending (on the campaign, or on an
+upstream selection), or **BLOCKED**. A selection is BLOCKED when fewer than two candidates apply at
+the cohort and its rule has no range clause. ladder-select would then refuse it, so the table needs
+candidate rows or a `not_run_cohorts` entry.
+
+**The cost bound.** A determined rung's cost is its spec's cost_limit × NODES. For a pending rung,
+it is the largest over every combination of winners of the pending selections that decide it. Each
+combination is resolved with `ladder_levers.resolve(..., res=...)`, its memory checked against
+`ladder.types.tsv`, and its TTL estimated as mkspec-ladder.sh would. For the bound, every
+conditional alias_cohorts entry is taken as not holding, since an alias costs nothing. The
+combinations that are refused are counted, with their reasons. The stage totals are per rep; the
+campaign runs REPS=2.
+
+**The rehearsal classes** of the new specs are (classifier, upload mode, fleet shape). The fleet
+shape is the nodes, replicas × shards, and one lane or several. The representative of each class is
+the member with the most lanes, else the first in ladder order.
+
+**The test** (`scripts/tests/ladder_advance_test.py`) uses the real table and record with the c1
+resolutions only, so it does not move as c10 rows are committed. Prices come from the types table
+and the `AK2_ADVANCE_PRICES` seam, so no truffle call is made. It checks:
+- the refusal classes;
+- the c10 stages;
+- that the determined set at c10 is exactly stage 1;
+- S0-T1's estimate;
+- O2 and O2-cost BLOCKED;
+- a hypothetical S4 → S4-t24 determining stage 2;
+- the bounds (S5 over 6 winners; O1 collapsing where S8 keeps K = 1);
+- that DRY_RUN writes nothing.
 
 ## The body (`scripts/g3/ladder.body.sh`)
 
@@ -936,18 +1108,22 @@ check no longer counts rungs that are not run at the run's cohort. The medians c
 `rungs.tsv`. The runs behind each median come from its `runs.tsv`: cold ladder runs at the cohort,
 in the attribution. Their count must equal the median's n.
 
-**What it selects: every alias rung** (S4, S8, Sstar-time, Sstar-cost, O2, O2-cost, O3, O3-cost),
-in table order, so that a selection made in the same run (O2, say) reaches the rules after it
-(O3's bracket).
+**What it selects: every alias rung** (S4, S8, Sstar-time, Sstar-cost, O2, O2-cost, O3, O3-cost,
+O4b, O4b-cost), in table order, so that a selection made in the same run (O2, say) reaches the rules
+after it (O3's bracket, O4b's range).
 - **The candidates** are the alias's `alias_of`, which must be exactly the rungs the rule's
   `candidates:` clause names: every one, and no other. A rung named in the possessive ("O2's
   family") is not a candidate. At the cohort, the set leaves out:
   - a candidate not run there, unless it is the alias's own predecessor, which stands for the
     configuration it has there (O1 at c1 is O0b's);
-  - a candidate outside the rule's bracket (O3).
+  - a candidate outside the rule's bracket (O3);
+  - a candidate outside the rule's in-flight range (O4b: `inflight_range`, "Candidate rungs").
 
   Fewer than two candidates left is refused: that rung needs a `not_run_cohorts` entry, not a
-  selection.
+  selection. The exception is a rule with the range clause whose range leaves only the predecessor.
+  Its row names the predecessor, with margin `single candidate: the range leaves only the
+  predecessor (no measurement)`, and no runs are cited beyond the snapshot. The range is computed
+  once the predecessor resolves; before that the rule is not selected.
 - **The median** of each candidate is read from the rung whose runs it has (`config_row`): its
   `alias_cohorts` target, a not-run predecessor's run ancestor, or an alias's winner. The note
   names it ("O2-r8g's runs").
@@ -966,7 +1142,6 @@ in table order, so that a selection made in the same run (O2, say) reaches the r
 **What it reports and does not write:**
 - **A rung not run at the cohort** (`not_run_cohorts`: at c1, S4, S8, O4b and O4b-cost). Its
   tokens already resolve to its run predecessor's values, so a row would be ignored.
-- **A selecting rung without candidate rungs** (O4b and O4b-cost above c1).
 - **An alias that cannot be selected yet:**
   - a candidate with n < 2;
   - a candidate still unresolved (O3 before O2);
@@ -1058,7 +1233,11 @@ lever table and a synthetic record. The records are made with `ladder_tables_tes
   - O2 and O2-cost at c1 over O1 (O0b's runs) and O2-r8g, with O2-cost-r8g reading O2-r8g's runs:
     time picks O2-r8g, billed $ picks O1-cost;
   - O3 is listed, with no candidate runs, and O3-n2 is generated on O2's winner's type;
-  - the tables read O2-cost as O0b's runs.
+  - the tables read O2-cost as O0b's runs;
+  - O4b at c10 under hypothetical selections up to O3 (written with a source in the scratch root).
+    With S4 → S4-t12 and O3 → O3-n2 (x8g.12xlarge), the candidates asked for are exactly O4a,
+    O4b-if1 and O4b-if2: O4b-if4 is O4a's own and O4b-if8 is above 48 // 12. With S4 → S2a, the row
+    names O4a without a measurement, and O5 takes O4a's INFLIGHT.
 
 `scripts/tests/ladder_levers_tables_test.py` (the tables cross-check) runs a synthetic record of
 every rung run at c1 through the real lever table. It resolves the aliases (S\* to Sstar-r8g, O2 to
@@ -1086,6 +1265,18 @@ Record: `results/rehearse/ladder-<UTC>-<sha7>.log` (one spec: `ladder-<rung>-<UT
 ending in a summary table, one row per case. `make rehearse-ladder` also keeps the tables it
 made from the rehearsal record in `results/rehearse/ladder-<UTC>-<sha7>-tables/`. `KEEP=1` keeps
 the scratch dir. The tree must be committed: the nodes clone HEAD.
+
+**A spec above c1** (`make rehearse SPEC=runs/g3-l-<rung>-c10.json`) runs its cohort's C samples.
+- **The samples** are the three real read sets in turn. The k-th repeat of a set is named
+  `<accession><letter>` (SRR062634b, …), so every name is distinct. Each repeat is checked against
+  the oracle of its own read set (the case's refmap).
+- **Its nodes report the spec type's vCPUs** from `nproc`, through `OMP_NUM_THREADS`, which GNU
+  nproc honours (96 for x8g.24xlarge). So `PROCS=vcpus/<T>` and `INFLIGHT=vcpus/<T>` give the
+  spec's own lanes on the 8-vCPU VM, oversubscribed. Without this, S4-t12's vcpus/12 would be one
+  lane there. Every classifier and decompressor is called with an explicit thread count, so the
+  variable reaches only the body's own `nproc`.
+- **Not covered:** the samples' real sizes. The rehearsal checks behaviour (lanes, Law 1, streaming,
+  phases), not time.
 
 **The nodes.** Each node is an Amazon Linux 2023 aarch64 container, running exactly what run.sh
 launches: `scripts/preamble.sh` followed by the body, as `bash -e -c` (spawn's `$-` has `e`). The

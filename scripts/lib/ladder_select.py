@@ -17,6 +17,10 @@ cannot parse is refused. What it can select from the record:
   - The winner's margin over the runner-up is judged by the tables' own resolution rule
     (ladder_tables.delta: resolved only if |margin| > 2 x max(range, range, q)). A winner chosen from
     an unresolvable margin is still the rule's winner, and the row's `margin` column and note say so.
+  - A rule with the in-flight `range:` clause (O4b, O4b-cost; ladder_levers.inflight_range) leaves
+    out the candidates outside it at the cohort. Where it leaves only the predecessor, the row names
+    the predecessor with margin "single candidate: ..." and no runs are needed (the alias adds no
+    lever there).
 Every other rule is reported with what it still needs, and nothing is written for it:
   - a rung not run at this cohort (status not-run, or not_run_cohorts): its tokens resolve to its
     predecessor's values already;
@@ -82,7 +86,7 @@ def parse_rule(text):
     """{'candidates', 'axis' (wall_s, billed_usd, or fit:<objective>), 'ties'} from a select rule's
     text; raises Refused if it names no candidates, axis or ties this program reads, or names an
     axis or ties clause more than once."""
-    m = re.match(r"candidates: (.*?); (?=axis: |the #26 fit|bracket: )", text)
+    m = re.match(r"candidates: (.*?); (?=axis: |the #26 fit|bracket: |range: )", text)
     if not m:
         raise Refused("rule %r: no 'candidates: ...;' followed by an axis" % text)
     out = {"candidates": m.group(1)}
@@ -209,17 +213,35 @@ def select_alias(rows, row, cohort, rungs, runs, man, root, res):
         br = LL.bracket(rows, row, cohort, res, root)
     except LL.Unresolved as e:
         raise Refused(str(e))
+    try:
+        rg = LL.inflight_range(rows, row, cohort, res)
+    except LL.Unresolved as e:
+        raise Refused(str(e))
     cands, left = [], []
     for c in allc:
         if c != row["predecessor"] and LL.not_run_at(names[c], cohort):
             left.append("%s (%s)" % (c, LL.not_run_at(names[c], cohort)))
         elif br is not None and c not in br[0]:
             left.append("%s (outside the bracket)" % c)
+        elif rg is not None and c in rg[0]:
+            left.append("%s (outside the range: %s)" % (c, rg[0][c]))
         else:
             cands.append(c)
     if br is not None:
         how = "; bracket: %s" % br[1]
         extra = br[2]
+    if rg is not None:
+        how = "; range: %s" % rg[1]
+    if rg is not None and cands == [row["predecessor"]]:
+        # The range leaves only the predecessor (O4b where vCPUs / THREADS is 1 on O4a's host): it is
+        # the rule's winner without a measurement, and the alias adds no lever there.
+        rsha = hashlib.sha256(row["select"].encode()).hexdigest()
+        note = ("rule sha256 %s: only the predecessor %s applies at c%d%s; left out at c%d: %s"
+                % (rsha, row["predecessor"], cohort, how, cohort, "; ".join(left)))
+        return {"origin": row["rung"], "cohort": str(cohort), "key": "alias", "value": row["predecessor"],
+                "margin": "single candidate: the range leaves only the predecessor (no measurement)", "note": note,
+                "run_cites": [], "winner": row["predecessor"], "runner_up": "-", "axis": axis,
+                "delta": {"delta": None, "threshold": None}, "stats": {}}
     if len(cands) < 2:
         raise Refused("%s at c%d: %d candidate(s) apply (%s; left out: %s): with one, the rung is a not_run_cohorts entry, not a selection"
                       % (row["rung"], cohort, len(cands), ", ".join(cands) or "none", "; ".join(left) or "none"))

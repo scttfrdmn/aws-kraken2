@@ -107,7 +107,8 @@ targets; ad hoc commands only during exploration.
 | `make hitorderfuzz [HITORDERFUZZ=quick\|full]` / `make hitorder-golden` | [docs/hitorderfuzz.md](docs/hitorderfuzz.md), [docs/hitorder.md](docs/hitorder.md) |
 | `make g3-spec` / `make g3-tables` / `make g3-frontier` / `make g3-fit` | [docs/cohort.md](docs/cohort.md) |
 | `make g3-ladder` / `make g3-ladder-model` (ladder tables: per-rung attribution, three pairs, cross-arm Law 1) | [docs/ladder.md](docs/ladder.md) |
-| `make ladder-spec ARM=… RUNG=… COHORT=…` / `make ladder-check` / `make ladder-stream-test` (the ladder body, lever table and generator) | [docs/ladder.md](docs/ladder.md) |
+| `make ladder-spec ARM=… RUNG=… COHORT=…` / `make ladder-check` / `make ladder-stream-test` (the ladder body, lever table and generator; above c1 the TTL is estimated from the c1 record by `scripts/lib/ladder_ttl.py`) | [docs/ladder.md](docs/ladder.md) ("TTL above c1") |
+| `make ladder-advance COHORT=… [DRY_RUN=1]` / `make ladder-advance-test` (a cohort above c1, stage by stage: ladder-select, generate the determined specs, static checks, the stage plan with pending selections, blockers, cost_limit bounds and rehearsal classes in `results/g3/ladder-advance/c<C>.plan.tsv`; launches and commits nothing) | [docs/ladder.md](docs/ladder.md) ("Advancing a cohort") |
 | `make ladder-select COHORT=… [RUNG=…] [DRY_RUN=1]` / `make ladder-select-test` (the registered select rules into `scripts/g3/ladder.resolved.tsv`, each row citing its runs with sha256 and its margin's resolution) | [docs/ladder.md](docs/ladder.md) ("Selection") |
 | `make ladder-types [CHECK=1]` (the c8g/c9g/r8g/x8g types of O2 and O3's floor rule, from truffle with its version; `validate` in make test) | [docs/ladder.md](docs/ladder.md) ("Candidate rungs") |
 | `make bash-jobs-test` | [docs/cohort.md](docs/cohort.md) |

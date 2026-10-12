@@ -9,7 +9,10 @@
 #   - a table that fails make ladder-check (one key-group per rung, counterparts, endpoints);
 #   - any PARAM or host still a placeholder (@probe-tune, @select:...) after scripts/g3/ladder.resolved.tsv;
 #   - a type whose memory (or NVMe device) cannot hold the rung at this cohort;
-#   - a cohort other than 1 without TTL= (the table's TTL is cohort 1's).
+#   - above cohort 1 without TTL=, a rung whose TTL estimate (scripts/lib/ladder_ttl.py, from the
+#     record's c1 runs of the rung or its nearest measured relative) cannot be made (exit 1) or is
+#     above AK2_MAX_TTL_S (exit 5). The estimate and its basis go into the spec's TTL comment.
+# The table's ttl_min_c1 is cohort 1's TTL; TTL= overrides either (by decision only).
 # cost_limit per member = the truffle on-demand price x TTL (+ $0.005, to the cent), as
 # scripts/g3/mkspec.sh; run.sh and run-multi.sh check it (docs/run.md, "cost_limit"). Every spec
 # pins the type and the AZ, so make run and make dryrun-userdata use run-multi.sh with NODES =
@@ -37,14 +40,29 @@ INFO=$(truffle find "$TYPE" --regions us-west-2 --show-price -o json 2>/dev/null
 PRICE=$(echo "$INFO" | jq -r .on_demand_price); MEM=$(echo "$INFO" | jq -r .memory_mib); VCPU=$(echo "$INFO" | jq -r .vcpus)
 [[ "$PRICE" =~ ^[0-9.]+$ ]] && [[ "$MEM" =~ ^[0-9]+$ ]] || { echo "mkspec-ladder: no price or memory for $TYPE" >&2; exit 1; }
 python3 "$L" params "$RUNG" "$COHORT" --mem-mib "$MEM" --vcpus "$VCPU" > /dev/null || { echo "mkspec-ladder: refused $RUNG on $TYPE (above)" >&2; exit 1; }
+EST=""
 if [ -z "$TTL" ]; then
-  [ "$COHORT" = 1 ] || { echo "mkspec-ladder: cohort $COHORT needs TTL=<minutes> (the table's TTL is cohort 1's)" >&2; exit 2; }
-  TTL=$TTL_C1
+  if [ "$COHORT" = 1 ]; then
+    TTL=$TTL_C1
+  else
+    # Above c1: the estimate from the record's c1 runs (scripts/lib/ladder_ttl.py; docs/ladder.md, "TTL above c1").
+    EOUT=$(python3 scripts/lib/ladder_ttl.py estimate "$RUNG" "$COHORT" --vcpus "$VCPU"); erc=$?
+    if [ "$erc" != 0 ]; then
+      echo "mkspec-ladder: no TTL for $RUNG at cohort $COHORT (ladder_ttl.py exit $erc, above); give TTL=<minutes> only by decision" >&2
+      exit "$([ "$erc" = 5 ] && echo 5 || echo 1)"
+    fi
+    eval "$EOUT"
+    EST=$TTLNOTE
+  fi
 fi
 COST=$(awk -v p="$PRICE" -v t="$TTL" 'BEGIN{printf "%.2f", p * t / 60 + 0.005}')
 LOW=$(echo "$RUNG" | tr '[:upper:]' '[:lower:]')
 SPEC="runs/g3-l-$LOW-c$COHORT.json"
-TTLNOTE="# TTL ${TTL}m and cost_limit \$$COST: runaway backstops sized by estimate; the classic aws s3 cp rate is unmeasured, so the staging time of the default client is not known in advance."
+if [ -n "$EST" ]; then
+  TTLNOTE="# TTL ${TTL}m and cost_limit \$$COST: runaway backstops sized by estimate; $EST."
+else
+  TTLNOTE="# TTL ${TTL}m and cost_limit \$$COST: runaway backstops sized by estimate; the classic aws s3 cp rate is unmeasured, so the staging time of the default client is not known in advance."
+fi
 BODY=$(awk -v p="$PARAMS" -v t="$TTLNOTE" -v h="# Parameters (scripts/g3/mkspec-ladder.sh $ARM $RUNG $COHORT; manifest.params, by scripts/lib/ladder_levers.py spec-params):" \
   '$0 == "@PARAMS@" {print t; print h; print p; n++; next} {print} END {exit n != 1}' scripts/g3/ladder.body.sh) ||
   { echo "mkspec-ladder: scripts/g3/ladder.body.sh has no single @PARAMS@ line" >&2; exit 1; }
