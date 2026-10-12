@@ -232,7 +232,8 @@ def check(c, expect_fail):
                        f"r{r}: {comp} {v} equals the {ph} phase ({tsv[ph]['seconds']} s, whole-second markers)")
             else:
                 K.need("net", v == 0, f"r{r}: {comp} {v} is 0 (no {ph} phase)")
-        if "identity" in tsv:
+        # A node that homes no sample (fewer samples than shards: c1 at N = 2) has no share to carry.
+        if "identity" in tsv and ss:
             sid = round(sum((s.get("phases") or {}).get("s5-identity") or 0 for s in ss), 3)
             K.need("net", sid > 0, f"r{r}: the samples carry their share of identity (s5-identity sum {sid})")
 
@@ -269,7 +270,11 @@ def check(c, expect_fail):
             K.need("engine", el and el[-1][3] == el[-1][5], f"r{r}: ak2-engine etag line: etag {el[-1][3] if el else '-'} computed {el[-1][5] if el else '-'}")
         homes = collections.Counter(s.get("rank") for s in allsam)
         if int(p["SHARDS"]) > 1:
-            K.need("engine", len(homes) == int(p["SHARDS"]), f"every shard homed samples ({dict(homes)}): the placement spread them")
+            # Each sample is homed once, so with fewer samples than shards (c1 at N = 2) only that many
+            # shards can home one: the placement must still spread them over distinct shards.
+            want = min(int(p["SHARDS"]), len(allsam))
+            K.need("engine", len(homes) == want, f"{want} of {p['SHARDS']} shards homed samples ({dict(homes)}, "
+                                                 f"{len(allsam)} sample(s)): the placement spread them")
         rv = os.path.join(c["bucket"], c["cid"], "rendezvous")
         for g in range(int(p["REPLICAS"])):
             recs = sorted(f for f in os.listdir(os.path.join(rv, f"g{g}")) if f.startswith("rank-")) if os.path.isdir(os.path.join(rv, f"g{g}")) else []
