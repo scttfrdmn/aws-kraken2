@@ -156,6 +156,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Ladder ours-plain ran the engine** (scripts/g3/ladder.body.sh `lad_one`). The cohort env that
+  `make run` gives every node (`AK2_ENGINE_N`, `_RANK`, `_RENDEZVOUS`) reached ours' plain path,
+  and ours takes the engine path whenever `AK2_ENGINE_N` is set. The engine's shards are resident
+  and it ignores `--memory-mapping`. So O0 at c1 (843e958, x8g.24xlarge) read an anonymous copy
+  of RODA v205's 1.1 TB table on top of the same table in tmpfs:
+  - memory in use rose about 58 GiB/s on 8 read streams to a peak of 1466 GiB;
+  - the run was OOM-killed (rc 137) before "done.";
+  - upstream's S9 on the same configuration peaked at 1125 GiB.
+
+  `lad_one` now strips `AK2_ENGINE_*`, `AK2_COHORT` and `AK2_COHORT_CHECK` from ours-plain's
+  environment. `make ladder-stream-test` case P checks this by behaviour, and P-mut restores the
+  leak and must fail. Ours' `-M` itself was not at fault. Peak anonymous RSS over upstream's `-M`
+  is about 65 MB, flat from 8 to 96 threads. The new `chash.Table.Mapped` reports Mmap's mapping.
+  `TestMmapSharedReadOnly` asserts that the mapping is shared, read-only and never a copy: the
+  cells alias the mapping, a write faults, and on Linux smaps shows `ms`, no `wr`/`mw` and 0 kB
+  anonymous after a full scan, with Load as the negative control.
+  `TestMemoryMappingIndex` asserts which path `-M` selects.
 - `run-multi.sh`: the cohort's exit and `orphans_rc` came from the global orphan check, which
   fails whenever any other ak2 instance is alive. A cohort that ran beside another run therefore
   exited 3. Each member's scoped check (`orphans.sh --own`) now decides

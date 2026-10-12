@@ -17,6 +17,8 @@
 #   U  lad_crit directly: classify spans, a done upload and an upload in flight cover a hash (NB1);
 #   I  the identity phase under pipefail off, as on the node: a failing or empty rapidgzip differs,
 #      a corrupt input is an input_defect, a garbage tail (gzip exit 2) a gz_warning only; I-mut restores B1's bug and must fail;
+#   P  ours' plain path under a cohort node's engine env: it runs without AK2_ENGINE_* (else it
+#      takes the engine path, a resident copy of the table; O0 at c1); P-mut removes the strip and must fail;
 #   N  negative control: the reverse redirection order (> /dev/null 2> >(...)) streams nothing,
 #      while the file still gets every line, so A's streaming check can fail.
 set +e
@@ -40,9 +42,12 @@ EOF
 cat > "$TD/bin/fake-k2" << 'EOF'
 #!/usr/bin/env bash
 # A stand-in for kraken2 / ours' plain path: upstream's stderr lines, an output and a report.
+ARGS0="$*"
 out="" rep="" in=()
 while [ $# -gt 0 ]; do case $1 in --output) out=$2; shift 2 ;; --report) rep=$2; shift 2 ;; --db|--threads) shift 2 ;; -*) shift ;; *) in+=("$1"); shift ;; esac; done
 echo "$(perl -MTime::HiRes=time -e 'printf "%.3f", time') start $out" >> "$FAKE_LOG"
+# Case P: the engine env and the command line this invocation saw.
+[ -n "${FAKE_ENVLOG:-}" ] && { printf 'args %s\n' "$(basename "$0") ${ARGS0:-}" >> "$FAKE_ENVLOG"; env | grep -E '^AK2_(ENGINE_|COHORT=|COHORT_CHECK=|DECOMPRESS=)' | sed 's/^/env /' >> "$FAKE_ENVLOG"; }
 # As upstream's wrapper: one `gzip -dc FILE` per mate, found on PATH.
 if [ "${FAKE_GZ:-0}" = 1 ]; then for f in "${in[@]}"; do gzip -dc "$f" > /dev/null; done; fi
 printf 'Loading database information...' >&2; sleep 0.3; echo ' done.' >&2
@@ -105,6 +110,7 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
     RANK=0; GROUP=0; SHARD=0; NPROC=2; GZMODE=gzip; GZK=""; OUTURL=s3://bucket/x/out/S9; ENGINE_ENV=(X=1)
     declare -A S5BAD=() IDSEC=() GZSHA=() RGSHA=() GZRC=() RGRC=()
     [ "$ENGINE" = 1 ] && { RUNG=O1; ARM=O; CLASSIFIER=ours-engine; MINE=(0 1); }
+    [ "${CASE_CLASSIFIER:-}" = ours-plain ] && { RUNG=O0; ARM=O; CLASSIFIER=ours-plain; OURS=fake-k2; DECOMP=(AK2_DECOMPRESS=pipe); }
     ak2_phase() { echo "$1" >> "$C/phases.txt"; printf 'ak2-phase\t%s\n' "$1"; }
     ak2_say() { echo "ak2: $*"; }
     ak2_err() { echo "ERR $*" >> "$C/errors"; }
@@ -119,7 +125,7 @@ run_case() {  # NAME ENGINE OUT_UPLOAD UPSERIAL: the functions in a subshell, it
       echo "$te $t1 $1" >> "$C/uploads.log"
     }
     # shellcheck disable=SC1090
-    . "$FN"
+    . "${CASE_FN:-$FN}"
     if [ "${5:-}" = s5 ]; then
       GZMODE=rapidgzip-P2; GZK=2; S5BAD[B]=1; for s in A B C; do for m in 1 2; do GZSHA[${s}_$m.fastq.gz]=$(printf "%064d" $m); RGSHA[${s}_$m.fastq.gz]=$(printf "%064d" $m); done; done; RGSHA[B_2.fastq.gz]=$(printf "%064d" 9); REAL_GZIP="$TD/bin/real-gzip"; SHIMGZ="$TD/bin/shim-gzip"
       for s in A B C; do : > "$INDIR/${s}_1.fastq.gz"; : > "$INDIR/${s}_2.fastq.gz"; done
@@ -319,6 +325,28 @@ setup_case Imut
 identity_run "$TD/fn-b1bug.sh" "$C"
 check "I-mut: with the old bug, B_1's exit check fails (the probe resolves it)" "! b1_exit_ok '$C'"
 check "I: with the fix, B_1's exit check passes" "b1_exit_ok '$TD/I'"
+
+# ---- P: ours' plain path under a cohort node's env (O0 at c1, 843e958) ----
+# make run gives every cohort node AK2_ENGINE_N/RANK/RENDEZVOUS; ours takes the engine path (a
+# resident copy of the table, --memory-mapping ignored) whenever AK2_ENGINE_N is set. lad_one must
+# run ours' plain path without them, and keep --memory-mapping and AK2_DECOMPRESS.
+penv() {  # CASE FN: case P's ours-plain lanes with the node's engine env exported
+  setup_case "$1"; export FAKE_ENVLOG="$C/env.log"; : > "$FAKE_ENVLOG"
+  ( export AK2_ENGINE_N=1 AK2_ENGINE_RANK=0 AK2_ENGINE_RENDEZVOUS=s3://b/x/rendezvous AK2_COHORT_ID=x
+    CASE_CLASSIFIER=ours-plain CASE_FN=$2 run_case "$1" 0 awscp-default 1 )
+  unset FAKE_ENVLOG
+}
+penv P "$FN"
+check "P: the run ended cleanly" "grep -q 'case-end CRC=0 FAIL=0 NDONE=3' '$C/run.log'"
+check "P: ours' plain path ran 3 times, each with --memory-mapping" "[ \$(grep -c '^args fake-k2 .*--memory-mapping' '$C/env.log') = 3 ]"
+check "P: it kept AK2_DECOMPRESS=pipe" "[ \$(grep -c '^env AK2_DECOMPRESS=pipe\$' '$C/env.log') = 3 ]"
+check "P: it saw no AK2_ENGINE_* or AK2_COHORT" "! grep -qE '^env AK2_(ENGINE_|COHORT=)' '$C/env.log'"
+# Mutation: without the strip (lad_one at 843e958) the same probe must see AK2_ENGINE_N.
+sed 's/cmd=(env "\${noeng\[@\]}" /cmd=(env /' "$BODY" > "$TD/body-engenv.sh"
+check "P-mut: the mutation removed the strip" "! grep -q 'noeng\[@\]' '$TD/body-engenv.sh'"
+mkfn "$TD/body-engenv.sh" > "$TD/fn-engenv.sh"
+penv Pmut "$TD/fn-engenv.sh"
+check "P-mut: without the strip ours' plain path sees AK2_ENGINE_N=1 (the probe resolves it)" "[ \$(grep -c '^env AK2_ENGINE_N=1\$' '$C/env.log') = 3 ]"
 
 # ---- N: negative control ----
 setup_case N

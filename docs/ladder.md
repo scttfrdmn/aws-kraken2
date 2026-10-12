@@ -497,7 +497,13 @@ is fetch-inputs, load, etag-hash.k2d, classify: its ETag is checked on the table
 - **Per-sample path** (upstream, ours-plain): PROCS lanes, samples placed by PLACEMENT. Under a
   serial upload mode (awscp-default, s5cmd-serial) a lane's next sample waits until the main shell
   has uploaded the previous one; under overlap it does not. Ours-plain gets `AK2_DECOMPRESS=pipe`
-  whenever a shim is in use. **Engine path:** one cohort-mode process per node over the replica's
+  whenever a shim is in use. Ours-plain runs with every `AK2_ENGINE_*`, `AK2_COHORT` and
+  `AK2_COHORT_CHECK` removed from its environment. `make run` gives every cohort node
+  `AK2_ENGINE_N`, `_RANK` and `_RENDEZVOUS`, and ours takes the engine path whenever
+  `AK2_ENGINE_N` is set: resident shards, with `--memory-mapping` ignored. At 843e958, O0 at c1
+  inherited them, read a second, anonymous copy of the 1.1 TB tmpfs table, and was OOM-killed
+  (rc 137) during the load. `make ladder-stream-test` case P checks the strip, and its mutation
+  restores the leak. **Engine path:** one cohort-mode process per node over the replica's
   samples (`parallel:<PLACEMENT>`, INFLIGHT in flight); a serial upload mode is refused, because it
   could not hold back the engine's next sample.
 - **Fleet:** rank r is replica r / SHARDS, shard r % SHARDS; replicas split the cohort by
