@@ -322,9 +322,10 @@ try:
           and "same configuration as O0b at c1" in rr[("O2-cost", "wall_s")]["basis"], (rr.get(("O2-cost", "wall_s")), rr.get(("O0-cost", "wall_s"))))
 
     # 15. O4b's in-flight range at c10 (INFLIGHT 1 .. vCPUs / THREADS on O4a's host). Hypothetical
-    # selections up to O3, written with a source in the scratch root: S4 -> S4-t12 (THREADS 12) and
-    # O3 -> O3-n2 (x8g.12xlarge, 48 vCPUs) leave O4a (INFLIGHT 4), O4b-if1 and O4b-if2; with no runs of
-    # them, the rule is not selected. S4 -> S2a (THREADS = vcpus) leaves only O4a: the row names O4a
+    # selections up to O3, written with a source in the scratch root: S4 -> S4-t12 (12 of S9's 96 vCPUs:
+    # the O arm's ratio R = 8, ruling 1) and O3 -> O3-n2 (x8g.12xlarge, 48 vCPUs: THREADS vcpus/8 = 6)
+    # leave O4a (INFLIGHT fill/8 = 8), O4b-if1, O4b-if2 and O4b-if4; with no runs of them, the rule is
+    # not selected. S4 -> S2a (THREADS = vcpus) leaves only O4a: the row names O4a
     # without a measurement, and O5 then takes O4a's INFLIGHT.
     def hypo(root, s4):
         os.makedirs(os.path.join(root, "results", "g3", "hypo"), exist_ok=True)
@@ -341,8 +342,8 @@ try:
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
         rc = LS.main(["select", "10", "--root", r9, "--rung", "O4b"])
     out = out.getvalue()
-    check("O4b at c10 (THREADS 12 on x8g.12xlarge): candidates O4a, O4b-if1, O4b-if2 in range, none measured: exit 3",
-          rc == 3 and "O4b-if1 has n = 0" in out and "O4b-if2 has n = 0" in out and "O4b-if4" not in out.split("left out")[0], (rc, out))
+    check("O4b at c10 (THREADS vcpus/8 = 6 on x8g.12xlarge): candidates O4a, O4b-if1, -if2, -if4 in range, none measured: exit 3",
+          rc == 3 and all("%s has n = 0" % c in out for c in ("O4b-if1", "O4b-if2", "O4b-if4")) and "O4b-if8" not in out.split("left out")[0], (rc, out))
     rows9 = LL.load(os.path.join(r9, "scripts", "g3", "ladder.levers.tsv"))
     res9 = LL.read_resolved(resd(r9), r9, rows9)
     try:
@@ -350,8 +351,8 @@ try:
         ok = "selected"
     except LS.Refused as e:
         ok = str(e)
-    check("... the candidates asked for are exactly O4a, O4b-if1 and O4b-if2 (O4b-if4 is O4a's own, O4b-if8 above the bound)",
-          all("%s has n = 0" % c in ok for c in ("O4a", "O4b-if1", "O4b-if2")) and "O4b-if4" not in ok and "O4b-if8" not in ok, ok)
+    check("... the candidates asked for are exactly O4a, O4b-if1, -if2 and -if4 (O4b-if8 is O4a's own, -if16 above the bound)",
+          all("%s has n = 0" % c in ok for c in ("O4a", "O4b-if1", "O4b-if2", "O4b-if4")) and "O4b-if8" not in ok and "O4b-if16" not in ok, ok)
     hypo(r9, "S2a")
     out = io.StringIO()
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
@@ -363,6 +364,20 @@ try:
           and "O4b-if1 (outside the range: INFLIGHT 1 is O4a's own" in t["note"], (rc, out, t))
     o5 = LL.resolve(LL.load(os.path.join(r9, "scripts", "g3", "ladder.levers.tsv")), "O5", 10, resd(r9), r9)["params"]
     check("... and O5 at c10 takes O4a's INFLIGHT (S2a's PROCS 1)", o5["INFLIGHT"] == "1", o5)
+    # 16. Ruling 2 (2026-10-13): the tables label that O4b "single candidate, not measured" in deltas.tsv
+    # and pairs.tsv, never a measured zero: no delta, no step number, and no part in the lever sum.
+    o16 = os.path.join(r9, "t16")
+    lev9 = os.path.join(r9, "scripts", "g3", "ladder.levers.tsv")
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        lt.main(["--results", os.path.join(r9, "results"), "--levers", lev9, "--resolved", resd(r9), "--out", o16])
+    dl = [x for x in csv.DictReader(open(os.path.join(o16, "deltas.tsv")), delimiter="\t") if x["rung"] == "O4b" and x["cohort"] == "10"]
+    check("deltas.tsv: O4b at c10 is labelled 'single candidate, not measured' on every axis, with no delta",
+          dl and all("single candidate, not measured" in x["status"] and x["delta"] == "" for x in dl), dl[:2])
+    pl = [x for x in csv.DictReader(open(os.path.join(o16, "pairs.tsv")), delimiter="\t")
+          if x["cohort"] == "10" and x["row"] == "lever" and x["rung"] == "O4b"]
+    check("pairs.tsv: O4b at c10 has its own labelled lever row, no delta and no step, on every pair through it",
+          pl and all(x["status"] == "single candidate, not measured" and x["delta"] == "" and x["step"] == "" for x in pl)
+          and not any(x["status"] == "resolved" and x["delta"] in ("0", "0.000000") for x in pl), pl[:2])
 finally:
     for r in roots:
         shutil.rmtree(r, ignore_errors=True)

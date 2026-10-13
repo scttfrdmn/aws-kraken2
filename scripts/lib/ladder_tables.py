@@ -54,6 +54,10 @@ RUN_KINDS = ("ladder", "endpoint")
 # A conditional alias_cohorts entry's suffix (ladder_levers.COND), and alias_cohort_checks' prefix for
 # one whose two rungs resolve and differ: no alias there, the rung reads its own runs.
 ALIAS_COND = "(if same configuration)"
+# A selection whose rule leaves only its predecessor (ladder_select.SINGLE: O4b where the in-flight range
+# collapses; Scott's ruling 2, 2026-10-13): labelled "single candidate, not measured", never a measured 0.
+SINGLE_PREFIX = "single candidate"
+SINGLE_LABEL = "single candidate, not measured"
 NOT_ALIAS = "no alias here (conditional): "
 STATES = ("cold", "warm", "cold-local")
 ENDPOINT_TAGS = ("S*-time", "S*-cost", "O*-time", "O*-cost")
@@ -231,6 +235,12 @@ def load_levers(path, rd):
         # `not_run_cohorts`: the cohorts at which the rung is not run (`c1: <reason>;c10: <reason>`, or a bare
         # `1;10`). There it is treated exactly as `status: not-run`.
         r["not_run_cohorts"] = parse_cohort_list(f.get("not_run_cohorts") or "")
+        # A conditional entry (`c100: <reason> (if same configuration)`: O1 where S8 keeps K = 1) holds only
+        # where the rung resolves to its run predecessor's configuration; not_run_cond_checks decides it,
+        # by the generator's rule, and only then is the cohort added to not_run_cohorts.
+        r["not_run_cond"] = {c: w[:-len(ALIAS_COND)].strip() for c, w in r["not_run_cohorts"].items() if w.endswith(ALIAS_COND)}
+        for c in r["not_run_cond"]:
+            del r["not_run_cohorts"][c]
         # An alias rung (`status: alias: ...` with `alias_of` set) has no runs of its own: its runs are
         # those of the winner named in ladder.resolved.tsv (key alias) for each cohort.
         r["alias_of"] = [x.strip() for x in (f.get("alias_of") or "").split("|") if x.strip()]
@@ -321,6 +331,41 @@ def alias_cohort_checks(levers_path, resolved_path, levers):
     return out, defects
 
 
+def not_run_cond_checks(levers_path, resolved_path, levers, cohorts=None):
+    """Decide each conditional not_run_cohorts entry by the generator's rule (ladder_levers.notrun_state,
+    on the lever table's values resolved under ladder.resolved.tsv's rows). Where it holds, the cohort is
+    added to the rung's not_run_cohorts (the tables then skip it, as for any not-run rung); notes for
+    the entries that hold and those that cannot be decided (the rung is then read as run there).
+    COHORTS, when given, limits the notes to the cohorts the record has."""
+    todo = [(r, c) for r, lv in sorted(levers.items()) for c in sorted(lv.get("not_run_cond") or {})]
+    notes = []
+    if not todo:
+        return notes
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import ladder_levers as LL
+        rows = LL.load(levers_path)
+        res = {}
+        if resolved_path and os.path.exists(resolved_path):
+            for f in LL.resolved_rows(resolved_path):
+                res[(f.get("origin", ""), (f.get("cohort") or "").lstrip("c"), f.get("key", ""))] = (f.get("value", ""), f.get("source", ""))
+        names = LL.by_name(rows)
+    except (ValueError, OSError, KeyError) as e:
+        return [f"conditional not_run_cohorts entries not decided: the lever table cannot be resolved ({e})"]
+    for r, c in todo:
+        try:
+            st, why = LL.notrun_state(rows, names[r], c, res)
+        except (ValueError, KeyError) as e:
+            st, why = "undecided", str(e)
+        if st == "not-run":
+            levers[r]["not_run_cohorts"][c] = f"{levers[r]['not_run_cond'][c]} (conditional: it holds)"
+            if cohorts is None or c in cohorts:
+                notes.append(f"{r} at c{c}: {why}")
+        elif st == "undecided" and (cohorts is None or c in cohorts):
+            notes.append(f"{r} at c{c}: conditional not_run_cohorts entry undecided ({why}): read as run there")
+    return notes
+
+
 def pair_alias(levers, pair_checks, rung, cohort):
     """The rung RUNG's alias_cohorts entry names at COHORT, or '' where it has none or where a
     conditional entry is no alias (alias_cohort_checks: NOT_ALIAS)."""
@@ -358,7 +403,9 @@ def load_resolved(path, rd, levers, repo=ROOT):
             out[k] = (None, f"alias unresolved: ladder.resolved.tsv's {rung} c{c} row ({v}) cites do not verify: "
                             f"{cite_problem(f.get('cites') or '', rd, repo)}")
         else:
-            out[k] = (v, f"alias of {v} (ladder.resolved.tsv; source {f.get('source') or '-'})")
+            mg = (f.get("margin") or "").strip()
+            single = f"; {mg}" if mg.startswith(SINGLE_PREFIX) else ""
+            out[k] = (v, f"alias of {v} (ladder.resolved.tsv; source {f.get('source') or '-'}{single})")
     return out, errs
 
 
@@ -892,10 +939,51 @@ def s5_of(s):
     return x.get("status"), x.get("fallback", "none")
 
 
-def validate(runs, levers, defects):
-    """Contract, failed samples and completeness. Each DEFECT also excludes its run."""
+RECORDED_CLASSES = ("contract", "incomplete")   # the checks a recorded defect's run does not re-raise
+
+
+def load_recorded(path, rd=None):
+    """run id -> class (the text before the first ':' of the class column, e.g. capacity, defect,
+    partial) from scripts/lib/g3_defects.tsv, the record of runs already judged defective (capacity
+    refusals, failed launches). Missing file: {}."""
+    if not path or not os.path.exists(path):
+        return {}
+    text = rd.text(path) if rd is not None else open(path).read()
+    out = {}
+    for f in csv.DictReader([ln for ln in text.splitlines() if ln.strip() and not ln.startswith("#")], delimiter="\t"):
+        rid = (f.get("run") or "").strip()
+        if rid:
+            out[rid] = ((f.get("class") or "").split(":", 1)[0].strip() or "recorded")
+    return out
+
+
+def recorded_class(r, recorded):
+    """The recorded-defect class of run R (by its run id), or ''."""
+    return (recorded or {}).get(r["run_id"], "")
+
+
+def validate(runs, levers, defects, recorded=None):
+    """Contract, failed samples and completeness. Each DEFECT also excludes its run. A run recorded in
+    scripts/lib/g3_defects.tsv (RECORDED: run id -> class) is excluded once, as "recorded defect
+    (<class>): excluded", and its contract and incomplete checks raise no DEFECT (they are what the
+    record already says). Its other checks still raise theirs, and Law 1 (law1) is never suppressed."""
+    all_defects = defects
     for r in runs:
         rid = r["run_id"]
+        rc = recorded_class(r, recorded)
+        if rc == "capacity" and r["samples"]:
+            # A capacity refusal launches nothing, so it has no sample records. One that has them is not
+            # what the record says: nothing is suppressed, and the note says why.
+            r["exclude"].append(f"recorded defect (capacity) with {len(r['samples'])} sample record(s): not a refused launch, "
+                                f"so its DEFECTs are raised")
+            all_defects.append(("recorded", f"{rid}: recorded as capacity in g3_defects.tsv, but it has "
+                                            f"{len(r['samples'])} sample record(s)"))
+            rc = ""
+        if rc:
+            r["exclude"].append(f"recorded defect ({rc}): excluded")
+            defects = _RecordedSink(all_defects, r)
+        else:
+            defects = all_defects
         if r["missing_members"]:
             e = f"cohort member manifest missing: {', '.join(r['missing_members'])}"
             defects.append(("incomplete", f"{rid}: {e}"))
@@ -979,6 +1067,9 @@ def validate(runs, levers, defects):
         elif not_run(levers[r["params"]["rung"]], r["params"].get("cohort")):
             r["notes"].append(f"rung {r['params']['rung']} is marked {not_run(levers[r['params']['rung']], r['params'].get('cohort'))!r} "
                               "in ladder.levers.tsv")
+        if rc:
+            # The recorded exclusion stands for the suppressed checks: only it and any unsuppressed DEFECT remain.
+            r["exclude"] = [x for x in r["exclude"] if not any(x.startswith(f"DEFECT ({c})") for c in RECORDED_CLASSES)]
         r["exclude"] = list(dict.fromkeys(r["exclude"]))
 
 
@@ -1219,6 +1310,10 @@ def alias_step(G, rung, cohort):
     pr, _ = run_pred(G.levers, rung, cohort)
     pw, _ = G.alias(pr, cohort) if pr else (None, "")
     if w == pr or (pw is not None and w == pw):
+        if lv.get("alias") and SINGLE_PREFIX in (G.resolved.get((rung, cohort), (None, ""))[1] or ""):
+            # Ruling 2: its rule left only the predecessor, so nothing was measured: a label, not a 0.
+            return True, (f"{rung}: {SINGLE_LABEL} (its rule leaves only its predecessor {pr} at c{cohort}): no lever, "
+                          f"no delta")
         return True, f"{rung} is an alias of its predecessor {pr}" + (f" ({pw}'s runs)" if pw not in (None, pr) else "") + ": no lever"
     return False, note
 
@@ -1265,12 +1360,21 @@ def pair_rows(name, cohort, fam, ax, src, src_tag, src_basis, tgt, tgt_tag, tgt_
         return [L(note=f"totals: target from {aw}, source from {bw}; no per-lever path: {src} is not on {tgt}'s "
                        f"predecessor chain ({' <- '.join(ch)}) in ladder.levers.tsv; the total alone is not an attribution",
                   **total)]
-    steps = [r for r in reversed(ch[:ch.index(src)]) if not not_run(levers[r], cohort) and not alias_step(G, r, cohort)[0]]
-    rows, ssum, missing = [], 0.0, []
-    for i, rung in enumerate(steps, 1):
+    seq = [r for r in reversed(ch[:ch.index(src)]) if not not_run(levers[r], cohort)]
+    steps = [r for r in seq if not alias_step(G, r, cohort)[0]]
+    rows, ssum, missing, i = [], 0.0, [], 0
+    for rung in seq:
         lv = levers[rung]
         pr, _ = run_pred(levers, rung, cohort)
-        _, anote = alias_step(G, rung, cohort)
+        skip, anote = alias_step(G, rung, cohort)
+        if skip:
+            if SINGLE_LABEL in anote:
+                # Ruling 2: a single-candidate selection has its own row, labelled, with no delta (not a
+                # measured zero), no step number, and no part in the sum of the lever deltas.
+                rows.append(L(row="lever", step="", rung=rung, predecessor=pr, lever=lv["lever"], delta="",
+                              status=SINGLE_LABEL, note=anote))
+            continue
+        i += 1
         x, y = G.stats(rung, cohort, ax), G.stats(pr, cohort, ax, rung)
         d = delta(x, y)
         if d["delta"] is None:
@@ -1409,13 +1513,25 @@ def s5_findings(runs, levers):
     return out
 
 
-def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_checks=None):
+class _RecordedSink:
+    """The defects list as validate() sees it for a recorded run: contract and incomplete DEFECTs are
+    dropped (the run is a recorded defect), every other class goes through."""
+
+    def __init__(self, defects, run):
+        self.defects, self.run = defects, run
+
+    def append(self, d):
+        if d[0] not in RECORDED_CLASSES:
+            self.defects.append(d)
+
+
+def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_checks=None, recorded=None):
     modelled = modelled or {}
     T, defects, notes = {}, [], []
     emap, eerr = declared_endpoints(levers)
     for e in eerr:
         defects.append(("levers", e))
-    validate(runs, levers, defects)
+    validate(runs, levers, defects, recorded)
     # GNU gzip's warning (exit 2: trailing data ignored, the output complete): kept, never an input
     # defect, but named, sample by sample (tidy.tsv s5.gz_warning and here).
     for r in runs:
@@ -1690,6 +1806,9 @@ def main(argv=None):
     ap.add_argument("--resolved", default=os.path.join(ROOT, "scripts", "g3", "ladder.resolved.tsv"),
                     help="alias winners and placeholder resolutions (ladder.resolved.tsv)")
     ap.add_argument("--out", default=os.path.join(ROOT, "results", "g3", "ladder"))
+    ap.add_argument("--recorded", default=os.path.join(ROOT, "scripts", "lib", "g3_defects.tsv"),
+                    help="runs already recorded as defects (scripts/lib/g3_defects.tsv): excluded once, contract and "
+                         "incomplete checks not re-raised")
     ap.add_argument("--spend", default=None, help="campaign spend.tsv (default <results>/g3/campaign/spend.tsv)")
     a = ap.parse_args(argv)
     rd = Reader()
@@ -1702,8 +1821,10 @@ def main(argv=None):
     if os.path.exists(spend_p):
         cs = {r.get("run") for r in csv.DictReader(rd.text(spend_p).splitlines(), delimiter="\t")}
     resolved, rerrs = load_resolved(a.resolved, rd, levers, os.path.dirname(os.path.abspath(a.results)))
+    nrnotes = not_run_cond_checks(a.levers, a.resolved, levers, {r['params'].get('cohort') for r in runs})
     pchk, pdef = alias_cohort_checks(a.levers, a.resolved, levers)
-    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved, pchk)
+    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved, pchk, load_recorded(a.recorded, rd))
+    notes += nrnotes
     defects += pdef
     notes += [f"{r} at c{c}: alias_cohorts pair not used: {why}" for (r, c), why in sorted(pchk.items())
               if why and not why.startswith(NOT_ALIAS)]

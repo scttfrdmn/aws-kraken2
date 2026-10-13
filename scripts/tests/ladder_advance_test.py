@@ -35,6 +35,9 @@ STAGE1 = ["S0-T1", "S0-Tv", "S1", "S2b-i", "S2b-ii", "S2d", "S2c", "S2a", "S4-t4
 for msg, want in (("S4-t8 is not-run at c10: P = 96/8 = 12 processes > cohort 10: no spec is generated for it", ("not-run", [])),
                   ("O0-cost is alias: same configuration as O0 at c10 (alias_cohorts): no spec is generated for it; O0's runs are read", ("alias", [])),
                   ("O3-n16 at cohort 10 is outside O3's bracket (...): not a candidate there", ("out", [])),
+                  ("O3-n2 at cohort 10 is outside O3's candidates (its REPLICAS+SHARDS is O2's own: ...): not a candidate there", ("out", [])),
+                  ("O1 is not-run at c100: where S8 keeps K = 1 ... (conditional: it resolves to O0b's configuration): no spec is generated for it",
+                   ("not-run", [])),
                   ("O1 at cohort 10: the resolution makes it identical to O0b (mark it not-run instead)", ("collapsed", [])),
                   ("S5 at cohort 10 has unresolved values: THREADS=@select:S4, PROCS=@select:S4", ("pending", ["S4"])),
                   ("O3-n2 at cohort 10 has unresolved values: instance=@floor:O2 (its origin's host is unresolved)", ("pending", ["O2"])),
@@ -58,9 +61,12 @@ entries, sels = A.plan(rows, 10, res1, ROOT, prices, rec, res1, with_bounds=Fals
 by = {e["rung"]: e for e in entries}
 det = [e["rung"] for e in entries if e["state"] in ("new", "committed")]
 check("c10: the determined rungs are exactly stage 1 (S0-T1 ... S2a and S4-t48 ... S4-t12)", det == STAGE1, det)
-check("c10: S4-t8 ... S4-t1 are not run (P > 10), and so are O2-r8g, O2-x8g and O4b-if16 and up",
-      all(by[r]["state"] == "not-run" for r in ("S4-t8", "S4-t1", "O2-r8g", "O2-x8g", "O4b-if16", "O4b-cost-if128")),
-      {r: by[r]["state"] for r in ("S4-t8", "S4-t1", "O2-r8g", "O4b-if16")})
+check("c10: S4-t8 ... S4-t1 are not run (P > 10), and so are O4b-if16 and up",
+      all(by[r]["state"] == "not-run" for r in ("S4-t8", "S4-t1", "O4b-if16", "O4b-cost-if128")),
+      {r: by[r]["state"] for r in ("S4-t8", "S4-t1", "O4b-if16")})
+check("c10: O2-r8g and O2-x8g are run there, pending (their types follow O1's N = S8's K: @fit:<family>)",
+      all(by[r]["state"] == "pending" for r in ("O2-r8g", "O2-x8g", "O2-cost-r8g", "O2-cost-x8g")),
+      {r: by[r]["state"] for r in ("O2-r8g", "O2-x8g", "O2-cost-r8g", "O2-cost-x8g")})
 check("c10: S5 waits on S4; S9 on S4 and S8; O0 on S*-time too", by["S5"]["state"] == "pending" and by["S5"]["waits"] == ["S4"]
       and set(by["S9"]["waits"]) == {"S4", "S8"} and "Sstar-time" in by["O0"]["waits"], (by["S5"]["waits"], by["S9"]["waits"], by["O0"]["waits"]))
 e0 = by["S0-T1"]
@@ -70,8 +76,9 @@ check("c10: S4-t12's basis is S2a's c1 runs", "the c1 runs of S2a" in by["S4-t12
 sb = {s["rung"]: s for s in sels}
 check("c10: S4 waits on the campaign; S8 waits on S4", sb["S4"]["state"] == "pending" and "waits on the campaign" in sb["S4"]["why"]
       and "waits on selection(s) S4" in sb["S8"]["why"], (sb["S4"], sb["S8"]))
-check("c10: O2 and O2-cost are BLOCKED (only O1 / O1-cost applies: the O2 rows are N = 1's)",
-      sb["O2"]["state"] == "BLOCKED" and "only O1 applies at c10" in sb["O2"]["why"] and sb["O2-cost"]["state"] == "BLOCKED", sb["O2"])
+check("c10: O2 and O2-cost are no longer BLOCKED: three candidates each (O1, O2-r8g, O2-x8g at O1's N)",
+      sb["O2"]["state"] == "pending" and "O2-r8g (pending)" in sb["O2"]["why"] and "O2-x8g (pending)" in sb["O2"]["why"]
+      and sb["O2-cost"]["state"] == "pending", (sb["O2"], sb["O2-cost"]))
 check("c10: O4b's in-flight range is noted", "in-flight range" in sb["O4b"]["why"], sb["O4b"])
 
 # 4. A hypothetical S4 selection (S4 -> S4-t24) determines stage 2, with S4-t24's THREADS and PROCS.
@@ -91,8 +98,8 @@ check("... and the rehearsal classes split S5 (several lanes, 1 node) from S8-k2
 b, n, okn, why = A.bound(rows, "S5", 10, res1, prices, rec, res1, ROOT)
 check("bound: S5 at c10 over the 6 S4 candidates, every one resolved", n == 6 and okn == 6 and b and b > 0, (b, n, okn, why))
 b, n, okn, why = A.bound(rows, "O1", 10, res1, prices, rec, res1, ROOT)
-check("bound: O1 at c10 is identical to O0b wherever S8 -> S7b (K = 1): refused under half the combinations",
-      n == 36 and okn == 18 and any("identical to O0b" in k for k in why), (n, okn, dict(why)))
+check("bound: O1 at c10 is a conditional not-run wherever S8 -> S7b (K = 1): not generated under half the combinations",
+      n == 36 and okn == 18 and any("conditional: it resolves to O0b's configuration" in k and "not-run" in k for k in why), (n, okn, dict(why)))
 ow = A.own_rows(rows, 10)
 check("own_rows drops the c10 conditional entries and keeps c1's",
       LL.by_name(ow)["O0-cost"]["alias_cohorts"] == "c1: O0" and LL.by_name(ow)["O5-cost"]["alias_cohorts"] == "c1: O5 (if same configuration)",

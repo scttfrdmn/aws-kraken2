@@ -9,6 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The ladder's O arm for c10 stages 4–7 and any cohort** (Scott's rulings of 2026-10-13, #25;
+  docs/ladder.md, "The O arm's thread ratio", "O2 at N = K", "Conditional not-run entries").
+  - **Thread ratio (ruling 1).** Every O rung's THREADS is `@ratio:Sstar-time` (`Sstar-cost` on the
+    cost chain), which resolves to `vcpus/R`. Its samples at once (PROCS, or INFLIGHT on the engine) are
+    `@ratio:…:fill`, which resolves to `fill/R` = vcpus // (vcpus/R). R is S\*'s vCPUs / S\*'s THREADS,
+    so O0 is still S\*'s exact configuration.
+    - At c10 with S4 → S4-t16 and S\* = S9, R = 6. On a 192-vCPU S\* host, R = 12, because the S
+      arm carried T = 16 absolutely there; this reading is flagged.
+    - The generator writes fill/R's value at the spec's pinned type. `resolve()` refuses an O rung
+      that would oversubscribe its host. The c1 specs are unchanged (R = 1).
+    - The engine's INFLIGHT is clamped to the cohort (`fill/R/C`). PROCS is not, so O0 keeps S\*'s
+      exact PROCS. At c10 only 192-vCPU S\* cases change (12 or 16 → 10 in flight), and no O3 floor
+      type moves.
+  - **O2 at N = K.** O2-r8g, O2-x8g and their -cost copies have `instance @fit:<family>`, the family's
+    smallest type holding the rung at O1's N = S8's K. That is r8g.48xlarge and x8g.24xlarge at
+    N = 1, and r8g.24xlarge and x8g.12xlarge at c10's N = 2.
+    - Their "N = 1's" not-run entries above c1 are gone, so O2 and O2-cost are no longer BLOCKED at
+      c10.
+    - O2-cost-r8g and O2-cost-x8g get conditional c10 `alias_cohorts` entries.
+  - **`candidate_out`.** A candidate whose value of its alias's group is the predecessor's own is
+    outside the alias's candidates. Examples are O2-x8g on O1's type, and O3-n2 at O2's N = 2 at
+    c10, where it would change only the host.
+    - The generator refuses it, ladder-select leaves it out, and ladder-advance shows `out`.
+    - The function also holds the bracket and range checks.
+  - **Conditional not-run entries** (`c<C>: <reason> (if same configuration)`). O1 and O1-cost are
+    not run at c10, c100 and c1000 exactly where S8 keeps K = 1, which leaves O0b's configuration.
+    The tables decide such entries by the generator's rule (`not_run_cond_checks`).
+  - **r8gd floor (ruling 3).** `@floor` on an r8gd host uses r8g's types.
+  - **O4b single candidate (ruling 2).** Its margin is `single candidate, not measured: …`. The tables
+    label it so:
+    - deltas.tsv gives no delta;
+    - pairs.tsv gives a labelled lever row with no delta and no step, outside the lever sum;
+    - it is never a measured zero.
+  - Tests:
+    - `ladder_levers --self-test` covers the ratio on every type, O0 = S9 at c10, the N = 2 types,
+      O1's conditional not-run, O3-n2 out, r8gd → r8g, and the conditional aliases below;
+    - ladder_select_test case 16 covers the O4b label.
+
 - **TTL estimates above c1** (`scripts/lib/ladder_ttl.py`; docs/ladder.md, "TTL above c1"). Above
   c1, `mkspec-ladder.sh` no longer needs `TTL=`. It estimates each rung's wall from the record's c1
   runs of the rung, or of its nearest measured relative (`config_row` at c1, then its predecessors).
@@ -285,6 +323,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The ladder tables re-raised recorded defects.** A run listed in `scripts/lib/g3_defects.tsv`
+  (capacity refusals, failed launches) is now reported once, as `recorded defect (<class>):
+  excluded`, and its contract and incomplete checks are no longer DEFECTs. They do not count toward
+  the DEFECT total or the exit code.
+  - Its other checks, and Law 1, are never suppressed.
+  - A run recorded as `capacity` that has any sample record is not a refused launch. Nothing is
+    suppressed for it, and a `DEFECT (recorded)` names the mismatch.
+  - On this branch's record: 41 DEFECT lines from 13 recorded runs before, 0 after.
+  - Test: `ladder_tables_test` `recorded_defects`.
+- **A conditional `alias_cohorts` entry whose target is no candidate there** (the reviewer's latent
+  gap). Before, it read the target's runs, which do not exist, wherever the two configurations
+  coincided. It is now `own` where the target is not run at the cohort, or is outside its alias's
+  bracket, range or candidates (`candidate_out`). Self-test cases cover O3-cost-n2, O3-cost-n4 (the
+  bracket) and O4b-cost-if8 (the range).
+- **Absolute THREADS on the O arm.** S4's T = 16 ran 16 threads per sample on x8g.2xlarge's 8 vCPUs,
+  and O4b's range collapsed to 1 on every type below 32 vCPUs. The thread ratio above replaces it.
 - `ladder_campaign.py` `record_problems`: a cohort member that never launched (capacity) has no AZ; the AZ check now names it as "none" instead of crashing on `sorted()` of None and a string (the c10 S9 rep 2 retry, campaign 20261013-183231, crashed this way). Regression case in `ladder_campaign_test`.
 
 - **Ladder ours-plain ran the engine** (scripts/g3/ladder.body.sh `lad_one`). The cohort env that

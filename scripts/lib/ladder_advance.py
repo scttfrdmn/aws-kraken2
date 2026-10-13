@@ -48,7 +48,7 @@ sys.path.insert(0, HERE)
 import ladder_levers as LL  # noqa: E402
 import ladder_ttl as TT  # noqa: E402
 
-TOKEN = re.compile(r"@(?:select|floor):([A-Za-z0-9-]+)")
+TOKEN = re.compile(r"@(?:select|floor|ratio):([A-Za-z0-9-]+)")
 PLAN_COLS = ["cohort", "stage", "rung", "arm", "state", "spec", "type", "nodes", "ttl_min", "cost_limit_usd", "cost_limit_total_usd",
              "est_s", "basis", "bound", "waits_on", "note"]
 COMBO_CAP = 20000
@@ -69,7 +69,7 @@ def classify(msg):
         return "not-run", []
     if "is alias: same configuration as" in msg:
         return "alias", []
-    if "is outside" in msg and ("bracket" in msg or "range" in msg) and "not a candidate there" in msg:
+    if "is outside" in msg and ("bracket" in msg or "range" in msg or "candidates" in msg) and "not a candidate there" in msg:
         return "out", []
     if "identical to" in msg and "mark it not-run instead" in msg:
         return "collapsed", []

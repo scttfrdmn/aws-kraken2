@@ -71,6 +71,20 @@ OUT_BYTES_PER_PAIR = 150         # --output + --report, with margin (an 8 MiB-pa
 OS_SLACK = 16 << 30
 NVME_BYTES = {"r8gd.48xlarge": 1900 * 10 ** 9}   # one instance-store device (S0: one device, Scott 2026-10-09)
 PARAMS_MARK = "# Parameters (scripts/g3/mkspec-ladder.sh"
+# The O arm's thread ratio (Scott, 2026-10-13, ruling 1; docs/ladder.md, "The O arm's thread ratio"):
+# `@ratio:<rung>` (THREADS) is vcpus/R and `@ratio:<rung>:fill` (PROCS or INFLIGHT) is fill/R, with
+# R = <rung>'s vCPUs / <rung>'s THREADS, both as resolved at <rung>'s host (the O arm's S* root).
+# fill/R is vcpus // max(1, vcpus // R): as many samples at once as vcpus/R threads leave room for,
+# so P x T <= vCPUs on every host. The body has no fill form, so resolve() gives its value at the
+# rung's own (pinned) type.
+RATIO_RE = re.compile(r"@ratio:([A-Za-z0-9-]+)(:fill)?")
+FILL_RE = re.compile(r"fill/([1-9][0-9]*)(?:/([1-9][0-9]*))?")   # fill/R, or fill/R/C clamped to the cohort C
+# The family whose small sizes a right-sized @floor uses (Scott, 2026-10-13, ruling 3): r8gd has no
+# small sizes; r8g is its generation and memory ratio, and ours does not use the instance store.
+FLOOR_FAMILY = {"r8gd": "r8g"}
+# `@fit:<family>` (an instance): the family's smallest non-metal type that holds the rung at the
+# cohort by fits(), with every other PARAM as resolved (O2's candidates, one per family, at O1's N).
+FIT_RE = re.compile(r"@fit:([a-z0-9]+)")
 
 
 class Unresolved(Exception):
@@ -145,8 +159,19 @@ def derived_host(rows, row, _seen=None):
     return False
 
 
+def canon(rows, v, depth=0):
+    """A PARAM's text for the static one-lever check: `@ratio:<o>` is <o>'s own THREADS text and
+    `@ratio:<o>:fill` its PROCS text, since at <o>'s host the ratio resolves to exactly those values
+    (on another host it moves with the host, the host's lever: the `derived` column)."""
+    m = RATIO_RE.fullmatch(v)
+    o = by_name(rows).get(m.group(1)) if m else None
+    if o is None or depth > 10:
+        return v
+    return canon(rows, o["PROCS" if m.group(2) else "THREADS"], depth + 1)
+
+
 def changed(rows, row, pred):
-    keys = [k for k in KEYS if row[k] != pred[k]]
+    keys = [k for k in KEYS if canon(rows, row[k]) != canon(rows, pred[k])]
     if row["instance"] != "=pred" and instance_of(rows, row) != instance_of(rows, pred):
         keys.append("instance")
     return keys
@@ -183,7 +208,7 @@ def alias_at(row, cohort):
     return alias_decl(row, cohort)[0]
 
 
-def alias_state(rows, row, cohort, res, depth=0):
+def alias_state(rows, row, cohort, res, depth=0, root=None):
     """(state, target, why) of ROW's alias_cohorts entry at COHORT under resolutions RES:
     ('none', '', '') without one; ('alias', t, '') for an unconditional entry, or a conditional one
     whose two rungs resolve to one configuration; ('own', t, why) for a conditional one whose two
@@ -202,9 +227,21 @@ def alias_state(rows, row, cohort, res, depth=0):
     if abad or bbad:
         return "undecided", t, "unresolved: %s" % ", ".join(["%s %s" % (row["rung"], x) for x in abad] +
                                                              ["%s %s" % (t, x) for x in bbad])
-    if same_config(a, b):
-        return "alias", t, ""
-    return "own", t, "configurations differ in %s" % ",".join(k for k in KEYS + ["instance"] if a[k] != b[k])
+    if not same_config(a, b):
+        return "own", t, "configurations differ in %s" % ",".join(k for k in KEYS + ["instance"] if a[k] != b[k])
+    # One configuration, but the target has no runs to read there: it is not run at the cohort, or it
+    # is outside its own alias's bracket or range (or is that alias's predecessor's configuration).
+    # Then the entry is no alias, and the rung reads its own runs.
+    nr = not_run_at(names[t], cohort, rows, res)
+    if nr:
+        return "own", t, "its target %s is %s" % (t, nr)
+    try:
+        out = candidate_out(rows, t, cohort, res, root or ROOT)
+    except Unresolved as e:
+        return "undecided", t, "its target %s's candidacy is unresolved (%s)" % (t, e)
+    if out:
+        return "own", t, "its target %s is %s at c%s: not a candidate there, so it has no runs to read" % (t, out, cohort)
+    return "alias", t, ""
 
 
 def check(rows):
@@ -246,7 +283,15 @@ def check(rows):
                 probs.append("%s: not_run_cohorts entry %r is not c<cohort>: <reason>" % (n, d))
         # not_run_cohorts: a selecting rung, a selection's candidate, or a rung whose values derive
         # from a selection (an @select token), each where its selection leaves its predecessor's configuration.
-        derives = any(r[k].startswith("@select:") for k in KEYS) or r["instance"].startswith("@select:")
+        derives = any(r[k].startswith(("@select:", "@ratio:")) for k in KEYS) or r["instance"].startswith("@select:")
+        for k in KEYS:
+            m = RATIO_RE.fullmatch(r[k]) if r[k].startswith("@ratio:") else None
+            if r[k].startswith("@ratio:") and (m is None or m.group(1) not in names or k not in VC_KEYS
+                                               or (k == "THREADS") == bool(m.group(2))):
+                probs.append("%s: %s=%s: @ratio:<rung> is THREADS only, @ratio:<rung>:fill PROCS or INFLIGHT only, "
+                             "<rung> a rung" % (n, k, r[k]))
+        if r["instance"].startswith("@fit:") and not FIT_RE.fullmatch(r["instance"]):
+            probs.append("%s: instance %s is not @fit:<family>" % (n, r["instance"]))
         if r["not_run_cohorts"] and not (r["select"] or n in candidate_of or derives):
             probs.append("%s: not run at some cohorts, but it makes, is or derives from no selection there" % n)
         for d in [d.strip() for d in r.get("alias_cohorts", "").split(";") if d.strip()]:
@@ -264,7 +309,9 @@ def check(rows):
                 probs.append("%s: alias_cohorts c%s names %s, not another rung of arm %s that is run" % (n, m.group(1), m.group(2), r["arm"]))
             if st != "run":
                 probs.append("%s: alias_cohorts on a rung whose status is %r (want run)" % (n, st))
-            if m.group(1) in [x.split(":")[0].strip().lstrip("c") for x in r["not_run_cohorts"].split(";") if x.strip()]:
+            # Both at one cohort only when both are conditional (the not-run is decided first).
+            nrw, nrc = notrun_decl(r, m.group(1))
+            if (nrw or nrc) and not (nrc and m.group(3)):
                 probs.append("%s: c%s is both in not_run_cohorts and alias_cohorts" % (n, m.group(1)))
         if st.startswith("alias:"):
             cands = [c for c in r["alias_of"].split("|") if c]
@@ -456,20 +503,62 @@ def token(v, key):
     return None
 
 
-def not_run_at(row, cohort):
-    """'' if the row runs at COHORT, else why not (status not-run, or a not_run_cohorts entry)."""
-    if row["status"].startswith("not-run"):
-        return row["status"]
+def notrun_decl(row, cohort):
+    """(reason, conditional?) of ROW's not_run_cohorts entry at COHORT, or ('', False). An entry
+    ending in COND (`c<C>: <reason> (if same configuration)`) is conditional: the rung is not run
+    there exactly where it resolves to its run predecessor's configuration (notrun_state)."""
     for d in [d.strip() for d in row.get("not_run_cohorts", "").split(";") if d.strip()]:
         if d.split(":", 1)[0] == "c%s" % cohort:
-            return "not-run at c%s:%s" % (cohort, d.split(":", 1)[1])
-    return ""
+            why = d.split(":", 1)[1]
+            return (why[:-len(COND)], True) if why.endswith(COND) else (why, False)
+    return "", False
 
 
-def run_pred_at(rows, row, cohort):
-    """The nearest predecessor that runs at COHORT (not-run ones are skipped), or None."""
+def notrun_state(rows, row, cohort, res, depth=0):
+    """(state, why) of ROW's conditional not_run_cohorts entry at COHORT under RES: ('none', '')
+    without one; ('not-run', why) where the rung and its run predecessor resolve to one configuration
+    (the selection upstream left it nothing to change: O1 where S8 keeps K = 1); ('run', why) where
+    they resolve and differ; ('undecided', why) while either is unresolved."""
+    why, cond = notrun_decl(row, cohort)
+    if not cond:
+        return "none", ""
+    p = run_pred_at(rows, row, cohort, res)
+    if p is None:
+        return "undecided", "no run predecessor"
+    if p["status"].startswith("alias:") or alias_state(rows, p, cohort, res, depth + 1)[0] != "none":
+        p = config_row(rows, p, cohort, res) or p
+    a, abad = _values(rows, row, cohort, res, depth + 1)
+    b, bbad = _values(rows, p, cohort, res, depth + 1)
+    if abad or bbad:
+        return "undecided", "unresolved: %s" % ", ".join(["%s %s" % (row["rung"], x) for x in abad] +
+                                                         ["%s %s" % (p["rung"], x) for x in bbad])
+    if same_config(a, b):
+        return "not-run", "not-run at c%s:%s (conditional: it resolves to %s's configuration)" % (cohort, why, p["rung"])
+    return "run", "configurations differ from %s's in %s" % (
+        p["rung"], ",".join(k for k in KEYS + ["instance"] if not same_value(k, a[k], a["instance"], b[k], b["instance"])))
+
+
+def not_run_at(row, cohort, rows=None, res=None):
+    """'' if the row runs at COHORT, else why not (status not-run, or a not_run_cohorts entry). A
+    conditional entry counts only with ROWS and RES given, and only where it holds (notrun_state)."""
+    if row["status"].startswith("not-run"):
+        return row["status"]
+    why, cond = notrun_decl(row, cohort)
+    if not why and not cond:
+        return ""
+    if not cond:
+        return "not-run at c%s:%s" % (cohort, why)
+    if rows is None or res is None:
+        return ""
+    st, w = notrun_state(rows, row, cohort, res)
+    return w if st == "not-run" else ""
+
+
+def run_pred_at(rows, row, cohort, res=None):
+    """The nearest predecessor that runs at COHORT (not-run ones are skipped; with RES, conditional
+    not_run_cohorts entries that hold too), or None."""
     p, seen = pred_of(rows, row), set()
-    while p is not None and not_run_at(p, cohort) and p["rung"] not in seen:
+    while p is not None and not_run_at(p, cohort, rows if res is not None else None, res) and p["rung"] not in seen:
         seen.add(p["rung"])
         p = pred_of(rows, p)
     return p
@@ -529,8 +618,8 @@ def config_row(rows, row, cohort, res, seen=None):
     if row is None or row["rung"] in seen:
         return None
     seen = seen + [row["rung"]]
-    if not_run_at(row, cohort):
-        return config_row(rows, run_pred_at(rows, row, cohort), cohort, res, seen)
+    if not_run_at(row, cohort, rows, res):
+        return config_row(rows, run_pred_at(rows, row, cohort, res), cohort, res, seen)
     st, t, _ = alias_state(rows, row, cohort, res)
     if st == "undecided":
         return None
@@ -563,11 +652,46 @@ def _values(rows, r, cohort, res, depth=0):
             if bad or "instance" not in ov:
                 bad.append("instance=%s (%s)" % (v, "its own values are unresolved" if bad else "its origin's host is unresolved"))
                 continue
-            t, why = floor_type(ov["instance"].split(".")[0], out, cohort)
+            fam = ov["instance"].split(".")[0]
+            t, why = floor_type(FLOOR_FAMILY.get(fam, fam), out, cohort)
             if t is None:
                 bad.append("instance=%s (%s)" % (v, why))
                 continue
             out[k] = t
+            continue
+        if k == "instance" and FIT_RE.fullmatch(v):
+            # O2's candidate of one family: its smallest type that holds the rung at this cohort.
+            if bad:
+                bad.append("instance=%s (its own values are unresolved)" % v)
+                continue
+            t, why = floor_type(FIT_RE.fullmatch(v).group(1), out, cohort)
+            if t is None:
+                bad.append("instance=%s (%s)" % (v, why))
+                continue
+            out[k] = t
+            continue
+        if RATIO_RE.fullmatch(v):
+            # The O arm's thread ratio (ruling 1): R = the origin's vCPUs / its THREADS at its host.
+            m = RATIO_RE.fullmatch(v)
+            o = names.get(m.group(1))
+            ov, obad = _values(rows, o, cohort, res, depth + 1) if o is not None else ({}, ["no rung %s" % m.group(1)])
+            hv = vcpus_of(ov.get("instance", ""))
+            if obad or not hv:
+                bad.append("%s=%s (%s)" % (k, v, "its origin %s is unresolved: %s" % (m.group(1), ", ".join(obad)) if obad
+                                           else "no vCPUs for %s" % ov.get("instance")))
+                continue
+            t = vc(ov["THREADS"], hv)
+            if hv % t:
+                bad.append("%s=%s (%s's THREADS %d does not divide its %d vCPUs: no integer ratio)" % (k, v, o["rung"], t, hv))
+                continue
+            ratio = hv // t
+            # The engine's in flight is clamped to the cohort (fill/R/C): no host plans, or is sized for,
+            # more samples at once than the cohort has. PROCS is not, so O0 stays S*'s exact PROCS (the
+            # S arm's P = vcpus/T may exceed the cohort: lanes without samples).
+            if m.group(2):
+                out[k] = "1" if ratio == 1 else ("fill/%d/%d" % (ratio, int(cohort)) if k == "INFLIGHT" else "fill/%d" % ratio)
+            else:
+                out[k] = "vcpus" if ratio == 1 else "vcpus/%d" % ratio
             continue
         if v.startswith("@"):
             t = token(v, k)
@@ -600,7 +724,7 @@ def _values(rows, r, cohort, res, depth=0):
                 bad.append("%s=%s" % (k, v))
                 continue
             v = hit[0]
-        if not SAFE.match(v) and not re.fullmatch(r"vcpus/[1-9][0-9]*", v):
+        if not SAFE.match(v) and not re.fullmatch(r"vcpus/[1-9][0-9]*", v) and not FILL_RE.fullmatch(v):
             bad.append("%s=%s (not a shell-safe word)" % (k, v))
         out[k] = v
     return out, bad
@@ -789,6 +913,48 @@ def inflight_range(rows, alias_row, cohort, res, types=None):
     return out, how
 
 
+def group_keys(group):
+    """The PARAMs (and 'instance' for HOST) of a key-group."""
+    return ["instance"] if group == "HOST" else group.split("+")
+
+
+def candidate_out(rows, rung, cohort, res, root=ROOT):
+    """'' if RUNG, a candidate of an alias, is a candidate there at COHORT under RES, else why not:
+      - it is outside the alias's bracket (O3's N around the #26 fit);
+      - it is outside the alias's in-flight range (O4b's INFLIGHT 1 .. vCPUs / THREADS);
+      - its value of the alias's group is the predecessor's own (as resolved at each one's host): it
+        is the predecessor itself there, which the alias already counts (O2-x8g on O1's own type,
+        O3-n<K> at O2's own N, where the candidate would change only the host, O2's lever).
+    '' too for a rung that is no alias's candidate. Raises Unresolved while the alias's bracket or
+    range cannot be computed."""
+    names = by_name(rows)
+    al = candidates_of(rows).get(rung)
+    if al is None or rung == names[al]["predecessor"]:
+        return ""
+    a = names[al]
+    b = bracket(rows, a, cohort, res, root)
+    if b is not None and rung not in b[0]:
+        return "outside %s's bracket (%s)" % (al, b[1])
+    rg = inflight_range(rows, a, cohort, res)
+    if rg is not None and rung in rg[0]:
+        return "outside %s's range (%s; %s)" % (al, rg[0][rung], rg[1])
+    p = names.get(a["predecessor"])
+    if p is None:
+        return ""
+    if not_run_at(p, cohort, rows, res) or p["status"].startswith("alias:") or alias_state(rows, p, cohort, res)[0] != "none":
+        p = config_row(rows, p, cohort, res) or p
+    cv, cbad = _values(rows, names[rung], cohort, res)
+    pv, pbad = _values(rows, p, cohort, res)
+    if cbad or pbad:
+        return ""
+    keys = group_keys(a["group"])
+    if all(cv[k] == pv[k] if k == "instance" else same_value(k, cv[k], cv["instance"], pv[k], pv["instance"]) for k in keys):
+        return ("outside %s's candidates (its %s is that of %s%s: %s; it is that predecessor there)"
+                % (al, "+".join(keys), a["predecessor"], "" if p["rung"] == a["predecessor"] else " (%s's runs)" % p["rung"],
+                   ", ".join("%s=%s" % (k, cv[k]) for k in keys)))
+    return ""
+
+
 def notrun_resolution_warnings(rows, res):
     """Warnings for resolution rows given for a rung at a cohort where it is not run: at such a
     cohort its tokens resolve to its predecessor's values, so the row is never used."""
@@ -818,7 +984,15 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT, res=None):
         raise Unresolved("%s is %s: no spec is generated for it" % (rung, r["status"]))
     if res is None:
         res = read_resolved(resolved, root, rows) if resolved is not None else {}
-    st, at, why = alias_state(rows, r, cohort, res)
+    # A conditional not_run_cohorts entry: not run where the selections upstream leave it its run
+    # predecessor's configuration (O1 where S8 keeps K = 1), refused while that is undecided.
+    nst, nwhy = notrun_state(rows, r, cohort, res)
+    if nst == "not-run":
+        raise Unresolved("%s is %s: no spec is generated for it" % (rung, nwhy))
+    if nst == "undecided":
+        raise Unresolved("%s at c%s: its conditional not_run_cohorts entry is undecided (%s): it is generated only once it "
+                         "resolves and differs from its predecessor" % (rung, cohort, nwhy))
+    st, at, why = alias_state(rows, r, cohort, res, root=root)
     if st == "alias":
         raise Unresolved("%s is alias: same configuration as %s at c%s (alias_cohorts%s): no spec is generated for it; "
                          "%s's runs are read" % (rung, at, cohort, ", conditional: it holds" if alias_decl(r, cohort)[1] else "", at))
@@ -832,26 +1006,27 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT, res=None):
     if bad:
         raise Unresolved("%s at cohort %s has unresolved values: %s" % (rung, cohort, ", ".join(bad)))
     # The cost chain reads the time chain where the two coincide (alias_cohorts), so a cost rung
-    # equal to its time counterpart must be declared there, not run twice.
+    # equal to its time counterpart must be declared there, not run twice. A counterpart that is no
+    # candidate there has no runs to read, so it needs no declaration.
     tc = time_counterpart(rows, rung)
-    if (tc is not None and names[tc]["status"] == "run" and not not_run_at(names[tc], cohort)
+    if (st == "none" and tc is not None and names[tc]["status"] == "run" and not not_run_at(names[tc], cohort, rows, res)
             and alias_state(rows, names[tc], cohort, res)[0] == "none"):
         tv, tbad = _values(rows, names[tc], cohort, res)
-        if not tbad and same_config(dict(out), tv):
+        try:
+            tout = candidate_out(rows, tc, cohort, res, root) if not tbad and same_config(dict(out), tv) else ""
+        except Unresolved:
+            tout = ""   # its candidacy cannot be judged: the coincidence still needs its declaration
+        if not tbad and not tout and same_config(dict(out), tv):
             raise Unresolved("%s at cohort %s has the configuration of its time counterpart %s: declare alias_cohorts "
                              "'c%s: %s' (it reads %s's runs) instead of running it, or 'c%s: %s%s' where the "
                              "coincidence depends on a selection" % (rung, cohort, tc, cohort, tc, tc, cohort, tc, COND))
-    # A candidate outside its alias's bracket at this cohort (O3's N around the #26 fit) is not run.
-    al = candidates_of(rows).get(rung)
-    if al is not None:
-        b = bracket(rows, names[al], cohort, res, root)
-        if b is not None and rung not in b[0]:
-            raise Unresolved("%s at cohort %s is outside %s's bracket (%s): not a candidate there" % (rung, cohort, al, b[1]))
-        # A candidate outside its alias's in-flight range (O4b's INFLIGHT 1 .. vCPUs / THREADS) is not run.
-        rg = inflight_range(rows, names[al], cohort, res)
-        if rg is not None and rung in rg[0]:
-            raise Unresolved("%s at cohort %s is outside %s's range (%s; %s): not a candidate there" % (rung, cohort, al, rg[0][rung], rg[1]))
-    p = run_pred_at(rows, r, cohort)
+    # A candidate outside its alias's bracket (O3's N around the #26 fit) or in-flight range (O4b's
+    # INFLIGHT 1 .. vCPUs / THREADS), or one that is its alias's predecessor's own configuration in the
+    # alias's group (O2-x8g on O1's type, O3-n<K> at O2's N), is not run.
+    co = candidate_out(rows, rung, cohort, res, root)
+    if co:
+        raise Unresolved("%s at cohort %s is %s: not a candidate there" % (rung, cohort, co))
+    p = run_pred_at(rows, r, cohort, res)
     if p is not None and (p["status"].startswith("alias:") or alias_state(rows, p, cohort, res)[0] != "none"):
         p = config_row(rows, p, cohort, res) or p
     if p is not None:
@@ -871,6 +1046,21 @@ def resolve(rows, rung, cohort, resolved=None, root=ROOT, res=None):
             raise Unresolved("%s at cohort %s: resolved, it changes %s against %s, not just the group %s"
                              % (rung, cohort, ",".join(ch), p["rung"], r["group"]))
     inst = out.pop("instance")
+    # Ours never oversubscribes (ruling 1): THREADS x the samples at once (PROCS, or INFLIGHT on the
+    # engine) is at most the host's vCPUs.
+    hv = vcpus_of(inst)
+    if r["arm"] == "O" and hv:
+        w = out["INFLIGHT"] if out["CLASSIFIER"] == "ours-engine" else out["PROCS"]
+        t, k = vc(out["THREADS"], hv), (1 if w == "-" else vc(w, hv))
+        if t * k > hv:
+            raise Unresolved("%s at cohort %s oversubscribes %s: THREADS %s (%d) x %d at once = %d > %d vCPUs"
+                             % (rung, cohort, inst, out["THREADS"], t, k, t * k, hv))
+    # fill/R has no form in the body: the value at the rung's own pinned type.
+    for key in VC_KEYS:
+        if FILL_RE.fullmatch(out[key]):
+            if not hv:
+                raise Unresolved("%s at cohort %s: %s=%s needs the vCPUs of %s" % (rung, cohort, key, out[key], inst))
+            out[key] = str(vc(out[key], hv))
     want = int(out["REPLICAS"]) * int(out["SHARDS"])
     return {"params": out, "instance": inst, "az": r["az"], "ttl_c1": r["ttl_min_c1"], "arm": r["arm"], "want_n": want}
 
@@ -911,6 +1101,12 @@ def vc(v, vcpus):
         return vcpus
     if v.startswith("vcpus/"):
         return max(1, vcpus // int(v[6:]))
+    m = FILL_RE.fullmatch(v)
+    if m:
+        # fill/R: the samples at once that THREADS = vcpus/R leaves room for (P x T <= vCPUs);
+        # fill/R/C: no more than the cohort's C samples (a host never plans more in flight than exist).
+        n = vcpus // max(1, vcpus // int(m.group(1)))
+        return min(n, int(m.group(2))) if m.group(2) else n
     return int(v)
 
 
@@ -1103,6 +1299,112 @@ def _params_main(a):
 
 def _copy(rows):
     return [collections.OrderedDict(r) for r in rows]
+
+
+def _self_test_c10(rows, names, src, root):
+    """The 2026-10-13 rulings and the c10 O-arm rows (hypothetical selections; SRC a results/ source)."""
+    def h(**sel):
+        out = {("S4", "10", "alias"): ("S4-t16", src), ("S8", "10", "alias"): ("S8-k2", src)}
+        for k, v in sel.items():
+            out[(k.replace("_", "-"), "10", "alias")] = (v, src)
+        return out
+
+    def refused(rung, res, want):
+        try:
+            resolve(rows, rung, 10, res=res, root=root)
+        except Unresolved as e:
+            assert want in str(e), (rung, want, e)
+            return str(e)
+        raise AssertionError("%s resolved at c10 (want %r)" % (rung, want))
+    # Ruling 1: S4's pick carries to ours as a vCPU ratio. fill/R never oversubscribes, on any type.
+    for t, (v, _) in load_types().items():
+        for ratio in (1, 2, 3, 4, 6, 8, 12, 16, 24, 48, 96, 192):
+            th = vc("vcpus/%d" % ratio, v)
+            assert th * vc("fill/%d" % ratio, v) <= v, (t, ratio)
+    assert (vc("vcpus/6", 8), vc("fill/6", 8), vc("vcpus/6", 16), vc("fill/6", 16), vc("fill/6", 96)) == (1, 8, 2, 8, 6)
+    # S4 -> S4-t16 (16 of 96 vCPUs), S* = S9 (x8g.24xlarge): R = 6. O0 is S9's exact configuration.
+    s9 = h(Sstar_time="S9", Sstar_cost="S9")
+    v0, v9 = _values(rows, names["O0"], 10, s9)[0], _values(rows, names["S9"], 10, s9)[0]
+    assert (v0["THREADS"], v0["PROCS"], v9["THREADS"], v9["PROCS"]) == ("vcpus/6", "fill/6", "16", "vcpus/16"), (v0, v9)
+    assert all(same_value(k, v0[k], v0["instance"], v9[k], v9["instance"]) for k in VC_KEYS)
+    r0 = resolve(rows, "O0", 10, res=s9, root=root)
+    assert (r0["instance"], r0["params"]["THREADS"], r0["params"]["PROCS"], r0["want_n"]) == ("x8g.24xlarge", "vcpus/6", "6", 2), r0
+    assert resolve(rows, "O0b", 10, res=s9, root=root)["params"]["INFLIGHT"] == "6"
+    # On a 192-vCPU S* host the S arm carried T = 16 with P = vcpus/16 = 12: R = 12 there, so O0 stays S*'s.
+    r8 = resolve(rows, "O0", 10, res=h(Sstar_time="Sstar-r8g", Sstar_cost="S9"), root=root)
+    assert (r8["instance"], r8["params"]["THREADS"], r8["params"]["PROCS"]) == ("r8g.48xlarge", "vcpus/12", "12"), r8
+    # The engine's in flight is clamped to the cohort: fill/12 is 12 on 192 vCPUs, but c10 has 10 samples.
+    assert (vc("fill/12", 192), vc("fill/12/10", 192), vc("fill/6/10", 8), vc("fill/6/4", 96)) == (12, 10, 8, 4)
+    r8b = resolve(rows, "O0b", 10, res=h(Sstar_time="Sstar-r8g", Sstar_cost="S9"), root=root)
+    assert (r8b["params"]["INFLIGHT"], _values(rows, names["O0b"], 10, h(Sstar_time="Sstar-r8g", Sstar_cost="S9"))[0]["INFLIGHT"]) \
+        == ("10", "fill/12/10"), r8b
+    assert _values(rows, names["O0"], 10, h(Sstar_time="Sstar-r8g", Sstar_cost="S9"))[0]["PROCS"] == "fill/12"   # PROCS: S*'s own
+    # The static one-lever check reads @ratio as its origin's own THREADS / PROCS text.
+    assert changed(rows, names["O0"], names["Sstar-time"]) == ["CLASSIFIER"], changed(rows, names["O0"], names["Sstar-time"])
+    t = _copy(rows)
+    by_name(t)["O1"]["THREADS"] = "@ratio:Sstar-time:fill"
+    assert any("O1: THREADS=@ratio:Sstar-time:fill" in p for p in check(t)), check(t)
+    # 4. O2 at N = K: S8 -> S8-k2 (K = 2), so O1 is a 2-shard engine on S*'s host, and O2's candidates
+    # are each family's smallest type holding table/2 (@fit:<family>), with the ratio at their vCPUs.
+    rr, rx = resolve(rows, "O2-r8g", 10, res=s9, root=root), resolve(rows, "O2-x8g", 10, res=s9, root=root)
+    assert (rr["instance"], rr["want_n"], rx["instance"], rx["want_n"]) == ("r8g.24xlarge", 2, "x8g.12xlarge", 2), (rr, rx)
+    assert (rx["params"]["THREADS"], rx["params"]["INFLIGHT"]) == ("vcpus/6", "6"), rx   # 48 // 6 = 8 threads x 6
+    assert resolve(rows, "O1", 10, res=s9, root=root)["params"]["SHARDS"] == "2"
+    # ... and where S8 keeps K = 1 (hypothetically), O2-x8g is O1's own x8g.24xlarge: not a candidate there.
+    k1 = dict(s9)
+    k1[("S8", "10", "alias")] = ("S7b", src)
+    refused("O2-x8g", k1, "is outside O2's candidates (its instance is that of O1 (O0b's runs)")
+    assert resolve(rows, "O2-r8g", 10, res=k1, root=root)["instance"] == "r8g.48xlarge"
+    # 5. O1 at K: K = 2 runs it; K = 1 makes it a conditional not-run (O0b's configuration), not a refusal.
+    assert notrun_state(rows, names["O1"], 10, s9)[0] == "run"
+    assert notrun_state(rows, names["O1"], 10, k1)[0] == "not-run"
+    assert "conditional: it resolves to O0b's configuration" in refused("O1", k1, "no spec is generated for it")
+    assert not_run_at(names["O1"], 10) == "" and not_run_at(names["O1"], 10, rows, k1).startswith("not-run at c10")
+    assert config_row(rows, names["O1"], 10, k1)["rung"] == "O0b" and config_row(rows, names["O1"], 10, s9)["rung"] == "O1"
+    assert notrun_state(rows, names["O1"], 100, {})[0] == "undecided"
+    # 6. O3 at N = K: O3-n2 changes only the host against O2's N = 2 (O2's lever): not a candidate.
+    for o2 in ("O1", "O2-r8g", "O2-x8g"):
+        refused("O3-n2", {**s9, ("O2", "10", "alias"): (o2, src)}, "is outside O3's candidates (its REPLICAS+SHARDS is that of O2")
+    assert resolve(rows, "O3-n4", 10, res={**s9, ("O2", "10", "alias"): ("O2-x8g", src)}, root=root)["instance"] == "x8g.8xlarge"
+    # 3. Ruling 3: S* on r8gd and O2 -> O1 (r8gd.48xlarge): the floor uses r8g's small sizes.
+    gd = h(Sstar_time="Sstar-r8gd", Sstar_cost="Sstar-r8gd", O2="O1", O2_cost="O1-cost")
+    assert _values(rows, names["O2"], 10, gd)[0]["instance"] == "r8gd.48xlarge"
+    r4 = resolve(rows, "O3-n4", 10, res=gd, root=root)
+    assert r4["instance"].startswith("r8g.") and r4["params"]["THREADS"] == "vcpus/12", r4
+    # 7. A conditional alias whose target is not a candidate there is 'own': O3-cost-n2 -> O3-n2 is one
+    # configuration at c10, but O3-n2 is outside O3's candidates (O2's N), so it has no runs to read.
+    x = {**s9, ("O2", "10", "alias"): ("O2-x8g", src), ("O2-cost", "10", "alias"): ("O2-cost-x8g", src)}
+    a, b = _values(rows, names["O3-cost-n2"], 10, x)[0], _values(rows, names["O3-n2"], 10, x)[0]
+    assert same_config(a, b)
+    st = alias_state(rows, names["O3-cost-n2"], 10, x, root=root)
+    assert st[0] == "own" and "is outside O3's candidates" in st[2], st
+    assert alias_state(rows, names["O3-cost-n4"], 10, x, root=root)[0] == "alias"
+    # ... and so for a target outside its alias's bracket (#26 fit predictions at c10 putting N* = 16:
+    # the bracket is N in [8, 32], so O3-n4 is out and O3-cost-n4 reads its own runs; O3-n8 is in).
+    with open(os.path.join(root, "results", "g3", "fit26", "predictions.tsv"), "w") as f:
+        f.write("fit\tfamily\ttype\tcohort\tN\tT_pred_s\tusd_run_NpT\tstatus\n")
+        for t_, n, tp in (("x8g.12xlarge", 2, 900), ("x8g.8xlarge", 4, 600), ("x8g.4xlarge", 8, 400), ("x8g.4xlarge", 16, 300),
+                          ("x8g.2xlarge", 32, 350)):
+            f.write("R\tx8g\t%s\t10\t%d\t%d\t%d\twithin data\n" % (t_, n, tp, n))
+    st = alias_state(rows, names["O3-cost-n4"], 10, x, root=root)
+    assert st[0] == "own" and "outside O3's bracket" in st[2], st
+    assert alias_state(rows, names["O3-cost-n8"], 10, x, root=root)[0] == "alias"
+    refused("O3-n4", x, "is outside O3's bracket")
+    # ... and an in-flight range: with O3 -> O3-n8 (x8g.4xlarge: THREADS 2, O4a's INFLIGHT fill/6 = 8),
+    # O4b-if8 is O4a's own, so O4b-cost-if8's conditional entry is 'own' (and it is out of its own range).
+    x8 = {**x, ("O3", "10", "alias"): ("O3-n8", src), ("O3-cost", "10", "alias"): ("O3-cost-n8", src)}
+    st = alias_state(rows, names["O4b-cost-if8"], 10, x8, root=root)
+    assert st[0] == "own" and "outside O4b's range" in st[2], st
+    assert alias_state(rows, names["O4b-cost-if4"], 10, x8, root=root)[0] == "alias"
+    refused("O4b-cost-if8", x8, "is outside O4b-cost's range")
+    # Ours never oversubscribes: a THREADS made absolute again on O4a is refused where it would.
+    t = _copy(rows)
+    by_name(t)["O4a"]["THREADS"] = "16"
+    try:
+        resolve(t, "O4a", 10, res=x8, root=root)
+        raise AssertionError("an oversubscribed O rung resolved")
+    except Unresolved as e:
+        assert "oversubscribes x8g.4xlarge" in str(e) or "changes THREADS" in str(e), e
 
 
 def _self_test():
@@ -1428,18 +1730,21 @@ def _self_test():
             assert "outside O3's bracket" in str(e), e
         assert resolve(rows, "O3-n4", 1, resfile([("Sstar-time", "1", "alias", "S9", src), ("O2", "1", "alias", "O2-r8g", src)]), root)["want_n"] == 4
         # O4b's in-flight range (INFLIGHT 1 .. vCPUs / THREADS at O4a's host, O3's winning type). At c10
-        # with S4 -> S4-t12 (THREADS 12) and O3 -> O3-n2 on x8g.12xlarge (48 vCPUs): the bound is 4, O4a's
-        # own INFLIGHT (vcpus/12) is 4, so O4b-if1 and O4b-if2 are candidates, O4b-if4 is O4a itself and
-        # O4b-if8 is above the bound (O4b-if16 and up are not run at c10: k > cohort).
+        # with S4 -> S4-t12 (12 of S9's 96 vCPUs: the O arm's ratio R = 8, ruling 1) and O3 -> O3-n2 on
+        # x8g.12xlarge (48 vCPUs): THREADS = vcpus/8 = 6 there and O4a's INFLIGHT fill/8 = 48 // 6 = 8, the
+        # bound; so O4b-if1, -if2 and -if4 are candidates, O4b-if8 is O4a itself and O4b-if16 and up are
+        # above the bound (and not run at c10: k > cohort).
         h = {("S4", "10", "alias"): ("S4-t12", src), ("S8", "10", "alias"): ("S7b", src), ("Sstar-time", "10", "alias"): ("S9", src),
              ("O2", "10", "alias"): ("O1", src), ("O3", "10", "alias"): ("O3-n2", src)}
-        assert _values(rows, names["O4a"], 10, h)[0]["instance"] == "x8g.12xlarge"
+        v4a = _values(rows, names["O4a"], 10, h)[0]
+        assert (v4a["instance"], v4a["THREADS"], v4a["INFLIGHT"]) == ("x8g.12xlarge", "vcpus/8", "fill/8/10"), v4a
         rg = inflight_range(rows, names["O4b"], 10, h)
-        assert set(rg[0]) == {"O4b-if4", "O4b-if8", "O4b-if16", "O4b-if32", "O4b-if64", "O4b-if128"} and "1 .. 4" in rg[1], rg
-        assert "O4a's own" in rg[0]["O4b-if4"] and "> vCPUs / THREADS = 48 // 12 = 4" in rg[0]["O4b-if8"], rg
+        assert set(rg[0]) == {"O4b-if8", "O4b-if16", "O4b-if32", "O4b-if64", "O4b-if128"} and "1 .. 8" in rg[1], rg
+        assert "O4a's own" in rg[0]["O4b-if8"] and "> vCPUs / THREADS = 48 // 6 = 8" in rg[0]["O4b-if16"], rg
         r2 = resolve(rows, "O4b-if2", 10, res=h)
-        assert (r2["instance"], r2["params"]["INFLIGHT"], r2["params"]["THREADS"]) == ("x8g.12xlarge", "2", "12"), r2
-        for rung, want in (("O4b-if4", "is O4a's own"), ("O4b-if8", "outside O4b's range"), ("O4b-if16", "not-run at c10")):
+        assert (r2["instance"], r2["params"]["INFLIGHT"], r2["params"]["THREADS"]) == ("x8g.12xlarge", "2", "vcpus/8"), r2
+        assert resolve(rows, "O4a", 10, res=h)["params"]["INFLIGHT"] == "8"   # fill/8 at the pinned x8g.12xlarge
+        for rung, want in (("O4b-if8", "is O4a's own"), ("O4b-if16", "not-run at c10")):
             try:
                 resolve(rows, rung, 10, res=h)
                 raise AssertionError("%s resolved at c10" % rung)
@@ -1472,6 +1777,7 @@ def _self_test():
         w = notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "1", "alias", "S4-t12", src)]), root))
         assert len(w) == 1 and all("S4 at c1" in x and "ignored" in x for x in w), w
         assert notrun_resolution_warnings(rows, read_resolved(resfile([("S4", "10", "alias", "S4-t12", src)]), root)) == []
+        _self_test_c10(rows, names, src, root)
     finally:
         shutil.rmtree(root)
     # The command line refuses a bad alias winner cleanly (exit 3, a message), never a traceback.
@@ -1610,6 +1916,11 @@ def main(a):
                 if alias_decl(r, c)[1]:
                     st, t, why = alias_state(rows, r, c, res)
                     cst.append("%s c%s -> %s: %s%s" % (r["rung"], c, t, st, " (%s)" % why if why else ""))
+            for d in [d.strip() for d in r["not_run_cohorts"].split(";") if d.strip()]:
+                c = d.split(":")[0].strip().lstrip("c")
+                if notrun_decl(r, c)[1]:
+                    st, why = notrun_state(rows, r, c, res)
+                    cst.append("%s c%s not_run_cohorts (conditional): %s%s" % (r["rung"], c, st, " (%s)" % why if why else ""))
         print("ladder_levers: %d rungs; every rung changes exactly one key-group; every unconditional alias_cohorts pair "
               "that resolves is one configuration; %d conditional entr%s%s" % (len(rows), len(cst), "y" if len(cst) == 1 else "ies",
                                                                              "".join("\n  " + x for x in cst)))

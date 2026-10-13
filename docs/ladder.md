@@ -219,6 +219,8 @@ HOST (the instance type). REPLICAS and SHARDS are one group, the fleet layout, s
 caught): against its predecessor, a rung's changed keys, less the keys its `coupled` column names
 with a reason, fall in exactly its `group`. A coupled key must really change and lie outside the
 group. Every counterpart is an existing rung or `none: <reason>`. ETAG_CHECK is `on` everywhere.
+`@ratio:<rung>` is allowed on THREADS only, `@ratio:<rung>:fill` on PROCS or INFLIGHT only, and the
+check reads each as its origin's own THREADS or PROCS text (`canon`; "The O arm's thread ratio").
 Each of S\*-time, S\*-cost, O\*-time and O\*-cost is declared for cohorts 1, 10, 100 and 1000 on
 exactly one rung (`endpoint`, `c<cohort>:<endpoint>;...`). An alias's candidates are run (or alias)
 rungs with the alias's predecessor and group, or the predecessor itself. An `alias_cohorts` entry
@@ -268,7 +270,13 @@ floor; regime b's spread was 33 s). So HOST_TUNES is `none` throughout, S3's lev
 **Placeholders:** `@probe-tune` (a host-tune set still to be chosen; none is left) and `@select:<rung>[:<KEY>]`
 (S4's P × T, S8's K, the S\* hosts, O2's family, O3's N, O4b's in flight; `@select:S4:PROCS`
 means S4's PROCS value). Descendants carry the same token, so one resolution reaches every rung
-that inherits it. `scripts/g3/ladder.resolved.tsv` (columns origin, cohort, key, value, source,
+that inherits it. Three forms are derived from resolved values, not selected:
+- `@ratio:<rung>` (THREADS) and `@ratio:<rung>:fill` (PROCS or INFLIGHT): the O arm's thread ratio ("The O arm's
+  thread ratio", below);
+- `@floor:<rung>` (instance): the smallest type of that rung's resolved family that holds this rung (O3's candidates);
+- `@fit:<family>` (instance): the smallest non-metal type of the family that holds this rung (O2's candidates).
+
+`scripts/g3/ladder.resolved.tsv` (columns origin, cohort, key, value, source,
 and the cites, margin and note that `make ladder-select` writes; "Selection", below) resolves a
 token per cohort. The generator refuses any rung with a placeholder left, and refuses a resolution
 when:
@@ -307,6 +315,21 @@ selection (an `@select` token). At c1:
 
 The tables must skip a rung at the cohorts it lists, as they skip `status: not-run`.
 
+**Conditional not-run entries** (`c<cohort>: <reason> (if same configuration)`; added 2026-10-13). The
+rung is not run at that cohort exactly where it resolves to its run predecessor's configuration
+(`ladder_levers.notrun_state`, by `same_config`). Where the two resolve and differ, it is an ordinary
+run rung. While either is unresolved it is *undecided*, and the generator refuses it.
+- **O1 and O1-cost at c10, c100 and c1000.** O1 is the K replicas as one K-shard engine, with K = S8's
+  K. Where S8 keeps K = 1, O1 is O0b's own configuration (O1-cost is O0b-cost's), so it is not run
+  and adds no lever. Where S8 picks K ≥ 2, it runs. At c10, S8 → S8-k2, so O1 runs there (N = 2).
+- **Where it holds**, the rung behaves as if the entry were unconditional. `not_run_at(row, c, rows,
+  res)`, `run_pred_at(..., res)` and `config_row` skip it, so O2's predecessor stands for O0b's
+  configuration. `ladder-advance` shows it as `not-run`. The tables (`not_run_cond_checks`) add the
+  cohort to its `not_run_cohorts` before reading the record.
+- **Static readers** (`not_run_at` without `rows` and `res`, and the advance's stages) read it as run.
+- A cohort may be in both `not_run_cohorts` and `alias_cohorts` only when both entries are conditional,
+  as for O1-cost at c10. The not-run is decided first.
+
 **The cost chain reads the time chain where they coincide** (`alias_cohorts`, `c<cohort>:
 <rung>;...`; Scott via the coordinator, 2026-10-11). At a cohort where a cost-chain rung's resolved
 PARAMS and host equal its time-chain counterpart's (its name without `-cost`), it is not run. It is
@@ -333,8 +356,21 @@ PARAMS and host equal its time-chain counterpart's (its name without `-cost`), i
 
   Each is undecided until both chains' selections upstream of it are made. It is then an alias
   where Sstar-cost (and later O2-cost, O3-cost, O4b-cost) chose what the time chain chose. Without
-  these entries, a coincidence at c10 would be refused ("declare alias_cohorts …"). O2-cost-r8g and
-  O2-cost-x8g are not run at c10, so they have none. c100 and c1000 have no entries yet.
+  these entries, a coincidence at c10 would be refused ("declare alias_cohorts …"). Since
+  2026-10-13 O2-cost-r8g and O2-cost-x8g run at c10 (their types follow N: "O2 at N = K", below), so
+  they have entries too (O2-r8g, O2-x8g). c100 and c1000 have no entries yet.
+- **A target that is no candidate there** (the reviewer's latent gap; fixed 2026-10-13). A conditional
+  entry whose two rungs are one configuration is still *own*, not an alias, where its target has no
+  runs at that cohort:
+  - the target is not run there;
+  - or `candidate_out` says it is outside its own alias's candidates there: outside the bracket (O3)
+    or the in-flight range (O4b), or its value of the group is the predecessor's own (below).
+
+  The rung then reads its own runs. For example, O3-cost-n4 is own at c10 when the fit's bracket
+  leaves O3-n4 out; so is O3-cost-n2 when O3-n2 is at O2's own N, and O4b-cost-if8 when O4b-if8 is
+  O4a's own INFLIGHT. Such a rung is usually out of its own alias's candidates as well, and is then
+  not run. A cost rung whose time counterpart is out needs no declaration either.
+  `ladder_levers --self-test` checks all three cases.
 - **Why not static declarations with test fixtures.** A static declaration is a statement about
   one set of selections. Made true for the committed resolutions, it becomes false, and blocks
   every generation, under any other set. That includes the selections the tests exercise against
@@ -381,7 +417,7 @@ selection has one, and a rule names the candidates, the axis and the ties):
 | S8 (alias) | S7b (K = 1) and S8-k2: K = 1 … min(cohort, the free X quota in x8g.24xlarge); the X quota is 256 vCPUs, 2 nodes (a raised quota adds S8-k\<K\> rows) | median wall_s | fewer nodes |
 | Sstar-time | S9, Sstar-r8g, Sstar-r8gd (alias) | median wall_s | fewer vCPUs |
 | Sstar-cost | S9, Sstar-r8g, Sstar-r8gd (alias) | median billed_usd | fewer vCPUs |
-| O2 / O2-cost (alias) | O1 (O1-cost), O2-r8g (O2-cost-r8g, r8g.48xlarge), O2-x8g (O2-cost-x8g, x8g.24xlarge): per family of c8g, c9g, r8g and x8g, its smallest type that holds 1/N of the table at O1's N (metal twins excluded; c8g and c9g end at 384 GiB); the rows are N = 1's, not run at c10 and above until S8 gives N there | median wall_s / billed_usd | fewer fleet vCPUs |
+| O2 / O2-cost (alias) | O1 (O1-cost), O2-r8g (O2-cost-r8g, r8g.48xlarge), O2-x8g (O2-cost-x8g, x8g.24xlarge): per family of c8g, c9g, r8g and x8g, its smallest type that holds 1/N of the table at O1's N (metal twins excluded; c8g and c9g end at 384 GiB); the rows' types follow N (`@fit:<family>`; "O2 at N = K", below; the rule text's types are N = 1's) | median wall_s / billed_usd | fewer fleet vCPUs |
 | O3 / O3-cost (alias) | O2 (O2-cost) and O3-n2, -n4, -n8, -n16, -n32 (O3-cost-n…): N = K shards, **each on the smallest non-metal type of O2's winning family that holds table/K by `fits()`** (Scott, 2026-10-11, #25; below); **bracket:** per cohort, the N within a factor 2 of fit R's time- (cost-)optimal N over {1, 2, 4, 8, 16, 32}, each N predicted on its own type (`results/g3/fit26/predictions.tsv`), widened to all of them where that prediction is not "within data" or a type has none | median wall_s / billed_usd (measured, not the fit) | fewer nodes |
 | O4b / O4b-cost (alias) | O4a (O4a-cost) and O4b-if1, -if2, -if4, … -if128 (O4b-cost-if…): k samples in flight on O4a's host (O3's winning type) at its THREADS, k ≤ cohort (`not_run_cohorts` where k > cohort); **range:** INFLIGHT 1 … vCPUs / THREADS at the predecessor's host, memory permitting (below) | median wall_s / billed_usd | fewer in flight |
 
@@ -399,6 +435,25 @@ candidates, as S\* is:
 **O2 is one candidate per family** (Scott, 2026-10-11, #25; in the rule text): the family's smallest
 type holding 1/N of the table (the #26 fit's memory floor), metal twins excluded.
 
+**O2 at N = K** (2026-10-13). O1's N is S8's K at every cohort, so O2's candidate rows follow it.
+- **The rows.** O2-r8g and O2-x8g (and O2-cost-r8g, O2-cost-x8g) have `instance @fit:r8g` and
+  `@fit:x8g`: the family's smallest non-metal type that holds the rung at that cohort by `fits()`,
+  with every other PARAM as resolved there, including SHARDS = S8's K and the in-flight count.
+  - At N = 1 (c1) these are r8g.48xlarge and x8g.24xlarge, as before, so the committed c1 specs are
+    unchanged.
+  - At N = 2 (c10, S8 → S8-k2) they are r8g.24xlarge and x8g.12xlarge, 2 nodes each.
+  - The rows' old "N = 1's" `not_run_cohorts` entries for c10, c100 and c1000 are gone. The rule text
+    is unchanged: its sha256 is in the c1 O2 and O2-cost rows, and the text already defines the
+    candidates as "each family's smallest type ... at O1's N". Its parenthesised types are N = 1's.
+- **A candidate that is its predecessor.** Where a row resolves to O1's own type, it *is* O1 there,
+  and O1 is already a candidate. `candidate_out` puts it outside O2's candidates: the generator
+  refuses it, `ladder-advance` shows it as `out`, and ladder-select leaves it out. This happens, for
+  example, to O2-x8g wherever S8 keeps K = 1 and S\* is S9. The rule is general: a candidate whose
+  value of its alias's group equals the predecessor's (numerically, at each one's host) is out.
+- **At c10** O2 and O2-cost are no longer BLOCKED. Each waits on S\*-time (S\*-cost) and then has three
+  candidates. Where both S\* endpoints pick one host, the cost rows are conditional aliases of the
+  time rows (`c10: O2-r8g (if same configuration)`).
+
 **O3 is right-sized per N** (Scott, 2026-10-11, #25). Each O3-n\<K\> and O3-cost-n\<K\> has `instance
 @floor:O2` (`@floor:O2-cost`).
 - **The type** is the smallest non-metal type of O2's winning family, from
@@ -410,6 +465,17 @@ type holding 1/N of the table (the #26 fit's memory floor), metal twins excluded
 - **At c1 and INFLIGHT = 1:**
   - x8g: x8g.12xlarge at 2, x8g.8xlarge at 4, x8g.4xlarge at 8, x8g.2xlarge at 16 and 32;
   - r8g: r8g.24xlarge at 2, r8g.12xlarge at 4, r8g.8xlarge at 8, r8g.4xlarge at 16 and 32.
+- **At c10 under the thread ratio** (R = 6, S\* = S9), the in-flight count is fill/6 on each type. That
+  is 8 on 8- and 16-vCPU types, at 7.5 GB each, so the floors move up:
+  - x8g: x8g.8xlarge at 4, x8g.4xlarge at 8 and 16, x8g.2xlarge at 32;
+  - r8g: r8g.16xlarge at 4, r8g.8xlarge at 8 and 16, r8g.4xlarge at 32.
+- **r8gd → r8g** (Scott, 2026-10-13, ruling 3). If O2's winning host is in the r8gd family (O2 → O1
+  where S\* is Sstar-r8gd), `@floor` uses r8g's types (`FLOOR_FAMILY`). r8g is the same generation
+  with the same memory ratio, and ours does not use the instance store.
+- **O3-n\<K\> at O2's own N is out.** Where K equals O2's N (O3-n2 at c10, where O2 has S8's K = 2),
+  the candidate would change only its host, which is O2's lever. `candidate_out` puts it outside
+  O3's candidates there, so it is not run. The same holds for O3-cost-n\<K\>. The bracket's grid
+  stays {1, 2, …, 32}.
 - **The one-lever check counts the host change as derived.** It moves with SHARDS inside O3's lever,
   as S4's vCPU ratios move with the host. It is declared in the `derived` column as an `instance:
   …` clause, and `derived_host` honours the clause only in two cases:
@@ -447,8 +513,6 @@ make ladder-types CHECK=1   # compare the committed table with truffle's answer 
 - The table is under `scripts/g3/`, so it must be committed before the next launch.
 
 **What the registered rules leave open:**
-- **N = 2 rows for O2:** O2's rows for N = 2 (r8g.24xlarge, x8g.12xlarge) wait for S8 at c10 and
-  above.
 - **O4b's candidates exist; whether it can vary depends on S4 and O3** (the review's design, added
   2026-10-12). O4b and O4b-cost are aliases over O4a (O4a-cost) and O4b-if\<k\> (O4b-cost-if\<k\>),
   k = 1, 2, 4, … 128. The largest bound, 192 vCPUs / 1 thread, needs at most 128.
@@ -460,19 +524,28 @@ make ladder-types CHECK=1   # compare the committed table with truffle's answer 
     resolved values. The bound is max(1, vCPUs // THREADS) on O4a's host. A candidate is out of
     range there when:
     - its k is above the bound;
-    - its k is O4a's own INFLIGHT, which is O4a itself (O4a's INFLIGHT is S4's PROCS = vcpus/T, so
-      it is the bound wherever S4 chose a T);
+    - its k is O4a's own INFLIGHT, which is O4a itself. O4a's INFLIGHT is fill/R (the thread ratio,
+      below), which is the bound on every host;
     - or, for a k above O4a's, it does not fit by `fits()`.
   - **The generator** refuses an out-of-range candidate ("outside O4b's range … not a candidate
     there"). ladder-select leaves it out.
   - **Where the range leaves only O4a**, ladder-select writes O4b's row with O4a as the winner,
-    margin `single candidate: …`, and no runs needed. The tables then read O4b as "an alias of its
-    predecessor: no lever", and O5 takes O4a's INFLIGHT.
-  - **Consequence:** if S4 selects S2a (THREADS = vcpus) at a cohort, vCPUs / THREADS is 1 on every
-    host, so O4b can never vary there. Varying it would need a THREADS change, which is a decision.
-    If S4 selects a T, O4b varies only where O3's winning type has at least 2T vCPUs. At c10, for
-    example, that is O3 → O2 itself on x8g.24xlarge or r8g.48xlarge, or O3-n2 on x8g.12xlarge with
-    T ≤ 24. On O3-n16/n32's x8g.2xlarge (8 vCPUs) it never varies.
+    margin `single candidate, not measured: the range leaves only the predecessor`, and no runs are
+    needed. O5 takes O4a's INFLIGHT. The no-oversubscription rule stays (Scott, 2026-10-13, ruling 2).
+  - **The tables label it** "single candidate, not measured". It is never reported as a measured zero
+    (ruling 2):
+    - deltas.tsv: the rung's rows have no delta and that status;
+    - pairs.tsv: every pair through it has a lever row for it, with no delta, no step number and that
+      status, and the row is not in the sum of the lever deltas.
+
+    `ladder_select_test` case 16 checks both on the real tables program.
+  - **Consequence, under the thread ratio:** O4a's INFLIGHT is the bound, so k = 1, 2, 4, … below it
+    are candidates wherever fill/R > 1. O4b then varies on every host.
+    - It collapses only where R = 1: S4 → S2a (THREADS = vcpus), as at c1.
+    - At c10 (R = 6 if S\* is S9) the bound is 6 on types with 32 to 192 vCPUs (k = 1, 2, 4) and 8 on 8-
+      and 16-vCPU types (k = 1, 2, 4; k = 8 is O4a).
+    - Before the ruling, an absolute THREADS = 16 gave a bound of 1, so no variation, on every type
+      with fewer than 32 vCPUs.
 
 Ladder 1 is one chain until S\*, so S4 and S8 select on time. On one host, billed $ is price × wall,
 so S4's two axes give the same order; S8's do not, and its cost side is left to the S\*-cost
@@ -485,6 +558,60 @@ endpoint and to the cost-side ladder 2.
   is why S4's P × T is carried as a ratio of vCPUs (PROCS=vcpus/T), not as absolute counts.
 - Every `lad-config` line records each PARAM as given (`params`) and the values used (`resolved`:
   threads, procs, inflight, gunzip_P, nproc).
+
+**The O arm's thread ratio** (Scott, 2026-10-13, ruling 1). S4's thread pick carries to ours as a
+vCPU ratio, never as an absolute count, and ours never oversubscribes.
+- **The tokens.** Every O rung has THREADS `@ratio:Sstar-time` and its samples at once (PROCS on
+  O0, INFLIGHT on the engine) `@ratio:Sstar-time:fill`. The cost chain uses `Sstar-cost`.
+  - `@ratio:<rung>` resolves to `vcpus/R`, with R = that rung's vCPUs / its THREADS, both as resolved
+    at its host.
+  - `@ratio:<rung>:fill` resolves to `fill/R` = vcpus // max(1, vcpus // R). That is as many samples
+    at once as THREADS = vcpus/R leaves room for, so P × T ≤ vCPUs on every host.
+  - **The engine's INFLIGHT is clamped to the cohort** (`fill/R/C` = min(fill/R, C); 2026-10-13). No
+    host plans, or is sized by `fits()` for, more samples in flight than the cohort has, so the O3
+    floors do not grow for nothing.
+    - PROCS (O0's per-sample lanes) is not clamped. O0 must stay S\*'s exact PROCS, and the S arm's
+      P = vcpus/T can exceed the cohort (the extra lanes have no samples): Sstar-r8g at c10 has
+      P = 12 for 10 samples.
+    - At c10 the clamp changes only R = 12 cases (a 192-vCPU S\*): 12 or 16 in flight become 10. No
+      right-sized floor type moves (checked for S\* = S9, Sstar-r8g and Sstar-r8gd against every O2
+      winner). At R = 6 no count exceeds 8, so nothing changes.
+  - R = 1 gives `vcpus` and `1`, so the c1 rungs and specs are unchanged.
+- **Why R comes from S\*.** O0 must be S\*'s exact configuration, because its only lever is the arm
+  switch. On S\*'s host, vcpus/R is S\*'s THREADS and fill/R is S\*'s PROCS, by construction.
+  - At c10, S4 → S4-t16 (16 of x8g.24xlarge's 96 vCPUs), so R = 6 where S\* is S9 (x8g.24xlarge).
+    That is the ruling's vcpus/6.
+  - If S\* lands on a 192-vCPU host (Sstar-r8g, Sstar-r8gd), the S arm carried T = 16 there as an
+    absolute count, with P = vcpus/16 = 12, as S4's rule records it. So R = 12 there. A literal
+    vcpus/6 would give O0 32 threads × 6 against S\*'s 16 × 12, a second lever in O0. This is a
+    reading of the ruling, flagged for Scott.
+  - A THREADS that does not divide its host's vCPUs (no integer R) is refused.
+- **The static one-lever check** (`canon`) reads `@ratio:<rung>` as that rung's own THREADS text and
+  `:fill` as its PROCS text. On another host the values move with the host, the host's lever (the
+  `derived` column records the ratio on every O row; O0 and O0-cost have the full text).
+- **In the spec.** THREADS is written as `vcpus/R`, which the body resolves from nproc. The body has
+  no fill form, so `resolve()` writes fill/R's value at the spec's pinned type (INFLIGHT=6 on
+  x8g.24xlarge, say). Comparisons across hosts (`same_value`, `fits()`, the range, the TTL model)
+  use `vc()`, which knows `fill/R`.
+- **Never oversubscribing.** `resolve()` refuses an O rung whose THREADS × (PROCS, or INFLIGHT on the
+  engine) exceeds its host's vCPUs. O4b-if\<k\> keeps its absolute k (its range is 1 … the bound).
+- **Every type** (the self-test checks THREADS × fill ≤ vCPUs for every type in
+  `ladder.types.tsv` and R in 1 … 192). T × P per type:
+
+  | vCPUs | types (c8g, c9g, r8g, x8g) | R = 1 | R = 6 (c10, S\* = S9) | R = 12 |
+  |---|---|---|---|---|
+  | 8 | .2xlarge | 8 × 1 | 1 × 8 | 1 × 8 |
+  | 16 | .4xlarge | 16 × 1 | 2 × 8 | 1 × 16 |
+  | 32 | .8xlarge | 32 × 1 | 5 × 6 (30) | 2 × 16 |
+  | 48 | .12xlarge | 48 × 1 | 8 × 6 | 4 × 12 |
+  | 64 | .16xlarge | 64 × 1 | 10 × 6 (60) | 5 × 12 (60) |
+  | 96 | .24xlarge | 96 × 1 | 16 × 6 | 8 × 12 |
+  | 192 | .48xlarge | 192 × 1 | 32 × 6 | 16 × 12 |
+
+  - More in flight costs memory (7.5 GB each, by `fits()`), so the right-sized floors move with the
+    ratio ("O3 is right-sized per N", above).
+  - Before the ruling, an absolute THREADS = 16 ran 16 threads with 1 in flight on x8g.2xlarge's 8
+    vCPUs.
 
 **Measurement-only phases** (Scott, 2026-10-10: every delta and pair is reported gross and net of
 them, with the net figure as the headline; the ETag check stays in, because it is a real user step
@@ -695,9 +822,9 @@ check refused; 2 usage.
 | committed | its spec is in git. A committed spec whose PARAMS line is no longer the resolution's is flagged STALE |
 | new | generated now (or would be, under DRY_RUN) |
 | pending | waits on a selection, named in `waits_on` |
-| not-run | `not_run_cohorts` or its status |
+| not-run | `not_run_cohorts` (a conditional entry where it holds) or its status |
 | alias | an alias_cohorts entry holds there |
-| out | outside its alias's bracket or in-flight range |
+| out | outside its alias's bracket or in-flight range, or its value of the alias's group is the predecessor's own (`candidate_out`: O2-x8g on O1's type, O3-n\<K\> at O2's N) |
 | collapsed | resolves identical to its predecessor: a selection made it a no-op, and the table needs a `not_run_cohorts` entry for that cohort (a decision) |
 | blocked | any other refusal: memory, a TTL above `AK2_MAX_TTL_S`, a failed generation, an undeclared coincidence |
 
@@ -730,9 +857,9 @@ and the `AK2_ADVANCE_PRICES` seam, so no truffle call is made. It checks:
 - the c10 stages;
 - that the determined set at c10 is exactly stage 1;
 - S0-T1's estimate;
-- O2 and O2-cost BLOCKED;
+- O2 and O2-cost pending on S\* with three candidates each, O2-r8g and O2-x8g run (their types follow N);
 - a hypothetical S4 → S4-t24 determining stage 2;
-- the bounds (S5 over 6 winners; O1 collapsing where S8 keeps K = 1);
+- the bounds (S5 over 6 winners; O1 a conditional not-run where S8 keeps K = 1);
 - that DRY_RUN writes nothing.
 
 ## The body (`scripts/g3/ladder.body.sh`)
@@ -1117,12 +1244,15 @@ after it (O3's bracket, O4b's range).
   - a candidate not run there, unless it is the alias's own predecessor, which stands for the
     configuration it has there (O1 at c1 is O0b's);
   - a candidate outside the rule's bracket (O3);
-  - a candidate outside the rule's in-flight range (O4b: `inflight_range`, "Candidate rungs").
+  - a candidate outside the rule's in-flight range (O4b: `inflight_range`, "Candidate rungs");
+  - a candidate whose value of the rule's group is the predecessor's own, which is the predecessor
+    itself there (`candidate_out`: O2-x8g on O1's own type, O3-n2 at O2's N = 2 at c10).
 
   Fewer than two candidates left is refused: that rung needs a `not_run_cohorts` entry, not a
   selection. The exception is a rule with the range clause whose range leaves only the predecessor.
-  Its row names the predecessor, with margin `single candidate: the range leaves only the
-  predecessor (no measurement)`, and no runs are cited beyond the snapshot. The range is computed
+  Its row names the predecessor, with margin `single candidate, not measured: the range leaves only
+  the predecessor`, and no runs are cited beyond the snapshot. The tables label the alias with it
+  (ruling 2, "Candidate rungs"). The range is computed
   once the predecessor resolves; before that the rule is not selected.
 - **The median** of each candidate is read from the rung whose runs it has (`config_row`): its
   `alias_cohorts` target, a not-run predecessor's run ancestor, or an alias's winner. The note
@@ -1235,9 +1365,12 @@ lever table and a synthetic record. The records are made with `ladder_tables_tes
   - O3 is listed, with no candidate runs, and O3-n2 is generated on O2's winner's type;
   - the tables read O2-cost as O0b's runs;
   - O4b at c10 under hypothetical selections up to O3 (written with a source in the scratch root).
-    With S4 → S4-t12 and O3 → O3-n2 (x8g.12xlarge), the candidates asked for are exactly O4a,
-    O4b-if1 and O4b-if2: O4b-if4 is O4a's own and O4b-if8 is above 48 // 12. With S4 → S2a, the row
-    names O4a without a measurement, and O5 takes O4a's INFLIGHT.
+    With S4 → S4-t12 (R = 8) and O3 → O3-n2 (x8g.12xlarge: THREADS vcpus/8 = 6, O4a's INFLIGHT fill/8 =
+    8), the candidates asked for are exactly O4a, O4b-if1, -if2 and -if4: O4b-if8 is O4a's own and
+    O4b-if16 is above 48 // 6. With S4 → S2a, the row names O4a without a measurement, and O5 takes
+    O4a's INFLIGHT;
+  - case 16: on that row the tables label O4b "single candidate, not measured" in deltas.tsv and
+    pairs.tsv, with no delta (ruling 2).
 
 `scripts/tests/ladder_levers_tables_test.py` (the tables cross-check) runs a synthetic record of
 every rung run at c1 through the real lever table. It resolves the aliases (S\* to Sstar-r8g, O2 to
@@ -1716,3 +1849,27 @@ ladder run missing from the campaign total is marked `NO`, and a note is added.
 are `Law 1`, `contract`, `incomplete`, `sample failed` and `levers`. For a Law 1 DEFECT,
 law1-detail.tsv has both sha256 values. runs.tsv's `in_attribution` gives the reason for each
 excluded run.
+
+**Recorded defects are not raised again** (2026-10-13). A run listed in `scripts/lib/g3_defects.tsv`
+(capacity refusals, failed launches; `--recorded` names another file) is a defect the record already
+holds.
+- **It is reported once**, as `recorded defect (<class>): excluded`, in runs.tsv's `in_attribution`
+  and in summary.md's excluded runs. `<class>` is the text before the first `:` of the file's
+  `class` column, e.g. `capacity` or `defect`.
+- **Its contract and incomplete checks raise no DEFECT.** They do not count toward the DEFECT total
+  or the exit code, so the noise from those runs cannot hide a new DEFECT.
+- **Its other checks still raise their DEFECTs** (sample failed, input).
+- **The capacity guard.** A capacity refusal launches nothing, so it has no sample records. A run
+  recorded as `capacity` that has any is not what the record says, and nothing is suppressed:
+  - its DEFECTs are raised as for any run;
+  - a `DEFECT (recorded)` names the mismatch;
+  - its `in_attribution` says why.
+
+  Other classes (a failed run may have samples) stay suppressed.
+- **Law 1 is never suppressed.** A recorded run whose outputs differ from stock is a
+  `DEFECT (Law 1)` as before.
+- `ladder_tables_test` (`recorded_defects`) checks the three cases, with the unrecorded run as the
+  control, and the guard (capacity with a sample record raised; the same run recorded as a defect
+  suppressed).
+- **On the record at this commit:** 13 such runs drop out (41 DEFECT lines before), and the real
+  record has 0 DEFECTs.
