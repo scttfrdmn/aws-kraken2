@@ -939,10 +939,43 @@ def s5_of(s):
     return x.get("status"), x.get("fallback", "none")
 
 
-def validate(runs, levers, defects):
-    """Contract, failed samples and completeness. Each DEFECT also excludes its run."""
+RECORDED_CLASSES = ("contract", "incomplete")   # the checks a recorded defect's run does not re-raise
+
+
+def load_recorded(path, rd=None):
+    """run id -> class (the text before the first ':' of the class column, e.g. capacity, defect,
+    partial) from scripts/lib/g3_defects.tsv, the record of runs already judged defective (capacity
+    refusals, failed launches). Missing file: {}."""
+    if not path or not os.path.exists(path):
+        return {}
+    text = rd.text(path) if rd is not None else open(path).read()
+    out = {}
+    for f in csv.DictReader([ln for ln in text.splitlines() if ln.strip() and not ln.startswith("#")], delimiter="\t"):
+        rid = (f.get("run") or "").strip()
+        if rid:
+            out[rid] = ((f.get("class") or "").split(":", 1)[0].strip() or "recorded")
+    return out
+
+
+def recorded_class(r, recorded):
+    """The recorded-defect class of run R (by its run id), or ''."""
+    return (recorded or {}).get(r["run_id"], "")
+
+
+def validate(runs, levers, defects, recorded=None):
+    """Contract, failed samples and completeness. Each DEFECT also excludes its run. A run recorded in
+    scripts/lib/g3_defects.tsv (RECORDED: run id -> class) is excluded once, as "recorded defect
+    (<class>): excluded", and its contract and incomplete checks raise no DEFECT (they are what the
+    record already says). Its other checks still raise theirs, and Law 1 (law1) is never suppressed."""
+    all_defects = defects
     for r in runs:
         rid = r["run_id"]
+        rc = recorded_class(r, recorded)
+        if rc:
+            r["exclude"].append(f"recorded defect ({rc}): excluded")
+            defects = _RecordedSink(all_defects, r)
+        else:
+            defects = all_defects
         if r["missing_members"]:
             e = f"cohort member manifest missing: {', '.join(r['missing_members'])}"
             defects.append(("incomplete", f"{rid}: {e}"))
@@ -1026,6 +1059,9 @@ def validate(runs, levers, defects):
         elif not_run(levers[r["params"]["rung"]], r["params"].get("cohort")):
             r["notes"].append(f"rung {r['params']['rung']} is marked {not_run(levers[r['params']['rung']], r['params'].get('cohort'))!r} "
                               "in ladder.levers.tsv")
+        if rc:
+            # The recorded exclusion stands for the suppressed checks: only it and any unsuppressed DEFECT remain.
+            r["exclude"] = [x for x in r["exclude"] if not any(x.startswith(f"DEFECT ({c})") for c in RECORDED_CLASSES)]
         r["exclude"] = list(dict.fromkeys(r["exclude"]))
 
 
@@ -1469,13 +1505,25 @@ def s5_findings(runs, levers):
     return out
 
 
-def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_checks=None):
+class _RecordedSink:
+    """The defects list as validate() sees it for a recorded run: contract and incomplete DEFECTs are
+    dropped (the run is a recorded defect), every other class goes through."""
+
+    def __init__(self, defects, run):
+        self.defects, self.run = defects, run
+
+    def append(self, d):
+        if d[0] not in RECORDED_CLASSES:
+            self.defects.append(d)
+
+
+def build(runs, levers, campaign_spend=None, modelled=None, resolved=None, pair_checks=None, recorded=None):
     modelled = modelled or {}
     T, defects, notes = {}, [], []
     emap, eerr = declared_endpoints(levers)
     for e in eerr:
         defects.append(("levers", e))
-    validate(runs, levers, defects)
+    validate(runs, levers, defects, recorded)
     # GNU gzip's warning (exit 2: trailing data ignored, the output complete): kept, never an input
     # defect, but named, sample by sample (tidy.tsv s5.gz_warning and here).
     for r in runs:
@@ -1750,6 +1798,9 @@ def main(argv=None):
     ap.add_argument("--resolved", default=os.path.join(ROOT, "scripts", "g3", "ladder.resolved.tsv"),
                     help="alias winners and placeholder resolutions (ladder.resolved.tsv)")
     ap.add_argument("--out", default=os.path.join(ROOT, "results", "g3", "ladder"))
+    ap.add_argument("--recorded", default=os.path.join(ROOT, "scripts", "lib", "g3_defects.tsv"),
+                    help="runs already recorded as defects (scripts/lib/g3_defects.tsv): excluded once, contract and "
+                         "incomplete checks not re-raised")
     ap.add_argument("--spend", default=None, help="campaign spend.tsv (default <results>/g3/campaign/spend.tsv)")
     a = ap.parse_args(argv)
     rd = Reader()
@@ -1764,7 +1815,7 @@ def main(argv=None):
     resolved, rerrs = load_resolved(a.resolved, rd, levers, os.path.dirname(os.path.abspath(a.results)))
     nrnotes = not_run_cond_checks(a.levers, a.resolved, levers, {r['params'].get('cohort') for r in runs})
     pchk, pdef = alias_cohort_checks(a.levers, a.resolved, levers)
-    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved, pchk)
+    T, defects, notes, excl, findings = build(runs, levers, cs, modelled, resolved, pchk, load_recorded(a.recorded, rd))
     notes += nrnotes
     defects += pdef
     notes += [f"{r} at c{c}: alias_cohorts pair not used: {why}" for (r, c), why in sorted(pchk.items())

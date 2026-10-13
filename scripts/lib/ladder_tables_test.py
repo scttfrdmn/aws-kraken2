@@ -337,6 +337,9 @@ def record(res, variant=""):
                                f"by hand | results/levers.tsv={sha}"]) + "\n")
             f.write("S\tS0-Tv\t10\twall_s\t999\thand\t10\t@PRJTEST:1-2\tx\tmy notes | results/g3/x/rates.tsv="
                     + "0" * 64 + "\n")
+    if variant == "recorded":
+        # A launch refused before any sample (as InsufficientInstanceCapacity leaves it): 0 of 1 samples.
+        single(res, "20261010-000099-aaaaaaa", "S", "S0-T1", 9, 50, samples=[])
     if variant == "stale":
         # A third c10 run after the model was written: the model is stale (its run set changed).
         single(res, "20261010-000024-aaaaaaa", "S", "S0-T1", 3, 3200, cohort=10, accessions=("SRR1", "SRR2"),
@@ -345,13 +348,19 @@ def record(res, variant=""):
     return msgs
 
 
-def run(variant=""):
+def run(variant="", recorded=None):
+    """RECORDED: {run id: class} written as the run's g3_defects.tsv (none by default: the real one is
+    never read here)."""
     tmp = tempfile.mkdtemp(prefix="ladder-test-")
     res = os.path.join(tmp, "results")
     msgs = record(res, variant)
     out = os.path.join(tmp, "out")
+    rec = os.path.join(tmp, "g3_defects.tsv")
+    if recorded:
+        with open(rec, "w") as f:
+            f.write("run\tclass\tevidence\n" + "".join(f"{k}\t{v}\tsynthetic (unit test)\n" for k, v in recorded.items()))
     rc = lt.main(["--results", res, "--levers", os.path.join(res, "levers.tsv"), "--out", out,
-                  "--resolved", os.path.join(res, "resolved.tsv")])
+                  "--resolved", os.path.join(res, "resolved.tsv"), "--recorded", rec])
     T = {}
     for n in os.listdir(out):
         if n.endswith(".tsv"):
@@ -568,7 +577,27 @@ def base():
            any("000016" in p for p in paths)), (True, True, True, 20, False))
 
 
+def recorded_defects():
+    """A run recorded in g3_defects.tsv is excluded once, as a recorded defect; its contract and
+    incomplete checks raise no DEFECT and do not set the exit code; Law 1 is never suppressed."""
+    rid = "20261010-000099-aaaaaaa"
+    rc, T = run("recorded")
+    check("unrecorded: the refused launch is an incomplete DEFECT, exit 1 (the probe resolves the effect)",
+          (rc, "DEFECT (incomplete)" in one(T["runs.tsv"], run_id=rid).get("in_attribution", "")), (1, True))
+    rc, T = run("recorded", {rid: "capacity: InsufficientInstanceCapacity (synthetic)"})
+    check("recorded: exit 0, and DEFECTs: 0 in summary.md", (rc, "- DEFECTs: 0" in T["summary"]), (0, True))
+    check("recorded: excluded once, as the recorded defect", one(T["runs.tsv"], run_id=rid).get("in_attribution"),
+          "no: recorded defect (capacity): excluded")
+    check("recorded: the summary reports it once, as the recorded defect, and in no DEFECT line",
+          (T["summary"].count(f"{rid}: recorded defect (capacity): excluded"), sum(rid in l and "DEFECT" in l for l in T["summary"].splitlines())), (1, 0))
+    rc, T = run("sha", {"20261010-000010-aaaaaaa": "defect: synthetic"})
+    check("recorded, but its output differs from stock: the Law 1 DEFECT still stands, exit 1",
+          (rc, one(T["law1.tsv"], accession="SRR1").get("status"),
+           "DEFECT (Law 1)" in one(T["runs.tsv"], run_id="20261010-000010-aaaaaaa").get("in_attribution", "")), (1, "DEFECT", True))
+
+
 def variants():
+    recorded_defects()
     rc, T = run("sha")
     check("sha mismatch exits 1", rc, 1)
     check("sha mismatch: DEFECT", one(T["law1.tsv"], accession="SRR1").get("status"), "DEFECT")

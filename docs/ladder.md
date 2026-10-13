@@ -1840,3 +1840,19 @@ ladder run missing from the campaign total is marked `NO`, and a note is added.
 are `Law 1`, `contract`, `incomplete`, `sample failed` and `levers`. For a Law 1 DEFECT,
 law1-detail.tsv has both sha256 values. runs.tsv's `in_attribution` gives the reason for each
 excluded run.
+
+**Recorded defects are not raised again** (2026-10-13). A run listed in `scripts/lib/g3_defects.tsv`
+(capacity refusals, failed launches; `--recorded` names another file) is a defect the record already
+holds.
+- **It is reported once**, as `recorded defect (<class>): excluded`, in runs.tsv's `in_attribution`
+  and in summary.md's excluded runs. `<class>` is the text before the first `:` of the file's
+  `class` column, e.g. `capacity` or `defect`.
+- **Its contract and incomplete checks raise no DEFECT.** They do not count toward the DEFECT total
+  or the exit code, so the noise from those runs cannot hide a new DEFECT.
+- **Its other checks still raise their DEFECTs** (sample failed, input).
+- **Law 1 is never suppressed.** A recorded run whose outputs differ from stock is a
+  `DEFECT (Law 1)` as before.
+- `ladder_tables_test` (`recorded_defects`) checks the three cases, with the unrecorded run as the
+  control.
+- **On the record at this commit:** 13 such runs drop out (41 DEFECT lines before), and the real
+  record has 0 DEFECTs.

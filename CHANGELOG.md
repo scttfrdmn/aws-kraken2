@@ -320,6 +320,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **The ladder tables re-raised recorded defects.** A run listed in `scripts/lib/g3_defects.tsv`
+  (capacity refusals, failed launches) is now reported once, as `recorded defect (<class>):
+  excluded`, and its contract and incomplete checks are no longer DEFECTs. They do not count toward
+  the DEFECT total or the exit code.
+  - Its other checks, and Law 1, are never suppressed.
+  - On this branch's record: 41 DEFECT lines from 13 recorded runs before, 0 after.
+  - Test: `ladder_tables_test` `recorded_defects`.
 - **A conditional `alias_cohorts` entry whose target is no candidate there** (the reviewer's latent
   gap). Before, it read the target's runs, which do not exist, wherever the two configurations
   coincided. It is now `own` where the target is not run at the cohort, or is outside its alias's
