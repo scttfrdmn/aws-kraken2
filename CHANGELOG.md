@@ -87,6 +87,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `make rehearse SPEC=` accepts specs above c1. It runs the cohort's C samples (the real read sets
   repeated under distinct names, each checked against its oracle), and makes the nodes' `nproc`
   report the spec type's vCPUs (`OMP_NUM_THREADS`), so vcpus ratios give the spec's lanes.
+  - An engine spec above c1 is rehearsed at INFLIGHT = min(the spec's, `AK2_REHEARSE_ENGINE_INFLIGHT`,
+    default 2), at the spec's THREADS, with `GOMEMLIMIT` on the nodes. The spec's INFLIGHT does not
+    fit the VM's 8 GiB: O0b and O1 at c10 were OOM-killed at bceac14.
+  - A new **inflight** check covers the engine above c1. Each node's lad-config and `ak2-sample`
+    lines must carry that INFLIGHT and THREADS, and 2 to INFLIGHT home samples must run at once.
+    Its negative control is `spec-o1-c10-inflightmut` (`mut_inflight1`).
+  - The case logs each engine's VmHWM and the lowest MemAvailable it saw (docs/ladder.md, "A spec
+    above c1").
 
 - **Conditional `alias_cohorts` entries** (`c<C>: <rung> (if same configuration)`;
   ladder_levers.py `alias_state`, ladder_tables.py `alias_cohort_checks`; docs/ladder.md, "The

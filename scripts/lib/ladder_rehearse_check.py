@@ -295,6 +295,35 @@ def check(c, expect_fail):
                 addr = (json.load(open(os.path.join(rv, f"g{g}", f))).get("shard_addr") or "")
                 K.need("engine", addr.split(":")[0] != "127.0.0.1" and addr.split(":")[0] != "", f"replica {g} {f}: shard address {addr} is the node's own, not loopback")
 
+    # ---- inflight: the engine ran INFLIGHT samples at once per node, each at the run's THREADS ----
+    # (above c1: the rehearsal's INFLIGHT, the spec's capped to the VM's memory; ladder_rehearse.sh)
+    xi = ex.get("inflight")
+    if eng and xi:
+        want, wt = xi["want"], xi["threads"]
+        for n in nodes:
+            r = n["rank"]
+            cfg = [x for x in per_node[r]["lad"] if x.get("kind") == "config"]
+            res = (cfg[-1].get("resolved") or {}) if cfg else {}
+            K.need("inflight", res.get("inflight") in (want, str(want)) and res.get("threads") == wt,
+                   f"r{r}: lad-config resolved inflight {res.get('inflight')} threads {res.get('threads')} "
+                   f"(want {want} and {wt}: the spec's INFLIGHT {xi['spec']} = {xi['spec_value']}, rehearsed at {want}; THREADS at nproc {res.get('nproc')})")
+            es = [s.get("engine") or {} for s in per_node[r]["samples"]]
+            K.need("inflight", es and all(e.get("inflight") == str(want) and e.get("threads") == str(wt) for e in es),
+                   f"r{r}: every home sample's ak2-sample line has inflight {want} and threads {wt} "
+                   f"({sorted({(e.get('inflight'), e.get('threads')) for e in es})})")
+            # At most INFLIGHT at once (the engine's semaphore), and, with two or more home samples
+            # and INFLIGHT above 1, at least two at once: their engine spans (start_s .. + wall_s,
+            # one process clock per node) overlap.
+            iv = sorted((float(e["start_s"]), float(e["start_s"]) + float(e["wall_s"])) for e in es if "start_s" in e and "wall_s" in e)
+            ev = sorted([(a, 1) for a, _ in iv] + [(b, -1) for _, b in iv], key=lambda x: (x[0], x[1]))
+            cur = peak = 0
+            for _, d in ev:
+                cur += d
+                peak = max(peak, cur)
+            lo = min(2, want, len(iv))
+            K.need("inflight", len(iv) == len(es) and lo <= peak <= want,
+                   f"r{r}: {peak} of its {len(iv)} home samples ran at once (want {lo} .. {want})")
+
     # ---- the upload schedule: serial blocks the lane, overlap does not; lanes run at once ----
     for n in nodes:
         r = n["rank"]

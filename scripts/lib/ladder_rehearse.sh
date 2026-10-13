@@ -439,6 +439,7 @@ mut_law1() { mutate "$1" '--paired --threads "$T" --output' '--paired --minimum-
 mut_noline() { mutate "$1" '2> >(tee "$W/eng.stderr" |' '2> >(grep --line-buffered -v $'"'"'\tname\tERR478965\t'"'"' | tee "$W/eng.stderr" |'; }
 # mut_engenv: lad_one at 843e958, which passed the node's engine env on to ours' plain path.
 mut_engenv() { mutate "$1" 'cmd=(env "${noeng[@]}" "${DECOMP[@]}" "$OURS")' 'cmd=(env "${DECOMP[@]}" "$OURS")'; }
+mut_inflight1() { mutate "$1" '"$INFLIGHT" "$PLACEMENT"' '1 "$PLACEMENT"'; }   # the engine's cohort manifest at 1 in flight
 mut_nb1() { mutate "$1" '    if [ -n "${LV_UP_TSV:-}" ] && [ -f "$LV_UP_TSV" ]; then' '    if false; then'; }
 # Tree mutations (AK2T_MUTATE, run by the git stub on the fresh clone): pyfix NAME FILE OLD NEW,
 # OLD and NEW as python string literals; the script fails unless OLD occurs exactly once.
@@ -544,10 +545,47 @@ if kv["CLASSIFIER"] != "ours-engine" and kv["REPLICAS"] == "1" and kv["SHARDS"] 
 print(json.dumps(ex))' "$line" "$tv" "$coh") || return 1
     ex=$(jq -c ". + $exl" <<< "$ex")
     say "$c: expected on the node: $exl"
+    # The engine above c1: the VM's memory, not the spec's host, bounds the samples in flight. Each
+    # in-flight sample holds ~150 MB of block scratch per active worker (the faked nproc gives each
+    # sample the spec's THREADS), so the spec's INFLIGHT (10 at c10: 5 samples x 16 threads per node)
+    # needs ~7 GB per node, and the case's nodes share the VM's 8 GiB (docs/ladder.md, "A spec above
+    # c1"). The case runs INFLIGHT=min(spec, AK2_REHEARSE_ENGINE_INFLIGHT) (2 by default: still more
+    # than one sample in flight on every node) with GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT on the
+    # nodes (GC pacing only), and checks that exactly that many ran at once at the spec's THREADS.
+    if [[ $line == *CLASSIFIER=ours-engine* ]]; then
+      local inf capinf=${AK2_REHEARSE_ENGINE_INFLIGHT:-2} gml=${AK2_REHEARSE_ENGINE_GOMEMLIMIT:-1536MiB} exi
+      exi=$(python3 -c 'import sys, json; sys.path.insert(0, "scripts/lib"); import ladder_levers as L
+kv = dict(x.split("=", 1) for x in sys.argv[1].split("; ") if "=" in x); v, cap = int(sys.argv[2] or 8), int(sys.argv[3])
+spec = L.vc(kv["INFLIGHT"], v)
+print(json.dumps({"inflight": {"spec": kv["INFLIGHT"], "spec_value": spec, "want": min(spec, cap) if cap > 0 else spec,
+                  "threads": L.vc(kv["THREADS"], v)}}))' "$line" "$tv" "$capinf") || return 1
+      inf=$(jq -r .inflight.want <<< "$exi")
+      if [ "$inf" != "$(jq -r .inflight.spec_value <<< "$exi")" ]; then
+        mutate "$T/cases/$c/body.sh" "; INFLIGHT=$(jq -r .inflight.spec <<< "$exi"); " "; INFLIGHT=$inf; " || { verdict "$c" 6 "$spec: the INFLIGHT cap did not apply" 1; return 1; }
+        line=$(grep -m1 '^RUNG=' "$T/cases/$c/body.sh")
+        payload "$T/cases/$c/payload.sh" "$T/cases/$c/body.sh"
+        say "$c: rehearsed at INFLIGHT=$inf (the spec's $(jq -r .inflight.spec <<< "$exi") = $(jq -r .inflight.spec_value <<< "$exi") does not fit the VM's memory; AK2_REHEARSE_ENGINE_INFLIGHT=0 runs it uncapped), GOMEMLIMIT=$gml"
+      fi
+      [ "$capinf" != 0 ] && [ -n "$gml" ] && extra+=(GOMEMLIMIT="$gml")
+      extra+=(AK2_MEM_EVERY=0.5)
+      ex=$(jq -c ". + $exi" <<< "$ex")
+    fi
   fi
   launch "$c" "$T/cases/$c/payload.sh" "$wn" "$type" "${coh:-1}" cohort "$sam" "$wts" ${extra[@]+"${extra[@]}"}
   casejson "$c" "$rung" "$line" "$sam" "$type" "$ex" "$refmap"
   runcheck "$c" ${EXPECTFAIL:+--expect-fail "$EXPECTFAIL"}; local rc=$?
+  # The VM's headroom (AK2_MEM_EVERY's samples): each engine's VmHWM and the lowest MemAvailable it saw.
+  if jq -e .inflight <<< "$ex" > /dev/null 2>&1; then
+    python3 -c 'import sys
+for p in sys.argv[1:]:
+    hwm, av = 0, None
+    for l in open(p, errors="replace"):
+        f = l.rstrip("\n").split("\t")
+        if len(f) > 2 and f[0].endswith("ak2-engine") and f[1] == "mem":
+            d = dict(zip(f[2::2], f[3::2])); hwm = max(hwm, int(d["hwm_kib"])); a = int(d["avail_kib"]); av = a if av is None else min(av, a)
+    print("%s: engine VmHWM %d MiB, lowest MemAvailable %s MiB" % (p.rsplit("/", 1)[-1][:-4], hwm >> 10, "-" if av is None else av >> 10))' "$CD"/r*.out |
+      while read -r l; do say "$c: memory: $l"; done
+  fi
   [ "$same" = yes ] || { echo "FAIL $c: body: the spec's body is not the committed body plus its parameters" >> "$T/cases/$c/check.txt"; rc=1; }
   [ "$same" = yes ] && echo "ok   $c: body: the spec's body is the committed body plus its parameter block" >> "$T/cases/$c/check.txt"
   if [ -n "${LADREH_RECORD:-}" ]; then python3 scripts/lib/ladder_rehearse_check.py record "$CD/case.json" "$LADREH_RECORD" "$spec" || rc=1; fi
@@ -994,6 +1032,8 @@ case $MODE in
       LADREH_RECORD="$T/record-neg" MUTF=mut_law1 EXPECTFAIL=law1 spec_case runs/g3-l-s1-c1.json law1mut
       # The plain-path check sees the engine env leak (O0 at c1, 843e958) when it is planted back.
       [ -f runs/g3-l-o0-c1.json ] && LADREH_RECORD= MUTF=mut_engenv EXPECTFAIL=plain spec_case runs/g3-l-o0-c1.json engenvmut
+      # The inflight check sees an engine that runs one sample at a time (above c1).
+      [ -f runs/g3-l-o1-c10.json ] && LADREH_RECORD= MUTF=mut_inflight1 EXPECTFAIL=inflight spec_case runs/g3-l-o1-c10.json inflightmut
       tables_neg "$T/record-neg"
     fi
     [ -n "$(ls "$T"/cases/*/case.json 2> /dev/null)" ] && across_arms
