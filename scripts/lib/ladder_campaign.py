@@ -192,7 +192,9 @@ def record_problems(cdir, cj, mans, want_az=None):
     if any(m is None for m in mans):
         why.append("a member manifest is missing")
     if want_az:
-        azs = sorted({(m.get("instance") or {}).get("az") for m in mans if m})
+        # A member that never launched (capacity) has no AZ: count it as "none", never None,
+        # so the comparison names it instead of failing to sort.
+        azs = sorted({(m.get("instance") or {}).get("az") or "none" for m in mans if m})
         if azs != [want_az]:
             why.append("instance AZ %s, requested %s" % (",".join(str(a) for a in azs), want_az))
     return why
