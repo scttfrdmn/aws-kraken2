@@ -339,6 +339,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   bracket) and O4b-cost-if8 (the range).
 - **Absolute THREADS on the O arm.** S4's T = 16 ran 16 threads per sample on x8g.2xlarge's 8 vCPUs,
   and O4b's range collapsed to 1 on every type below 32 vCPUs. The thread ratio above replaces it.
+- `ladder_campaign.py` `record_problems`: a cohort member that never launched (capacity) has no AZ; the AZ check now names it as "none" instead of crashing on `sorted()` of None and a string (the c10 S9 rep 2 retry, campaign 20261013-183231, crashed this way). Regression case in `ladder_campaign_test`.
 
 - **Ladder ours-plain ran the engine** (scripts/g3/ladder.body.sh `lad_one`). The cohort env that
   `make run` gives every node (`AK2_ENGINE_N`, `_RANK`, `_RENDEZVOUS`) reached ours' plain path,

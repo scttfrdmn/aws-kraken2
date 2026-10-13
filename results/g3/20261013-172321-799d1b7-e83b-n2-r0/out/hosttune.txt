@@ -1,0 +1,132 @@
+== setup 2026-10-13T17:24:37Z 1791912277.264032524
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      5      4      6      6      8      8      7      7      5    218 
+Node 0, zone   Normal  12720   4684    529    390    163     69     44     35     22     12 189591 
+Node 1, zone   Normal   5547   3288    623    209    114     68     35     23     12      4 189041 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 0
+compact_free_scanned 0
+compact_isolated 4420
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 0
+compact_daemon_migrate_scanned 0
+compact_daemon_free_scanned 0
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 0
+thp_collapse_alloc_failed 0
+thp_file_alloc 0
+thp_file_fallback 0
+thp_file_fallback_charge 0
+thp_file_mapped 0
+thp_split_page 0
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 0
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        1552122444 kB
+AnonHugePages:         0 kB
+ShmemHugePages:        0 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:     10240 kB
+FilePmdMapped:         0 kB
+== load 2026-10-13T17:29:29Z 1791912569.252881476
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      5      4      6      6      8      8      7      7      5    218 
+Node 0, zone   Normal  36841  21366  13235   8851   5665   2619    995    471    166     67  91717 
+Node 1, zone   Normal  10641  19829  14019   8549   3258   1049    323    117     19     19      0 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 3774813
+compact_free_scanned 1355228909
+compact_isolated 421205
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 7
+compact_daemon_migrate_scanned 3774813
+compact_daemon_free_scanned 1355228909
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 0
+thp_collapse_alloc_failed 0
+thp_file_alloc 425137
+thp_file_fallback 141955
+thp_file_fallback_charge 0
+thp_file_mapped 0
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 0
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        380146356 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 870672384 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
+== end 2026-10-13T17:29:50Z 1791912590.794626697
+-- thp enabled=madvise defrag=madvise shmem_enabled=never compaction_proactiveness=20 page=4096
+Node 0, zone      DMA      4      5      4      6      6      8      8      7      7      5    218 
+Node 0, zone   Normal  87573  84316  59002  47042  32952  18241   9871   4925   2274    653  86373 
+Node 1, zone   Normal  17511  19548  12697   7200   3231   1000    270     94     16     20      0 
+thp_migration_success 0
+thp_migration_fail 0
+thp_migration_split 0
+compact_migrate_scanned 4111709
+compact_free_scanned 1548965216
+compact_isolated 456194
+compact_stall 0
+compact_fail 0
+compact_success 0
+compact_daemon_wake 7
+compact_daemon_migrate_scanned 4111709
+compact_daemon_free_scanned 1548965216
+thp_fault_alloc 0
+thp_fault_fallback 0
+thp_fault_fallback_charge 0
+thp_collapse_alloc 0
+thp_collapse_alloc_failed 0
+thp_file_alloc 425137
+thp_file_fallback 141955
+thp_file_fallback_charge 0
+thp_file_mapped 2125655
+thp_split_page 4
+thp_split_page_failed 0
+thp_deferred_split_page 0
+thp_underused_split_page 0
+thp_split_pmd 0
+thp_scan_exceed_none_pte 0
+thp_scan_exceed_swap_pte 0
+thp_scan_exceed_share_pte 0
+thp_zero_page_alloc 0
+thp_zero_page_alloc_failed 0
+thp_swpout 0
+thp_swpout_fallback 0
+MemFree:        372501084 kB
+AnonHugePages:         0 kB
+ShmemHugePages: 870672384 kB
+ShmemPmdMapped:        0 kB
+FileHugePages:         0 kB
+FilePmdMapped:         0 kB
