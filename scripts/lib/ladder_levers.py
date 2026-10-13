@@ -78,7 +78,7 @@ PARAMS_MARK = "# Parameters (scripts/g3/mkspec-ladder.sh"
 # so P x T <= vCPUs on every host. The body has no fill form, so resolve() gives its value at the
 # rung's own (pinned) type.
 RATIO_RE = re.compile(r"@ratio:([A-Za-z0-9-]+)(:fill)?")
-FILL_RE = re.compile(r"fill/([1-9][0-9]*)")
+FILL_RE = re.compile(r"fill/([1-9][0-9]*)(?:/([1-9][0-9]*))?")   # fill/R, or fill/R/C clamped to the cohort C
 # The family whose small sizes a right-sized @floor uses (Scott, 2026-10-13, ruling 3): r8gd has no
 # small sizes; r8g is its generation and memory ratio, and ours does not use the instance store.
 FLOOR_FAMILY = {"r8gd": "r8g"}
@@ -685,8 +685,11 @@ def _values(rows, r, cohort, res, depth=0):
                 bad.append("%s=%s (%s's THREADS %d does not divide its %d vCPUs: no integer ratio)" % (k, v, o["rung"], t, hv))
                 continue
             ratio = hv // t
+            # The engine's in flight is clamped to the cohort (fill/R/C): no host plans, or is sized for,
+            # more samples at once than the cohort has. PROCS is not, so O0 stays S*'s exact PROCS (the
+            # S arm's P = vcpus/T may exceed the cohort: lanes without samples).
             if m.group(2):
-                out[k] = "1" if ratio == 1 else "fill/%d" % ratio
+                out[k] = "1" if ratio == 1 else ("fill/%d/%d" % (ratio, int(cohort)) if k == "INFLIGHT" else "fill/%d" % ratio)
             else:
                 out[k] = "vcpus" if ratio == 1 else "vcpus/%d" % ratio
             continue
@@ -721,7 +724,7 @@ def _values(rows, r, cohort, res, depth=0):
                 bad.append("%s=%s" % (k, v))
                 continue
             v = hit[0]
-        if not SAFE.match(v) and not re.fullmatch(r"(?:vcpus|fill)/[1-9][0-9]*", v):
+        if not SAFE.match(v) and not re.fullmatch(r"vcpus/[1-9][0-9]*", v) and not FILL_RE.fullmatch(v):
             bad.append("%s=%s (not a shell-safe word)" % (k, v))
         out[k] = v
     return out, bad
@@ -1100,8 +1103,10 @@ def vc(v, vcpus):
         return max(1, vcpus // int(v[6:]))
     m = FILL_RE.fullmatch(v)
     if m:
-        # fill/R: the samples at once that THREADS = vcpus/R leaves room for (P x T <= vCPUs).
-        return vcpus // max(1, vcpus // int(m.group(1)))
+        # fill/R: the samples at once that THREADS = vcpus/R leaves room for (P x T <= vCPUs);
+        # fill/R/C: no more than the cohort's C samples (a host never plans more in flight than exist).
+        n = vcpus // max(1, vcpus // int(m.group(1)))
+        return min(n, int(m.group(2))) if m.group(2) else n
     return int(v)
 
 
@@ -1328,6 +1333,12 @@ def _self_test_c10(rows, names, src, root):
     # On a 192-vCPU S* host the S arm carried T = 16 with P = vcpus/16 = 12: R = 12 there, so O0 stays S*'s.
     r8 = resolve(rows, "O0", 10, res=h(Sstar_time="Sstar-r8g", Sstar_cost="S9"), root=root)
     assert (r8["instance"], r8["params"]["THREADS"], r8["params"]["PROCS"]) == ("r8g.48xlarge", "vcpus/12", "12"), r8
+    # The engine's in flight is clamped to the cohort: fill/12 is 12 on 192 vCPUs, but c10 has 10 samples.
+    assert (vc("fill/12", 192), vc("fill/12/10", 192), vc("fill/6/10", 8), vc("fill/6/4", 96)) == (12, 10, 8, 4)
+    r8b = resolve(rows, "O0b", 10, res=h(Sstar_time="Sstar-r8g", Sstar_cost="S9"), root=root)
+    assert (r8b["params"]["INFLIGHT"], _values(rows, names["O0b"], 10, h(Sstar_time="Sstar-r8g", Sstar_cost="S9"))[0]["INFLIGHT"]) \
+        == ("10", "fill/12/10"), r8b
+    assert _values(rows, names["O0"], 10, h(Sstar_time="Sstar-r8g", Sstar_cost="S9"))[0]["PROCS"] == "fill/12"   # PROCS: S*'s own
     # The static one-lever check reads @ratio as its origin's own THREADS / PROCS text.
     assert changed(rows, names["O0"], names["Sstar-time"]) == ["CLASSIFIER"], changed(rows, names["O0"], names["Sstar-time"])
     t = _copy(rows)
@@ -1726,7 +1737,7 @@ def _self_test():
         h = {("S4", "10", "alias"): ("S4-t12", src), ("S8", "10", "alias"): ("S7b", src), ("Sstar-time", "10", "alias"): ("S9", src),
              ("O2", "10", "alias"): ("O1", src), ("O3", "10", "alias"): ("O3-n2", src)}
         v4a = _values(rows, names["O4a"], 10, h)[0]
-        assert (v4a["instance"], v4a["THREADS"], v4a["INFLIGHT"]) == ("x8g.12xlarge", "vcpus/8", "fill/8"), v4a
+        assert (v4a["instance"], v4a["THREADS"], v4a["INFLIGHT"]) == ("x8g.12xlarge", "vcpus/8", "fill/8/10"), v4a
         rg = inflight_range(rows, names["O4b"], 10, h)
         assert set(rg[0]) == {"O4b-if8", "O4b-if16", "O4b-if32", "O4b-if64", "O4b-if128"} and "1 .. 8" in rg[1], rg
         assert "O4a's own" in rg[0]["O4b-if8"] and "> vCPUs / THREADS = 48 // 6 = 8" in rg[0]["O4b-if16"], rg

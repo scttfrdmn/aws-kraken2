@@ -340,6 +340,8 @@ def record(res, variant=""):
     if variant == "recorded":
         # A launch refused before any sample (as InsufficientInstanceCapacity leaves it): 0 of 1 samples.
         single(res, "20261010-000099-aaaaaaa", "S", "S0-T1", 9, 50, samples=[])
+        # A run with a sample record but incomplete (1 of 2 planned): no refused launch.
+        single(res, "20261010-000098-aaaaaaa", "S", "S0-T1", 8, 60, accessions=("SRR1", "SRR2"), samples=[sample("S", "S0-T1")])
     if variant == "stale":
         # A third c10 run after the model was written: the model is stale (its run set changed).
         single(res, "20261010-000024-aaaaaaa", "S", "S0-T1", 3, 3200, cohort=10, accessions=("SRR1", "SRR2"),
@@ -584,12 +586,24 @@ def recorded_defects():
     rc, T = run("recorded")
     check("unrecorded: the refused launch is an incomplete DEFECT, exit 1 (the probe resolves the effect)",
           (rc, "DEFECT (incomplete)" in one(T["runs.tsv"], run_id=rid).get("in_attribution", "")), (1, True))
-    rc, T = run("recorded", {rid: "capacity: InsufficientInstanceCapacity (synthetic)"})
+    rc, T = run("recorded", {rid: "capacity: InsufficientInstanceCapacity (synthetic)", "20261010-000098-aaaaaaa": "defect: synthetic"})
     check("recorded: exit 0, and DEFECTs: 0 in summary.md", (rc, "- DEFECTs: 0" in T["summary"]), (0, True))
     check("recorded: excluded once, as the recorded defect", one(T["runs.tsv"], run_id=rid).get("in_attribution"),
           "no: recorded defect (capacity): excluded")
     check("recorded: the summary reports it once, as the recorded defect, and in no DEFECT line",
           (T["summary"].count(f"{rid}: recorded defect (capacity): excluded"), sum(rid in l and "DEFECT" in l for l in T["summary"].splitlines())), (1, 0))
+    # The guard: recorded as capacity, but it has sample records (no refused launch): its incomplete
+    # DEFECT is raised again, with a DEFECT (recorded) naming the mismatch. Recorded as another class
+    # (a failed run may have samples), it stays suppressed.
+    cap = {rid: "capacity: synthetic", "20261010-000098-aaaaaaa": "capacity: synthetic"}
+    rc, T = run("recorded", cap)
+    ia = one(T["runs.tsv"], run_id="20261010-000098-aaaaaaa").get("in_attribution", "")
+    check("guard: capacity with a sample record: exit 1, its incomplete DEFECT raised again and the mismatch named",
+          (rc, "DEFECT (incomplete)" in ia, "with 1 sample record(s)" in ia, "recorded as capacity in g3_defects.tsv" in T["summary"],
+           "recorded defect (capacity): excluded" in ia), (1, True, True, True, False))
+    rc, T = run("recorded", {rid: "capacity: synthetic", "20261010-000098-aaaaaaa": "defect: synthetic (a failed run)"})
+    check("guard: the same run recorded as a defect (not capacity) stays suppressed: exit 0",
+          (rc, one(T["runs.tsv"], run_id="20261010-000098-aaaaaaa").get("in_attribution")), (0, "no: recorded defect (defect): excluded"))
     rc, T = run("sha", {"20261010-000010-aaaaaaa": "defect: synthetic"})
     check("recorded, but its output differs from stock: the Law 1 DEFECT still stands, exit 1",
           (rc, one(T["law1.tsv"], accession="SRR1").get("status"),

@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       arm carried T = 16 absolutely there; this reading is flagged.
     - The generator writes fill/R's value at the spec's pinned type. `resolve()` refuses an O rung
       that would oversubscribe its host. The c1 specs are unchanged (R = 1).
+    - The engine's INFLIGHT is clamped to the cohort (`fill/R/C`). PROCS is not, so O0 keeps S\*'s
+      exact PROCS. At c10 only 192-vCPU S\* cases change (12 or 16 → 10 in flight), and no O3 floor
+      type moves.
   - **O2 at N = K.** O2-r8g, O2-x8g and their -cost copies have `instance @fit:<family>`, the family's
     smallest type holding the rung at O1's N = S8's K. That is r8g.48xlarge and x8g.24xlarge at
     N = 1, and r8g.24xlarge and x8g.12xlarge at c10's N = 2.
@@ -325,6 +328,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   excluded`, and its contract and incomplete checks are no longer DEFECTs. They do not count toward
   the DEFECT total or the exit code.
   - Its other checks, and Law 1, are never suppressed.
+  - A run recorded as `capacity` that has any sample record is not a refused launch. Nothing is
+    suppressed for it, and a `DEFECT (recorded)` names the mismatch.
   - On this branch's record: 41 DEFECT lines from 13 recorded runs before, 0 after.
   - Test: `ladder_tables_test` `recorded_defects`.
 - **A conditional `alias_cohorts` entry whose target is no candidate there** (the reviewer's latent

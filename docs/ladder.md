@@ -567,6 +567,15 @@ vCPU ratio, never as an absolute count, and ours never oversubscribes.
     at its host.
   - `@ratio:<rung>:fill` resolves to `fill/R` = vcpus // max(1, vcpus // R). That is as many samples
     at once as THREADS = vcpus/R leaves room for, so P × T ≤ vCPUs on every host.
+  - **The engine's INFLIGHT is clamped to the cohort** (`fill/R/C` = min(fill/R, C); 2026-10-13). No
+    host plans, or is sized by `fits()` for, more samples in flight than the cohort has, so the O3
+    floors do not grow for nothing.
+    - PROCS (O0's per-sample lanes) is not clamped. O0 must stay S\*'s exact PROCS, and the S arm's
+      P = vcpus/T can exceed the cohort (the extra lanes have no samples): Sstar-r8g at c10 has
+      P = 12 for 10 samples.
+    - At c10 the clamp changes only R = 12 cases (a 192-vCPU S\*): 12 or 16 in flight become 10. No
+      right-sized floor type moves (checked for S\* = S9, Sstar-r8g and Sstar-r8gd against every O2
+      winner). At R = 6 no count exceeds 8, so nothing changes.
   - R = 1 gives `vcpus` and `1`, so the c1 rungs and specs are unchanged.
 - **Why R comes from S\*.** O0 must be S\*'s exact configuration, because its only lever is the arm
   switch. On S\*'s host, vcpus/R is S\*'s THREADS and fill/R is S\*'s PROCS, by construction.
@@ -1850,9 +1859,17 @@ holds.
 - **Its contract and incomplete checks raise no DEFECT.** They do not count toward the DEFECT total
   or the exit code, so the noise from those runs cannot hide a new DEFECT.
 - **Its other checks still raise their DEFECTs** (sample failed, input).
+- **The capacity guard.** A capacity refusal launches nothing, so it has no sample records. A run
+  recorded as `capacity` that has any is not what the record says, and nothing is suppressed:
+  - its DEFECTs are raised as for any run;
+  - a `DEFECT (recorded)` names the mismatch;
+  - its `in_attribution` says why.
+
+  Other classes (a failed run may have samples) stay suppressed.
 - **Law 1 is never suppressed.** A recorded run whose outputs differ from stock is a
   `DEFECT (Law 1)` as before.
 - `ladder_tables_test` (`recorded_defects`) checks the three cases, with the unrecorded run as the
-  control.
+  control, and the guard (capacity with a sample record raised; the same run recorded as a defect
+  suppressed).
 - **On the record at this commit:** 13 such runs drop out (41 DEFECT lines before), and the real
   record has 0 DEFECTs.

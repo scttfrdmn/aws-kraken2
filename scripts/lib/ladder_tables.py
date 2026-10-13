@@ -971,6 +971,14 @@ def validate(runs, levers, defects, recorded=None):
     for r in runs:
         rid = r["run_id"]
         rc = recorded_class(r, recorded)
+        if rc == "capacity" and r["samples"]:
+            # A capacity refusal launches nothing, so it has no sample records. One that has them is not
+            # what the record says: nothing is suppressed, and the note says why.
+            r["exclude"].append(f"recorded defect (capacity) with {len(r['samples'])} sample record(s): not a refused launch, "
+                                f"so its DEFECTs are raised")
+            all_defects.append(("recorded", f"{rid}: recorded as capacity in g3_defects.tsv, but it has "
+                                            f"{len(r['samples'])} sample record(s)"))
+            rc = ""
         if rc:
             r["exclude"].append(f"recorded defect ({rc}): excluded")
             defects = _RecordedSink(all_defects, r)
