@@ -1,0 +1,32 @@
+ladder-campaign: cohort 10, REPS=2: 13 committed spec(s) runs/g3-l-*-c10.json; rep 1 cheapest first (measured billed $ where a done run exists, else cost_limit x nodes), ties in ladder order; rep 2 reversed
+ladder-campaign: CONCURRENCY=1 (runs in flight at once); quota_check.sh before every launch
+order rep rung        spec                           nodes type           az         family     cost_usd  basis                                          action
+1     1   S2a         runs/g3-l-s2a-c10.json         1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+2     1   S4-t48      runs/g3-l-s4-t48-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+3     1   S4-t32      runs/g3-l-s4-t32-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+4     1   S4-t24      runs/g3-l-s4-t24-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+5     1   S4-t16      runs/g3-l-s4-t16-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+6     1   S4-t12      runs/g3-l-s4-t12-c10.json      1     x8g.24xlarge   us-west-2b X              7.82  estimate: cost_limit x 1 node(s) (TTL 50m x price) launch
+7     1   S2d         runs/g3-l-s2d-c10.json         1     r8gd.48xlarge  us-west-2b Standard       9.41  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+8     1   S2c         runs/g3-l-s2c-c10.json         1     r8gd.48xlarge  us-west-2b Standard       9.41  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+9     1   S2b-ii      runs/g3-l-s2b-ii-c10.json      1     r8gd.48xlarge  us-west-2b Standard      18.82  estimate: cost_limit x 1 node(s) (TTL 80m x price) launch
+10    1   S1          runs/g3-l-s1-c10.json          1     r8gd.48xlarge  us-west-2b Standard      51.73  estimate: cost_limit x 1 node(s) (TTL 220m x price) launch
+11    1   S2b-i       runs/g3-l-s2b-i-c10.json       1     r8gd.48xlarge  us-west-2b Standard      51.73  estimate: cost_limit x 1 node(s) (TTL 220m x price) launch
+12    1   S0-Tv       runs/g3-l-s0-tv-c10.json       1     r8gd.48xlarge  us-west-2b Standard      65.84  estimate: cost_limit x 1 node(s) (TTL 280m x price) launch
+13    1   S0-T1       runs/g3-l-s0-t1-c10.json       1     r8gd.48xlarge  us-west-2b Standard      75.25  estimate: cost_limit x 1 node(s) (TTL 320m x price) launch
+14    2   S0-T1       runs/g3-l-s0-t1-c10.json       1     r8gd.48xlarge  us-west-2b Standard      75.25  estimate: cost_limit x 1 node(s) (TTL 320m x price) launch
+15    2   S0-Tv       runs/g3-l-s0-tv-c10.json       1     r8gd.48xlarge  us-west-2b Standard      65.84  estimate: cost_limit x 1 node(s) (TTL 280m x price) launch
+16    2   S2b-i       runs/g3-l-s2b-i-c10.json       1     r8gd.48xlarge  us-west-2b Standard      51.73  estimate: cost_limit x 1 node(s) (TTL 220m x price) launch
+17    2   S1          runs/g3-l-s1-c10.json          1     r8gd.48xlarge  us-west-2b Standard      51.73  estimate: cost_limit x 1 node(s) (TTL 220m x price) launch
+18    2   S2b-ii      runs/g3-l-s2b-ii-c10.json      1     r8gd.48xlarge  us-west-2b Standard      18.82  estimate: cost_limit x 1 node(s) (TTL 80m x price) launch
+19    2   S2c         runs/g3-l-s2c-c10.json         1     r8gd.48xlarge  us-west-2b Standard       9.41  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+20    2   S2d         runs/g3-l-s2d-c10.json         1     r8gd.48xlarge  us-west-2b Standard       9.41  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+21    2   S4-t12      runs/g3-l-s4-t12-c10.json      1     x8g.24xlarge   us-west-2b X              7.82  estimate: cost_limit x 1 node(s) (TTL 50m x price) launch
+22    2   S4-t16      runs/g3-l-s4-t16-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+23    2   S4-t24      runs/g3-l-s4-t24-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+24    2   S4-t32      runs/g3-l-s4-t32-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+25    2   S4-t48      runs/g3-l-s4-t48-c10.json      1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+26    2   S2a         runs/g3-l-s2a-c10.json         1     x8g.24xlarge   us-west-2b X              6.26  estimate: cost_limit x 1 node(s) (TTL 40m x price) launch
+ladder-campaign: the record, ladder runs of these rungs at c10:
+  (none)
+ladder-campaign: 26 launch(es), 0 skipped; cost basis of the launches $642.62 (an upper bound where estimated)

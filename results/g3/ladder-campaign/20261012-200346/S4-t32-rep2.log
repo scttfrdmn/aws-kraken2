@@ -1,0 +1,24 @@
+scripts/run-multi.sh "g3" "runs/g3-l-s4-t32-c10.json" "1"
+run-multi: shell flags huB
+make run (multi): accessions: @PRJNA398089:1-10 -> 10 runs
+cost_check: ok: 1 x cost_limit $6.26 = $6.26; TTL 40m x $9.3792/h x8g.24xlarge = $6.2528 per node, max $6.8881 per node (epsilon 0.10 + $0.01) = $6.8881
+quota_check: ok: 1 x x8g.24xlarge = 96 vCPU, plus 0 vCPU already running in 0 on-demand X instance(s) = 96 of the X on-demand quota L-7295265B (256 vCPU) in us-west-2
+make run (multi): network: default VPC vpc-e7e2999f, account-wide security group sg-5059b179 admits itself, 22/tcp and ICMP only; members in us-west-2b
+make run (multi): cohort 20261013-123027-6070798-ed37-n1: 1 x x8g.24xlarge in us-west-2b -> s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261013-123027-6070798-ed37-n1
+make run (multi): launched 1 members; following rank 0 (each member's driver log: results/g3/20261013-123027-6070798-ed37-n1/rank-<k>.run.log)
+make run: accessions: @PRJNA398089:1-10 -> 10 runs from results/cohort/PRJNA398089/runs.tsv (blob 8f52155b14c83c0ee6e6fe197abb8c2af42de5f4)
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261013-123027-6070798-ed37-n1-r0  task ak2-g3-20261013-123027-6070798-ed37-n1-r0  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261013-123027-6070798-ed37-n1-r0
+make run: user data: 14116 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: x8g.24xlarge (0 vCPU, 0 GiB)
+cost_check: ok: 1 x cost_limit $6.26 = $6.26; TTL 40m x $9.3792/h x8g.24xlarge = $6.2528 per node, max $6.8881 per node (epsilon 0.10 + $0.01) = $6.8881
+quota_check: ok: 1 x x8g.24xlarge = 96 vCPU, plus 0 vCPU already running in 0 on-demand X instance(s) = 96 of the X on-demand quota L-7295265B (256 vCPU) in us-west-2
+2026/10/13 05:30:37 pricing: x8g.24xlarge in us-west-2 = $9.3792/hr (truffle, live AWS Price List)
+launch task: provision: launch: failed to launch instance: InsufficientInstanceCapacity: operation error EC2: RunInstances, exceeded maximum number of attempts, 3, https response error StatusCode: 500, RequestID: 29087c91-d0b8-4a5c-ad35-967ccac46d62, api error InsufficientInstanceCapacity: We currently do not have sufficient x8g.24xlarge capacity in the Availability Zone you requested (us-west-2b). Our system will be working on provisioning additional capacity. You can currently get x8g.24xlarge capacity by not specifying an Availability Zone in your request or choosing us-west-2a, us-west-2c.
+orphans: this run's instance(s) and task ak2-g3-20261013-123027-6070798-ed37-n1-r0 are gone (18 regions checked)
+make run: launch failed (rc=1)
+make run (multi): rank 0: run.sh exited 2 (0 still running)
+make run (multi): member exits: 2
+make run (multi): cohort dir: results/g3/20261013-123027-6070798-ed37-n1  ended: members done (fail fast: rank 0 exited 2)  cost $null  orphans rc 0 (own; global 0, informational)
+make: *** [run] Error 2
