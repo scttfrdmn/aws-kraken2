@@ -1412,6 +1412,28 @@ the scratch dir. The tree must be committed: the nodes clone HEAD.
   min(PROCS at those vCPUs, C), to run at once: the `order` check, with distinct lanes whose
   classify spans overlap. Under a serial upload mode, each lane's next sample must start after the
   previous one's uploads end.
+- **The engine's samples in flight are capped to the VM's memory.** Each in-flight engine sample
+  holds about 150 MB of block scratch for each active worker. The faked nproc gives each sample the
+  spec's THREADS. So the spec's INFLIGHT can need several times the VM's memory: at c10, 5 home
+  samples × 16 threads per node is about 7 GB per node, against 8 GiB for both nodes. At bceac14,
+  O0b and O1 at c10 were OOM-killed in the VM (dmesg `global_oom`, aws-kraken2 anon-rss 4.6 GB).
+  The engine case therefore runs INFLIGHT = min(the spec's, `AK2_REHEARSE_ENGINE_INFLIGHT`, default
+  2) at the spec's THREADS, with `GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT` (default 1536MiB)
+  on the nodes. GOMEMLIMIT changes GC pacing only. Without it, 2 × 16 still needs about 4.3 GB per
+  node; with it, about 2.6 GB. The cap is an exact edit of the case's parameter block, made after
+  the committed-body check, and is logged. The `inflight` check verifies it. The case logs each
+  engine's VmHWM and the lowest MemAvailable it saw (`AK2_MEM_EVERY=0.5`). With
+  `AK2_REHEARSE_ENGINE_INFLIGHT=0`, the case runs uncapped and without GOMEMLIMIT, and it still
+  OOMs. **Not exercised:**
+  - the spec's own INFLIGHT, that is, more than 2 samples in flight per node;
+  - the node's memory at that INFLIGHT;
+  - the default GC pacing.
+
+  The memory on the spec's host is `fits()`'s to check. One engine process at THREADS 16, on the
+  viral DB, measured on the host (macOS max RSS less the 0.65 GB table): a 2M-pair sample in
+  flight takes about 3.6 GB, against the 7.5 GB that `fits()` budgets. The rehearsal changes GZK
+  too: -P = nproc / (2 × INFLIGHT) is taken at the rehearsed INFLIGHT, and is checked against
+  lad-config.
 - **Not covered:** the samples' real sizes. The rehearsal checks behaviour (lanes, Law 1, streaming,
   phases), not time.
 
@@ -1482,6 +1504,12 @@ container's stdout and the bucket):
   843e958, and the earlier rehearsals passed it: on the viral DB the outputs are identical and the
   extra copy is small. The `specs` group's `spec-o0-engenvmut` plants the leak back (`mut_engenv`)
   and must fail this check.
+- **Inflight** (the engine above c1): on every node, lad-config's resolved inflight and threads,
+  and every home sample's `ak2-sample` line, carry the rehearsed INFLIGHT and the spec's THREADS
+  at the faked nproc. Of a node's home samples, between min(2, INFLIGHT, homes) and INFLIGHT ran
+  at once, by their engine spans (`start_s` to `start_s + wall_s`). The `specs` group's
+  `spec-o1-c10-inflightmut` writes 1 in the engine's cohort manifest (`mut_inflight1`) and must
+  fail this check.
 - **S5:**
   - one identity line per input, at the run's -P;
   - `input_defect` as expected;
