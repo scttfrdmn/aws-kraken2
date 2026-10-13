@@ -19,7 +19,7 @@ cannot parse is refused. What it can select from the record:
     an unresolvable margin is still the rule's winner, and the row's `margin` column and note say so.
   - A rule with the in-flight `range:` clause (O4b, O4b-cost; ladder_levers.inflight_range) leaves
     out the candidates outside it at the cohort. Where it leaves only the predecessor, the row names
-    the predecessor with margin "single candidate: ..." and no runs are needed (the alias adds no
+    the predecessor with margin "single candidate, not measured: ..." and no runs are needed (the alias adds no
     lever there).
 Every other rule is reported with what it still needs, and nothing is written for it:
   - a rung not run at this cohort (status not-run, or not_run_cohorts): its tokens resolve to its
@@ -179,6 +179,9 @@ def tie_key(ties, v):
 
 
 TIES = {"vCPUs", "processes", "nodes", "fleet vCPUs", "in flight"}
+# The margin of a selection the range collapses to its predecessor (ruling 2, 2026-10-13): the tables
+# label the alias with it and never report it as a measured zero (ladder_tables.alias_step).
+SINGLE = "single candidate, not measured"
 
 
 def named(text, name):
@@ -225,6 +228,10 @@ def select_alias(rows, row, cohort, rungs, runs, man, root, res):
             left.append("%s (outside the bracket)" % c)
         elif rg is not None and c in rg[0]:
             left.append("%s (outside the range: %s)" % (c, rg[0][c]))
+        elif c != row["predecessor"] and LL.candidate_out(rows, c, cohort, res, root):
+            # Its value of the rule's group is the predecessor's own (O2-x8g on O1's type, O3-n<K>
+            # at O2's own N): it is the predecessor there, which is already a candidate.
+            left.append("%s (%s)" % (c, LL.candidate_out(rows, c, cohort, res, root)))
         else:
             cands.append(c)
     if br is not None:
@@ -239,7 +246,7 @@ def select_alias(rows, row, cohort, rungs, runs, man, root, res):
         note = ("rule sha256 %s: only the predecessor %s applies at c%d%s; left out at c%d: %s"
                 % (rsha, row["predecessor"], cohort, how, cohort, "; ".join(left)))
         return {"origin": row["rung"], "cohort": str(cohort), "key": "alias", "value": row["predecessor"],
-                "margin": "single candidate: the range leaves only the predecessor (no measurement)", "note": note,
+                "margin": SINGLE + ": the range leaves only the predecessor", "note": note,
                 "run_cites": [], "winner": row["predecessor"], "runner_up": "-", "axis": axis,
                 "delta": {"delta": None, "threshold": None}, "stats": {}}
     if len(cands) < 2:
