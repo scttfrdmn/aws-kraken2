@@ -1,0 +1,132 @@
+ladder-rehearse: mode spec runs/g3-l-sstar-r8g-c10.json at ba9899a (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-sstar-r8g-c10-20261013T162905Z-ba9899a.log
+ladder-rehearse: disk at start: 237Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-7347 (10.170.101.0/24); infra 10.170.101.2: hash.k2d at http://10.170.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.170.101.2:8003
+ladder-rehearse: ---- spec-sstar-r8g-c10 (6): runs/g3-l-sstar-r8g-c10.json (r8g.48xlarge, WANT_N 2); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-sstar-r8g-c10: runs/g3-l-sstar-r8g-c10.json sha256 baf2373d7952fa10219ada471324a5865e6efec96f9ae4e076537067e07168c3 (HEAD ba9899a)
+ladder-rehearse: spec-sstar-r8g-c10: RUNG=Sstar-r8g; ARM=S; COHORT=10; WANT_N=2; CLASSIFIER=upstream; THREADS=16; PROCS=vcpus/16; DB_STAGE=s5cmd; DB_PLACE=tmpfs-huge; DB_LOAD=mmap; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=2; SHARDS=1; PLACEMENT=mod; INFLIGHT=-; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-sstar-r8g-c10: cohort 10: samples SRR062634 ERR478965 SRR28305653 SRR062634b ERR478965b SRR28305653b SRR062634c ERR478965c SRR28305653c SRR062634d (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: 192 (the vCPUs of r8g.48xlarge, the spec type)
+ladder-rehearse: spec-sstar-r8g-c10: expected on the node: {}
+ladder-rehearse: spec-sstar-r8g-c10: cohort 20261013-162912-ba9899a-02ca-n2: node exits 0 0
+ok   spec-sstar-r8g-c10: exit: every node's body exits 0 (rcs [0, 0])
+ok   spec-sstar-r8g-c10: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-sstar-r8g-c10: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-sstar-r8g-c10: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-sstar-r8g-c10: stream: r0: 5 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (5)
+ok   spec-sstar-r8g-c10: stream: r0: the container's own stdout (the stream as it happened) has the same 5 lad-sample lines
+ok   spec-sstar-r8g-c10: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-sstar-r8g-c10: stream: r0: lever lines streamed (44) equal the pushed lever.jsonl (44)
+ok   spec-sstar-r8g-c10: stream: r1: 5 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (5)
+ok   spec-sstar-r8g-c10: stream: r1: the container's own stdout (the stream as it happened) has the same 5 lad-sample lines
+ok   spec-sstar-r8g-c10: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-sstar-r8g-c10: stream: r1: lever lines streamed (44) equal the pushed lever.jsonl (44)
+ok   spec-sstar-r8g-c10: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965b': 1, 'SRR28305653': 1, 'SRR062634c': 1, 'SRR28305653c': 1, 'ERR478965': 1, 'SRR28305653b': 1, 'ERR478965c': 1, 'SRR062634d': 1, 'SRR062634b': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653', 'SRR062634b', 'ERR478965b', 'SRR28305653b', 'SRR062634c', 'ERR478965c', 'SRR28305653c', 'SRR062634d'])
+ok   spec-sstar-r8g-c10: samples: every sample's classify rc is 0 ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+ok   spec-sstar-r8g-c10: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-sstar-r8g-c10: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-sstar-r8g-c10: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-sstar-r8g-c10: law1: SRR062634: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: ERR478965b output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-sstar-r8g-c10: objects: ERR478965b output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-sstar-r8g-c10: law1: ERR478965b report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-sstar-r8g-c10: objects: ERR478965b report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-sstar-r8g-c10: law1: ERR478965b: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-sstar-r8g-c10: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-sstar-r8g-c10: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-sstar-r8g-c10: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-sstar-r8g-c10: law1: SRR28305653: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: SRR062634c output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634c output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-sstar-r8g-c10: law1: SRR062634c report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634c report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-sstar-r8g-c10: law1: SRR062634c: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: SRR28305653c output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-sstar-r8g-c10: objects: SRR28305653c output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-sstar-r8g-c10: law1: SRR28305653c report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-sstar-r8g-c10: objects: SRR28305653c report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-sstar-r8g-c10: law1: SRR28305653c: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-sstar-r8g-c10: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-sstar-r8g-c10: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-sstar-r8g-c10: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-sstar-r8g-c10: law1: ERR478965: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: SRR28305653b output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-sstar-r8g-c10: objects: SRR28305653b output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-sstar-r8g-c10: law1: SRR28305653b report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-sstar-r8g-c10: objects: SRR28305653b report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-sstar-r8g-c10: law1: SRR28305653b: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: ERR478965c output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-sstar-r8g-c10: objects: ERR478965c output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-sstar-r8g-c10: law1: ERR478965c report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-sstar-r8g-c10: objects: ERR478965c report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-sstar-r8g-c10: law1: ERR478965c: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: SRR062634d output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634d output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-sstar-r8g-c10: law1: SRR062634d report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634d report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-sstar-r8g-c10: law1: SRR062634d: the file set is output and report
+ok   spec-sstar-r8g-c10: law1: SRR062634b output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634b output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-sstar-r8g-c10: law1: SRR062634b report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-sstar-r8g-c10: objects: SRR062634b report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-sstar-r8g-c10: law1: SRR062634b: the file set is output and report
+ok   spec-sstar-r8g-c10: objects: 20 objects under out/Sstar-r8g/ (want 20)
+ok   spec-sstar-r8g-c10: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-sstar-r8g-c10: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-sstar-r8g-c10: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-sstar-r8g-c10: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'etag-hash.k2d', 'fetch-inputs', 'build-wait', 'identity', 'load', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-sstar-r8g-c10: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-sstar-r8g-c10: phases: r1: 2 drop_caches calls in the log (want 2)
+ok   spec-sstar-r8g-c10: net: r0: critical_measurement_s 1.743 = identity 1.653 + sha_get 0 + sha_critical 0.09
+ok   spec-sstar-r8g-c10: net: r0: sha_critical_s 0.09 == the sum of its samples' sha-critical 0.09
+ok   spec-sstar-r8g-c10: net: r0: identity_s 1.653 equals the identity phase (1 s, whole-second markers)
+ok   spec-sstar-r8g-c10: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-sstar-r8g-c10: net: r0: the samples carry their share of identity (s5-identity sum 14.926)
+ok   spec-sstar-r8g-c10: net: r1: critical_measurement_s 1.714 = identity 1.628 + sha_get 0 + sha_critical 0.086
+ok   spec-sstar-r8g-c10: net: r1: sha_critical_s 0.086 == the sum of its samples' sha-critical 0.086
+ok   spec-sstar-r8g-c10: net: r1: identity_s 1.628 equals the identity phase (1 s, whole-second markers)
+ok   spec-sstar-r8g-c10: net: r1: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-sstar-r8g-c10: net: r1: the samples carry their share of identity (s5-identity sum 14.366)
+ok   spec-sstar-r8g-c10: requests: r0: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-sstar-r8g-c10: requests: r1: the database staging counted (12 GetObject requests in fetch-db)
+ok   spec-sstar-r8g-c10: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 20 (want 20, the objects)
+ok   spec-sstar-r8g-c10: requests: input fetches counted: fetch.sh's HeadObject = 20 (want 20, one per input file)
+ok   spec-sstar-r8g-c10: build: r0: overlap: waited in build-wait, build_end 1791908966.032 recorded, before identity (1791908966)
+ok   spec-sstar-r8g-c10: build: r1: overlap: waited in build-wait, build_end 1791908966.004 recorded, before identity (1791908966)
+ok   spec-sstar-r8g-c10: s5: r0: one identity line per input file this node read (10)
+ok   spec-sstar-r8g-c10: s5: r0: identity at the run's -P 8 (lad-config gunzip_P)
+ok   spec-sstar-r8g-c10: s5: r0: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-sstar-r8g-c10: s5: r0: input_defect on [] (want [])
+ok   spec-sstar-r8g-c10: s5: r0: SRR062634: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r0: ERR478965b: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r0: SRR28305653: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r0: SRR062634c: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r0: SRR28305653c: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r0: gzip-shim.calls has 10 rapidgzip calls (want 10: two mates of each non-fallback sample)
+ok   spec-sstar-r8g-c10: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-sstar-r8g-c10: s5: r0: the body's own shim check (lad-shim ok True)
+ok   spec-sstar-r8g-c10: s5: r1: one identity line per input file this node read (10)
+ok   spec-sstar-r8g-c10: s5: r1: identity at the run's -P 8 (lad-config gunzip_P)
+ok   spec-sstar-r8g-c10: s5: r1: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-sstar-r8g-c10: s5: r1: input_defect on [] (want [])
+ok   spec-sstar-r8g-c10: s5: r1: ERR478965: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r1: SRR28305653b: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r1: ERR478965c: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r1: SRR062634d: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r1: SRR062634b: s5 identical/none P 8 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-sstar-r8g-c10: s5: r1: gzip-shim.calls has 10 rapidgzip calls (want 10: two mates of each non-fallback sample)
+ok   spec-sstar-r8g-c10: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-sstar-r8g-c10: s5: r1: the body's own shim check (lad-shim ok True)
+ladder-rehearse: disk: 237Gi free
+ladder-rehearse: summary (spec runs/g3-l-sstar-r8g-c10.json at ba9899a):
+item | case                       | what                                                       | checks |   failed | result
+6    | spec-sstar-r8g-c10         | runs/g3-l-sstar-r8g-c10.json end to end                    | 113 ok |   0 FAIL | PASS
+ladder-rehearse: disk at end: 237Gi free
+ladder-rehearse: ok (1 cases)
