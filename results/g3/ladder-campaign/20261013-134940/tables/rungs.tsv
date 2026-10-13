@@ -1,0 +1,436 @@
+arm	rung	cohort	axis	series	lever_phase	basis	n	median	min	max	range	granularity_q
+O	O0	1	wall_net_s	net (headline)		measured	2	462.082500	461.613000	462.552000	0.939000	2.001000
+O	O0	1	wall_s	gross		measured	2	474.500000	474.000000	475.000000	1.000000	2.000000
+O	O0	1	billed_net_usd	net (prorated; headline)		measured	2	1.203879	1.202656	1.205102	0.002446	0.005211
+O	O0	1	billed_usd	gross		measured	2	1.236231	1.234928	1.237533	0.002605	0.005211
+O	O0	1	lever_phase_s	phase	run:load+run:classify	measured	2	9.000000	9.000000	9.000000	0.000000	2.000000
+O	O0-cost	1	wall_net_s	net (headline)		alias: same configuration as O0 at c1 (alias_cohorts)	2	462.082500	461.613000	462.552000	0.939000	2.001000
+O	O0-cost	1	wall_s	gross		alias: same configuration as O0 at c1 (alias_cohorts)	2	474.500000	474.000000	475.000000	1.000000	2.000000
+O	O0-cost	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O0 at c1 (alias_cohorts)	2	1.203879	1.202656	1.205102	0.002446	0.005211
+O	O0-cost	1	billed_usd	gross		alias: same configuration as O0 at c1 (alias_cohorts)	2	1.236231	1.234928	1.237533	0.002605	0.005211
+O	O0-cost	1	lever_phase_s	phase	run:load+run:classify	alias: same configuration as O0 at c1 (alias_cohorts)	2	9.000000	9.000000	9.000000	0.000000	2.000000
+O	O0-cost	10	wall_net_s	net (headline)		alias unresolved: O0-cost's alias_cohorts pair with O0 at c10 does not verify: not verified (conditional): unresolved: O0-cost REPLICAS=@select:S8, O0-cost instance=@select:Sstar-cost, O0 REPLICAS=@select:S8, O0 instance=@select:Sstar-time	0				n<2	
+O	O0-cost	10	wall_s	gross		alias unresolved: O0-cost's alias_cohorts pair with O0 at c10 does not verify: not verified (conditional): unresolved: O0-cost REPLICAS=@select:S8, O0-cost instance=@select:Sstar-cost, O0 REPLICAS=@select:S8, O0 instance=@select:Sstar-time	0				n<2	
+O	O0-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: O0-cost's alias_cohorts pair with O0 at c10 does not verify: not verified (conditional): unresolved: O0-cost REPLICAS=@select:S8, O0-cost instance=@select:Sstar-cost, O0 REPLICAS=@select:S8, O0 instance=@select:Sstar-time	0				n<2	
+O	O0-cost	10	billed_usd	gross		alias unresolved: O0-cost's alias_cohorts pair with O0 at c10 does not verify: not verified (conditional): unresolved: O0-cost REPLICAS=@select:S8, O0-cost instance=@select:Sstar-cost, O0 REPLICAS=@select:S8, O0 instance=@select:Sstar-time	0				n<2	
+O	O0-cost	10	lever_phase_s	phase	run:load+run:classify	alias unresolved: O0-cost's alias_cohorts pair with O0 at c10 does not verify: not verified (conditional): unresolved: O0-cost REPLICAS=@select:S8, O0-cost instance=@select:Sstar-cost, O0 REPLICAS=@select:S8, O0 instance=@select:Sstar-time	0				n<2	
+O	O0b	1	wall_net_s	net (headline)		measured	2	493.207500	463.164000	523.251000	60.087000	2.001000
+O	O0b	1	wall_s	gross		measured	2	505.000000	475.000000	535.000000	60.000000	2.000000
+O	O0b	1	billed_net_usd	net (prorated; headline)		measured	2	1.284970	1.206696	1.363243	0.156547	0.005211
+O	O0b	1	billed_usd	gross		measured	2	1.315693	1.237533	1.393853	0.156320	0.005211
+O	O0b	1	lever_phase_s	phase	run:fetch-db+run:etag-hash.k2d+run:load+run:classify	measured	2	313.500000	307.000000	320.000000	13.000000	4.000000
+O	O0b-cost	1	wall_net_s	net (headline)		alias: same configuration as O0b at c1 (alias_cohorts)	2	493.207500	463.164000	523.251000	60.087000	2.001000
+O	O0b-cost	1	wall_s	gross		alias: same configuration as O0b at c1 (alias_cohorts)	2	505.000000	475.000000	535.000000	60.000000	2.000000
+O	O0b-cost	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O0b at c1 (alias_cohorts)	2	1.284970	1.206696	1.363243	0.156547	0.005211
+O	O0b-cost	1	billed_usd	gross		alias: same configuration as O0b at c1 (alias_cohorts)	2	1.315693	1.237533	1.393853	0.156320	0.005211
+O	O0b-cost	1	lever_phase_s	phase	run:fetch-db+run:etag-hash.k2d+run:load+run:classify	alias: same configuration as O0b at c1 (alias_cohorts)	2	313.500000	307.000000	320.000000	13.000000	4.000000
+O	O0b-cost	10	wall_net_s	net (headline)		alias unresolved: O0b-cost's alias_cohorts pair with O0b at c10 does not verify: not verified (conditional): unresolved: O0b-cost REPLICAS=@select:S8, O0b-cost instance=@select:Sstar-cost, O0b REPLICAS=@select:S8, O0b instance=@select:Sstar-time	0				n<2	
+O	O0b-cost	10	wall_s	gross		alias unresolved: O0b-cost's alias_cohorts pair with O0b at c10 does not verify: not verified (conditional): unresolved: O0b-cost REPLICAS=@select:S8, O0b-cost instance=@select:Sstar-cost, O0b REPLICAS=@select:S8, O0b instance=@select:Sstar-time	0				n<2	
+O	O0b-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: O0b-cost's alias_cohorts pair with O0b at c10 does not verify: not verified (conditional): unresolved: O0b-cost REPLICAS=@select:S8, O0b-cost instance=@select:Sstar-cost, O0b REPLICAS=@select:S8, O0b instance=@select:Sstar-time	0				n<2	
+O	O0b-cost	10	billed_usd	gross		alias unresolved: O0b-cost's alias_cohorts pair with O0b at c10 does not verify: not verified (conditional): unresolved: O0b-cost REPLICAS=@select:S8, O0b-cost instance=@select:Sstar-cost, O0b REPLICAS=@select:S8, O0b instance=@select:Sstar-time	0				n<2	
+O	O0b-cost	10	lever_phase_s	phase	run:fetch-db+run:etag-hash.k2d+run:load+run:classify	alias unresolved: O0b-cost's alias_cohorts pair with O0b at c10 does not verify: not verified (conditional): unresolved: O0b-cost REPLICAS=@select:S8, O0b-cost instance=@select:Sstar-cost, O0b REPLICAS=@select:S8, O0b instance=@select:Sstar-time	0				n<2	
+O	O1-cost	10	wall_net_s	net (headline)		alias unresolved: O1-cost's alias_cohorts pair with O1 at c10 does not verify: not verified (conditional): unresolved: O1-cost SHARDS=@select:S8:REPLICAS, O1-cost instance=@select:Sstar-cost, O1 SHARDS=@select:S8:REPLICAS, O1 instance=@select:Sstar-time	0				n<2	
+O	O1-cost	10	wall_s	gross		alias unresolved: O1-cost's alias_cohorts pair with O1 at c10 does not verify: not verified (conditional): unresolved: O1-cost SHARDS=@select:S8:REPLICAS, O1-cost instance=@select:Sstar-cost, O1 SHARDS=@select:S8:REPLICAS, O1 instance=@select:Sstar-time	0				n<2	
+O	O1-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: O1-cost's alias_cohorts pair with O1 at c10 does not verify: not verified (conditional): unresolved: O1-cost SHARDS=@select:S8:REPLICAS, O1-cost instance=@select:Sstar-cost, O1 SHARDS=@select:S8:REPLICAS, O1 instance=@select:Sstar-time	0				n<2	
+O	O1-cost	10	billed_usd	gross		alias unresolved: O1-cost's alias_cohorts pair with O1 at c10 does not verify: not verified (conditional): unresolved: O1-cost SHARDS=@select:S8:REPLICAS, O1-cost instance=@select:Sstar-cost, O1 SHARDS=@select:S8:REPLICAS, O1 instance=@select:Sstar-time	0				n<2	
+O	O1-cost	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: O1-cost's alias_cohorts pair with O1 at c10 does not verify: not verified (conditional): unresolved: O1-cost SHARDS=@select:S8:REPLICAS, O1-cost instance=@select:Sstar-cost, O1 SHARDS=@select:S8:REPLICAS, O1 instance=@select:Sstar-time	0				n<2	
+O	O2	1	wall_net_s	net (headline)		alias of O1 (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1 not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b's own configuration (not_run_cohorts): its run ancestor O0b's runs	2	493.207500	463.164000	523.251000	60.087000	2.001000
+O	O2	1	wall_s	gross		alias of O1 (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1 not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b's own configuration (not_run_cohorts): its run ancestor O0b's runs	2	505.000000	475.000000	535.000000	60.000000	2.000000
+O	O2	1	billed_net_usd	net (prorated; headline)		alias of O1 (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1 not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b's own configuration (not_run_cohorts): its run ancestor O0b's runs	2	1.284970	1.206696	1.363243	0.156547	0.005211
+O	O2	1	billed_usd	gross		alias of O1 (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1 not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b's own configuration (not_run_cohorts): its run ancestor O0b's runs	2	1.315693	1.237533	1.393853	0.156320	0.005211
+O	O2	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias of O1 (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1 not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b's own configuration (not_run_cohorts): its run ancestor O0b's runs	2	308.500000	302.000000	315.000000	13.000000	3.000000
+O	O2	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2-cost	1	wall_net_s	net (headline)		alias of O1-cost (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1-cost not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b-cost's own configuration (not_run_cohorts): its run ancestor O0b-cost's runs; alias: same configuration as O0b at c1 (alias_cohorts)	2	493.207500	463.164000	523.251000	60.087000	2.001000
+O	O2-cost	1	wall_s	gross		alias of O1-cost (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1-cost not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b-cost's own configuration (not_run_cohorts): its run ancestor O0b-cost's runs; alias: same configuration as O0b at c1 (alias_cohorts)	2	505.000000	475.000000	535.000000	60.000000	2.000000
+O	O2-cost	1	billed_net_usd	net (prorated; headline)		alias of O1-cost (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1-cost not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b-cost's own configuration (not_run_cohorts): its run ancestor O0b-cost's runs; alias: same configuration as O0b at c1 (alias_cohorts)	2	1.284970	1.206696	1.363243	0.156547	0.005211
+O	O2-cost	1	billed_usd	gross		alias of O1-cost (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1-cost not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b-cost's own configuration (not_run_cohorts): its run ancestor O0b-cost's runs; alias: same configuration as O0b at c1 (alias_cohorts)	2	1.315693	1.237533	1.393853	0.156320	0.005211
+O	O2-cost	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias of O1-cost (ladder.resolved.tsv; source results/g3/ladder-select/c1-f5f087598898/manifest.json); O1-cost not-run at c1: the only candidate (N = S8's K = 1 at c1) is O0b-cost's own configuration (not_run_cohorts): its run ancestor O0b-cost's runs; alias: same configuration as O0b at c1 (alias_cohorts)	2	308.500000	302.000000	315.000000	13.000000	3.000000
+O	O2-cost	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2-cost	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2-cost	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2-cost	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O2-cost-r8g	1	wall_net_s	net (headline)		alias: same configuration as O2-r8g at c1 (alias_cohorts)	2	494.980500	464.398000	525.563000	61.165000	2.001000
+O	O2-cost-r8g	1	wall_s	gross		alias: same configuration as O2-r8g at c1 (alias_cohorts)	2	507.500000	477.000000	538.000000	61.000000	2.000000
+O	O2-cost-r8g	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O2-r8g at c1 (alias_cohorts)	2	1.555162	1.459076	1.651249	0.192172	0.006284
+O	O2-cost-r8g	1	billed_usd	gross		alias: same configuration as O2-r8g at c1 (alias_cohorts)	2	1.594497	1.498670	1.690324	0.191654	0.006284
+O	O2-cost-r8g	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias: same configuration as O2-r8g at c1 (alias_cohorts)	2	310.000000	309.000000	311.000000	2.000000	3.000000
+O	O2-r8g	1	wall_net_s	net (headline)		measured	2	494.980500	464.398000	525.563000	61.165000	2.001000
+O	O2-r8g	1	wall_s	gross		measured	2	507.500000	477.000000	538.000000	61.000000	2.000000
+O	O2-r8g	1	billed_net_usd	net (prorated; headline)		measured	2	1.555162	1.459076	1.651249	0.192172	0.006284
+O	O2-r8g	1	billed_usd	gross		measured	2	1.594497	1.498670	1.690324	0.191654	0.006284
+O	O2-r8g	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	measured	2	310.000000	309.000000	311.000000	2.000000	3.000000
+O	O3	1	wall_net_s	net (headline)		alias of O3-n32 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json)	2	293.493000	262.993000	323.993000	61.000000	2.001000
+O	O3	1	wall_s	gross		alias of O3-n32 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json)	2	293.500000	263.000000	324.000000	61.000000	2.000000
+O	O3	1	billed_net_usd	net (prorated; headline)		alias of O3-n32 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json)	2	1.420952	1.414434	1.427470	0.013036	0.013895
+O	O3	1	billed_usd	gross		alias of O3-n32 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json)	2	1.420986	1.414472	1.427501	0.013029	0.013895
+O	O3	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias of O3-n32 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json)	2	110.000000	108.000000	112.000000	4.000000	3.000000
+O	O3	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3-cost	1	wall_net_s	net (headline)		alias of O3-cost-n16 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json); alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	316.491500	314.992000	317.991000	2.999000	2.001000
+O	O3-cost	1	wall_s	gross		alias of O3-cost-n16 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json); alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	316.500000	315.000000	318.000000	3.000000	2.000000
+O	O3-cost	1	billed_net_usd	net (prorated; headline)		alias of O3-cost-n16 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json); alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	0.800573	0.799381	0.801765	0.002385	0.006948
+O	O3-cost	1	billed_usd	gross		alias of O3-cost-n16 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json); alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	0.800595	0.799401	0.801788	0.002387	0.006948
+O	O3-cost	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias of O3-cost-n16 (ladder.resolved.tsv; source results/g3/ladder-select/c1-e9abe1df3315/manifest.json); alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	107.500000	107.000000	108.000000	1.000000	3.000000
+O	O3-cost	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3-cost	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3-cost	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3-cost	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O3-cost-n16	1	wall_net_s	net (headline)		alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	316.491500	314.992000	317.991000	2.999000	2.001000
+O	O3-cost-n16	1	wall_s	gross		alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	316.500000	315.000000	318.000000	3.000000	2.000000
+O	O3-cost-n16	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	0.800573	0.799381	0.801765	0.002385	0.006948
+O	O3-cost-n16	1	billed_usd	gross		alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	0.800595	0.799401	0.801788	0.002387	0.006948
+O	O3-cost-n16	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias: same configuration as O3-n16 at c1 (alias_cohorts, conditional: it holds)	2	107.500000	107.000000	108.000000	1.000000	3.000000
+O	O3-cost-n16	10	wall_net_s	net (headline)		alias unresolved: O3-cost-n16's alias_cohorts pair with O3-n16 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n16 instance=@floor:O2-cost (its origin's host is unresolved), O3-n16 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n16	10	wall_s	gross		alias unresolved: O3-cost-n16's alias_cohorts pair with O3-n16 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n16 instance=@floor:O2-cost (its origin's host is unresolved), O3-n16 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n16	10	billed_net_usd	net (prorated; headline)		alias unresolved: O3-cost-n16's alias_cohorts pair with O3-n16 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n16 instance=@floor:O2-cost (its origin's host is unresolved), O3-n16 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n16	10	billed_usd	gross		alias unresolved: O3-cost-n16's alias_cohorts pair with O3-n16 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n16 instance=@floor:O2-cost (its origin's host is unresolved), O3-n16 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n16	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: O3-cost-n16's alias_cohorts pair with O3-n16 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n16 instance=@floor:O2-cost (its origin's host is unresolved), O3-n16 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n2	1	wall_net_s	net (headline)		alias: same configuration as O3-n2 at c1 (alias_cohorts, conditional: it holds)	2	470.492500	469.992000	470.993000	1.001000	2.001000
+O	O3-cost-n2	1	wall_s	gross		alias: same configuration as O3-n2 at c1 (alias_cohorts, conditional: it holds)	2	470.500000	470.000000	471.000000	1.000000	2.000000
+O	O3-cost-n2	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O3-n2 at c1 (alias_cohorts, conditional: it holds)	2	1.145026	1.143723	1.146329	0.002606	0.005211
+O	O3-cost-n2	1	billed_usd	gross		alias: same configuration as O3-n2 at c1 (alias_cohorts, conditional: it holds)	2	1.145044	1.143742	1.146346	0.002604	0.005211
+O	O3-cost-n2	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias: same configuration as O3-n2 at c1 (alias_cohorts, conditional: it holds)	2	266.500000	266.000000	267.000000	1.000000	3.000000
+O	O3-cost-n2	10	wall_net_s	net (headline)		alias unresolved: O3-cost-n2's alias_cohorts pair with O3-n2 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n2 instance=@floor:O2-cost (its origin's host is unresolved), O3-n2 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n2	10	wall_s	gross		alias unresolved: O3-cost-n2's alias_cohorts pair with O3-n2 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n2 instance=@floor:O2-cost (its origin's host is unresolved), O3-n2 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n2	10	billed_net_usd	net (prorated; headline)		alias unresolved: O3-cost-n2's alias_cohorts pair with O3-n2 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n2 instance=@floor:O2-cost (its origin's host is unresolved), O3-n2 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n2	10	billed_usd	gross		alias unresolved: O3-cost-n2's alias_cohorts pair with O3-n2 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n2 instance=@floor:O2-cost (its origin's host is unresolved), O3-n2 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n2	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: O3-cost-n2's alias_cohorts pair with O3-n2 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n2 instance=@floor:O2-cost (its origin's host is unresolved), O3-n2 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n32	1	wall_net_s	net (headline)		alias: same configuration as O3-n32 at c1 (alias_cohorts, conditional: it holds)	2	293.493000	262.993000	323.993000	61.000000	2.001000
+O	O3-cost-n32	1	wall_s	gross		alias: same configuration as O3-n32 at c1 (alias_cohorts, conditional: it holds)	2	293.500000	263.000000	324.000000	61.000000	2.000000
+O	O3-cost-n32	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O3-n32 at c1 (alias_cohorts, conditional: it holds)	2	1.420952	1.414434	1.427470	0.013036	0.013895
+O	O3-cost-n32	1	billed_usd	gross		alias: same configuration as O3-n32 at c1 (alias_cohorts, conditional: it holds)	2	1.420986	1.414472	1.427501	0.013029	0.013895
+O	O3-cost-n32	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias: same configuration as O3-n32 at c1 (alias_cohorts, conditional: it holds)	2	110.000000	108.000000	112.000000	4.000000	3.000000
+O	O3-cost-n32	10	wall_net_s	net (headline)		alias unresolved: O3-cost-n32's alias_cohorts pair with O3-n32 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n32 instance=@floor:O2-cost (its origin's host is unresolved), O3-n32 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n32	10	wall_s	gross		alias unresolved: O3-cost-n32's alias_cohorts pair with O3-n32 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n32 instance=@floor:O2-cost (its origin's host is unresolved), O3-n32 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n32	10	billed_net_usd	net (prorated; headline)		alias unresolved: O3-cost-n32's alias_cohorts pair with O3-n32 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n32 instance=@floor:O2-cost (its origin's host is unresolved), O3-n32 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n32	10	billed_usd	gross		alias unresolved: O3-cost-n32's alias_cohorts pair with O3-n32 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n32 instance=@floor:O2-cost (its origin's host is unresolved), O3-n32 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n32	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: O3-cost-n32's alias_cohorts pair with O3-n32 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n32 instance=@floor:O2-cost (its origin's host is unresolved), O3-n32 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n4	1	wall_net_s	net (headline)		alias: same configuration as O3-n4 at c1 (alias_cohorts, conditional: it holds)	2	414.492000	413.992000	414.992000	1.000000	2.001000
+O	O3-cost-n4	1	wall_s	gross		alias: same configuration as O3-n4 at c1 (alias_cohorts, conditional: it holds)	2	414.500000	414.000000	415.000000	1.000000	2.000000
+O	O3-cost-n4	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O3-n4 at c1 (alias_cohorts, conditional: it holds)	2	1.264866	1.263563	1.266169	0.002606	0.006948
+O	O3-cost-n4	1	billed_usd	gross		alias: same configuration as O3-n4 at c1 (alias_cohorts, conditional: it holds)	2	1.264890	1.263587	1.266193	0.002606	0.006948
+O	O3-cost-n4	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias: same configuration as O3-n4 at c1 (alias_cohorts, conditional: it holds)	2	212.500000	208.000000	217.000000	9.000000	3.000000
+O	O3-cost-n4	10	wall_net_s	net (headline)		alias unresolved: O3-cost-n4's alias_cohorts pair with O3-n4 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n4 instance=@floor:O2-cost (its origin's host is unresolved), O3-n4 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n4	10	wall_s	gross		alias unresolved: O3-cost-n4's alias_cohorts pair with O3-n4 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n4 instance=@floor:O2-cost (its origin's host is unresolved), O3-n4 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n4	10	billed_net_usd	net (prorated; headline)		alias unresolved: O3-cost-n4's alias_cohorts pair with O3-n4 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n4 instance=@floor:O2-cost (its origin's host is unresolved), O3-n4 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n4	10	billed_usd	gross		alias unresolved: O3-cost-n4's alias_cohorts pair with O3-n4 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n4 instance=@floor:O2-cost (its origin's host is unresolved), O3-n4 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n4	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: O3-cost-n4's alias_cohorts pair with O3-n4 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n4 instance=@floor:O2-cost (its origin's host is unresolved), O3-n4 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n8	1	wall_net_s	net (headline)		alias: same configuration as O3-n8 at c1 (alias_cohorts, conditional: it holds)	2	302.492500	301.993000	302.992000	0.999000	2.001000
+O	O3-cost-n8	1	wall_s	gross		alias: same configuration as O3-n8 at c1 (alias_cohorts, conditional: it holds)	2	302.500000	302.000000	303.000000	1.000000	2.000000
+O	O3-cost-n8	1	billed_net_usd	net (prorated; headline)		alias: same configuration as O3-n8 at c1 (alias_cohorts, conditional: it holds)	2	0.815883	0.815014	0.816751	0.001737	0.006948
+O	O3-cost-n8	1	billed_usd	gross		alias: same configuration as O3-n8 at c1 (alias_cohorts, conditional: it holds)	2	0.815903	0.815033	0.816773	0.001740	0.006948
+O	O3-cost-n8	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias: same configuration as O3-n8 at c1 (alias_cohorts, conditional: it holds)	2	132.000000	131.000000	133.000000	2.000000	3.000000
+O	O3-cost-n8	10	wall_net_s	net (headline)		alias unresolved: O3-cost-n8's alias_cohorts pair with O3-n8 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n8 instance=@floor:O2-cost (its origin's host is unresolved), O3-n8 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n8	10	wall_s	gross		alias unresolved: O3-cost-n8's alias_cohorts pair with O3-n8 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n8 instance=@floor:O2-cost (its origin's host is unresolved), O3-n8 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n8	10	billed_net_usd	net (prorated; headline)		alias unresolved: O3-cost-n8's alias_cohorts pair with O3-n8 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n8 instance=@floor:O2-cost (its origin's host is unresolved), O3-n8 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n8	10	billed_usd	gross		alias unresolved: O3-cost-n8's alias_cohorts pair with O3-n8 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n8 instance=@floor:O2-cost (its origin's host is unresolved), O3-n8 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-cost-n8	10	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	alias unresolved: O3-cost-n8's alias_cohorts pair with O3-n8 at c10 does not verify: not verified (conditional): unresolved: O3-cost-n8 instance=@floor:O2-cost (its origin's host is unresolved), O3-n8 instance=@floor:O2 (its origin's host is unresolved)	0				n<2	
+O	O3-n16	1	wall_net_s	net (headline)		measured	2	316.491500	314.992000	317.991000	2.999000	2.001000
+O	O3-n16	1	wall_s	gross		measured	2	316.500000	315.000000	318.000000	3.000000	2.000000
+O	O3-n16	1	billed_net_usd	net (prorated; headline)		measured	2	0.800573	0.799381	0.801765	0.002385	0.006948
+O	O3-n16	1	billed_usd	gross		measured	2	0.800595	0.799401	0.801788	0.002387	0.006948
+O	O3-n16	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	measured	2	107.500000	107.000000	108.000000	1.000000	3.000000
+O	O3-n2	1	wall_net_s	net (headline)		measured	2	470.492500	469.992000	470.993000	1.001000	2.001000
+O	O3-n2	1	wall_s	gross		measured	2	470.500000	470.000000	471.000000	1.000000	2.000000
+O	O3-n2	1	billed_net_usd	net (prorated; headline)		measured	2	1.145026	1.143723	1.146329	0.002606	0.005211
+O	O3-n2	1	billed_usd	gross		measured	2	1.145044	1.143742	1.146346	0.002604	0.005211
+O	O3-n2	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	measured	2	266.500000	266.000000	267.000000	1.000000	3.000000
+O	O3-n32	1	wall_net_s	net (headline)		measured	2	293.493000	262.993000	323.993000	61.000000	2.001000
+O	O3-n32	1	wall_s	gross		measured	2	293.500000	263.000000	324.000000	61.000000	2.000000
+O	O3-n32	1	billed_net_usd	net (prorated; headline)		measured	2	1.420952	1.414434	1.427470	0.013036	0.013895
+O	O3-n32	1	billed_usd	gross		measured	2	1.420986	1.414472	1.427501	0.013029	0.013895
+O	O3-n32	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	measured	2	110.000000	108.000000	112.000000	4.000000	3.000000
+O	O3-n4	1	wall_net_s	net (headline)		measured	2	414.492000	413.992000	414.992000	1.000000	2.001000
+O	O3-n4	1	wall_s	gross		measured	2	414.500000	414.000000	415.000000	1.000000	2.000000
+O	O3-n4	1	billed_net_usd	net (prorated; headline)		measured	2	1.264866	1.263563	1.266169	0.002606	0.006948
+O	O3-n4	1	billed_usd	gross		measured	2	1.264890	1.263587	1.266193	0.002606	0.006948
+O	O3-n4	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	measured	2	212.500000	208.000000	217.000000	9.000000	3.000000
+O	O3-n8	1	wall_net_s	net (headline)		measured	2	302.492500	301.993000	302.992000	0.999000	2.001000
+O	O3-n8	1	wall_s	gross		measured	2	302.500000	302.000000	303.000000	1.000000	2.000000
+O	O3-n8	1	billed_net_usd	net (prorated; headline)		measured	2	0.815883	0.815014	0.816751	0.001737	0.006948
+O	O3-n8	1	billed_usd	gross		measured	2	0.815903	0.815033	0.816773	0.001740	0.006948
+O	O3-n8	1	lever_phase_s	phase	run:load+run:etag-hash.k2d+run:classify	measured	2	132.000000	131.000000	133.000000	2.000000	3.000000
+O	O4a	1	wall_net_s	net (headline)		measured	2	297.991000	265.991000	329.991000	64.000000	2.001000
+O	O4a	1	wall_s	gross		measured	2	298.000000	266.000000	330.000000	64.000000	2.000000
+O	O4a	1	billed_net_usd	net (prorated; headline)		measured	2	1.438096	1.433532	1.442660	0.009127	0.013895
+O	O4a	1	billed_usd	gross		measured	2	1.438140	1.433581	1.442699	0.009118	0.013895
+O	O4a	1	lever_phase_s	phase	run:classify	measured	2	17.000000	17.000000	17.000000	0.000000	1.000000
+O	O4a-cost	1	wall_net_s	net (headline)		measured	2	319.492000	317.992000	320.992000	3.000000	2.001000
+O	O4a-cost	1	wall_s	gross		measured	2	319.500000	318.000000	321.000000	3.000000	2.000000
+O	O4a-cost	1	billed_net_usd	net (prorated; headline)		measured	2	0.799923	0.799381	0.800466	0.001085	0.006948
+O	O4a-cost	1	billed_usd	gross		measured	2	0.799944	0.799401	0.800486	0.001085	0.006948
+O	O4a-cost	1	lever_phase_s	phase	run:classify	measured	2	16.500000	16.000000	17.000000	1.000000	1.000000
+O	O4a-cost	10	wall_net_s	net (headline)		alias unresolved: O4a-cost's alias_cohorts pair with O4a at c10 does not verify: not verified (conditional): unresolved: O4a-cost SHARDS=@select:O3-cost, O4a-cost instance=@select:O3-cost, O4a SHARDS=@select:O3, O4a instance=@select:O3	0				n<2	
+O	O4a-cost	10	wall_s	gross		alias unresolved: O4a-cost's alias_cohorts pair with O4a at c10 does not verify: not verified (conditional): unresolved: O4a-cost SHARDS=@select:O3-cost, O4a-cost instance=@select:O3-cost, O4a SHARDS=@select:O3, O4a instance=@select:O3	0				n<2	
+O	O4a-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: O4a-cost's alias_cohorts pair with O4a at c10 does not verify: not verified (conditional): unresolved: O4a-cost SHARDS=@select:O3-cost, O4a-cost instance=@select:O3-cost, O4a SHARDS=@select:O3, O4a instance=@select:O3	0				n<2	
+O	O4a-cost	10	billed_usd	gross		alias unresolved: O4a-cost's alias_cohorts pair with O4a at c10 does not verify: not verified (conditional): unresolved: O4a-cost SHARDS=@select:O3-cost, O4a-cost instance=@select:O3-cost, O4a SHARDS=@select:O3, O4a instance=@select:O3	0				n<2	
+O	O4a-cost	10	lever_phase_s	phase	run:classify	alias unresolved: O4a-cost's alias_cohorts pair with O4a at c10 does not verify: not verified (conditional): unresolved: O4a-cost SHARDS=@select:O3-cost, O4a-cost instance=@select:O3-cost, O4a SHARDS=@select:O3, O4a instance=@select:O3	0				n<2	
+O	O4b	1	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	1	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	1	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	1	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	1	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	10	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	1	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	1	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	1	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	1	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	1	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost	10	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b-cost-if1	10	wall_net_s	net (headline)		alias unresolved: O4b-cost-if1's alias_cohorts pair with O4b-if1 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if1 SHARDS=@select:O3-cost, O4b-cost-if1 instance=@select:O3-cost, O4b-if1 SHARDS=@select:O3, O4b-if1 instance=@select:O3	0				n<2	
+O	O4b-cost-if1	10	wall_s	gross		alias unresolved: O4b-cost-if1's alias_cohorts pair with O4b-if1 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if1 SHARDS=@select:O3-cost, O4b-cost-if1 instance=@select:O3-cost, O4b-if1 SHARDS=@select:O3, O4b-if1 instance=@select:O3	0				n<2	
+O	O4b-cost-if1	10	billed_net_usd	net (prorated; headline)		alias unresolved: O4b-cost-if1's alias_cohorts pair with O4b-if1 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if1 SHARDS=@select:O3-cost, O4b-cost-if1 instance=@select:O3-cost, O4b-if1 SHARDS=@select:O3, O4b-if1 instance=@select:O3	0				n<2	
+O	O4b-cost-if1	10	billed_usd	gross		alias unresolved: O4b-cost-if1's alias_cohorts pair with O4b-if1 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if1 SHARDS=@select:O3-cost, O4b-cost-if1 instance=@select:O3-cost, O4b-if1 SHARDS=@select:O3, O4b-if1 instance=@select:O3	0				n<2	
+O	O4b-cost-if1	10	lever_phase_s	phase	run:classify	alias unresolved: O4b-cost-if1's alias_cohorts pair with O4b-if1 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if1 SHARDS=@select:O3-cost, O4b-cost-if1 instance=@select:O3-cost, O4b-if1 SHARDS=@select:O3, O4b-if1 instance=@select:O3	0				n<2	
+O	O4b-cost-if2	10	wall_net_s	net (headline)		alias unresolved: O4b-cost-if2's alias_cohorts pair with O4b-if2 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if2 SHARDS=@select:O3-cost, O4b-cost-if2 instance=@select:O3-cost, O4b-if2 SHARDS=@select:O3, O4b-if2 instance=@select:O3	0				n<2	
+O	O4b-cost-if2	10	wall_s	gross		alias unresolved: O4b-cost-if2's alias_cohorts pair with O4b-if2 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if2 SHARDS=@select:O3-cost, O4b-cost-if2 instance=@select:O3-cost, O4b-if2 SHARDS=@select:O3, O4b-if2 instance=@select:O3	0				n<2	
+O	O4b-cost-if2	10	billed_net_usd	net (prorated; headline)		alias unresolved: O4b-cost-if2's alias_cohorts pair with O4b-if2 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if2 SHARDS=@select:O3-cost, O4b-cost-if2 instance=@select:O3-cost, O4b-if2 SHARDS=@select:O3, O4b-if2 instance=@select:O3	0				n<2	
+O	O4b-cost-if2	10	billed_usd	gross		alias unresolved: O4b-cost-if2's alias_cohorts pair with O4b-if2 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if2 SHARDS=@select:O3-cost, O4b-cost-if2 instance=@select:O3-cost, O4b-if2 SHARDS=@select:O3, O4b-if2 instance=@select:O3	0				n<2	
+O	O4b-cost-if2	10	lever_phase_s	phase	run:classify	alias unresolved: O4b-cost-if2's alias_cohorts pair with O4b-if2 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if2 SHARDS=@select:O3-cost, O4b-cost-if2 instance=@select:O3-cost, O4b-if2 SHARDS=@select:O3, O4b-if2 instance=@select:O3	0				n<2	
+O	O4b-cost-if4	10	wall_net_s	net (headline)		alias unresolved: O4b-cost-if4's alias_cohorts pair with O4b-if4 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if4 SHARDS=@select:O3-cost, O4b-cost-if4 instance=@select:O3-cost, O4b-if4 SHARDS=@select:O3, O4b-if4 instance=@select:O3	0				n<2	
+O	O4b-cost-if4	10	wall_s	gross		alias unresolved: O4b-cost-if4's alias_cohorts pair with O4b-if4 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if4 SHARDS=@select:O3-cost, O4b-cost-if4 instance=@select:O3-cost, O4b-if4 SHARDS=@select:O3, O4b-if4 instance=@select:O3	0				n<2	
+O	O4b-cost-if4	10	billed_net_usd	net (prorated; headline)		alias unresolved: O4b-cost-if4's alias_cohorts pair with O4b-if4 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if4 SHARDS=@select:O3-cost, O4b-cost-if4 instance=@select:O3-cost, O4b-if4 SHARDS=@select:O3, O4b-if4 instance=@select:O3	0				n<2	
+O	O4b-cost-if4	10	billed_usd	gross		alias unresolved: O4b-cost-if4's alias_cohorts pair with O4b-if4 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if4 SHARDS=@select:O3-cost, O4b-cost-if4 instance=@select:O3-cost, O4b-if4 SHARDS=@select:O3, O4b-if4 instance=@select:O3	0				n<2	
+O	O4b-cost-if4	10	lever_phase_s	phase	run:classify	alias unresolved: O4b-cost-if4's alias_cohorts pair with O4b-if4 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if4 SHARDS=@select:O3-cost, O4b-cost-if4 instance=@select:O3-cost, O4b-if4 SHARDS=@select:O3, O4b-if4 instance=@select:O3	0				n<2	
+O	O4b-cost-if8	10	wall_net_s	net (headline)		alias unresolved: O4b-cost-if8's alias_cohorts pair with O4b-if8 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if8 SHARDS=@select:O3-cost, O4b-cost-if8 instance=@select:O3-cost, O4b-if8 SHARDS=@select:O3, O4b-if8 instance=@select:O3	0				n<2	
+O	O4b-cost-if8	10	wall_s	gross		alias unresolved: O4b-cost-if8's alias_cohorts pair with O4b-if8 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if8 SHARDS=@select:O3-cost, O4b-cost-if8 instance=@select:O3-cost, O4b-if8 SHARDS=@select:O3, O4b-if8 instance=@select:O3	0				n<2	
+O	O4b-cost-if8	10	billed_net_usd	net (prorated; headline)		alias unresolved: O4b-cost-if8's alias_cohorts pair with O4b-if8 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if8 SHARDS=@select:O3-cost, O4b-cost-if8 instance=@select:O3-cost, O4b-if8 SHARDS=@select:O3, O4b-if8 instance=@select:O3	0				n<2	
+O	O4b-cost-if8	10	billed_usd	gross		alias unresolved: O4b-cost-if8's alias_cohorts pair with O4b-if8 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if8 SHARDS=@select:O3-cost, O4b-cost-if8 instance=@select:O3-cost, O4b-if8 SHARDS=@select:O3, O4b-if8 instance=@select:O3	0				n<2	
+O	O4b-cost-if8	10	lever_phase_s	phase	run:classify	alias unresolved: O4b-cost-if8's alias_cohorts pair with O4b-if8 at c10 does not verify: not verified (conditional): unresolved: O4b-cost-if8 SHARDS=@select:O3-cost, O4b-cost-if8 instance=@select:O3-cost, O4b-if8 SHARDS=@select:O3, O4b-if8 instance=@select:O3	0				n<2	
+O	O5	1	wall_net_s	net (headline)		measured	2	327.985000	326.983000	328.987000	2.004000	2.001000
+O	O5	1	wall_s	gross		measured	2	328.000000	327.000000	329.000000	2.000000	2.000000
+O	O5	1	billed_net_usd	net (prorated; headline)		measured	2	1.442634	1.430467	1.454801	0.024334	0.013895
+O	O5	1	billed_usd	gross		measured	2	1.442700	1.430541	1.454858	0.024317	0.013895
+O	O5	1	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	17.000000	17.000000	17.000000	0.000000	2.000000
+O	O5-cost	1	wall_net_s	net (headline)		measured	2	316.486000	315.987000	316.985000	0.998000	2.001000
+O	O5-cost	1	wall_s	gross		measured	2	316.500000	316.000000	317.000000	1.000000	2.000000
+O	O5-cost	1	billed_net_usd	net (prorated; headline)		measured	2	0.799366	0.799151	0.799580	0.000429	0.006948
+O	O5-cost	1	billed_usd	gross		measured	2	0.799401	0.799184	0.799618	0.000434	0.006948
+O	O5-cost	1	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	17.500000	17.000000	18.000000	1.000000	2.000000
+O	O5-cost	10	wall_net_s	net (headline)		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost SHARDS=@select:O3-cost, O5-cost INFLIGHT=@select:O4b-cost, O5-cost instance=@select:O3-cost, O5 SHARDS=@select:O3, O5 INFLIGHT=@select:O4b, O5 instance=@select:O3	0				n<2	
+O	O5-cost	10	wall_s	gross		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost SHARDS=@select:O3-cost, O5-cost INFLIGHT=@select:O4b-cost, O5-cost instance=@select:O3-cost, O5 SHARDS=@select:O3, O5 INFLIGHT=@select:O4b, O5 instance=@select:O3	0				n<2	
+O	O5-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost SHARDS=@select:O3-cost, O5-cost INFLIGHT=@select:O4b-cost, O5-cost instance=@select:O3-cost, O5 SHARDS=@select:O3, O5 INFLIGHT=@select:O4b, O5 instance=@select:O3	0				n<2	
+O	O5-cost	10	billed_usd	gross		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost SHARDS=@select:O3-cost, O5-cost INFLIGHT=@select:O4b-cost, O5-cost instance=@select:O3-cost, O5 SHARDS=@select:O3, O5 INFLIGHT=@select:O4b, O5 instance=@select:O3	0				n<2	
+O	O5-cost	10	lever_phase_s	phase	run:classify+run:upload-drain	alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost SHARDS=@select:O3-cost, O5-cost INFLIGHT=@select:O4b-cost, O5-cost instance=@select:O3-cost, O5 SHARDS=@select:O3, O5 INFLIGHT=@select:O4b, O5 instance=@select:O3	0				n<2	
+S	S0-T1	1	wall_net_s	net (headline)		measured	2	3477.337500	3477.337000	3477.338000	0.001000	2.001000
+S	S0-T1	1	wall_s	gross		measured	2	3478.000000	3478.000000	3478.000000	0.000000	2.000000
+S	S0-T1	1	billed_net_usd	net (prorated; headline)		measured	2	13.627454	13.627452	13.627456	0.000004	0.007838
+S	S0-T1	1	billed_usd	gross		measured	2	13.630050	13.630050	13.630050	0.000000	0.007838
+S	S0-T1	1	lever_phase_s	phase	run:classify	measured	2	111.500000	111.000000	112.000000	1.000000	1.000000
+S	S0-T1	10	wall_net_s	net (headline)		measured	2	7881.254000	7792.257000	7970.251000	177.994000	2.001000
+S	S0-T1	10	wall_s	gross		measured	2	7888.000000	7799.000000	7977.000000	178.000000	2.000000
+S	S0-T1	10	billed_net_usd	net (prorated; headline)		measured	2	30.886109	30.537336	31.234882	0.697546	0.007838
+S	S0-T1	10	billed_usd	gross		measured	2	30.912546	30.563761	31.261331	0.697570	0.007838
+S	S0-T1	10	lever_phase_s	phase	run:classify	measured	2	4482.500000	4340.000000	4625.000000	285.000000	1.000000
+S	S0-Tv	1	wall_net_s	net (headline)		measured	2	3357.845500	3357.337000	3358.354000	1.017000	2.001000
+S	S0-Tv	1	wall_s	gross		measured	2	3358.500000	3358.000000	3359.000000	1.000000	2.000000
+S	S0-Tv	1	billed_net_usd	net (prorated; headline)		measured	2	13.159173	13.157180	13.161165	0.003986	0.007838
+S	S0-Tv	1	billed_usd	gross		measured	2	13.161738	13.159778	13.163697	0.003919	0.007838
+S	S0-Tv	1	lever_phase_s	phase	run:classify	measured	2	29.000000	29.000000	29.000000	0.000000	1.000000
+S	S0-Tv	10	wall_net_s	net (headline)		measured	2	7401.762500	7192.264000	7611.261000	418.997000	2.001000
+S	S0-Tv	10	wall_s	gross		measured	2	7408.500000	7199.000000	7618.000000	419.000000	2.000000
+S	S0-Tv	10	billed_net_usd	net (prorated; headline)		measured	2	29.007014	28.186003	29.828024	1.642021	0.007838
+S	S0-Tv	10	billed_usd	gross		measured	2	29.033417	28.212401	29.854434	1.642033	0.007838
+S	S0-Tv	10	lever_phase_s	phase	run:classify	measured	2	3830.000000	3635.000000	4025.000000	390.000000	1.000000
+S	S1	1	wall_net_s	net (headline)		measured	2	1376.337000	1376.330000	1376.344000	0.014000	2.001000
+S	S1	1	wall_s	gross		measured	2	1377.000000	1377.000000	1377.000000	0.000000	2.000000
+S	S1	1	billed_net_usd	net (prorated; headline)		measured	2	5.393773	5.393745	5.393800	0.000055	0.007838
+S	S1	1	billed_usd	gross		measured	2	5.396371	5.396371	5.396371	0.000000	0.007838
+S	S1	1	lever_phase_s	phase	run:fetch-db	measured	2	654.000000	644.000000	664.000000	20.000000	1.000000
+S	S1	10	wall_net_s	net (headline)		measured	2	5032.313500	4912.313000	5152.314000	240.001000	2.001000
+S	S1	10	wall_s	gross		measured	2	5039.000000	4919.000000	5159.000000	240.000000	2.000000
+S	S1	10	billed_net_usd	net (prorated; headline)		measured	2	19.721301	19.251027	20.191575	0.940548	0.007838
+S	S1	10	billed_usd	gross		measured	2	19.747505	19.277233	20.217777	0.940544	0.007838
+S	S1	10	lever_phase_s	phase	run:fetch-db	measured	2	652.000000	648.000000	656.000000	8.000000	1.000000
+S	S2a	1	wall_net_s	net (headline)		measured	2	504.322500	474.323000	534.322000	59.999000	2.001000
+S	S2a	1	wall_s	gross		measured	2	505.000000	475.000000	535.000000	60.000000	2.000000
+S	S2a	1	billed_net_usd	net (prorated; headline)		measured	2	1.313928	1.235769	1.392087	0.156317	0.005211
+S	S2a	1	billed_usd	gross		measured	2	1.315693	1.237533	1.393853	0.156320	0.005211
+S	S2a	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	281.500000	281.000000	282.000000	1.000000	3.000000
+S	S2a	10	wall_net_s	net (headline)		measured	2	768.114500	768.109000	768.120000	0.011000	2.001000
+S	S2a	10	wall_s	gross		measured	2	775.000000	775.000000	775.000000	0.000000	2.000000
+S	S2a	10	billed_net_usd	net (prorated; headline)		measured	2	2.001194	2.001180	2.001208	0.000029	0.005211
+S	S2a	10	billed_usd	gross		measured	2	2.019133	2.019133	2.019133	0.000000	0.005211
+S	S2a	10	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	510.500000	510.000000	511.000000	1.000000	3.000000
+S	S2b-i	1	wall_net_s	net (headline)		measured	2	1347.347500	1318.361000	1376.334000	57.973000	2.001000
+S	S2b-i	1	wall_s	gross		measured	2	1348.000000	1319.000000	1377.000000	58.000000	2.000000
+S	S2b-i	1	billed_net_usd	net (prorated; headline)		measured	2	5.280165	5.166569	5.393761	0.227192	0.007838
+S	S2b-i	1	billed_usd	gross		measured	2	5.282722	5.169073	5.396371	0.227298	0.007838
+S	S2b-i	1	lever_phase_s	phase	run:load+run:classify	measured	2	339.500000	339.000000	340.000000	1.000000	2.000000
+S	S2b-i	10	wall_net_s	net (headline)		measured	2	1881.338500	1852.355000	1910.322000	57.967000	2.001000
+S	S2b-i	10	wall_s	gross		measured	2	1888.000000	1859.000000	1917.000000	58.000000	2.000000
+S	S2b-i	10	billed_net_usd	net (prorated; headline)		measured	2	7.372840	7.259256	7.486424	0.227169	0.007838
+S	S2b-i	10	billed_usd	gross		measured	2	7.398946	7.285297	7.512595	0.227298	0.007838
+S	S2b-i	10	lever_phase_s	phase	run:load+run:classify	measured	2	805.500000	805.000000	806.000000	1.000000	2.000000
+S	S2b-ii	1	wall_net_s	net (headline)		measured	2	896.345000	896.325000	896.365000	0.040000	2.001000
+S	S2b-ii	1	wall_s	gross		measured	2	897.000000	897.000000	897.000000	0.000000	2.000000
+S	S2b-ii	1	billed_net_usd	net (prorated; headline)		measured	2	3.512716	3.512638	3.512794	0.000157	0.007838
+S	S2b-ii	1	billed_usd	gross		measured	2	3.515283	3.515283	3.515283	0.000000	0.007838
+S	S2b-ii	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	532.500000	519.000000	546.000000	27.000000	3.000000
+S	S2b-ii	10	wall_net_s	net (headline)		measured	2	1311.225000	1311.197000	1311.253000	0.056000	2.001000
+S	S2b-ii	10	wall_s	gross		measured	2	1318.000000	1318.000000	1318.000000	0.000000	2.000000
+S	S2b-ii	10	billed_net_usd	net (prorated; headline)		measured	2	5.138603	5.138493	5.138713	0.000219	0.007838
+S	S2b-ii	10	billed_usd	gross		measured	2	5.165154	5.165154	5.165154	0.000000	0.007838
+S	S2b-ii	10	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	874.500000	866.000000	883.000000	17.000000	3.000000
+S	S2c	1	wall_net_s	net (headline)		measured	2	476.254500	476.254000	476.255000	0.001000	2.001000
+S	S2c	1	wall_s	gross		measured	2	477.000000	477.000000	477.000000	0.000000	2.000000
+S	S2c	1	billed_net_usd	net (prorated; headline)		measured	2	1.866409	1.866407	1.866411	0.000004	0.007838
+S	S2c	1	billed_usd	gross		measured	2	1.869331	1.869331	1.869331	0.000000	0.007838
+S	S2c	1	lever_phase_s	phase	run:fetch-inputs+run:classify	measured	2	35.000000	34.000000	36.000000	2.000000	2.000000
+S	S2c	10	wall_net_s	net (headline)		measured	2	770.549000	770.467000	770.631000	0.164000	2.001000
+S	S2c	10	wall_s	gross		measured	2	778.000000	778.000000	778.000000	0.000000	2.000000
+S	S2c	10	billed_net_usd	net (prorated; headline)		measured	2	3.019730	3.019409	3.020051	0.000643	0.007838
+S	S2c	10	billed_usd	gross		measured	2	3.048930	3.048930	3.048930	0.000000	0.007838
+S	S2c	10	lever_phase_s	phase	run:fetch-inputs+run:classify	measured	2	328.000000	328.000000	328.000000	0.000000	2.000000
+S	S2d	1	wall_net_s	net (headline)		measured	2	507.350000	476.358000	538.342000	61.984000	2.001000
+S	S2d	1	wall_s	gross		measured	2	508.000000	477.000000	539.000000	62.000000	2.000000
+S	S2d	1	billed_net_usd	net (prorated; headline)		measured	2	1.988271	1.866815	2.109726	0.242911	0.007838
+S	S2d	1	billed_usd	gross		measured	2	1.990818	1.869331	2.112305	0.242974	0.007838
+S	S2d	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	268.500000	268.000000	269.000000	1.000000	3.000000
+S	S2d	10	wall_net_s	net (headline)		measured	2	800.807000	771.351000	830.263000	58.912000	2.001000
+S	S2d	10	wall_s	gross		measured	2	807.500000	778.000000	837.000000	59.000000	2.000000
+S	S2d	10	billed_net_usd	net (prorated; headline)		measured	2	3.138309	3.022873	3.253745	0.230872	0.007838
+S	S2d	10	billed_usd	gross		measured	2	3.164538	3.048930	3.280147	0.231217	0.007838
+S	S2d	10	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	516.500000	511.000000	522.000000	11.000000	3.000000
+S	S4	1	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S4	1	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S4	1	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S4	1	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S4	1	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S4	10	wall_net_s	net (headline)		alias of S4-t16 (ladder.resolved.tsv; source results/g3/ladder-select/c10-4c94c1bd5926/manifest.json)	2	593.682000	593.183000	594.181000	0.998000	2.001000
+S	S4	10	wall_s	gross		alias of S4-t16 (ladder.resolved.tsv; source results/g3/ladder-select/c10-4c94c1bd5926/manifest.json)	2	594.500000	594.000000	595.000000	1.000000	2.000000
+S	S4	10	billed_net_usd	net (prorated; headline)		alias of S4-t16 (ladder.resolved.tsv; source results/g3/ladder-select/c10-4c94c1bd5926/manifest.json)	2	1.546739	1.545439	1.548039	0.002600	0.005211
+S	S4	10	billed_usd	gross		alias of S4-t16 (ladder.resolved.tsv; source results/g3/ladder-select/c10-4c94c1bd5926/manifest.json)	2	1.548871	1.547568	1.550173	0.002605	0.005211
+S	S4	10	lever_phase_s	phase	run:classify	alias of S4-t16 (ladder.resolved.tsv; source results/g3/ladder-select/c10-4c94c1bd5926/manifest.json)	2	57.000000	57.000000	57.000000	0.000000	1.000000
+S	S4-t12	10	wall_net_s	net (headline)		measured	2	593.887500	593.886000	593.889000	0.003000	2.001000
+S	S4-t12	10	wall_s	gross		measured	2	595.000000	595.000000	595.000000	0.000000	2.000000
+S	S4-t12	10	billed_net_usd	net (prorated; headline)		measured	2	1.547275	1.547271	1.547278	0.000008	0.005211
+S	S4-t12	10	billed_usd	gross		measured	2	1.550173	1.550173	1.550173	0.000000	0.005211
+S	S4-t12	10	lever_phase_s	phase	run:classify	measured	2	82.000000	82.000000	82.000000	0.000000	1.000000
+S	S4-t16	10	wall_net_s	net (headline)		measured	2	593.682000	593.183000	594.181000	0.998000	2.001000
+S	S4-t16	10	wall_s	gross		measured	2	594.500000	594.000000	595.000000	1.000000	2.000000
+S	S4-t16	10	billed_net_usd	net (prorated; headline)		measured	2	1.546739	1.545439	1.548039	0.002600	0.005211
+S	S4-t16	10	billed_usd	gross		measured	2	1.548871	1.547568	1.550173	0.002605	0.005211
+S	S4-t16	10	lever_phase_s	phase	run:classify	measured	2	57.000000	57.000000	57.000000	0.000000	1.000000
+S	S4-t24	10	wall_net_s	net (headline)		measured	2	653.891000	652.890000	654.892000	2.002000	2.001000
+S	S4-t24	10	wall_s	gross		measured	2	655.000000	654.000000	656.000000	2.000000	2.000000
+S	S4-t24	10	billed_net_usd	net (prorated; headline)		measured	2	1.703604	1.700996	1.706212	0.005216	0.005211
+S	S4-t24	10	billed_usd	gross		measured	2	1.706494	1.703888	1.709099	0.005211	0.005211
+S	S4-t24	10	lever_phase_s	phase	run:classify	measured	2	105.500000	105.000000	106.000000	1.000000	1.000000
+S	S4-t32	10	wall_net_s	net (headline)		measured	2	652.886000	652.886000	652.886000	0.000000	2.001000
+S	S4-t32	10	wall_s	gross		measured	2	654.000000	654.000000	654.000000	0.000000	2.000000
+S	S4-t32	10	billed_net_usd	net (prorated; headline)		measured	2	1.700986	1.700986	1.700986	0.000000	0.005211
+S	S4-t32	10	billed_usd	gross		measured	2	1.703888	1.703888	1.703888	0.000000	0.005211
+S	S4-t32	10	lever_phase_s	phase	run:classify	measured	2	98.500000	98.000000	99.000000	1.000000	1.000000
+S	S4-t48	10	wall_net_s	net (headline)		measured	2	661.099000	654.178000	668.020000	13.842000	2.001000
+S	S4-t48	10	wall_s	gross		measured	2	662.000000	655.000000	669.000000	14.000000	2.000000
+S	S4-t48	10	billed_net_usd	net (prorated; headline)		measured	2	1.722383	1.704351	1.740415	0.036063	0.005211
+S	S4-t48	10	billed_usd	gross		measured	2	1.724731	1.706493	1.742968	0.036475	0.005211
+S	S4-t48	10	lever_phase_s	phase	run:classify	measured	2	140.000000	139.000000	141.000000	2.000000	1.000000
+S	S5	1	wall_net_s	net (headline)		measured	2	522.549000	521.594000	523.504000	1.910000	2.001000
+S	S5	1	wall_s	gross		measured	2	535.000000	534.000000	536.000000	2.000000	2.000000
+S	S5	1	billed_net_usd	net (prorated; headline)		measured	2	1.361414	1.358926	1.363903	0.004977	0.005211
+S	S5	1	billed_usd	gross		measured	2	1.393854	1.391248	1.396459	0.005211	0.005211
+S	S5	1	lever_phase_s	phase	run:classify	measured	2	9.000000	9.000000	9.000000	0.000000	1.000000
+S	S5	10	wall_net_s	net (headline)		measured	1	603.567000	603.567000	603.567000	n<2	2.001000
+S	S5	10	wall_s	gross		measured	1	656.000000	656.000000	656.000000	n<2	2.000000
+S	S5	10	billed_net_usd	net (prorated; headline)		measured	1	1.572494	1.572494	1.572494	n<2	0.005211
+S	S5	10	billed_usd	gross		measured	1	1.709099	1.709099	1.709099	n<2	0.005211
+S	S5	10	lever_phase_s	phase	run:classify	measured	1	41.000000	41.000000	41.000000	n<2	1.000000
+S	S6	1	wall_net_s	net (headline)		measured	2	431.540500	401.585000	461.496000	59.911000	2.001000
+S	S6	1	wall_s	gross		measured	2	444.000000	414.000000	474.000000	60.000000	2.000000
+S	S6	1	billed_net_usd	net (prorated; headline)		measured	2	1.124307	1.046263	1.202351	0.156088	0.005211
+S	S6	1	billed_usd	gross		measured	2	1.156768	1.078608	1.234928	0.156320	0.005211
+S	S6	1	lever_phase_s	phase	run:fetch-inputs	measured	2	3.500000	3.000000	4.000000	1.000000	1.000000
+S	S6	10	wall_net_s	net (headline)		measured	1	541.164000	541.164000	541.164000	n<2	2.001000
+S	S6	10	wall_s	gross		measured	1	593.000000	593.000000	593.000000	n<2	2.000000
+S	S6	10	billed_net_usd	net (prorated; headline)		measured	1	1.409913	1.409913	1.409913	n<2	0.005211
+S	S6	10	billed_usd	gross		measured	1	1.544963	1.544963	1.544963	n<2	0.005211
+S	S6	10	lever_phase_s	phase	run:fetch-inputs	measured	1	9.000000	9.000000	9.000000	n<2	1.000000
+S	S7a	1	wall_net_s	net (headline)		measured	2	491.501500	460.527000	522.476000	61.949000	2.001000
+S	S7a	1	wall_s	gross		measured	2	504.000000	473.000000	535.000000	62.000000	2.000000
+S	S7a	1	billed_net_usd	net (prorated; headline)		measured	2	1.280525	1.199827	1.361224	0.161397	0.005211
+S	S7a	1	billed_usd	gross		measured	2	1.313088	1.232323	1.393853	0.161530	0.005211
+S	S7a	1	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	9.500000	9.000000	10.000000	1.000000	2.000000
+S	S7a	10	wall_net_s	net (headline)		measured	2	543.805500	543.549000	544.062000	0.513000	2.001000
+S	S7a	10	wall_s	gross		measured	2	596.000000	596.000000	596.000000	0.000000	2.000000
+S	S7a	10	billed_net_usd	net (prorated; headline)		measured	2	1.416795	1.416127	1.417463	0.001337	0.005211
+S	S7a	10	billed_usd	gross		measured	2	1.552779	1.552779	1.552779	0.000000	0.005211
+S	S7a	10	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	32.500000	32.000000	33.000000	1.000000	2.000000
+S	S7b	1	wall_net_s	net (headline)		measured	2	461.556500	461.552000	461.561000	0.009000	2.001000
+S	S7b	1	wall_s	gross		measured	2	474.000000	474.000000	474.000000	0.000000	2.000000
+S	S7b	1	billed_net_usd	net (prorated; headline)		measured	2	1.202509	1.202497	1.202520	0.000023	0.005211
+S	S7b	1	billed_usd	gross		measured	2	1.234928	1.234928	1.234928	0.000000	0.005211
+S	S7b	1	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	8.000000	8.000000	8.000000	0.000000	2.000000
+S	S7b	10	wall_net_s	net (headline)		measured	1	544.732000	544.732000	544.732000	n<2	2.001000
+S	S7b	10	wall_s	gross		measured	1	595.000000	595.000000	595.000000	n<2	2.000000
+S	S7b	10	billed_net_usd	net (prorated; headline)		measured	1	1.419208	1.419208	1.419208	n<2	0.005211
+S	S7b	10	billed_usd	gross		measured	1	1.550173	1.550173	1.550173	n<2	0.005211
+S	S7b	10	lever_phase_s	phase	run:classify+run:upload-drain	measured	1	23.000000	23.000000	23.000000	n<2	2.000000
+S	S8	1	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	1	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	1	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	1	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	1	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8	10	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	S8-k2	10	wall_net_s	net (headline)		measured	2	473.100000	450.307000	495.893000	45.586000	2.001000
+S	S8-k2	10	wall_s	gross		measured	2	506.000000	476.000000	536.000000	60.000000	2.000000
+S	S8-k2	10	billed_net_usd	net (prorated; headline)		measured	2	2.387979	2.341470	2.434489	0.093019	0.010421
+S	S8-k2	10	billed_usd	gross		measured	2	2.553226	2.475066	2.631386	0.156320	0.010421
+S	S8-k2	10	lever_phase_s	phase	run:classify	measured	2	12.500000	12.000000	13.000000	1.000000	1.000000
+S	S9	1	wall_net_s	net (headline)		measured	2	461.592000	461.566000	461.618000	0.052000	2.001000
+S	S9	1	wall_s	gross		measured	2	474.000000	474.000000	474.000000	0.000000	2.000000
+S	S9	1	billed_net_usd	net (prorated; headline)		measured	2	1.202601	1.202533	1.202669	0.000135	0.005211
+S	S9	1	billed_usd	gross		measured	2	1.234928	1.234928	1.234928	0.000000	0.005211
+S	S9	1	lever_phase_s	phase	run:setup+run:fetch-db	measured	2	292.000000	292.000000	292.000000	0.000000	2.000000
+S	Sstar-cost	1	wall_net_s	net (headline)		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	461.592000	461.566000	461.618000	0.052000	2.001000
+S	Sstar-cost	1	wall_s	gross		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	474.000000	474.000000	474.000000	0.000000	2.000000
+S	Sstar-cost	1	billed_net_usd	net (prorated; headline)		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	1.202601	1.202533	1.202669	0.000135	0.005211
+S	Sstar-cost	1	billed_usd	gross		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	1.234928	1.234928	1.234928	0.000000	0.005211
+S	Sstar-cost	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	262.500000	262.000000	263.000000	1.000000	3.000000
+S	Sstar-cost	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-cost	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-cost	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-cost	10	lever_phase_s	phase	run:fetch-db+run:load+run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-r8g	1	wall_net_s	net (headline)		measured	2	464.163500	463.728000	464.599000	0.871000	2.001000
+S	Sstar-r8g	1	wall_s	gross		measured	2	477.500000	477.000000	478.000000	1.000000	2.000000
+S	Sstar-r8g	1	billed_net_usd	net (prorated; headline)		measured	2	1.458340	1.456971	1.459708	0.002737	0.006284
+S	Sstar-r8g	1	billed_usd	gross		measured	2	1.500241	1.498670	1.501812	0.003142	0.006284
+S	Sstar-r8g	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	253.500000	248.000000	259.000000	11.000000	3.000000
+S	Sstar-r8gd	1	wall_net_s	net (headline)		measured	2	464.811500	464.735000	464.888000	0.153000	2.001000
+S	Sstar-r8gd	1	wall_s	gross		measured	2	478.000000	478.000000	478.000000	0.000000	2.000000
+S	Sstar-r8gd	1	billed_net_usd	net (prorated; headline)		measured	2	1.821565	1.821265	1.821865	0.000600	0.007838
+S	Sstar-r8gd	1	billed_usd	gross		measured	2	1.873250	1.873250	1.873250	0.000000	0.007838
+S	Sstar-r8gd	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	measured	2	253.000000	250.000000	256.000000	6.000000	3.000000
+S	Sstar-time	1	wall_net_s	net (headline)		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	461.592000	461.566000	461.618000	0.052000	2.001000
+S	Sstar-time	1	wall_s	gross		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	474.000000	474.000000	474.000000	0.000000	2.000000
+S	Sstar-time	1	billed_net_usd	net (prorated; headline)		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	1.202601	1.202533	1.202669	0.000135	0.005211
+S	Sstar-time	1	billed_usd	gross		alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	1.234928	1.234928	1.234928	0.000000	0.005211
+S	Sstar-time	1	lever_phase_s	phase	run:fetch-db+run:load+run:classify	alias of S9 (ladder.resolved.tsv; source results/g3/ladder-select/c1-027bc052f8fb/manifest.json)	2	262.500000	262.000000	263.000000	1.000000	3.000000
+S	Sstar-time	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-time	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-time	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-time	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+S	Sstar-time	10	lever_phase_s	phase	run:fetch-db+run:load+run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
