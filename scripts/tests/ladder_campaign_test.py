@@ -320,6 +320,16 @@ def t_of(evs, kind, rung, rep, az=None):
 
 
 def main():
+    # record_problems on a 2-node cohort where one member never launched (capacity): the AZ
+    # check must name the missing AZ, not fail to sort None against a string.
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "lib"))
+    import ladder_campaign as LCm
+    mans = [{"instance": {"az": "us-west-2b"}}, {"instance": {}}]
+    try:
+        why = LCm.record_problems("/nonexistent", {"ended": "members done"}, mans, "us-west-2b")
+        ok(any("AZ" in w and "none" in w for w in why), "record_problems: a member with no AZ is named, not a crash", str(why))
+    except TypeError as e:
+        ok(False, "record_problems: a member with no AZ is named, not a crash", repr(e))
     rungs = ["S0-T1", "S1", "S2a", "S5", "S6"]
     # ---- plan: the done check
     rec = [("20261011-000001-aaaaaaa-0001-n1", done("S2a")),                                   # done, no params.rep

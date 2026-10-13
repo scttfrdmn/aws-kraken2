@@ -285,6 +285,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `ladder_campaign.py` `record_problems`: a cohort member that never launched (capacity) has no AZ; the AZ check now names it as "none" instead of crashing on `sorted()` of None and a string (the c10 S9 rep 2 retry, campaign 20261013-183231, crashed this way). Regression case in `ladder_campaign_test`.
+
 - **Ladder ours-plain ran the engine** (scripts/g3/ladder.body.sh `lad_one`). The cohort env that
   `make run` gives every node (`AK2_ENGINE_N`, `_RANK`, `_RENDEZVOUS`) reached ours' plain path,
   and ours takes the engine path whenever `AK2_ENGINE_N` is set. The engine's shards are resident
