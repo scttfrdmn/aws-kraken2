@@ -1,0 +1,1036 @@
+{
+  "made_by": "make conductor-iam (scripts/iam/conductor-iam.sh)",
+  "at": "2026-10-14T21:36:47Z",
+  "caller": "arn:aws:iam::942542972736:user/scofri",
+  "commit": "1ca3fc1d3545d7ad6c99bd88d00183869b340280",
+  "scripts_iam_dirty": false,
+  "role": {
+    "arn": "arn:aws:iam::942542972736:role/ak2-conductor",
+    "action": "created",
+    "inline_policy": "ak2-conductor-policy",
+    "policy_file": "scripts/iam/conductor-policy.json",
+    "policy_sha256": "b51094a51c0ab427d01dc8259490a9081b2a9a0b2998f963e09a4ca627ea96ed",
+    "trust_file": "scripts/iam/conductor-trust.json",
+    "trust_sha256": "acc38ec71637425625c688e3bf22e6246af74181c18bcc169d088e898a4cf7ae"
+  },
+  "instance_profile": {
+    "arn": "arn:aws:iam::942542972736:instance-profile/ak2-conductor",
+    "action": "created"
+  },
+  "boundary": {
+    "arn": "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary",
+    "version": "v1",
+    "action": "created",
+    "file": "scripts/iam/spawn-instance-boundary.json",
+    "sha256": "c8682c769b63b1701f8c641d97b203eab40e4f887c7056e624b84b41ab2c9ae6"
+  },
+  "run_roles": [
+    {
+      "role": "spawn-instance-27cce928",
+      "boundary": "attached",
+      "note": "attached now (no instance was using the role; its policies lie inside the boundary)",
+      "in_use_by": []
+    }
+  ],
+  "tags": {
+    "project": "aws-kraken2",
+    "ak2:project": "aws-kraken2"
+  },
+  "simulation": {
+    "simulator": "iam simulate-principal-policy",
+    "principals": {
+      "conductor": "arn:aws:iam::942542972736:role/ak2-conductor",
+      "run": "arn:aws:iam::942542972736:role/spawn-instance-27cce928"
+    },
+    "cases": [
+      {
+        "name": "describe instances, any region",
+        "want": "allowed",
+        "action": "ec2:DescribeInstances",
+        "resource": "*",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: an ak2 task's instance with the run role",
+        "want": "allowed",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "ec2:InstanceProfile",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: ... but with the conductor's own profile (recursion)",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-x"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "ec2:InstanceProfile",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:instance-profile/ak2-conductor"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: ... but another task id",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "other-x"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "ec2:InstanceProfile",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: ... but in us-east-1",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-east-1:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "ec2:InstanceProfile",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: ... but with no instance profile",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-x"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: ... but without spawn:managed",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-x"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "ec2:InstanceProfile",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: an ak2 task's volume",
+        "want": "allowed",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:volume/vol-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-x"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: an untagged volume",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:volume/vol-0123456789abcdef0",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: a subnet in us-west-2",
+        "want": "allowed",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:subnet/subnet-0123",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: an Amazon image",
+        "want": "allowed",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2::image/ami-0123",
+        "context": [
+          {
+            "ContextKeyName": "ec2:Owner",
+            "ContextKeyValues": [
+              "amazon"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "RunInstances: someone else's image",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2::image/ami-0123",
+        "context": [
+          {
+            "ContextKeyName": "ec2:Owner",
+            "ContextKeyValues": [
+              "123456789012"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "CreateTags at launch",
+        "want": "allowed",
+        "action": "ec2:CreateTags",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:CreateAction",
+            "ContextKeyValues": [
+              "RunInstances"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "CreateTags on an ak2 task's instance (run.sh's ak2: tags)",
+        "want": "allowed",
+        "action": "ec2:CreateTags",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "CreateTags on another instance",
+        "want": "denied",
+        "action": "ec2:CreateTags",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:task-id",
+            "ContextKeyValues": [
+              "other-x"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "TerminateInstances: an ak2 task's instance (fail fast, wrong AZ)",
+        "want": "allowed",
+        "action": "ec2:TerminateInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "TerminateInstances: an ak2 task's instance spawn put in another region",
+        "want": "allowed",
+        "action": "ec2:TerminateInstances",
+        "resource": "arn:aws:ec2:eu-west-1:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "TerminateInstances: another instance",
+        "want": "denied",
+        "action": "ec2:TerminateInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:task-id",
+            "ContextKeyValues": [
+              "other-x"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "TerminateInstances: an untagged instance",
+        "want": "denied",
+        "action": "ec2:TerminateInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "ReplaceIamInstanceProfileAssociation",
+        "want": "denied",
+        "action": "ec2:ReplaceIamInstanceProfileAssociation",
+        "resource": "*",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "ModifyInstanceAttribute",
+        "want": "denied",
+        "action": "ec2:ModifyInstanceAttribute",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "PassRole: the run role to EC2",
+        "want": "allowed",
+        "action": "iam:PassRole",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [
+          {
+            "ContextKeyName": "iam:PassedToService",
+            "ContextKeyValues": [
+              "ec2.amazonaws.com"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "PassRole: the run role to Lambda",
+        "want": "denied",
+        "action": "iam:PassRole",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [
+          {
+            "ContextKeyName": "iam:PassedToService",
+            "ContextKeyValues": [
+              "lambda.amazonaws.com"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "PassRole: another spawn role",
+        "want": "denied",
+        "action": "iam:PassRole",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-0346c413",
+        "context": [
+          {
+            "ContextKeyName": "iam:PassedToService",
+            "ContextKeyValues": [
+              "ec2.amazonaws.com"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "PassRole: the conductor role",
+        "want": "denied",
+        "action": "iam:PassRole",
+        "resource": "arn:aws:iam::942542972736:role/ak2-conductor",
+        "context": [
+          {
+            "ContextKeyName": "iam:PassedToService",
+            "ContextKeyValues": [
+              "ec2.amazonaws.com"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "GetRole: the run role",
+        "want": "allowed",
+        "action": "iam:GetRole",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "GetInstanceProfile: the run profile",
+        "want": "allowed",
+        "action": "iam:GetInstanceProfile",
+        "resource": "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "PutRolePolicy: the run role while bounded",
+        "want": "allowed",
+        "action": "iam:PutRolePolicy",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [
+          {
+            "ContextKeyName": "iam:PermissionsBoundary",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "PutRolePolicy: the run role without the boundary",
+        "want": "denied",
+        "action": "iam:PutRolePolicy",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "PutRolePolicy: the conductor role",
+        "want": "denied",
+        "action": "iam:PutRolePolicy",
+        "resource": "arn:aws:iam::942542972736:role/ak2-conductor",
+        "context": [
+          {
+            "ContextKeyName": "iam:PermissionsBoundary",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "AttachRolePolicy: SSM core on the run role while bounded",
+        "want": "allowed",
+        "action": "iam:AttachRolePolicy",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [
+          {
+            "ContextKeyName": "iam:PolicyARN",
+            "ContextKeyValues": [
+              "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "iam:PermissionsBoundary",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "AttachRolePolicy: AdministratorAccess on the run role",
+        "want": "denied",
+        "action": "iam:AttachRolePolicy",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [
+          {
+            "ContextKeyName": "iam:PolicyARN",
+            "ContextKeyValues": [
+              "arn:aws:iam::aws:policy/AdministratorAccess"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "iam:PermissionsBoundary",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "DeleteRolePermissionsBoundary: the run role",
+        "want": "denied",
+        "action": "iam:DeleteRolePermissionsBoundary",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [
+          {
+            "ContextKeyName": "iam:PermissionsBoundary",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "CreateRole",
+        "want": "denied",
+        "action": "iam:CreateRole",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-ffffffff",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "S3: put a payload under aws-kraken2/",
+        "want": "allowed",
+        "action": "s3:PutObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/payload.sh",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: get under aws-kraken2/",
+        "want": "allowed",
+        "action": "s3:GetObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/log/run.log",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: tag under aws-kraken2/",
+        "want": "allowed",
+        "action": "s3:PutObjectTagging",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/payload.sh",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: abort an upload under aws-kraken2/",
+        "want": "allowed",
+        "action": "s3:AbortMultipartUpload",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/out/a",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: delete spawn's completion record",
+        "want": "allowed",
+        "action": "s3:DeleteObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/spawn/ak2-g3-x/completion.json",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: delete a manifest",
+        "want": "denied",
+        "action": "s3:DeleteObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/manifest.json",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "S3: put outside aws-kraken2/",
+        "want": "denied",
+        "action": "s3:PutObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/other/x",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "S3: list the results bucket",
+        "want": "allowed",
+        "action": "s3:ListBucket",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: list versions of the results bucket",
+        "want": "allowed",
+        "action": "s3:ListBucketVersions",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: list uploads of the results bucket",
+        "want": "allowed",
+        "action": "s3:ListBucketMultipartUploads",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: the results bucket's Payer",
+        "want": "allowed",
+        "action": "s3:GetBucketRequestPayment",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: read RODA",
+        "want": "allowed",
+        "action": "s3:GetObject",
+        "resource": "arn:aws:s3:::kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/hash.k2d",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: RODA's Payer",
+        "want": "allowed",
+        "action": "s3:GetBucketRequestPayment",
+        "resource": "arn:aws:s3:::kraken2-ncbi-refseq-complete-v205",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "S3: write RODA",
+        "want": "denied",
+        "action": "s3:PutObject",
+        "resource": "arn:aws:s3:::kraken2-ncbi-refseq-complete-v205/x",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "S3: another bucket",
+        "want": "denied",
+        "action": "s3:GetObject",
+        "resource": "arn:aws:s3:::cookbook-942542972736-us-west-2/x",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "pricing (truffle)",
+        "want": "allowed",
+        "action": "pricing:GetProducts",
+        "resource": "*",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "service quotas (quota_check.sh)",
+        "want": "allowed",
+        "action": "servicequotas:GetServiceQuota",
+        "resource": "*",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "the AL2023 AMI parameter",
+        "want": "allowed",
+        "action": "ssm:GetParameter",
+        "resource": "arn:aws:ssm:us-west-2::parameter/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64",
+        "context": [],
+        "principal": "conductor",
+        "got": "allowed",
+        "matched": "role_ak2-conductor_ak2-conductor-policy",
+        "ok": true
+      },
+      {
+        "name": "an account SSM parameter",
+        "want": "denied",
+        "action": "ssm:GetParameter",
+        "resource": "arn:aws:ssm:us-west-2:942542972736:parameter/secret",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "assume another role",
+        "want": "denied",
+        "action": "sts:AssumeRole",
+        "resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "context": [],
+        "principal": "conductor",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "run role: put under the results bucket",
+        "want": "allowed",
+        "action": "s3:PutObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/x/out/a",
+        "context": [],
+        "principal": "run",
+        "got": "allowed",
+        "matched": "role_spawn-instance-27cce928_spawn-scoped-policy;role_spawn-instance-27cce928_spawn-scoped-policy",
+        "ok": true
+      },
+      {
+        "name": "run role: read the cohort data",
+        "want": "allowed",
+        "action": "s3:GetObject",
+        "resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort/a",
+        "context": [],
+        "principal": "run",
+        "got": "allowed",
+        "matched": "role_spawn-instance-27cce928_spawn-scoped-policy",
+        "ok": true
+      },
+      {
+        "name": "run role: spored reads its tags",
+        "want": "allowed",
+        "action": "ec2:DescribeTags",
+        "resource": "*",
+        "context": [],
+        "principal": "run",
+        "got": "allowed",
+        "matched": "role_spawn-instance-27cce928_spored-baseline-policy",
+        "ok": true
+      },
+      {
+        "name": "run role: spored terminates itself",
+        "want": "allowed",
+        "action": "ec2:TerminateInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "ec2:ResourceTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "run",
+        "got": "allowed",
+        "matched": "role_spawn-instance-27cce928_spored-baseline-policy",
+        "ok": true
+      },
+      {
+        "name": "run role: SSM agent",
+        "want": "allowed",
+        "action": "ssm:UpdateInstanceInformation",
+        "resource": "*",
+        "context": [],
+        "principal": "run",
+        "got": "allowed",
+        "matched": "AmazonSSMManagedInstanceCore",
+        "ok": true
+      },
+      {
+        "name": "run role: launch an instance",
+        "want": "denied",
+        "action": "ec2:RunInstances",
+        "resource": "arn:aws:ec2:us-west-2:942542972736:instance/i-0123456789abcdef0",
+        "context": [
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:task-id",
+            "ContextKeyValues": [
+              "ak2-g3-20261014-000000-abcdef0-0000-n1-r0"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "aws:RequestTag/spawn:managed",
+            "ContextKeyValues": [
+              "true"
+            ],
+            "ContextKeyType": "string"
+          },
+          {
+            "ContextKeyName": "ec2:InstanceProfile",
+            "ContextKeyValues": [
+              "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+            ],
+            "ContextKeyType": "string"
+          }
+        ],
+        "principal": "run",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      },
+      {
+        "name": "run role: write RODA",
+        "want": "denied",
+        "action": "s3:PutObject",
+        "resource": "arn:aws:s3:::kraken2-ncbi-refseq-complete-v205/x",
+        "context": [],
+        "principal": "run",
+        "got": "implicitDeny",
+        "matched": "",
+        "ok": true
+      }
+    ],
+    "passed": 61,
+    "failed": 0
+  },
+  "simulation_rc": 0
+}
