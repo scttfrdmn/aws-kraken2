@@ -269,6 +269,8 @@ NC=$(ls -d "$STG"/tree/results/g3/2*-n[0-9] 2>/dev/null | grep -cv -- '-r[0-9]*$
   bad "full: exit $CRC, ended $(cj .ended), campaign rc $(cj .campaign_rc), $NC cohort dir(s) staged"
 grep -q "role: arn:aws:sts::942542972736:assumed-role/ak2-conductor" "$T/full.out" && grep -q 'deadline: TTL ends' "$T/full.out" &&
   ok "full: the body waited for the ak2-conductor role and set the campaign's deadline from spawn:ttl-deadline" || bad "full: role/deadline lines missing"
+grep -qF "upstream: default $UPSTREAM_REPO at $UPSTREAM_PIN" "$T/full.out" && git ls-remote --exit-code "$UPSTREAM_REPO" HEAD > /dev/null 2>&1 &&
+  ok "full: the body's default upstream URL is pin.env's UPSTREAM_REPO, and it resolves" || bad "full: default upstream URL is not pin.env's UPSTREAM_REPO, or does not resolve"
 [ -s "$STG/campaign.log" ] && grep -q '^ladder-campaign: exit 0$' "$STG/campaign.log" && ok "full: the campaign log is staged" || bad "full: campaign.log not staged"
 harvest "$STG"
 ADD=$(echo "$HOUT" | sed -n 's/^  git add //p')
