@@ -34,6 +34,13 @@ InsufficientInstanceCapacity: a capacity row (appended to scripts/lib/g3_defects
 campaign ends) and one retry in an AZ that scripts/g3/ladder.azs.tsv documents; any other failure
 stops the rung. Nothing is committed.
 
+Drain (make ladder-campaign-drain; docs/ladder.md, "Draining"): before every launch the campaign looks
+for the drain flag (AK2_CAMPAIGN_DRAIN, default results/g3/ladder-campaign/DRAIN, gitignored). Set: it
+launches nothing more, waits for the runs in flight, finalises them and checks orphans as normal,
+writes its summary and exits 4 (drained). AK2_CAMPAIGN_DEADLINE=<epoch s> (the conductor's TTL) drains
+the same way once a launch's TTL plus AK2_CAMPAIGN_FINALISE_S (1800 s) would not end before it. A new
+campaign refuses to start while the flag exists (exit 2; make ladder-campaign-undrain clears it).
+
 Test seams (scripts/tests/ladder_campaign_test.py): AK2_CAMPAIGN_RUN, AK2_CAMPAIGN_ORPHANS,
 AK2_CAMPAIGN_G3LADDER (gets OUT=<dir>), AK2_CAMPAIGN_QUOTA (command prefixes), AK2_CAMPAIGN_POLL_S
 (10 s), AK2_CAMPAIGN_QUOTA_RETRY_S (60 s: a refused family is not asked again sooner),
@@ -70,6 +77,32 @@ RUN_DIR_RE = re.compile(r"^\d{8}-\d{6}-")      # a run or cohort id, any year
 MEMBER_RE = re.compile(r"-n\d+-r\d+$")
 SUMMARY_RE = re.compile(r"^ladder_tables: \d+ ladder run\(s\), .*\d+ DEFECT\(s\) -> ", re.M)
 DEFAULT_FAMILY_LIMIT = 2
+EXIT_DRAINED = 4
+
+
+def drain_flag():
+    """The drain flag's path (make ladder-campaign-drain writes it; scripts/g3/ladder-campaign-drain.sh)."""
+    return os.path.abspath(os.environ.get("AK2_CAMPAIGN_DRAIN") or os.path.join(CAMPAIGN_DIR, "DRAIN"))
+
+
+def drain_note():
+    """The flag's first line (who set it, when, why), or None when it is not set."""
+    p = drain_flag()
+    if not os.path.exists(p):
+        return None
+    try:
+        with open(p, errors="replace") as f:
+            return (f.readline().strip() or "no reason given")[:300]
+    except OSError as e:
+        return "unreadable: %s" % e
+
+
+def ttl_seconds(t):
+    """A lifecycle.ttl such as 2h30m or 95m, in seconds (run.sh's rule)."""
+    s = 0
+    for m in re.finditer(r"([0-9]+)([hms])", t or ""):
+        s += int(m.group(1)) * {"h": 3600, "m": 60, "s": 1}[m.group(2)]
+    return s
 
 
 def say(msg):
@@ -387,6 +420,10 @@ class Campaign:
         self.outcomes = []
         self.pending_defects = []
         self.stop = None            # why no further launches happen
+        self.drained = None         # why the campaign drained (the flag, or the deadline), else None
+        dl = os.environ.get("AK2_CAMPAIGN_DEADLINE", "")
+        self.deadline = float(dl) if re.fullmatch(r"[0-9]+(\.[0-9]+)?", dl) else None
+        self.finalise_s = float(os.environ.get("AK2_CAMPAIGN_FINALISE_S", "1800"))
         self.hard = False           # orphans with nothing in flight, Law 1, a check that cannot judge, a signal
         self.any_ok = False
         self.waiting = None
@@ -421,6 +458,28 @@ class Campaign:
         self.hard = self.hard or hard
 
     # -- checks
+    def drain(self, it=None):
+        """True when no further launch may happen: already stopped, the drain flag is set, or (with
+        it) its TTL plus the finalisation allowance would not end before AK2_CAMPAIGN_DEADLINE."""
+        if self.stop is not None:
+            return True
+        note = drain_note()
+        why = None
+        if note is not None:
+            why = "drain flag %s set (%s)" % (drain_flag(), note)
+        elif it is not None and self.deadline is not None:
+            need = ttl_seconds(it["ttl"]) + self.finalise_s
+            if time.time() + need > self.deadline:
+                why = ("deadline: %s rep %d needs its TTL %s + %.0f s to finalise, which ends after AK2_CAMPAIGN_DEADLINE %s"
+                       % (it["rung"], it["rep"], it["ttl"], self.finalise_s,
+                          time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(self.deadline))))
+        if why is None:
+            return False
+        self.drained = why
+        say("DRAIN: %s; %d run(s) in flight finish and are recorded, nothing more launches" % (why, len(self.inflight)))
+        self.halt("drained: " + why)
+        return True
+
     def tree_dirty(self):
         r = git("status", "--porcelain", "--", *RUN_PATHS)
         return r.stdout.rstrip() if r.returncode == 0 else "git status failed: " + r.stderr.strip()
@@ -561,6 +620,9 @@ class Campaign:
         return None
 
     def launch(self, it):
+        # The last look before a launch: the flag may have been set while pick() waited.
+        if self.drain(it):
+            return
         dirty = self.tree_dirty()
         if dirty:
             self.halt("the tree has changes under %s; run.sh would refuse: %s" % (" ".join(RUN_PATHS), dirty), hard=True)
@@ -745,6 +807,8 @@ class Campaign:
             self.row(it, it["done_dir"], 0, None, "skip", it["why"])
         while self.queue or self.inflight:
             self.reap()
+            if self.stop is None and self.queue:
+                self.drain()
             if self.stop is None and self.queue and all(self.settled(x) for x in self.inflight):
                 it = self.pick()
                 if it is not None:
@@ -778,6 +842,9 @@ class Campaign:
         if self.hard:
             say("exit 3: %s" % self.stop)
             return 3
+        if self.drained:
+            say("exit %d: drained (%s); %d item(s) not launched" % (EXIT_DRAINED, self.drained, len(self.dropped)))
+            return EXIT_DRAINED
         if self.blocked or self.dropped:
             say("exit 1: not every planned launch succeeded")
             return 1
@@ -839,14 +906,23 @@ def main(a):
                 say("Law 1 DEFECT in the record (a real campaign refuses to start): %s" % hits[0])
         finally:
             shutil.rmtree(tmp, ignore_errors=True)
+        n = drain_note()
+        say("drain flag %s: %s" % (drain_flag(), "not set" if n is None else "SET (%s): a real campaign refuses to start" % n))
         d = git("status", "--porcelain", "--", *RUN_PATHS).stdout.rstrip()
         say("tree: %s" % ("clean under " + " ".join(RUN_PATHS) if not d else "CHANGES under run.sh's paths (a real campaign refuses):\n" + d))
         say("DRY_RUN=1: nothing launched, nothing written in the repo")
         return 0
     # The real campaign: refuse to start on a dirty tree, orphans, or a Law 1 DEFECT already in the record.
+    n = drain_note()
+    if n is not None:
+        say("refused: the drain flag %s is set (%s); make ladder-campaign-undrain clears it" % (drain_flag(), n))
+        return 2
     os.makedirs(CAMPAIGN_DIR, exist_ok=True)
     c = Campaign(cohort, reps, [], conc, limits, ts)
     say("campaign %s: log results/g3/ladder-campaign/%s.tsv, driver logs results/g3/ladder-campaign/%s/" % (ts, ts, ts))
+    say("drain flag: %s (checked before every launch; make ladder-campaign-drain sets it)%s" % (
+        drain_flag(), "" if c.deadline is None else "; deadline %s (AK2_CAMPAIGN_DEADLINE)" % time.strftime(
+            "%Y-%m-%dT%H:%M:%SZ", time.gmtime(c.deadline))))
     dirty = c.tree_dirty()
     if dirty:
         say("refused: the tree has changes under run.sh's paths; commit first:\n" + dirty)

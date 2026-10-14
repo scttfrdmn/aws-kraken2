@@ -27,7 +27,12 @@ in flight, with a clean record. The tables stub writes runs.tsv and its summary 
               their rung; the other rung carries on;
   orphans     informational with a run in flight; a hard stop with none;
   law1        a Law 1 DEFECT stops the campaign; one already there refuses to start; a g3-ladder
-              crash (exit 1, no summary line) is a hard stop too (B2).
+              crash (exit 1, no summary line) is a hard stop too (B2);
+  drain       the flag set while a run is in flight: that run finishes and is recorded, orphans
+              and g3-ladder run after it and at the end, nothing more launches, exit 4; a flag
+              already set (make ladder-campaign-drain, the default path) refuses a new campaign
+              (exit 2) and undrain lets it run; AK2_CAMPAIGN_DEADLINE drains a launch whose TTL
+              would not end before it; the default flag path is gitignored.
 """
 import hashlib
 import json
@@ -36,6 +41,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 HERE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 sys.dont_write_bytecode = True
@@ -78,6 +84,8 @@ cid = "20261012-%s-abcdef0-%04x-n%d" % (time.strftime("%H%M%S"), random.randrang
 print("make run (multi): cohort %s: %d x %s in %s -> s3://b/%s" % (cid, n, spec["resources"]["instance_type"], az, cid), flush=True)
 os.makedirs("results/g3/%s" % cid)
 ev("start")
+if b.get("drain"):   # make ladder-campaign-drain while this run is in flight
+    open(os.environ["AK2_CAMPAIGN_DRAIN"], "w").write("drained_at=test by=test reason=mid-run\n")
 inst_az = "us-west-2a" if b.get("wrong_az") else az
 for k in range(n):
     os.makedirs("results/g3/%s-r%d" % (cid, k))
@@ -232,7 +240,7 @@ def scratch(rungs, record=(), defects=(), excluded=(), compat=()):
     for sub in ("scripts/lib", "scripts/g3", "runs", "results/g3", "stub"):
         os.makedirs(os.path.join(R, sub), exist_ok=True)
     for f in ("scripts/lib/ladder_campaign.py", "scripts/lib/ladder_levers.py", "scripts/lib/ladder_body_compat.py", "scripts/lib/quota_check.sh",
-              "scripts/g3/ladder.levers.tsv", "scripts/g3/ladder-campaign.sh"):
+              "scripts/g3/ladder.levers.tsv", "scripts/g3/ladder-campaign.sh", "scripts/g3/ladder-campaign-drain.sh"):
         shutil.copy2(os.path.join(HERE, f), os.path.join(R, f))
     for r in rungs:
         shutil.copy2(spec_path(HERE, r), os.path.join(R, "runs"))
@@ -273,7 +281,7 @@ def scratch(rungs, record=(), defects=(), excluded=(), compat=()):
     return d, R, S
 
 
-def campaign(R, S, mode, rungs, reps=2, conc=None, limits="X=2,Standard=2", behave=None, files=None):
+def campaign(R, S, mode, rungs, reps=2, conc=None, limits="X=2,Standard=2", behave=None, files=None, env_over=None):
     if behave:
         json.dump(behave, open(os.path.join(S, "behave.json"), "w"))
     for k, v in (files or {}).items():
@@ -282,6 +290,9 @@ def campaign(R, S, mode, rungs, reps=2, conc=None, limits="X=2,Standard=2", beha
                AK2_CAMPAIGN_ORPHANS=os.path.join(R, "stub", "orphans"), AK2_CAMPAIGN_G3LADDER=os.path.join(R, "stub", "g3ladder"),
                AK2_CAMPAIGN_QUOTA=os.path.join(R, "stub", "quota"), AK2_CAMPAIGN_POLL_S="0.05", AK2_CAMPAIGN_QUOTA_RETRY_S="0",
                DRY_RUN="", MAKEFLAGS="DRY_RUN=1")
+    env.pop("AK2_CAMPAIGN_DRAIN", None)
+    env.pop("AK2_CAMPAIGN_DEADLINE", None)
+    env.update(env_over or {})
     argv = ["python3", "scripts/lib/ladder_campaign.py", mode, "1", "--reps", str(reps), "--rungs", ",".join(rungs),
             "--family-limits", limits] + (["--concurrency", str(conc)] if conc else [])
     r = subprocess.run(argv, cwd=R, env=env, capture_output=True, text=True, timeout=300)
@@ -560,6 +571,58 @@ def main():
     rc, out, _ = campaign(R, S, "plan", ["S2a"], files={"crash": ""})
     ok(rc == 3 and "without its summary line" in out, "law1: DRY_RUN refuses a plan when g3-ladder cannot judge", "rc %d\n%s" % (rc, out[-1000:]))
     shutil.rmtree(d)
+
+    # ---- drain: set while S5 rep 1 is in flight (CONCURRENCY=2)
+    rs = ["S2a", "S5", "S6"]
+    d, R, S = scratch(rs)
+    flag = os.path.join(S, "DRAIN")
+    rc, out, evs = campaign(R, S, "run", rs, conc=2, behave={"S2a:1": {"s": 0.3}, "S5:1": {"s": 1.5, "drain": True}},
+                            env_over={"AK2_CAMPAIGN_DRAIN": flag})
+    starts = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "start")
+    ends = sorted((e["rung"], e["rep"]) for e in evs if e["ev"] == "end")
+    tsv = campaign_tsv(R)
+    ok(rc == 4 and "exit 4: drained" in out and "DRAIN: drain flag %s set" % flag in out,
+       "drain: the flag set mid-run gives exit 4 (drained), naming the flag", "rc %d\n%s" % (rc, out[-2500:]))
+    ok(starts == ends and ("S5", 1) in ends and set(starts) <= {("S2a", 1), ("S5", 1), ("S6", 1)},
+       "drain: every run in flight when the flag was set finished (%s); nothing launched after it" % starts, "%s %s" % (starts, ends))
+    t_flag = t_of(evs, "end", "S5", 1)
+    ok(t_flag is not None and all(e["t"] <= t_flag for e in evs if e["ev"] == "start"),
+       "drain: no launch after the run that set the flag ended")
+    ok(any(r[1] == "S5" and r[2] == "1" and r[7] == "ok" for r in tsv) and
+       all(r[7] in ("ok", "not-launched") for r in tsv) and any(r[7] == "not-launched" and "drained: drain flag" in r[8] for r in tsv),
+       "drain: the in-flight run is recorded ok and the rest are not-launched rows saying drained", tsv)
+    no = [l.split() for l in open(os.path.join(S, "orphans.log"))]
+    ok(len(no) == 1 + len(ends) + 1, "drain: make orphans before, after each finished run and at the end (%d calls)" % len(no))
+    ok("summary (results/g3/ladder-campaign/" in out and "spend this campaign" in out, "drain: the summary is written")
+    shutil.rmtree(d)
+    # A flag already there (written by the make target's script, at the default path) refuses to start.
+    d, R, S = scratch(["S2a"])
+    clean = {k: v for k, v in os.environ.items() if k != "AK2_CAMPAIGN_DRAIN"}
+    r = subprocess.run(["bash", "scripts/g3/ladder-campaign-drain.sh", "drain", "", "test reason"], cwd=R, capture_output=True,
+                       text=True, env=clean)
+    dflag = os.path.join(R, "results", "g3", "ladder-campaign", "DRAIN")
+    ok(r.returncode == 0 and os.path.exists(dflag) and "reason=test reason" in open(dflag).read(),
+       "drain: make ladder-campaign-drain writes the default flag with its reason", r.stdout + r.stderr)
+    rc, out, evs = campaign(R, S, "run", ["S2a"])
+    ok(rc == 2 and not evs and "refused: the drain flag" in out and "make ladder-campaign-undrain" in out,
+       "drain: a new campaign refuses to start while the flag exists (exit 2, nothing launched)", "rc %d\n%s" % (rc, out[-1500:]))
+    rc, out, _ = campaign(R, S, "plan", ["S2a"])
+    ok(rc == 0 and "SET (" in out and "a real campaign refuses to start" in out, "drain: DRY_RUN reports the flag", out[-800:])
+    r = subprocess.run(["bash", "scripts/g3/ladder-campaign-drain.sh", "undrain"], cwd=R, capture_output=True, text=True, env=clean)
+    rc, out, evs = campaign(R, S, "run", ["S2a"])
+    ok(r.returncode == 0 and not os.path.exists(dflag) and rc == 0 and len([e for e in evs if e["ev"] == "start"]) == 2,
+       "drain: make ladder-campaign-undrain clears it and the campaign runs", "rc %d\n%s" % (rc, out[-1500:]))
+    shutil.rmtree(d)
+    # The deadline (the conductor's TTL): a launch that would not end before it is not made.
+    d, R, S = scratch(["S2a", "S5"])
+    rc, out, evs = campaign(R, S, "run", ["S2a", "S5"], env_over={"AK2_CAMPAIGN_DEADLINE": "%d" % (time.time() + 600),
+                                                                  "AK2_CAMPAIGN_FINALISE_S": "0"})
+    ok(rc == 4 and not evs and "deadline: " in out and "AK2_CAMPAIGN_DEADLINE" in out,
+       "drain: AK2_CAMPAIGN_DEADLINE 10 min away refuses every launch whose TTL is longer (exit 4, nothing launched)",
+       "rc %d\n%s" % (rc, out[-1500:]))
+    shutil.rmtree(d)
+    g = subprocess.run(["git", "-C", HERE, "check-ignore", "-q", "results/g3/ladder-campaign/DRAIN"])
+    ok(g.returncode == 0, "drain: the default flag path is gitignored (it never dirties the tree)")
 
     print("ladder_campaign_test: %d passed, %d failed" % (PASS[0], FAIL[0]))
     return 1 if FAIL[0] else 0

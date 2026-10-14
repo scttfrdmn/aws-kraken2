@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -277,6 +277,15 @@ ladder-campaign:
 
 ladder-campaign-test:
 	python3 scripts/tests/ladder_campaign_test.py
+
+# Drain (docs/ladder.md, "Draining"): a running campaign launches nothing more, records its runs in
+# flight and exits 4; a new one refuses to start until undrain. REASON=... is recorded in the flag.
+# CAMPAIGN=<conductor run id>: the conductor's flag in S3 (docs/conductor.md) instead of the local file.
+ladder-campaign-drain:
+	scripts/g3/ladder-campaign-drain.sh drain "$(CAMPAIGN)" "$(REASON)"
+
+ladder-campaign-undrain:
+	scripts/g3/ladder-campaign-drain.sh undrain "$(CAMPAIGN)"
 
 # The registered select rules at one cohort (docs/ladder.md, "Selection"): from a fresh make
 # g3-ladder, the alias winners (S*-time, S*-cost) into scripts/g3/ladder.resolved.tsv, each row
