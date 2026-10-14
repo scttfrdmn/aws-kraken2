@@ -221,8 +221,8 @@ harvest() {  # harvest DIR: make harvest's script in the scratch laptop clone; H
 round full 'COHORT=1; RUNGS="S2a,S5"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200' "${SEAMS[@]}"
 NC=$(ls -d "$STG"/tree/results/g3/2*-n[0-9] 2>/dev/null | grep -cv -- '-r[0-9]*$')
 [ "$CRC" = 0 ] && [ "$(cj .ended)" = true ] && [ "$(cj .campaign_rc)" = 0 ] && [ "$NC" = 2 ] && [ -s "$STG/changes.tsv" ] &&
-  grep -q 'ak2: \[.*\] spec body exit rc=0' "$T/full.out" &&
-  ok "full: body exit 0, conductor.json ended, campaign rc 0, 2 cohort dirs staged with changes.tsv" ||
+  grep -q 'ak2: \[.*\] spec body exit rc=0' "$T/bucket/$RB/aws-kraken2/conductor/$RUN/log/run.log" &&
+  ok "full: body exit 0 (in the streamed log/run.log), conductor.json ended, campaign rc 0, 2 cohort dirs staged with changes.tsv" ||
   bad "full: exit $CRC, ended $(cj .ended), campaign rc $(cj .campaign_rc), $NC cohort dir(s) staged"
 grep -q "role: arn:aws:sts::942542972736:assumed-role/ak2-conductor" "$T/full.out" && grep -q 'deadline: TTL ends' "$T/full.out" &&
   ok "full: the body waited for the ak2-conductor role and set the campaign's deadline from spawn:ttl-deadline" || bad "full: role/deadline lines missing"
