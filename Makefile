@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
+.PHONY: tools util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify conductor-spec harvest rehearse-conductor ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -25,6 +25,7 @@ test:
 	python3 scripts/lib/tune_tables.py --self-test
 	bash scripts/lib/quota_check_test.sh
 	bash scripts/lib/run_sh_test.sh
+	bash scripts/lib/orphans_conductor_test.sh
 	python3 scripts/lib/ladder_levers.py --self-test
 	python3 scripts/lib/ladder_levers.py check
 	python3 scripts/lib/ladder_body_compat.py --self-test
@@ -33,6 +34,8 @@ test:
 	bash scripts/tests/ladder_stream_test.sh
 	python3 scripts/tests/ladder_levers_tables_test.py
 	python3 scripts/tests/ladder_campaign_test.py
+	python3 scripts/iam/spawn_role_name.py --self-test
+	python3 scripts/iam/conductor_policy_check.py check
 	python3 scripts/tests/ladder_select_test.py
 	python3 scripts/lib/ladder_types.py validate
 	python3 scripts/lib/ladder_ttl.py --self-test
@@ -233,6 +236,11 @@ sortfuzz:
 ami:
 	scripts/ami.sh
 
+# The pinned spawn and truffle (docs/run.md, "Pinned tools"): from their release artefacts, sha256-
+# checked against scripts/conductor.tools.tsv, into bin/. make run uses only these. WITH_GO=1 adds Go (the conductor).
+tools:
+	scripts/tools.sh $(if $(WITH_GO),--go)
+
 # NODES=<n>: a cohort of n coordinated instances, one run.sh run each (scripts/run-multi.sh;
 # docs/run.md, "Multi-node runs").
 run:
@@ -278,6 +286,15 @@ ladder-campaign:
 ladder-campaign-test:
 	python3 scripts/tests/ladder_campaign_test.py
 
+# Drain (docs/ladder.md, "Draining"): a running campaign launches nothing more, records its runs in
+# flight and exits 4; a new one refuses to start until undrain. REASON=... is recorded in the flag.
+# CAMPAIGN=<conductor run id>: the conductor's flag in S3 (docs/conductor.md) instead of the local file.
+ladder-campaign-drain:
+	scripts/g3/ladder-campaign-drain.sh drain "$(CAMPAIGN)" "$(REASON)"
+
+ladder-campaign-undrain:
+	scripts/g3/ladder-campaign-drain.sh undrain "$(CAMPAIGN)"
+
 # The registered select rules at one cohort (docs/ladder.md, "Selection"): from a fresh make
 # g3-ladder, the alias winners (S*-time, S*-cost) into scripts/g3/ladder.resolved.tsv, each row
 # citing its runs and a tables snapshot (results/g3/ladder-select/) with sha256, and labelling
@@ -308,6 +325,32 @@ ladder-types:
 
 orphans:
 	scripts/orphans.sh
+
+# The conductor's IAM (docs/conductor.md, "IAM"): role, instance profile and inline policy
+# ak2-conductor, the run roles' permissions boundary; idempotent, tagged project=aws-kraken2,
+# verified through the policy simulator, recorded in results/iam/conductor-<ts>.json. Laptop only.
+conductor-iam:
+	scripts/iam/conductor-iam.sh
+
+# The conductor's spec (docs/conductor.md, "The spec"): runs/conductor.json (OUT=runs/conductor*.json)
+# from scripts/conductor.body.sh with the campaign's arguments in its PARAMS block. Commit, push, then
+# make run GATE=conductor SPEC=runs/conductor.json.
+conductor-spec:
+	scripts/mkspec-conductor.sh COHORT="$(COHORT)" RUNGS="$(RUNGS)" REPS="$(or $(REPS),2)" CONCURRENCY="$(or $(CONCURRENCY),1)" \
+		FAMILY_LIMITS="$(FAMILY_LIMITS)" DRY_RUN="$(DRY_RUN)" DRY_MAKE_RUN="$(or $(DRY_MAKE_RUN),0)" TTL="$(TTL)" TYPE="$(TYPE)" OUT="$(OUT)"
+
+# A conductor campaign's staged results into results/ (docs/conductor.md, "Harvest"): fetched,
+# verified, installed; prints what to commit and commits nothing. PARTIAL=1: the conductor has not ended.
+harvest:
+	scripts/harvest.sh "$(CAMPAIGN)" "$(PARTIAL)"
+
+# The conductor end to end on AL2023 containers (docs/conductor.md, "The rehearsal"): stub spawn and
+# aws, a stubbed campaign, drain, staging and the harvest round-trip, with negative controls. No AWS.
+rehearse-conductor:
+	scripts/lib/conductor_rehearse.sh
+
+conductor-iam-verify:
+	CUSTOM="$(CUSTOM)" scripts/iam/conductor-iam-verify.sh $(ROLE_ARN)
 
 report:
 	scripts/report.sh "$(GATE)" "$(RUN)"

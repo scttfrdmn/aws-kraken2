@@ -14,7 +14,9 @@
 - Backed by `scripts/orphans.sh`.
 
 **It is global and strict:** every live ak2 instance counts, including other agents' runs that
-are still in flight. **Run it when no runs are in flight**, e.g. at the end of a session, or
+are still in flight. The one exception is the conductor (docs/conductor.md, task id
+`ak2-conductor-*`). Within its TTL it is listed as `CONDUCTOR` and not counted, here and in the
+scoped check (`flag: conductor`). Past its TTL + 15 min, or with no parseable deadline, it counts. **Run it when no runs are in flight**, e.g. at the end of a session, or
 after every concurrent `make run` has finished.
 
 **`make run`'s own check is scoped** (`scripts/orphans.sh --own <task_id> <instance_id>`, run

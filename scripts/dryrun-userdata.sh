@@ -39,7 +39,7 @@ one() {
   # The gate the spec runs under (its task id and prefixes are in the user data): the name's
   # leading g<digit>[a-z], loadbench* g2, anything else g3.
   gate=$(basename "$spec" | grep -oE '^g[0-9][a-z]?')
-  case $(basename "$spec") in loadbench*) gate=g2 ;; esac
+  case $(basename "$spec") in loadbench*) gate=g2 ;; conductor*) gate=conductor ;; esac
   gate=${gate:-g3}
   if [ -n "$type" ] && [ -n "$az" ]; then
     n=$(jq -r '.command[2]' "$repo/$spec" | grep -oE '(^|[ ;])WANT_N=[0-9]+' | head -1 | grep -oE '[0-9]+$')

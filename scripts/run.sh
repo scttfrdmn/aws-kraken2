@@ -15,14 +15,20 @@ cd "$ROOT" || exit 2
 . scripts/ak2.env
 # shellcheck source=/dev/null
 . scripts/lib/tags.sh
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
 export AWS_PROFILE
 
 GATE=${1:-}
 SPEC=${2:-}
-die() { echo "make run: $*" >&2; exit 2; }
+DIE_MSG=""
+die() { DIE_MSG=$*; echo "make run: $*" >&2; exit 2; }
 say() { echo "make run: $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
+command -v jq >/dev/null || die "jq not on PATH"
+# spawn and truffle: only the pinned ones (make tools), never whatever is on PATH (docs/run.md, "Pinned tools").
+ak2_pin_tools "$ROOT" || die "the pinned spawn/truffle are not in place (above)"
 for t in jq spawn truffle aws curl git python3; do command -v "$t" >/dev/null || die "$t not on PATH"; done
 pin_identity || die "cannot establish the upstream pin identity (scripts/pin-identity.sh)"
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate, e.g. g0a> SPEC=runs/<file>.json"
@@ -34,6 +40,28 @@ DIRTY_PATHS=$(git status --porcelain -- scripts runs cmd internal upstream go.mo
 [ -z "$DIRTY_PATHS" ] || die "uncommitted changes in scripts/ runs/ cmd/ internal/ upstream/ go.mod go.sum Makefile; commit first:
 $DIRTY_PATHS"
 jq -e . "$SPEC" >/dev/null || die "$SPEC is not valid JSON"
+# The conductor (docs/conductor.md): GATE=conductor and only a runs/conductor*.json spec, both ways.
+# It clones HEAD from GitHub and plans from the committed record, so the whole tree must be clean
+# (results/ included: an uncommitted run dir would be planned again) and HEAD must be on origin.
+CONDUCTOR=0
+case "$SPEC" in runs/conductor*.json) CONDUCTOR=1 ;; esac
+if [ "$GATE" = "$AK2_CONDUCTOR_GATE" ] || [ "$CONDUCTOR" = 1 ]; then
+  [ "$GATE" = "$AK2_CONDUCTOR_GATE" ] && [ "$CONDUCTOR" = 1 ] ||
+    die "GATE=$AK2_CONDUCTOR_GATE goes with a runs/conductor*.json spec and only with one (got GATE=$GATE SPEC=$SPEC)"
+  CONDUCTOR=1
+  [ -z "$(git status --porcelain)" ] || die "the conductor clones HEAD and plans from the committed record: the whole tree must be clean:
+$(git status --porcelain | head -20)"
+  git fetch -q origin || die "git fetch origin failed (the conductor clones HEAD from it)"
+  [ -n "$(git branch -r --contains HEAD 2>/dev/null)" ] || die "HEAD $(git rev-parse --short HEAD) is not on origin; push it first (the conductor clones it from GitHub and holds no git credentials)"
+fi
+# AK2_FINALISED_BY=conductor (set by scripts/conductor.body.sh, with AK2_CONDUCTOR_RUN_ID): recorded as
+# manifest.finalised_by and finalised_by_run_id (make harvest checks them).
+FIN_BY=${AK2_FINALISED_BY:-}; FIN_RUN=${AK2_CONDUCTOR_RUN_ID:-}
+case "$FIN_BY" in
+  "") FIN_RUN="" ;;
+  conductor) [[ "$FIN_RUN" =~ ^[0-9]{8}-[0-9]{6}-[0-9a-f]{7}$ ]] || die "AK2_FINALISED_BY=conductor needs AK2_CONDUCTOR_RUN_ID=<the conductor's run id> (got '$FIN_RUN')" ;;
+  *) die "AK2_FINALISED_BY=$FIN_BY: only 'conductor' (or unset)" ;;
+esac
 
 q() { jq -r "$1" "$SPEC"; }
 ttl_s() { local t=$1 s=0 n; while [[ $t =~ ^([0-9]+)([hms])(.*)$ ]]; do n=${BASH_REMATCH[1]}
@@ -46,7 +74,10 @@ COST=$(q '.lifecycle.cost_limit // 0')
 [[ "$TTL" =~ ^([0-9]+[hms])+$ ]] || die "lifecycle.ttl '$TTL' must match ^([0-9]+[hms])+\$ (e.g. 15m, 1h30m)"
 TTL_S=$(ttl_s "$TTL")
 [ "$TTL_S" -gt 0 ] || die "lifecycle.ttl '$TTL' is zero"
-[ "$TTL_S" -le "$AK2_MAX_TTL_S" ] || die "lifecycle.ttl $TTL (${TTL_S}s) exceeds AK2_MAX_TTL_S=$AK2_MAX_TTL_S"
+# The conductor has its own ceiling (Scott, 2026-10-14); every run instance keeps AK2_MAX_TTL_S.
+MAX_TTL_S=$AK2_MAX_TTL_S; MAX_TTL_VAR=AK2_MAX_TTL_S
+[ "$CONDUCTOR" = 1 ] && { MAX_TTL_S=$AK2_CONDUCTOR_MAX_TTL_S; MAX_TTL_VAR=AK2_CONDUCTOR_MAX_TTL_S; }
+[ "$TTL_S" -le "$MAX_TTL_S" ] || die "lifecycle.ttl $TTL (${TTL_S}s) exceeds $MAX_TTL_VAR=$MAX_TTL_S"
 awk -v c="$COST" 'BEGIN{exit !(c+0 > 0)}' || die "spec has no positive lifecycle.cost_limit"
 # The upper bound on cost_limit is price-derived (TTL x on-demand price x (1 + epsilon), no budget
 # cap; scripts/lib/cost_check.sh), so it is checked once the planned type is known, below.
@@ -257,7 +288,10 @@ RESOLVED="$RUN_DIR/spec.resolved.json"
 # The spec spawn reads carries the presigned URL, so it lives outside results/ and is removed on
 # any exit; $RESOLVED under results/ is only ever written redacted (by write_resolved).
 LIVE_SPEC=$(mktemp "${TMPDIR:-/tmp}/ak2-spec.XXXXXX") || die "mktemp failed"
-trap 'rm -f "$LIVE_SPEC"' EXIT
+# On every exit: the presigned spec goes, and a manifest that launched nothing is finalised
+# (finalise_unlaunched, below; review B2).
+IID=""; NO_FINALISE=0
+trap 'RC_EXIT=$?; rm -f "$LIVE_SPEC"; finalise_unlaunched; exit $RC_EXIT' EXIT
 write_resolved() {
   jq '.env.AK2_PAYLOAD_URL = "<presigned GET of env.AK2_PAYLOAD_URI; redacted>"' "$LIVE_SPEC" > "$RESOLVED"
 }
@@ -320,8 +354,7 @@ LAD_PARAMS=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" ${REP:+--r
 jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" --argjson params "$LAD_PARAMS" \
   --arg spec_sha "$(shasum -a 256 "$SPEC" | cut -d' ' -f1)" --arg sha "$SHA" --argjson dirty "$DIRTY" \
   --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_SHA" --arg udesc "$UPSTREAM_DESCRIBE" --arg region "$REGION" \
-  --arg spawn_v "$(spawn version 2>/dev/null | awk '/Version:/{print $2}')" \
-  --arg truffle_v "$(truffle version 2>/dev/null | awk '/Version:/{print $2}')" \
+  --argjson tools "$AK2_TOOLS_JSON" \
   --arg ttl "$TTL" --argjson cost "$COST" --arg prefix "$PREFIX" --arg acc "$ACCESSIONS" \
   --arg accref "$ACCESSIONS_REF" --arg acctsv "$ACCESSIONS_TSV" --arg accblob "$ACCESSIONS_BLOB" \
   --arg allowed "$ALLOWED_BUCKETS" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
@@ -329,7 +362,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" --argjson azo "$AZ_OVR_JSON" '{
     gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha, params:$params,
     commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin, sha:$upin, describe:$udesc},
-    tools:{spawn:$spawn_v, truffle:$truffle_v},
+    tools:$tools,
     region:$region, ttl:$ttl, cost_limit_usd:$cost, s3_prefix:$prefix,
     sample_accessions:($acc|split(" ")|map(select(.!=""))),
     sample_accessions_ref:(if ($accref | startswith("@")) then {ref:$accref, runs_tsv:$acctsv, blob:$accblob} else null end),
@@ -345,6 +378,55 @@ if [ -n "$COHORT_ID" ]; then
 fi
 # After launch a manifest write failure must not abandon the instance: record it, carry on,
 # and exit non-zero at the end.
+# finalise_unlaunched: run.sh is exiting with a manifest but no instance. A launch failure
+# (InsufficientInstanceCapacity, ...) or a refusal between manifest and launch (payload upload, tag):
+# the manifest is finalised as a non-run, so the record, the campaign and make harvest see a finished
+# record, not a driver that died. Not when the dir was removed (DRY_RUN and the pre-launch
+# refusals do that), when an instance was launched (that path finalises itself, or is left to
+# scripts/refinalise.sh), when it is already finalised, or when this run's task may be alive
+# (NO_FINALISE: its orphan check failed).
+finalise_unlaunched() {
+  [ -f "${M:-}" ] && [ -z "$IID" ] && [ "$NO_FINALISE" = 0 ] || return 0
+  jq -e '.manifest_finalised_at' "$M" > /dev/null 2>&1 && return 0
+  local tmp; tmp=$(mktemp) || return 0
+  jq --arg why "${DIE_MSG:-run.sh exited ${RC_EXIT:-?} before launching}" --arg fin "$(now)" --arg by "$FIN_BY" --arg cr "$FIN_RUN" '
+    .launch = ((.launch // {}) + {error: ((.launch.error // "") + (if (.launch.error // "") == "" then "" else "; " end) + $why)})
+    | .instance = {final_state:"never-launched", final_state_basis:"no instance was launched"}
+    | .task = null | .start = null | .stop = null | .billed_seconds = 0 | .cost_usd = 0
+    | .cost_basis = "no instance was launched: nothing billed"
+    | .manifest_finalised_at = $fin
+    | if $by != "" then .finalised_by = $by | .finalised_by_run_id = $cr else . end' "$M" > "$tmp" && mv "$tmp" "$M" ||
+    echo "make run: WARNING: could not finalise $M as never launched" >&2
+  rm -f "$tmp"
+}
+# terminate_finalise ERROR [JQ_EXTRA_LAUNCH_FIELDS_JSON]: run.sh gives up on an instance it launched
+# (wrong region, wrong AZ, the conductor's profile not swapped). Terminate it and wait, record both exit
+# codes, a cost from the launch request to now at the on-demand price, and finalise the manifest; then
+# the scoped orphan check (exit 3 if the instance may still be alive). The caller dies after.
+terminate_finalise() {
+  local err=$1 extra=${2:-'{}'} trc wrc end_e start_e price orc
+  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null; trc=$?
+  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"; wrc=$?
+  end_e=$(date -u +%s)
+  start_e=$(python3 -c 'import calendar,sys,time; print(calendar.timegm(time.strptime(sys.argv[1], "%Y-%m-%dT%H:%M:%SZ")))' "$LAUNCH_AT" 2>/dev/null)
+  price=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2>/dev/null | jq '.[0].on_demand_price // null' 2>/dev/null)
+  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --argjson trc "$trc" --argjson wrc "$wrc" \
+    --argjson price "${price:-null}" --argjson secs "$(( end_e - ${start_e:-$end_e} ))" --arg end "$(now)" --arg err "$err" \
+    --argjson extra "$extra" --arg by "$FIN_BY" --arg cr "$FIN_RUN" '
+    .launch = ({requested_at:$t, instance_id:$iid, region:$lr, terminate_rc:$trc, wait_terminated_rc:$wrc, error:$err} + $extra)
+    | .instance = ((.instance // {}) + {final_state:(if $trc == 0 and $wrc == 0 then "terminated" else null end),
+                                        final_state_basis:(if $trc == 0 and $wrc == 0 then "terminated by run.sh" else "unknown" end)})
+    | .task = null | .truffle_price_usd_per_hour = $price | .stop = $end | .billed_seconds = ([$secs, 60] | max)
+    | .cost_usd = (if $price == null then null else ((.billed_seconds * $price / 3600) * 1e6 | round / 1e6) end)
+    | .cost_basis = "on-demand truffle price x (run.sh terminate time - launch request), 60 s minimum: an upper-side estimate; the body never ran"
+    | .manifest_finalised_at = $end
+    | if $by != "" then .finalised_by = $by | .finalised_by_run_id = $cr else . end'
+  [ "$trc" = 0 ] && [ "$wrc" = 0 ] || say "WARNING: terminate rc $trc, wait rc $wrc: check $IID by hand (make orphans)"
+  AK2_ORPHANS_JSON="$RUN_DIR/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" "$IID"; orc=$?
+  mset --argjson oc "$(jq -c --argjson rc "$orc" '. + {rc:$rc}' "$RUN_DIR/orphan_check.json" 2>/dev/null || echo null)" '.orphan_check = $oc'
+  rm -f "$RUN_DIR/orphan_check.json"
+  [ "$orc" = 0 ] || { say "THIS RUN'S INSTANCE MAY STILL BE ALIVE (orphans rc $orc)"; exit 3; }
+}
 LATE_FAIL=0
 mset() {
   local tmp
@@ -401,8 +483,17 @@ LRC=$?
 rm -f "$LIVE_SPEC"
 if [ $LRC -ne 0 ] || ! jq -e .instance_id "$RUN_DIR/launch.json" >/dev/null 2>&1; then
   cat "$RUN_DIR/launch.err" >&2
-  mset --arg t "$LAUNCH_AT" '.launch = {at:$t, error:"spawn task run failed"}'
-  scripts/orphans.sh --own "$TASK_ID"
+  mset --arg t "$LAUNCH_AT" --arg e "$(tr '\n' ' ' < "$RUN_DIR/launch.err" | cut -c1-500)" \
+    '.launch = {at:$t, error:"spawn task run failed", spawn_error:$e}'
+  # Did the failed launch leave an instance after all? The scoped check decides whether this is a
+  # non-run (finalised as never launched, on exit) or a possible orphan (left for make orphans).
+  AK2_ORPHANS_JSON="$RUN_DIR/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" 2>&1 | tee "$RUN_DIR/orphans.txt"
+  ORC=${PIPESTATUS[0]}
+  OC=$(jq -c --argjson rc "$ORC" '. + {rc:$rc}' "$RUN_DIR/orphan_check.json" 2>/dev/null) ||
+    OC=$(jq -nc --argjson rc "$ORC" '{mode:"own", rc:$rc, own_gone:false, error:"orphans.sh wrote no usable summary"}')
+  rm -f "$RUN_DIR/orphan_check.json"
+  mset --argjson oc "$OC" '.orphan_check = $oc'
+  [ "$ORC" = 0 ] || { NO_FINALISE=1; say "THIS RUN'S TASK MAY BE ALIVE after a failed launch (orphans rc $ORC); not finalised"; exit 3; }
   die "launch failed (rc=$LRC)"
 fi
 IID=$(jq -r .instance_id "$RUN_DIR/launch.json")
@@ -414,12 +505,38 @@ aws ec2 create-tags --region "$LREGION" --resources "$IID" --tags \
   say "WARNING: create-tags failed; orphans still finds it by spawn:task-id=$TASK_ID"
 if [ "$LREGION" != "$REGION" ]; then
   say "spawn launched in $LREGION, not the requested $REGION: terminating $IID"
-  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
-  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
-  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" \
-    '.launch = {requested_at:$t, instance_id:$iid, region:$lr, error:"launched in the wrong region; terminated by run.sh"}'
-  scripts/orphans.sh --own "$TASK_ID" "$IID"
+  terminate_finalise "launched in the wrong region; terminated by run.sh"
   die "launch region $LREGION != $REGION"
+fi
+# The conductor's credentials (docs/conductor.md, "IAM"): spawn task run gives every instance its
+# scoped spawn-instance-<hash> role, which cannot launch anything. The conductor needs
+# ak2-conductor (make conductor-iam), so its association is replaced here, at once; the body waits
+# until IMDS shows it before any AWS work. Any failure terminates the instance: without the role
+# it could only fail.
+if [ "$CONDUCTOR" = 1 ]; then
+  ASSOC=""; OLDP=""
+  for i in $(seq 1 24); do
+    AJ=$(aws ec2 describe-iam-instance-profile-associations --region "$LREGION" --filters "Name=instance-id,Values=$IID" \
+      --query 'IamInstanceProfileAssociations[?State==`associated`]|[0]' --output json 2>/dev/null)
+    ASSOC=$(echo "$AJ" | jq -r '.AssociationId // empty' 2>/dev/null); OLDP=$(echo "$AJ" | jq -r '.IamInstanceProfile.Arn // empty' 2>/dev/null)
+    [ -n "$ASSOC" ] && break
+    sleep 5
+  done
+  NEWJ=""
+  if [ -n "$ASSOC" ]; then
+    NEWJ=$(aws ec2 replace-iam-instance-profile-association --region "$LREGION" --association-id "$ASSOC" \
+      --iam-instance-profile "Name=$AK2_CONDUCTOR_PROFILE" --output json 2>&1)
+  fi
+  NEWP=$(echo "$NEWJ" | jq -r '.IamInstanceProfileAssociation.IamInstanceProfile.Arn // empty' 2>/dev/null)
+  if [[ "$NEWP" != */"$AK2_CONDUCTOR_PROFILE" ]]; then
+    say "conductor: could not give $IID the instance profile $AK2_CONDUCTOR_PROFILE (association '${ASSOC:-none}': $(echo "$NEWJ" | tr '\n' ' ' | cut -c1-300)); terminating it"
+    terminate_finalise "conductor instance profile not replaced; terminated by run.sh (make conductor-iam first)"
+    die "the conductor needs the instance profile $AK2_CONDUCTOR_PROFILE (make conductor-iam; docs/conductor.md)"
+  fi
+  mset --arg a "$ASSOC" --arg from "$OLDP" --arg to "$NEWP" --arg at "$(now)" \
+    '.conductor = {instance_profile:$to, replaced:$from, association_id:$a, replaced_at:$at,
+                   staging:("s3://" + (.s3_prefix | ltrimstr("s3://") | split("/")[0]) + "/'"$AK2_RESULTS_ROOT/$AK2_STAGING_DIR"'/" + .run_id + "/")}'
+  say "conductor: $IID now has instance profile $NEWP (was $OLDP); staging s3://$RESULTS_BUCKET/$AK2_RESULTS_ROOT/$AK2_STAGING_DIR/$RUN_ID/"
 fi
 
 # aws_try OUTVAR ARGS...: one AWS CLI call with connect/read timeouts (a fresh process, so DNS
@@ -507,11 +624,8 @@ WANT_AZ=${AZ_OVR:-$(q '.placement.availability_zone // empty')}
 GOT_AZ=$(echo "${DESC:-null}" | jq -r '.Placement.AvailabilityZone // empty')
 if [ -n "$WANT_AZ" ] && [ -n "$GOT_AZ" ] && [ "$GOT_AZ" != "$WANT_AZ" ]; then
   say "spawn launched in $GOT_AZ, not the requested $WANT_AZ: terminating $IID"
-  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
-  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
-  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --arg got "$GOT_AZ" --arg want "$WANT_AZ" \
-    '.launch = {requested_at:$t, instance_id:$iid, region:$lr, az:$got, requested_az:$want, error:"launched in the wrong AZ; terminated by run.sh"}'
-  scripts/orphans.sh --own "$TASK_ID" "$IID"
+  terminate_finalise "launched in the wrong AZ; terminated by run.sh" "$(jq -nc --arg got "$GOT_AZ" --arg want "$WANT_AZ" '{az:$got, requested_az:$want}')"
+  mset --arg got "$GOT_AZ" '.instance.az = $got'
   die "launch AZ $GOT_AZ != requested $WANT_AZ"
 fi
 [ -n "$WANT_AZ" ] && [ -z "$GOT_AZ" ] && say "WARNING: the launch AZ could not be read; the requested $WANT_AZ is unchecked here (make ladder-campaign checks instance.az)"
@@ -642,6 +756,9 @@ mset --arg state "$STATE" --arg basis "$FINAL_BASIS" --arg end "$END_ISO" --argj
        ((([.billed_seconds, 60]|max) * .truffle_price_usd_per_hour / 3600) * 1e6 | round / 1e6) else null end)
   | .cost_basis = "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests"
   | .manifest_finalised_at = $fin'
+# Who finalised it: the conductor, from its own run (make harvest checks this against the staging id).
+[ -z "$FIN_BY" ] || mset --arg by "$FIN_BY" --arg cr "$FIN_RUN" '.finalised_by = $by | .finalised_by_run_id = $cr' ||
+  say "WARNING: could not record finalised_by in the manifest"
 EXIT=$(jq -r '.task.exit_code // 99' "$M" 2>/dev/null || echo 99)
 [ "$REQS" = null ] && say "WARNING: the spec recorded no request counts (ak2_req)"
 

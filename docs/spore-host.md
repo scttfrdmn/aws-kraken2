@@ -9,9 +9,9 @@ How aws-kraken2 uses spawn, truffle, lagotto, spored and cohort. Verified agains
 
 | tool | where | what we use it for |
 |---|---|---|
-| `spawn` | `/opt/homebrew/bin/spawn` (brew `spore-host/tap/spawn`) | `spawn task run --spec` launches one ephemeral instance per TaskSpec |
+| `spawn` | `bin/spawn`, 0.123.0 from its release artefact (`make tools`; docs/run.md, "Pinned tools"). The Homebrew one is never used by `make run` | `spawn task run --spec` launches one ephemeral instance per TaskSpec |
 | `spored` | installed on the instance by spawn's bootstrap; not a local CLI | enforces TTL, `cost_limit` and `on_complete`; runs the pre-stop flush hook |
-| `truffle` | `/opt/homebrew/bin/truffle` | sizing inside spawn; `truffle find <type> --regions R --show-price -o json` for the price recorded in the manifest |
+| `truffle` | `bin/truffle`, 0.57.1 (`make tools`) | sizing inside spawn; `truffle find <type> --regions R --show-price -o json` for the price recorded in the manifest |
 | `lagotto` | `/opt/homebrew/bin/lagotto` | capacity watches for scarce types. Not needed so far |
 | `cohort` | Go library `github.com/spore-host/cohort`, no CLI | all-or-nothing multi-node sets. Not used yet; if a sharded run needs it, it is imported, not installed |
 | nf-spawn | Nextflow plugin | not used; its orphan bug (nf-spawn#96) is why `make orphans` runs after every run |

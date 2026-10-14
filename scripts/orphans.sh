@@ -12,6 +12,11 @@
 #
 # In both modes an instance past its spawn:ttl-deadline + 15 min is flagged PROBABLE ORPHAN: a
 # healthy run is terminated by spored at its TTL.
+#
+# The conductor (docs/conductor.md: task id ak2-conductor-*, launched by make run GATE=conductor) is
+# an ak2 instance that is meant to be alive while a campaign runs. Within its TTL it is listed as
+# CONDUCTOR and not counted, in both modes; past its TTL + 15 min, or with a deadline that is missing
+# or does not parse, it counts like any other instance.
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=/dev/null
@@ -40,7 +45,7 @@ write_json() {
       --arg failed "$FAILED_REGIONS" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '
       {mode:"own", task_id:$task, rc:$rc, own_gone:($rc == 0),
        others:[.[] | select(.own | not) | {region, id, task_id:.task, state, launch, ttl_deadline:.deadline,
-               flag:(if .stale == true then "probable_orphan" elif .stale == "unparseable" then "deadline_unparseable"
+               flag:(if .conductor == true then "conductor" elif .stale == true then "probable_orphan" elif .stale == "unparseable" then "deadline_unparseable"
                      elif .stale == null then "no_deadline" else "within_ttl" end)}],
        checked_regions:$checked, failed_regions:($failed | split(" ") | map(select(. != ""))), at:$at}' \
       > "$AK2_ORPHANS_JSON"; } 2>/dev/null ||
@@ -85,17 +90,19 @@ NOW=$(date -u +%s)
 # Annotate each live instance: own (this run) or not, and probable orphan (past TTL + grace).
 # A deadline that does not parse keeps its row, flagged: dropping it would fail open.
 ROWS=$(cat "$TMP"/*.out 2>/dev/null | jq -c --arg task "$OWN_TASK" --arg iids " $OWN_IIDS " \
-  --argjson now "$NOW" --argjson grace "$GRACE_S" '
+  --argjson now "$NOW" --argjson grace "$GRACE_S" --arg cp "${AK2_TASK_PREFIX}${AK2_CONDUCTOR_GATE}-" '
   .id as $id
   | . + {own: ($task != "" and (.task == $task or ($iids | contains(" " + $id + " ")))),
          stale: (if .deadline == null then null
                  else (try (($now - (.deadline | sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | fromdateiso8601)) > $grace)
-                       catch "unparseable") end)}')
+                       catch "unparseable") end)}
+  | . + {conductor: ((.task | startswith($cp)) and .stale == false)}')
 ROWS_RC=$?
 rm -rf "$TMP"
 [ "$ROWS_RC" = 0 ] || { echo "orphans: could not process the instance list (jq exit $ROWS_RC)" >&2; exit 2; }
 row() { jq -r '[.region, .id, .state, .type, .launch, .task, "ttl=" + .ttl,
-                (if .stale == true then "PROBABLE ORPHAN (past TTL deadline + 15 min)"
+                (if .conductor then "CONDUCTOR (gate conductor, within TTL; not an orphan, not counted)"
+                 elif .stale == true then "PROBABLE ORPHAN (past TTL deadline + 15 min)"
                  elif .stale == "unparseable" then "deadline unparseable (spawn:ttl-deadline=\(.deadline | tojson))"
                  elif .stale == null then "no ttl-deadline tag" else "within TTL" end)] | @tsv' ||
         { echo "orphans: could not format the instance list" >&2; exit 2; }; }
@@ -103,8 +110,10 @@ row() { jq -r '[.region, .id, .state, .type, .launch, .task, "ttl=" + .ttl,
 if [ -z "$OWN_TASK" ]; then
   if [ -n "$ROWS" ]; then echo "$ROWS" | row || exit 2; fi
   if [ "$failed" -ne 0 ]; then echo "orphans: could not query every region" >&2; exit 2; fi
-  if [ -n "$ROWS" ]; then echo "orphans: instances above are still alive (run this when no runs are in flight)" >&2; exit 1; fi
-  echo "orphans: none in $N regions"
+  COUNTED=$(echo "$ROWS" | jq -c 'select(.conductor | not)') || { echo "orphans: jq failed selecting instances" >&2; exit 2; }
+  NCOND=$(echo "$ROWS" | jq -s 'map(select(.conductor)) | length') || exit 2
+  if [ -n "$COUNTED" ]; then echo "orphans: instances above are still alive (run this when no runs are in flight)" >&2; exit 1; fi
+  echo "orphans: none in $N regions$([ "${NCOND:-0}" -gt 0 ] && echo "; $NCOND conductor(s) running within TTL (listed above; not orphans)")"
   exit 0
 fi
 

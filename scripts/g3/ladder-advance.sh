@@ -12,6 +12,10 @@
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 2
+# The pinned truffle (make tools; docs/run.md, "Pinned tools"), never the one on PATH.
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$PWD" || { echo "ladder-advance: the pinned spawn/truffle are not in place (make tools)" >&2; exit 2; }
 echo "ladder-advance: shell flags $-"
 COHORT=${1:-}
 [[ "$COHORT" =~ ^[1-9][0-9]*$ ]] || { echo "usage: make ladder-advance COHORT=<n> [DRY_RUN=1]" >&2; exit 2; }

@@ -4,7 +4,8 @@
 # first (rep 2 reversed), skipping what the record already has, through make run with
 # NODES = WANT_N and AK2_LADDER_REP; make orphans and make g3-ladder after every run. DRY_RUN=1
 # prints the plan for the record and launches nothing. The planner and driver are
-# scripts/lib/ladder_campaign.py. It commits nothing.
+# scripts/lib/ladder_campaign.py. It commits nothing. The drain flag (make ladder-campaign-drain)
+# stops further launches; the campaign then exits 4 (drained) once its runs in flight are recorded.
 #
 # Deliberately not `set -e`: every status is checked by hand.
 set +e

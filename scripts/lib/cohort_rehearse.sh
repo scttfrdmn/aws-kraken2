@@ -27,6 +27,10 @@ set +e
 set -uo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$ROOT" || exit 1
+# The pinned truffle (make tools; docs/run.md, "Pinned tools"), never the one on PATH.
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$PWD" || { echo "rehearse: the pinned spawn/truffle are not in place (make tools)" >&2; exit 2; }
 . scripts/pin.env
 . scripts/paths.sh
 echo "rehearse: shell flags $-"

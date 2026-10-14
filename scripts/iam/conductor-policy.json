@@ -1,0 +1,155 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Ec2ReadEverywhere",
+      "Effect": "Allow",
+      "Action": ["ec2:Describe*"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "RunInstancesOnlyAk2TasksWithTheRunRole",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:us-west-2:942542972736:instance/*",
+      "Condition": {
+        "StringLike": {"aws:RequestTag/spawn:task-id": "ak2-*"},
+        "StringEquals": {
+          "aws:RequestTag/spawn:managed": "true",
+          "ec2:InstanceProfile": "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+        }
+      }
+    },
+    {
+      "Sid": "RunInstancesVolumesOfAk2Tasks",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:us-west-2:942542972736:volume/*",
+      "Condition": {"StringLike": {"aws:RequestTag/spawn:task-id": "ak2-*"}}
+    },
+    {
+      "Sid": "RunInstancesNetworkInUsWest2",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": [
+        "arn:aws:ec2:us-west-2:942542972736:subnet/*",
+        "arn:aws:ec2:us-west-2:942542972736:network-interface/*",
+        "arn:aws:ec2:us-west-2:942542972736:security-group/*",
+        "arn:aws:ec2:us-west-2:942542972736:key-pair/*"
+      ]
+    },
+    {
+      "Sid": "RunInstancesAmazonImagesOnly",
+      "Effect": "Allow",
+      "Action": "ec2:RunInstances",
+      "Resource": "arn:aws:ec2:us-west-2::image/*",
+      "Condition": {"StringEquals": {"ec2:Owner": "amazon"}}
+    },
+    {
+      "Sid": "TagOnLaunch",
+      "Effect": "Allow",
+      "Action": "ec2:CreateTags",
+      "Resource": [
+        "arn:aws:ec2:us-west-2:942542972736:instance/*",
+        "arn:aws:ec2:us-west-2:942542972736:volume/*"
+      ],
+      "Condition": {"StringEquals": {"ec2:CreateAction": "RunInstances"}}
+    },
+    {
+      "Sid": "TagStopTerminateAk2TasksOnly",
+      "Effect": "Allow",
+      "Action": ["ec2:CreateTags", "ec2:DeleteTags", "ec2:TerminateInstances", "ec2:StopInstances"],
+      "Resource": "arn:aws:ec2:*:942542972736:instance/*",
+      "Condition": {"StringLike": {"ec2:ResourceTag/spawn:task-id": "ak2-*"}}
+    },
+    {
+      "Sid": "PassOnlyTheRunRoleToEc2",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+      "Condition": {"StringEquals": {"iam:PassedToService": "ec2.amazonaws.com"}}
+    },
+    {
+      "Sid": "ReadTheRunRole",
+      "Effect": "Allow",
+      "Action": ["iam:GetRole", "iam:GetInstanceProfile"],
+      "Resource": [
+        "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+        "arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928"
+      ]
+    },
+    {
+      "Sid": "RefreshTheRunRoleOnlyWhileBounded",
+      "Effect": "Allow",
+      "Action": "iam:PutRolePolicy",
+      "Resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+      "Condition": {"StringEquals": {"iam:PermissionsBoundary": "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"}}
+    },
+    {
+      "Sid": "ReattachSsmCoreOnlyWhileBounded",
+      "Effect": "Allow",
+      "Action": "iam:AttachRolePolicy",
+      "Resource": "arn:aws:iam::942542972736:role/spawn-instance-27cce928",
+      "Condition": {
+        "StringEquals": {
+          "iam:PolicyARN": "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+          "iam:PermissionsBoundary": "arn:aws:iam::942542972736:policy/ak2-spawn-instance-boundary"
+        }
+      }
+    },
+    {
+      "Sid": "ResultsBucketObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:GetObjectTagging", "s3:PutObjectTagging",
+        "s3:AbortMultipartUpload", "s3:ListMultipartUploadParts"
+      ],
+      "Resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/*"
+    },
+    {
+      "Sid": "ResultsBucketDeleteOnlySpawnCompletionRecords",
+      "Effect": "Allow",
+      "Action": "s3:DeleteObject",
+      "Resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2/aws-kraken2/*/spawn/*"
+    },
+    {
+      "Sid": "ResultsBucketListing",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket", "s3:ListBucketVersions", "s3:ListBucketMultipartUploads", "s3:GetBucketLocation",
+        "s3:GetBucketRequestPayment", "s3:GetBucketVersioning"
+      ],
+      "Resource": "arn:aws:s3:::aws-kraken2-942542972736-us-west-2"
+    },
+    {
+      "Sid": "RodaReadOnly",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:ListBucket", "s3:GetBucketLocation", "s3:GetBucketRequestPayment"],
+      "Resource": [
+        "arn:aws:s3:::kraken2-ncbi-refseq-complete-v205",
+        "arn:aws:s3:::kraken2-ncbi-refseq-complete-v205/*"
+      ]
+    },
+    {
+      "Sid": "PricesQuotasAmiParametersAccountName",
+      "Effect": "Allow",
+      "Action": [
+        "pricing:GetProducts", "pricing:DescribeServices", "pricing:GetAttributeValues",
+        "servicequotas:GetServiceQuota", "account:GetAccountInformation"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "PublicAmiParameters",
+      "Effect": "Allow",
+      "Action": ["ssm:GetParameter", "ssm:GetParameters"],
+      "Resource": "arn:aws:ssm:*::parameter/aws/service/*"
+    },
+    {
+      "Sid": "SporedDnsUpdater",
+      "Effect": "Allow",
+      "Action": "lambda:InvokeFunctionUrl",
+      "Resource": "arn:aws:lambda:*:966362334030:function:spawn-dns-updater"
+    }
+  ]
+}

@@ -9,6 +9,10 @@
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1
+# The pinned truffle (make tools; docs/run.md, "Pinned tools"), never the one on PATH.
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$PWD" || { echo "mkspec-u: the pinned spawn/truffle are not in place (make tools)" >&2; exit 2; }
 NAME=${1:?NAME}; TYPE=${2:?TYPE}; TTL=${3:?TTL}; BODY=${4:?BODY}; AZ=${5:-us-west-2a}; ACC=${6:-}
 PRICE=$(truffle find "$TYPE" --regions us-west-2 --show-price -o json 2>/dev/null |
   jq -r '[.. | objects | select(has("on_demand_price") and .instance_type == "'"$TYPE"'")][0].on_demand_price')
