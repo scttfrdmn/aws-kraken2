@@ -88,7 +88,7 @@ ACC=$(scripts/lib/accessions.sh "$ACC_REF") || die "env.AK2_ACCESSIONS '$ACC_REF
 ACC_REC=null
 if [[ "$ACC_REF" == @* ]]; then
   say "accessions: $ACC_REF -> $(echo "$ACC" | wc -w | tr -d ' ') runs"
-  q '.command[2] // ""' | grep -q 'accessions\.sh' ||
+  q '.command[2] // ""' | grep 'accessions\.sh' > /dev/null ||
     die "env.AK2_ACCESSIONS $ACC_REF is a reference, but the body never calls scripts/lib/accessions.sh to resolve it on the node"
   ACC_TSV=$(scripts/lib/accessions.sh -f "$ACC_REF") || die "env.AK2_ACCESSIONS: bad reference"
   ACC_BLOB=$(git rev-parse "HEAD:$ACC_TSV" 2>/dev/null) || die "env.AK2_ACCESSIONS $ACC_REF: $ACC_TSV is not committed"

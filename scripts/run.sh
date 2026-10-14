@@ -128,7 +128,7 @@ if [[ "$ACCESSIONS_REF" == @* ]]; then
     die "env.AK2_ACCESSIONS $ACCESSIONS_REF: $ACCESSIONS_TSV has uncommitted changes; commit first"
   ACCESSIONS_BLOB=$(git rev-parse "HEAD:$ACCESSIONS_TSV") || die "cannot read the blob id of $ACCESSIONS_TSV"
   # A reference is only the accessions if the body resolves it on the node.
-  q '.command[2] // ""' | grep -q 'accessions\.sh' ||
+  q '.command[2] // ""' | grep 'accessions\.sh' > /dev/null ||
     die "env.AK2_ACCESSIONS $ACCESSIONS_REF is a reference, but the body never calls scripts/lib/accessions.sh to resolve it on the node"
 fi
 ACCESSIONS=$(scripts/lib/accessions.sh "$ACCESSIONS_REF") || die "env.AK2_ACCESSIONS '$ACCESSIONS_REF' does not resolve"
