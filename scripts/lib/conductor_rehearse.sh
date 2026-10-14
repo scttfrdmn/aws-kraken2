@@ -54,6 +54,21 @@ if ! "${PODMAN[@]}" image exists "$IMG"; then
 fi
 echo "rehearse-conductor: image $IMG ($("${PODMAN[@]}" image inspect --format '{{.Id}}' "$IMG" | cut -c1-12)), $([ -n "$CONN" ] && echo "rootful ($CONN)" || echo rootless)"
 git clone -q --bare "$ROOT" "$T/origin.git" || exit 1
+# The c1 record already holds every rung, so the campaign would skip them all: a scratch commit
+# (in the scratch origin only, never pushed anywhere) drops the S2a and S5 c1 runs from the record.
+git clone -q "$T/origin.git" "$T/src" || exit 1
+DROP=$(cd "$T/src" && python3 -c '
+import glob, json, os
+for c in glob.glob("results/g3/*/cohort.json"):
+    j = json.load(open(c)); p = j.get("params") or {}
+    if p.get("cohort") == 1 and p.get("rung") in ("S2a", "S5"):
+        d = os.path.dirname(c); print(d); [print(m) for m in glob.glob(d + "-r*")]')
+[ -n "$DROP" ] || { echo "rehearse-conductor: no c1 S2a/S5 runs in the record to drop" >&2; exit 1; }
+( cd "$T/src" && git rm -rq $DROP && git -c user.email=rehearse@aws-kraken2 -c user.name=rehearse-conductor \
+    commit -qm "scratch: the record without c1 S2a and S5 (make rehearse-conductor; never pushed)" && git push -q origin HEAD ) ||
+  { echo "rehearse-conductor: scratch commit failed" >&2; exit 1; }
+SHA=$(git -C "$T/src" rev-parse --short=7 HEAD)
+echo "rehearse-conductor: scratch commit $SHA drops $(echo "$DROP" | wc -l | tr -d ' ') run dir(s) of c1 S2a/S5 from the record"
 # shellcheck source=/dev/null
 . scripts/pin.env; . scripts/paths.sh
 [ -d "$ORACLE_SRC/.git" ] || { echo "rehearse-conductor: no upstream checkout at $ORACLE_SRC (make oracle)" >&2; exit 1; }
@@ -197,7 +212,7 @@ round() {
 cj() { jq -r "$1" "$STG/conductor.json" 2>/dev/null; }
 SEAMS=(-e AK2_CAMPAIGN_RUN=/work/bin/stub-run -e AK2_CAMPAIGN_G3LADDER=/work/bin/stub-g3)
 LAPTOP="$T/laptop"
-git clone -q "$ROOT" "$LAPTOP" || exit 1
+git clone -q "$T/origin.git" "$LAPTOP" || exit 1
 harvest() {  # harvest DIR: make harvest's script in the scratch laptop clone; HOUT, HRC
   HOUT=$(cd "$LAPTOP" && AK2_HARVEST_SRC="$1" bash scripts/harvest.sh "$RUN" 2>&1); HRC=$?
 }
@@ -258,9 +273,10 @@ PRE_DRAIN=1 round early 'COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LI
 
 # ---- plan ----
 round plan 'COHORT=1; RUNGS=""; REPS=2; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=1; DRY_MAKE_RUN=0; TTL_S=7200'
-[ "$CRC" = 0 ] && grep -q 'ladder-campaign: DRY_RUN=1: nothing launched' "$T/plan.out" && grep -q '^ladder_tables: .* ladder run(s)' "$T/plan.out" &&
+[ "$CRC" = 0 ] && grep -q 'ladder-campaign: DRY_RUN=1: nothing launched' "$T/plan.out" && grep -q 'ladder-campaign: the record, ladder runs' "$T/plan.out" && ! grep -q 'refused: make g3-ladder' "$T/plan.out" &&
+  grep -E '^[0-9]+ +[0-9]+ +(S2a|S5) .* launch$' "$T/plan.out" | grep -q . &&
   [ ! -d "$STG/tree" ] && [ "$(cj .campaign_rc)" = 0 ] &&
-  ok "plan: DRY_RUN=1 with the real make g3-ladder on AL2023's python: the plan printed, nothing staged under tree/" ||
+  ok "plan: DRY_RUN=1 with the real make g3-ladder on AL2023's python: judged, S2a/S5 planned, nothing staged under tree/" ||
   bad "plan: exit $CRC; $(grep -E 'ladder-campaign|Traceback|Error' "$T/plan.out" | tail -5)"
 
 # ---- norole ----
