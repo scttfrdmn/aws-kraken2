@@ -9,6 +9,7 @@ then prints what to commit.
 
 ```bash
 make conductor-iam                                   # once, and after any change to scripts/iam/ (laptop; creates IAM)
+make tools                                           # the pinned spawn 0.123.0 and truffle 0.57.1 in bin/ (docs/run.md, "Pinned tools")
 make conductor-spec COHORT=10 [RUNGS=S1,O0] [REPS=2] [DRY_RUN=1] [DRY_MAKE_RUN=1] [TTL=<min>]   # runs/conductor.json
 git commit runs/conductor.json && git push           # the conductor clones the pushed commit
 nohup make run GATE=conductor SPEC=runs/conductor.json > /tmp/conductor.out 2>&1 &   # the launch; laptop may then sleep
@@ -35,16 +36,19 @@ in the payload and not in env:
   (`t4g.small` $0.0168/h, `c8g.medium` $0.03988/h) are tight for run.sh's `go build` of
   `scripts/udsize`. `t4g` is also burstable: unlimited-mode CPU credits are charged outside
   `cost_usd`.
-- **TTL:** `AK2_MAX_TTL_S` / 60 minutes by default, which is 8 h. A longer campaign needs a higher
-  `AK2_MAX_TTL_S`, and setting that is Scott's call. `cost_limit` is the truffle price × TTL
-  (+ $0.005, to the cent).
+- **TTL:** 72 h by default and at most (`AK2_CONDUCTOR_MAX_TTL_S`, Scott 2026-10-14; run instances
+  keep `AK2_MAX_TTL_S`, 8 h). `cost_limit` is the pinned truffle's price × TTL (+ $0.005, to the
+  cent): $3.24 for 72 h of m8g.medium. The campaign still launches nothing that would outlive the
+  conductor (the deadline, below).
 - **Buckets:** `AK2_DATASETS` declares the RODA prefix and the results bucket's `aws-kraken2/`. The
   preamble's aws shim therefore allows the nested run.sh's Payer, head-object, payload and staging
   calls, and nothing else.
 - **`DRY_RUN=1`:** the campaign only prints its plan. **`DRY_MAKE_RUN=1`:** before the campaign,
   `DRY_RUN=1 make run` of the cheapest committed `c<COHORT>` rung. That exercises spawn's sizing,
   the cost, quota and network checks, the user-data measure (`go build` of `scripts/udsize`),
-  presigning and the pin identity, all under the instance role, and launches nothing.
+  presigning and the pin identity, all under the instance role, and launches nothing. It runs in a
+  clone of its own (`git clone --shared`; `K2_SHARED_ROOT` points at the campaign's clone for
+  upstream): run.sh creates and removes run dirs there, never in the clone the campaign stages from.
 
 Its cost is overhead. It lives in `results/conductor/<id>/manifest.json` (`cost_usd`). It carries no
 ladder PARAMS (`params` is null), so `make g3-ladder` and the campaign's record never count it
@@ -83,9 +87,9 @@ Phases:
      run.sh);
    - the clone at the run id's sha7, checked against the full SHA;
    - upstream at the pin into `.oracle/src-<pin>`, which run.sh's pin identity needs;
-   - the tools of `scripts/conductor.tools.tsv`, each verified by sha256: spawn 0.123.0 and
-     truffle 0.57.1 from their GitHub releases, and Go 1.27.1 from go.dev. These are run.sh's
-     `spawn version` and `scripts/udsize` pins.
+   - `scripts/tools.sh --go` (make tools with Go): spawn 0.123.0 and truffle 0.57.1 into the
+     clone's `bin/` (`AK2_TOOLS_BIN`) and Go 1.27.1 into `.cache/tools/`, each verified by sha256
+     against `scripts/conductor.tools.tsv`. run.sh and run-multi.sh use only these.
 2. **probe** (if `DRY_MAKE_RUN=1`): the dry run described above.
 3. **campaign:** `make ladder-campaign COHORT=… [RUNGS=…] REPS=… CONCURRENCY=… [FAMILY_LIMITS=…] [DRY_RUN=1]`,
    teed to `campaign.log`. make reports any non-zero exit as 2, so the campaign's own exit is read
@@ -134,13 +138,26 @@ The staging prefix is `s3://<results bucket>/aws-kraken2/results-staging/<id>/`
 | object | what |
 |---|---|
 | `conductor.json` | state, commit, params, campaign ts and rc, drain, deadline, tool versions, `ended` |
-| `tree/<path>` | every file the campaign added to the clone (`git status`: a new directory is synced whole) |
-| `changes.tsv` | sha256, bytes and path of every one of them |
-| `tracked.patch` | `git diff` of tracked files it changed (the capacity rows appended to `g3_defects.tsv`) |
+| `tree/<path>` | what the campaign added to the clone: its campaign files, and each run or cohort dir **once it is finalised** (its manifest has `manifest_finalised_at`, or it has `cohort.json`), synced with `--delete` |
+| `changes.tsv` | sha256, bytes and path of every staged file |
+| `tracked.patch`, `tracked.patch.sha256` | `git diff` of `scripts/lib/g3_defects.tsv` (the capacity rows the campaign appends), and its sha256 |
 | `campaign.log` | the campaign's output |
 | `DRAIN` | written by `make ladder-campaign-drain CAMPAIGN=<id>` |
 
 The conductor's own run log streams to its run prefix as for any run, through the preamble.
+
+**Why only finalised dirs (review B1):** run.sh and run-multi.sh create a run dir before they know
+whether the launch goes ahead. They delete it again on `DRY_RUN` and on a cost, quota or payload
+refusal. `aws s3 sync` never deletes, so staging such a dir while it existed would leave files in
+the stage that are in no `changes.tsv`, and harvest would refuse the whole campaign for good. A dir
+is therefore staged only once finalised, and a staged dir is synced with `--delete`, so a file
+removed later (the orphan check's scratch JSON) leaves the stage too. The rehearsal's `transient`
+round reproduces the bug with the old staging (`AK2C_STAGE_UNFILTERED=1`: harvest refuses) and
+passes with the filter.
+
+**Tracked changes (review N1):** the patch holds `scripts/lib/g3_defects.tsv` only. Any other
+tracked file the campaign changed is listed in `conductor.json` `unexpected_tracked`, warned in the
+log, and refused by harvest.
 
 **Drain.** Every `DRAIN_POLL_S` s (30) the body copies `…/<id>/DRAIN` to the campaign's local flag.
 The campaign then launches nothing more. It lets the runs in flight finish, finalises them and
@@ -165,6 +182,16 @@ The conductor is an ak2 instance (`spawn:task-id ak2-conductor-…`, `ak2:gate c
 - **`quota_check.sh`:** counts the conductor's vCPU (1, in the Standard family), because AWS
   counts it.
 
+## One driver per cohort
+
+A campaign on the laptop refuses to start (exit 2) while a conductor drives the same cohort.
+`scripts/lib/conductor_active.sh COHORT` reads every `conductor.json` under the staging prefix. One
+that has not ended, names the cohort (`cohort`, or `COHORT=` in its params), and whose instance is
+pending or running is active. The check exits 1 when one is active and 2 when it cannot tell; the
+campaign refuses in both cases. A conductor.json that never ended but whose instance is gone (a
+TTL kill) is reported and ignored. The conductor's own campaign does not ask
+(`AK2_FINALISED_BY=conductor`). The test seam is `AK2_CAMPAIGN_CONDUCTORS`.
+
 The stub test is `scripts/lib/orphans_conductor_test.sh` (in make test).
 
 ## IAM
@@ -181,7 +208,8 @@ everything it creates or touches is tagged `project=aws-kraken2` and `ak2:projec
 | that boundary on each run role the committed ladder specs launch under (today one: `spawn-instance-27cce928`) | |
 
 It records the ARNs, document sha256s and the simulation in `results/iam/conductor-<ts>.json`. It
-exits 0 when everything is done and verified, and 3 when the boundary is pending (below).
+exits 0 when everything is done and verified, and 3 when the boundary is pending (below). The
+laptop's spawn is the pinned one too (`make tools`).
 
 **The policy, statement by statement:**
 - `ec2:Describe*` everywhere.
@@ -223,20 +251,25 @@ an instance it may launch. The boundary caps that role at what spawn gives it to
 
 The conductor may edit the role only while the boundary is on it.
 
-Attaching the boundary changes nothing a run can do. `conductor-iam.sh` checks, live, that every
-action of the role's current policies lies inside the boundary. Still, it attaches the boundary
+Attaching the boundary changes nothing a run can do. `conductor-iam.sh` checks this live, by
+simulation (`conductor_iam_verify.py --covers ROLE`): every request the role's current policies
+allow (each Allow statement's actions × resources, with its condition values as context) is
+simulated without and with the boundary, and none may be denied with it. On 2026-10-14,
+`spawn-instance-27cce928` gave 44 requests and 0 narrowed. The negative control, a boundary without
+its SSM statement, flags all 25 SSM actions. Still, it attaches the boundary
 only when no instance is using the role. Otherwise it reports `PENDING` and exits 3. Until then
 the conductor can plan and dry-run, but its rung launches fail at `PutRolePolicy`. After a spawn
 upgrade, rerun `make conductor-iam`: a baseline grown beyond the boundary is reported, not
 attached.
 
 **Verification by behaviour:**
-- `make conductor-iam-verify` (`scripts/iam/conductor_iam_verify.py`): 59 requests through the IAM
+- `make conductor-iam-verify` (`scripts/iam/conductor_iam_verify.py`): 61 requests through the IAM
   policy simulator, each allowed request with its denied negative control. They cover another
   profile, task id, region, image owner, role, bucket and prefix; IAM writes without the boundary;
-  `CreateRole`; and the run role's own requests under the boundary. `make conductor-iam` runs it.
+  `CreateRole`; RunInstances with no instance profile or without `spawn:managed`; and the run role's
+  own requests under the boundary. `make conductor-iam` runs it.
 - `CUSTOM=1` simulates the committed documents before anything exists (`simulate-custom-policy`).
-  On 2026-10-14 it passed 59 of 59.
+  On 2026-10-14 it passed 61 of 61.
 
 ## Harvest
 
@@ -288,7 +321,11 @@ campaign has something to launch. The rounds are listed in the script's header:
 - **drain:** DRAIN mid-run; exit 4 after the in-flight run is recorded and harvested;
 - **early:** DRAIN before start;
 - **plan:** DRY_RUN with the real `make g3-ladder` on AL2023's python 3.9;
-- **norole:** the role never arrives; exit 1, still staged.
+- **norole:** the role never arrives; exit 1, still staged;
+- **transient:** a run dir that appears unfinalised and is deleted while staging passes run
+  (review B1): the harvest verifies; with the old staging it refuses (the bug, as a negative control);
+- **patch:** a `tracked.patch` that is not its recorded sha256, or that touches another file, is
+  refused.
 
 **The AWS rehearsal** comes first, before the conductor drives any real rung (the issue's point 6):
 `runs/conductor.json` as committed, which is
@@ -318,4 +355,6 @@ Read in its log (`results/conductor/<id>/log/run.log`):
 | probe or a rung fails `AccessDenied … PutRolePolicy` | the boundary is PENDING: rerun `make conductor-iam` with nothing in flight |
 | `AccessDenied … PassRole` / `RunInstances` | the spec needs a run role the policy does not name (`conductor_policy_check.py check`) |
 | campaign exit 4 with launches left, `deadline:` | the conductor's TTL would end first; launch a new conductor for the rest (done runs are skipped) |
+| `make run: the pinned spawn/truffle are not in place` | run `make tools` in this checkout |
+| laptop `make ladder-campaign` refused: `conductor … is driving cohort` | drain that conductor, or wait for it |
 | `harvest: FAIL …` | the line names the run dir and the check; nothing was installed |

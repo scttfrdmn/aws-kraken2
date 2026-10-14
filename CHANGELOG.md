@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Pinned spawn and truffle: `make tools`** (docs/run.md, "Pinned tools"). spawn 0.123.0 and
+  truffle 0.57.1 come from their release artefacts, sha256-checked per OS and architecture
+  (`scripts/conductor.tools.tsv`), into `bin/`. run.sh, run-multi.sh and mkspec-conductor use only
+  these (`scripts/lib/tools_pin.sh`) and record their paths and sha256s in the manifest. A Homebrew
+  upgrade (spawn 0.128.2 on the laptop, 2026-10-14) can no longer change, or block, a run.
 - **The conductor: ladder campaigns off the laptop** (#77; docs/conductor.md).
   - **Drain.** `make ladder-campaign-drain` and `make ladder-campaign-undrain` manage a flag:
     `results/g3/ladder-campaign/DRAIN` (gitignored), or with `CAMPAIGN=<id>` an object in the
@@ -44,6 +49,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     It verifies them through the policy simulator: `make conductor-iam-verify`, 59 cases with
     negative controls; `CUSTOM=1` runs them before anything exists. The offline consistency check
     is `scripts/iam/conductor_policy_check.py check`, in make test.
+  - **Review fixes.**
+    - Only finalised run and cohort dirs are staged, each synced with `--delete`, and the
+      `DRY_MAKE_RUN` probe runs in its own clone. Before this, a launch whose dir run.sh deleted
+      would make harvest refuse for good (B1; the rehearsal reproduces it).
+    - `tracked.patch` holds `scripts/lib/g3_defects.tsv` only, with a sha256 harvest checks (N1).
+    - A drained campaign in which a rung failed exits 1, not 4.
+    - A laptop campaign refuses while a conductor drives its cohort (`scripts/lib/conductor_active.sh`).
+    - The boundary check is simulation-based, with and without the boundary.
+    - Two more simulator negatives: RunInstances with no profile, and without `spawn:managed`.
+    - A failed profile swap records the terminate exit codes and a cost.
+  - **The conductor's TTL ceiling** is `AK2_CONDUCTOR_MAX_TTL_S` = 72 h, which is also the spec's
+    default (Scott, 2026-10-14). Run instances keep `AK2_MAX_TTL_S` = 8 h.
   - **Rehearsal.** `make rehearse-conductor` runs on AL2023 containers with podman and no AWS:
     - a stubbed campaign, staged and harvested into a clone;
     - drain mid-run and before start;

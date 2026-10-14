@@ -247,15 +247,38 @@ and `requested_az`, and exits 2. If the AZ cannot be read, a warning says so;
 `make ladder-campaign` checks every member's `instance.az` as well. `scripts/lib/run_sh_test.sh` and `run_multi_test.sh` (in
 `make test`) check each refusal and that a documented AZ passes and is recorded.
 
+## Pinned tools
+
+`make tools` (`scripts/tools.sh`) installs spawn 0.123.0 and truffle 0.57.1 into the repo's `bin/`
+(`AK2_TOOLS_BIN` overrides). They come from the release artefacts in
+`scripts/conductor.tools.tsv`, each checked by sha256 for its OS and architecture (darwin/arm64,
+linux/arm64, linux/amd64). `WITH_GO=1` also installs Go 1.27.1 into `.cache/tools/` (the
+conductor). The target is idempotent.
+
+run.sh, run-multi.sh and mkspec-conductor.sh source `scripts/lib/tools_pin.sh`:
+- `ak2_pin_tools` refuses a missing tool, or one whose `version` is not the table's;
+- it puts `bin/` first on PATH, so everything they call (spawn's sizing and launch, cost_check.sh's
+  truffle) uses the pinned binaries;
+- it records `tools: {spawn, truffle, spawn_path, spawn_sha256, truffle_path, truffle_sha256}` in
+  every manifest and `cohort.json`.
+
+This matters because Homebrew upgraded the laptop's spawn to 0.128.2 on 2026-10-14. spawn 0.123.0
+is a ruling, and the udsize check measures it. A Homebrew spawn first on PATH is never used:
+run_sh_test checks this, and that the table's spawn is the one `scripts/udsize/go.mod` names. Run
+`make tools` once per checkout or worktree.
+
 ## The conductor gate and finalised_by
 
 `GATE=conductor` goes only with a `runs/conductor*.json` spec, and the other way round
-(docs/conductor.md). For that gate, run.sh also refuses:
+(docs/conductor.md). Its TTL ceiling is `AK2_CONDUCTOR_MAX_TTL_S` (72 h, Scott 2026-10-14); every
+run instance keeps `AK2_MAX_TTL_S` (8 h). For that gate, run.sh also refuses:
 - a tree that is not clean anywhere, `results/` and untracked files included;
 - a HEAD that is not on origin.
 
 After launch it replaces the instance's profile with `ak2-conductor` (`manifest.conductor`), and
-terminates the instance if it cannot. run-multi.sh refuses the gate.
+terminates the instance if it cannot. In that case it records the terminate and wait exit codes,
+and a cost from launch to termination at the on-demand price, and finalises the manifest; if the
+instance may still be alive it exits 3. run-multi.sh refuses the gate.
 
 Two more launch-host variables are set by the conductor's body, and refused anywhere else:
 - `AK2_FINALISED_BY=conductor` with `AK2_CONDUCTOR_RUN_ID=<conductor run id>`: recorded as
