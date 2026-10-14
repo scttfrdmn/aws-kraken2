@@ -11,6 +11,11 @@
 #                (untracked included) and a HEAD not on origin are refused; AK2_FINALISED_BY other than
 #                conductor, or conductor without a conductor run id, is refused; a clean, pushed HEAD
 #                passes.
+#   launch fail  (review B2) run.sh driven through sizing, cost, quota, user data and the payload to a
+#                spawn task run that fails with InsufficientInstanceCapacity: the manifest is
+#                finalised as a non-run (launch.error, instance.final_state never-launched, cost 0,
+#                finalised_by kept), with the scoped orphan check recorded; with that task "alive"
+#                the manifest is not finalised and run.sh exits 3.
 set +e
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")/../.." && pwd)
@@ -57,6 +62,7 @@ cp "$R/runs/plain.json" "$R/runs/conductor-x.json"
 jq '.lifecycle.ttl = "72h"' "$R/runs/plain.json" > "$R/runs/conductor-72h.json"
 jq '.lifecycle.ttl = "73h"' "$R/runs/plain.json" > "$R/runs/conductor-73h.json"
 jq '.lifecycle.ttl = "9h"' "$R/runs/plain.json" > "$R/runs/plain-9h.json"
+jq '.lifecycle.cost_limit = 0.02' "$R/runs/plain.json" > "$R/runs/deep.json"
 # Pinned tools (scripts/lib/tools_pin.sh): a wrong-version spawn dir, and a "Homebrew" spawn on PATH.
 mkdir -p "$T/wrongbin" "$T/brew"
 printf '#!/usr/bin/env bash\necho "Version: 0.128.2"\n' > "$T/wrongbin/spawn"; cp "$T/bin/truffle" "$T/wrongbin/"
@@ -173,6 +179,77 @@ UD=$(awk '$1=="require" && $2=="github.com/spore-host/spawn"{sub(/^v/,"",$3); pr
 TV=$(awk -F'\t' '$1=="spawn"{print $2; exit}' "$HERE/scripts/conductor.tools.tsv")
 [ -n "$UD" ] && [ "$UD" = "$TV" ] && ok "tools: the pinned spawn ($TV) is the one scripts/udsize measures ($UD)" ||
   bad "tools: scripts/conductor.tools.tsv pins spawn $TV but scripts/udsize/go.mod has $UD"
+
+# ---- launch failure (B2): run.sh past every pre-launch step, to a spawn task run that fails.
+D="$T/deep"; mkdir -p "$D/bin" "$D/s3"
+cat > "$D/bin/spawn" <<'EOF'
+#!/usr/bin/env bash
+case "$1 $2" in
+  "version "*) echo "Version: 0.123.0" ;;
+  "task run")
+    case " $* " in *" --dry-run "*) printf 'Instance: c8g.large (2 vCPU, 4 GiB)\nMax cost: $0.02\n' ;;
+      *) echo "launch task: InsufficientInstanceCapacity: We currently do not have sufficient c8g.large capacity" >&2; exit 1 ;; esac ;;
+  *) exit 2 ;;
+esac
+EOF
+cat > "$D/bin/truffle" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in version) echo "Version: 0.57.1" ;; find) printf '[{"instance_type":"%s","on_demand_price":0.07976}]\n' "$2" ;; esac
+EOF
+cat > "$D/bin/aws" <<'EOF'
+#!/usr/bin/env bash
+pos=(); skip=0
+for a in "$@"; do if [ $skip = 1 ]; then skip=0; continue; fi
+  case $a in --region|--query|--output|--expires-in|--filters|--bucket|--key|--tagging|--instance-types|--service-code|--quota-code) skip=1 ;; --*) ;; *) pos+=("$a") ;; esac; done
+loc() { echo "$AK2T_S3/${1#s3://}"; }
+case "${pos[0]} ${pos[1]}" in
+  "s3 presign") echo "https://b.s3.us-west-2.amazonaws.com/x?sig" ;;
+  "s3 cp") if [ "${pos[3]}" = - ]; then cat "$(loc "${pos[2]}")"; else mkdir -p "$(dirname "$(loc "${pos[3]}")")"; cp "${pos[2]}" "$(loc "${pos[3]}")"; fi ;;
+  "s3api get-object-tagging") echo '{"TagSet":[]}' ;;
+  "s3api put-object-tagging") ;;
+  "ec2 describe-regions") echo us-west-2 ;;
+  "ec2 describe-instances") case " $* " in *" json "*) [ -e "$AK2T_S3/alive" ] && cat "$AK2T_S3/alive" || echo '{"Reservations":[]}' ;; *) ;; esac ;;
+  "ec2 describe-instance-types") printf 'c8g.large\t2\n' ;;
+  "service-quotas get-service-quota") echo 640.0 ;;
+  *) echo "deep aws stub: unexpected $*" >&2; exit 2 ;;
+esac
+EOF
+cp "$T/bin/curl" "$D/bin/"
+chmod +x "$D/bin/"*
+deep() {  # deep [ENV...]: run.sh on runs/deep.json with the deep stubs; OUT, RC, DM (the manifest)
+  rm -rf "$R/results/t"
+  OUT=$(cd "$R" && env "$@" PATH="$D/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="$D/bin" AK2T_S3="$D/s3" scripts/run.sh t runs/deep.json 2>&1); RC=$?
+  DM=$(ls "$R"/results/t/*/manifest.json 2>/dev/null | head -1)
+}
+deep AK2_FINALISED_BY=conductor AK2_CONDUCTOR_RUN_ID=20261014-120000-abcdef0
+if [ "$RC" = 2 ] && [ -n "$DM" ] && [[ "$OUT" == *"launch failed (rc=1)"* ]] &&
+   jq -e '.manifest_finalised_at and .instance.final_state == "never-launched" and .cost_usd == 0 and .billed_seconds == 0
+          and (.launch.error | test("spawn task run failed")) and (.launch.spawn_error | test("InsufficientInstanceCapacity"))
+          and .orphan_check.own_gone == true and .orphan_check.rc == 0 and .task == null
+          and .finalised_by == "conductor" and .finalised_by_run_id == "20261014-120000-abcdef0"' "$DM" > /dev/null; then
+  ok "launch fail: a failed spawn task run finalises the manifest as never launched (cost 0, orphan check, finalised_by)"
+else bad "launch fail: rc $RC manifest '$DM': $(jq -c '{fin:.manifest_finalised_at, instance, launch, cost_usd}' "$DM" 2>/dev/null) $(echo "$OUT" | tail -3)"; fi
+echo '{"Reservations":[{"Instances":[{"InstanceId":"i-x","State":{"Name":"pending"},"InstanceType":"c8g.large","LaunchTime":"2026-10-14T00:00:00Z","Tags":[{"Key":"spawn:task-id","Value":"TASK"}]}]}]}' > "$D/s3/alive.tmpl"
+# The scoped check matches the run's task id, known only once run.sh has chosen it: the spawn
+# wrapper below writes the "alive" answer under the spec's task id.
+mv "$D/bin/spawn" "$D/bin/spawn.real"
+cat > "$D/bin/spawn" <<'EOF'
+#!/usr/bin/env bash
+# As the deep spawn, but the failed launch "leaves" an instance under the spec's task id.
+if [ "$1 $2" = "task run" ] && [[ " $* " != *" --dry-run "* ]]; then
+  for a in "$@"; do [ "$prev" = --spec ] && spec=$a; prev=$a; done
+  sed "s/TASK/$(jq -r .task_id "$spec")/" "$AK2T_S3/alive.tmpl" > "$AK2T_S3/alive"
+fi
+exec "$(dirname "$0")/spawn.real" "$@"
+EOF
+chmod +x "$D/bin/spawn"
+deep
+rm -f "$D/s3/alive"
+if [ "$RC" = 3 ] && [ -n "$DM" ] && jq -e '(.manifest_finalised_at | not) and .orphan_check.own_gone == false' "$DM" > /dev/null &&
+   [[ "$OUT" == *"MAY BE ALIVE after a failed launch"* ]]; then
+  ok "launch fail: when the failed launch's task is alive, the manifest is left unfinalised and run.sh exits 3"
+else bad "launch fail (alive): rc $RC: $(jq -c '{fin:.manifest_finalised_at, oc:.orphan_check}' "$DM" 2>/dev/null) $(echo "$OUT" | tail -3)"; fi
+rm -rf "$R/results/t"
 
 echo "run_sh_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]

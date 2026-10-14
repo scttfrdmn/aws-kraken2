@@ -9,6 +9,10 @@
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 2
+# The pinned truffle (make tools; docs/run.md, "Pinned tools"), never the one on PATH.
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$PWD" || { echo "ladder-types: the pinned spawn/truffle are not in place (make tools)" >&2; exit 2; }
 echo "ladder-types: shell flags $-"
 command -v truffle > /dev/null || { echo "ladder-types: truffle not on PATH" >&2; exit 2; }
 MODE=write; [ "${1:-}" = check ] && MODE=check

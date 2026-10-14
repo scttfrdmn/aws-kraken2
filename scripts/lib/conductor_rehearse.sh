@@ -26,6 +26,11 @@
 #            printed, exit 0, nothing staged under tree/;
 #   norole   iam/info keeps spawn's profile: the body fails (exit 1) after AK2C_ROLE_WAIT tries,
 #            conductor.json still staged and ended (negative control for the role wait);
+#   launchfail (review B2) every launch fails at spawn task run (InsufficientInstanceCapacity), the
+#            member manifest finalised as never launched, as run.sh now leaves it: the campaign
+#            records capacity, retries in the documented AZ, stops the rung (exit 1) and appends its
+#            g3_defects.tsv rows; every cohort dir and member is staged, harvest verifies, installs
+#            them and applies the g3_defects.tsv patch;
 #   transient (review B1) a launch whose run dir appears unfinalised and is then deleted, as run.sh
 #            and run-multi.sh do on DRY_RUN and on refusals, while staging passes run: with the
 #            filter, harvest verifies; with AK2C_STAGE_UNFILTERED=1 (the old staging) harvest refuses
@@ -156,6 +161,25 @@ fin = {k: v for k, v in fin.items() if v}
 cd = "results/g3/" + cid
 os.makedirs(cd)
 spec_sha = hashlib.sha256(open(spec, "rb").read()).hexdigest()
+if os.environ.get("AK2T_LAUNCHFAIL"):
+    # run-multi.sh with a member whose spawn task run failed: run.sh finalised it as never launched.
+    d = cd + "-r0"
+    os.makedirs(d)
+    open(d + "/spec.json", "wb").write(open(spec, "rb").read())
+    open(d + "/launch.err", "w").write("launch task: InsufficientInstanceCapacity: no capacity\n")
+    m = dict({"run_id": cid + "-r0", "spec": spec, "spec_sha256": spec_sha, "commit": sha, "params": p, "cohort": {"id": cid},
+              "launch": {"error": "spawn task run failed; launch failed (rc=1)", "spawn_error": "InsufficientInstanceCapacity"},
+              "instance": {"final_state": "never-launched", "final_state_basis": "no instance was launched"}, "task": None,
+              "billed_seconds": 0, "cost_usd": 0, "orphan_check": {"mode": "own", "rc": 0, "own_gone": True},
+              "manifest_finalised_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}, **fin)
+    json.dump(m, open(d + "/manifest.json", "w"))
+    open(cd + "/rank-0.run.log", "w").write("make run: launch failed (rc=1)\nInsufficientInstanceCapacity\n")
+    json.dump(dict({"cohort_id": cid, "spec": spec, "params": p, "nodes": n,
+                    "members": [{"rank": 0, "run_id": cid + "-r0", "exit_code": None, "own_gone": True, "cost_usd": 0, "rc": "2"}],
+                    "ended": "members done (fail fast: rank 0 exited 2)", "cost_usd": 0, "prefix_fetched": True, "sweep_failures": [],
+                    "multipart_abort_failures": 0, "orphans_rc": 0, "orphans_scope": "own"}, **fin), open(cd + "/cohort.json", "w"))
+    print("make run (multi): rank 0: run.sh exited 2: InsufficientInstanceCapacity", flush=True)
+    sys.exit(2)
 time.sleep(float(os.environ.get("AK2T_RUN_S", "2")))
 mem = []
 for k in range(n):
@@ -302,6 +326,21 @@ round norole 'COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DR
 [ "$CRC" = 1 ] && [ "$(cj .ended)" = true ] && cj .state | grep -q 'never got the ak2-conductor role' &&
   ok "norole: without the ak2-conductor role the body fails (exit 1) and still stages conductor.json ended (negative control)" ||
   bad "norole: exit $CRC, ended $(cj .ended), state '$(cj .state)'"
+
+# ---- launchfail (B2): every launch fails at spawn task run; the members are finalised non-runs
+round launchfail 'COHORT=1; RUNGS="S5"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200' "${SEAMS[@]}" \
+  -e AK2T_LAUNCHFAIL=1
+NC=$(ls -d "$STG"/tree/results/g3/2*-n[0-9] 2>/dev/null | grep -cv -- '-r[0-9]*$')
+NM=$(ls "$STG"/tree/results/g3/2*-n[0-9]-r0/manifest.json 2>/dev/null | wc -l | tr -d ' ')
+[ "$CRC" = 1 ] && [ "$(cj .campaign_rc)" = 1 ] && [ "$NC" -ge 1 ] && [ "$NM" = "$NC" ] && grep -q 'class capacity' "$T/launchfail.out" &&
+  [ -s "$STG/tracked.patch" ] &&
+  ok "launchfail: capacity recorded, the rung stopped (campaign exit 1), all $NC cohort dir(s) and their never-launched members staged, the g3_defects.tsv patch staged" ||
+  bad "launchfail: exit $CRC, campaign rc $(cj .campaign_rc), $NC cohort dir(s), $NM member manifest(s), patch $(wc -c < "$STG/tracked.patch" 2>/dev/null)"
+harvest "$STG"
+[ "$HRC" = 0 ] && git -C "$LAPTOP" status --porcelain | grep -q ' M scripts/lib/g3_defects.tsv' && echo "$HOUT" | grep -q 'git add .*scripts/lib/g3_defects.tsv' &&
+  ok "launchfail: harvest verifies the failed launches, installs them and applies the g3_defects.tsv rows" ||
+  bad "launchfail: harvest rc $HRC: $(echo "$HOUT" | grep -E 'FAIL|git add' | head -4)"
+git -C "$LAPTOP" checkout -q -- scripts/lib/g3_defects.tsv; git -C "$LAPTOP" clean -qfd results >/dev/null 2>&1
 
 # ---- transient (B1): an unfinalised run dir that appears and is deleted between staging passes
 round transient 'COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200' "${SEAMS[@]}" \

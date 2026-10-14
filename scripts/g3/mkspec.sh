@@ -12,6 +12,10 @@
 set +e
 set -uo pipefail
 cd "$(dirname "$0")/../.." || exit 1
+# The pinned truffle (make tools; docs/run.md, "Pinned tools"), never the one on PATH.
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$PWD" || { echo "mkspec: the pinned spawn/truffle are not in place (make tools)" >&2; exit 2; }
 EXP=${1:?EXP}; TYPE=${2:?TYPE}; N=${3:?N}; COHORT=${4:?COHORT}; shift 4
 THREADS=16 INFLIGHT=auto CONTROL_MOD=1 REPEAT_LPT=1 C1_REPS=3 TTL=60 AZ=us-west-2a
 for kv in "$@"; do

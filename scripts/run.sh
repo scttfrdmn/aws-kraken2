@@ -21,7 +21,8 @@ export AWS_PROFILE
 
 GATE=${1:-}
 SPEC=${2:-}
-die() { echo "make run: $*" >&2; exit 2; }
+DIE_MSG=""
+die() { DIE_MSG=$*; echo "make run: $*" >&2; exit 2; }
 say() { echo "make run: $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
@@ -287,7 +288,10 @@ RESOLVED="$RUN_DIR/spec.resolved.json"
 # The spec spawn reads carries the presigned URL, so it lives outside results/ and is removed on
 # any exit; $RESOLVED under results/ is only ever written redacted (by write_resolved).
 LIVE_SPEC=$(mktemp "${TMPDIR:-/tmp}/ak2-spec.XXXXXX") || die "mktemp failed"
-trap 'rm -f "$LIVE_SPEC"' EXIT
+# On every exit: the presigned spec goes, and a manifest that launched nothing is finalised
+# (finalise_unlaunched, below; review B2).
+IID=""; NO_FINALISE=0
+trap 'RC_EXIT=$?; rm -f "$LIVE_SPEC"; finalise_unlaunched; exit $RC_EXIT' EXIT
 write_resolved() {
   jq '.env.AK2_PAYLOAD_URL = "<presigned GET of env.AK2_PAYLOAD_URI; redacted>"' "$LIVE_SPEC" > "$RESOLVED"
 }
@@ -374,6 +378,55 @@ if [ -n "$COHORT_ID" ]; then
 fi
 # After launch a manifest write failure must not abandon the instance: record it, carry on,
 # and exit non-zero at the end.
+# finalise_unlaunched: run.sh is exiting with a manifest but no instance. A launch failure
+# (InsufficientInstanceCapacity, ...) or a refusal between manifest and launch (payload upload, tag):
+# the manifest is finalised as a non-run, so the record, the campaign and make harvest see a finished
+# record, not a driver that died. Not when the dir was removed (DRY_RUN and the pre-launch
+# refusals do that), when an instance was launched (that path finalises itself, or is left to
+# scripts/refinalise.sh), when it is already finalised, or when this run's task may be alive
+# (NO_FINALISE: its orphan check failed).
+finalise_unlaunched() {
+  [ -f "${M:-}" ] && [ -z "$IID" ] && [ "$NO_FINALISE" = 0 ] || return 0
+  jq -e '.manifest_finalised_at' "$M" > /dev/null 2>&1 && return 0
+  local tmp; tmp=$(mktemp) || return 0
+  jq --arg why "${DIE_MSG:-run.sh exited ${RC_EXIT:-?} before launching}" --arg fin "$(now)" --arg by "$FIN_BY" --arg cr "$FIN_RUN" '
+    .launch = ((.launch // {}) + {error: ((.launch.error // "") + (if (.launch.error // "") == "" then "" else "; " end) + $why)})
+    | .instance = {final_state:"never-launched", final_state_basis:"no instance was launched"}
+    | .task = null | .start = null | .stop = null | .billed_seconds = 0 | .cost_usd = 0
+    | .cost_basis = "no instance was launched: nothing billed"
+    | .manifest_finalised_at = $fin
+    | if $by != "" then .finalised_by = $by | .finalised_by_run_id = $cr else . end' "$M" > "$tmp" && mv "$tmp" "$M" ||
+    echo "make run: WARNING: could not finalise $M as never launched" >&2
+  rm -f "$tmp"
+}
+# terminate_finalise ERROR [JQ_EXTRA_LAUNCH_FIELDS_JSON]: run.sh gives up on an instance it launched
+# (wrong region, wrong AZ, the conductor's profile not swapped). Terminate it and wait, record both exit
+# codes, a cost from the launch request to now at the on-demand price, and finalise the manifest; then
+# the scoped orphan check (exit 3 if the instance may still be alive). The caller dies after.
+terminate_finalise() {
+  local err=$1 extra=${2:-'{}'} trc wrc end_e start_e price orc
+  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null; trc=$?
+  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"; wrc=$?
+  end_e=$(date -u +%s)
+  start_e=$(python3 -c 'import calendar,sys,time; print(calendar.timegm(time.strptime(sys.argv[1], "%Y-%m-%dT%H:%M:%SZ")))' "$LAUNCH_AT" 2>/dev/null)
+  price=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2>/dev/null | jq '.[0].on_demand_price // null' 2>/dev/null)
+  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --argjson trc "$trc" --argjson wrc "$wrc" \
+    --argjson price "${price:-null}" --argjson secs "$(( end_e - ${start_e:-$end_e} ))" --arg end "$(now)" --arg err "$err" \
+    --argjson extra "$extra" --arg by "$FIN_BY" --arg cr "$FIN_RUN" '
+    .launch = ({requested_at:$t, instance_id:$iid, region:$lr, terminate_rc:$trc, wait_terminated_rc:$wrc, error:$err} + $extra)
+    | .instance = ((.instance // {}) + {final_state:(if $trc == 0 and $wrc == 0 then "terminated" else null end),
+                                        final_state_basis:(if $trc == 0 and $wrc == 0 then "terminated by run.sh" else "unknown" end)})
+    | .task = null | .truffle_price_usd_per_hour = $price | .stop = $end | .billed_seconds = ([$secs, 60] | max)
+    | .cost_usd = (if $price == null then null else ((.billed_seconds * $price / 3600) * 1e6 | round / 1e6) end)
+    | .cost_basis = "on-demand truffle price x (run.sh terminate time - launch request), 60 s minimum: an upper-side estimate; the body never ran"
+    | .manifest_finalised_at = $end
+    | if $by != "" then .finalised_by = $by | .finalised_by_run_id = $cr else . end'
+  [ "$trc" = 0 ] && [ "$wrc" = 0 ] || say "WARNING: terminate rc $trc, wait rc $wrc: check $IID by hand (make orphans)"
+  AK2_ORPHANS_JSON="$RUN_DIR/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" "$IID"; orc=$?
+  mset --argjson oc "$(jq -c --argjson rc "$orc" '. + {rc:$rc}' "$RUN_DIR/orphan_check.json" 2>/dev/null || echo null)" '.orphan_check = $oc'
+  rm -f "$RUN_DIR/orphan_check.json"
+  [ "$orc" = 0 ] || { say "THIS RUN'S INSTANCE MAY STILL BE ALIVE (orphans rc $orc)"; exit 3; }
+}
 LATE_FAIL=0
 mset() {
   local tmp
@@ -430,8 +483,17 @@ LRC=$?
 rm -f "$LIVE_SPEC"
 if [ $LRC -ne 0 ] || ! jq -e .instance_id "$RUN_DIR/launch.json" >/dev/null 2>&1; then
   cat "$RUN_DIR/launch.err" >&2
-  mset --arg t "$LAUNCH_AT" '.launch = {at:$t, error:"spawn task run failed"}'
-  scripts/orphans.sh --own "$TASK_ID"
+  mset --arg t "$LAUNCH_AT" --arg e "$(tr '\n' ' ' < "$RUN_DIR/launch.err" | cut -c1-500)" \
+    '.launch = {at:$t, error:"spawn task run failed", spawn_error:$e}'
+  # Did the failed launch leave an instance after all? The scoped check decides whether this is a
+  # non-run (finalised as never launched, on exit) or a possible orphan (left for make orphans).
+  AK2_ORPHANS_JSON="$RUN_DIR/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" 2>&1 | tee "$RUN_DIR/orphans.txt"
+  ORC=${PIPESTATUS[0]}
+  OC=$(jq -c --argjson rc "$ORC" '. + {rc:$rc}' "$RUN_DIR/orphan_check.json" 2>/dev/null) ||
+    OC=$(jq -nc --argjson rc "$ORC" '{mode:"own", rc:$rc, own_gone:false, error:"orphans.sh wrote no usable summary"}')
+  rm -f "$RUN_DIR/orphan_check.json"
+  mset --argjson oc "$OC" '.orphan_check = $oc'
+  [ "$ORC" = 0 ] || { NO_FINALISE=1; say "THIS RUN'S TASK MAY BE ALIVE after a failed launch (orphans rc $ORC); not finalised"; exit 3; }
   die "launch failed (rc=$LRC)"
 fi
 IID=$(jq -r .instance_id "$RUN_DIR/launch.json")
@@ -443,11 +505,7 @@ aws ec2 create-tags --region "$LREGION" --resources "$IID" --tags \
   say "WARNING: create-tags failed; orphans still finds it by spawn:task-id=$TASK_ID"
 if [ "$LREGION" != "$REGION" ]; then
   say "spawn launched in $LREGION, not the requested $REGION: terminating $IID"
-  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
-  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
-  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" \
-    '.launch = {requested_at:$t, instance_id:$iid, region:$lr, error:"launched in the wrong region; terminated by run.sh"}'
-  scripts/orphans.sh --own "$TASK_ID" "$IID"
+  terminate_finalise "launched in the wrong region; terminated by run.sh"
   die "launch region $LREGION != $REGION"
 fi
 # The conductor's credentials (docs/conductor.md, "IAM"): spawn task run gives every instance its
@@ -472,22 +530,7 @@ if [ "$CONDUCTOR" = 1 ]; then
   NEWP=$(echo "$NEWJ" | jq -r '.IamInstanceProfileAssociation.IamInstanceProfile.Arn // empty' 2>/dev/null)
   if [[ "$NEWP" != */"$AK2_CONDUCTOR_PROFILE" ]]; then
     say "conductor: could not give $IID the instance profile $AK2_CONDUCTOR_PROFILE (association '${ASSOC:-none}': $(echo "$NEWJ" | tr '\n' ' ' | cut -c1-300)); terminating it"
-    aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null; TRC=$?
-    aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"; WRC=$?
-    # The instance ran from launch until now: its cost, at the planned type's on-demand price.
-    END_EPOCH=$(date -u +%s); START_EPOCH=$(python3 -c 'import calendar,sys,time; print(calendar.timegm(time.strptime(sys.argv[1], "%Y-%m-%dT%H:%M:%SZ")))' "$LAUNCH_AT")
-    CPRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2>/dev/null | jq '.[0].on_demand_price // null')
-    mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --argjson trc "$TRC" --argjson wrc "$WRC" --argjson price "${CPRICE:-null}" \
-      --argjson secs "$(( END_EPOCH - ${START_EPOCH:-$END_EPOCH} ))" --arg end "$(now)" '
-      .launch = {requested_at:$t, instance_id:$iid, region:$lr, terminate_rc:$trc, wait_terminated_rc:$wrc,
-                 error:"conductor instance profile not replaced; terminated by run.sh (make conductor-iam first)"}
-      | .truffle_price_usd_per_hour = $price | .stop = $end | .billed_seconds = ([$secs, 60] | max)
-      | .cost_usd = (if $price == null then null else ((.billed_seconds * $price / 3600) * 1e6 | round / 1e6) end)
-      | .cost_basis = "on-demand truffle price x (run.sh terminate time - launch request), 60 s minimum: an upper-side estimate; the instance never ran the body"
-      | .manifest_finalised_at = $end'
-    [ "$TRC" = 0 ] && [ "$WRC" = 0 ] || say "WARNING: terminate rc $TRC, wait rc $WRC: check $IID by hand (make orphans)"
-    scripts/orphans.sh --own "$TASK_ID" "$IID"; ORC=$?
-    [ "$ORC" = 0 ] || { say "THIS RUN'S INSTANCE MAY STILL BE ALIVE (orphans rc $ORC)"; exit 3; }
+    terminate_finalise "conductor instance profile not replaced; terminated by run.sh (make conductor-iam first)"
     die "the conductor needs the instance profile $AK2_CONDUCTOR_PROFILE (make conductor-iam; docs/conductor.md)"
   fi
   mset --arg a "$ASSOC" --arg from "$OLDP" --arg to "$NEWP" --arg at "$(now)" \
@@ -581,11 +624,8 @@ WANT_AZ=${AZ_OVR:-$(q '.placement.availability_zone // empty')}
 GOT_AZ=$(echo "${DESC:-null}" | jq -r '.Placement.AvailabilityZone // empty')
 if [ -n "$WANT_AZ" ] && [ -n "$GOT_AZ" ] && [ "$GOT_AZ" != "$WANT_AZ" ]; then
   say "spawn launched in $GOT_AZ, not the requested $WANT_AZ: terminating $IID"
-  aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
-  aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
-  mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --arg got "$GOT_AZ" --arg want "$WANT_AZ" \
-    '.launch = {requested_at:$t, instance_id:$iid, region:$lr, az:$got, requested_az:$want, error:"launched in the wrong AZ; terminated by run.sh"}'
-  scripts/orphans.sh --own "$TASK_ID" "$IID"
+  terminate_finalise "launched in the wrong AZ; terminated by run.sh" "$(jq -nc --arg got "$GOT_AZ" --arg want "$WANT_AZ" '{az:$got, requested_az:$want}')"
+  mset --arg got "$GOT_AZ" '.instance.az = $got'
   die "launch AZ $GOT_AZ != requested $WANT_AZ"
 fi
 [ -n "$WANT_AZ" ] && [ -z "$GOT_AZ" ] && say "WARNING: the launch AZ could not be read; the requested $WANT_AZ is unchecked here (make ladder-campaign checks instance.az)"

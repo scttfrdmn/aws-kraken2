@@ -92,7 +92,14 @@ stage_now() {
 }
 finish() {  # finish RC: the last staging pass, conductor.json ended, background loops stopped
   local rc=$1 b
-  for b in "${BG[@]}"; do kill "$b" 2> /dev/null; done
+  # Stop the drain poller and the stager, each with its process group (an in-flight staging pass and
+  # its aws children included), and wait until they are gone: the final pass must run alone.
+  for b in "${BG[@]}"; do kill -TERM -- "-$b" 2> /dev/null; done
+  for b in "${BG[@]}"; do
+    for _ in $(seq 1 60); do kill -0 -- "-$b" 2> /dev/null || break; sleep 0.5; done
+    kill -0 -- "-$b" 2> /dev/null && { ak2_say "WARN: background group $b still alive after TERM; KILL"; kill -KILL -- "-$b" 2> /dev/null; }
+    wait "$b" 2> /dev/null
+  done
   ak2_phase stage
   stage_now; status "${STATE}" ended
   ak2_say "conductor: exit $rc (campaign rc ${CRC:-none}); staged under $STAGE/"
@@ -167,6 +174,9 @@ DLE=$(date -u -d "$DL" +%s 2> /dev/null)
 # The conductor's own end: its last launch must be finalised, staged and the body done before it.
 export AK2_CAMPAIGN_DEADLINE=$(( DLE - ${DEADLINE_MARGIN_S:-900} ))
 ak2_say "deadline: TTL ends $(date -u -d "@$DLE" +%Y-%m-%dT%H:%M:%SZ); no launch whose TTL + finalisation ends after $(date -u -d "@$AK2_CAMPAIGN_DEADLINE" +%Y-%m-%dT%H:%M:%SZ)"
+# Each loop in a process group of its own (job control on while they start), so finish() can stop
+# the loop and whatever it is running (an aws s3 sync of a staging pass) before the final pass.
+set -m
 ( while sleep "${DRAIN_POLL_S:-30}"; do
     [ -e "$W/DRAIN" ] && continue
     if aws s3 cp --only-show-errors "$STAGE/DRAIN" "$W/DRAIN.tmp" 2> /dev/null; then
@@ -176,6 +186,7 @@ ak2_say "deadline: TTL ends $(date -u -d "@$DLE" +%Y-%m-%dT%H:%M:%SZ); no launch
 BG+=($!)
 ( while sleep "${STAGE_EVERY:-60}"; do stage_now; done ) > /dev/null 2>&1 &
 BG+=($!)
+set +m
 status ready
 
 # ---- the probe: run.sh's whole pre-launch path under the instance role, launching nothing ----
