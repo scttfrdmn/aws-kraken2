@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify conductor-spec ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify conductor-spec harvest rehearse-conductor ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -333,6 +333,16 @@ conductor-iam:
 conductor-spec:
 	scripts/mkspec-conductor.sh COHORT="$(COHORT)" RUNGS="$(RUNGS)" REPS="$(or $(REPS),2)" CONCURRENCY="$(or $(CONCURRENCY),1)" \
 		FAMILY_LIMITS="$(FAMILY_LIMITS)" DRY_RUN="$(DRY_RUN)" DRY_MAKE_RUN="$(or $(DRY_MAKE_RUN),0)" TTL="$(TTL)" TYPE="$(TYPE)" OUT="$(OUT)"
+
+# A conductor campaign's staged results into results/ (docs/conductor.md, "Harvest"): fetched,
+# verified, installed; prints what to commit and commits nothing. PARTIAL=1: the conductor has not ended.
+harvest:
+	scripts/harvest.sh "$(CAMPAIGN)" "$(PARTIAL)"
+
+# The conductor end to end on AL2023 containers (docs/conductor.md, "The rehearsal"): stub spawn and
+# aws, a stubbed campaign, drain, staging and the harvest round-trip, with negative controls. No AWS.
+rehearse-conductor:
+	scripts/lib/conductor_rehearse.sh
 
 conductor-iam-verify:
 	CUSTOM="$(CUSTOM)" scripts/iam/conductor-iam-verify.sh $(ROLE_ARN)

@@ -18,7 +18,8 @@
 # to the campaign's local flag within DRAIN_POLL_S s; the campaign then launches nothing more and
 # exits 4 once its runs in flight are recorded. The body exits 0 when the campaign exits 0 or 4.
 # make rehearse-conductor seams (AK2C_*; run.sh refuses them in a spec's env, so on AWS they are
-# unset): AK2C_REHEARSE=1 (no dnf, no tool downloads: stubs on PATH), AK2C_REPO_URL, AK2C_UPSTREAM_URL.
+# unset): AK2C_REHEARSE=1 (no dnf, no tool downloads: stubs on PATH), AK2C_REPO_URL, AK2C_UPSTREAM_URL,
+# AK2C_ROLE_WAIT (tries, 5 s apart; 120), and DRAIN_POLL_S (30), STAGE_EVERY (60), DEADLINE_MARGIN_S (900).
 @PARAMS@
 W=$HOME/ak2c; mkdir -p "$W"
 ak2_phase setup
@@ -80,7 +81,7 @@ status starting
 
 # ---- the instance role: run.sh replaces spawn's profile with ak2-conductor just after launch ----
 ROLE_OK=0
-for i in $(seq 1 120); do
+for i in $(seq 1 "${AK2C_ROLE_WAIT:-120}"); do
   TOK=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 300')
   IP=$(curl -sf -m 5 -H "X-aws-ec2-metadata-token: $TOK" http://169.254.169.254/latest/meta-data/iam/info | jq -r '.InstanceProfileArn // empty')
   WHO=$(aws sts get-caller-identity --query Arn --output text 2> /dev/null)
