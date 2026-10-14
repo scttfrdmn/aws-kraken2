@@ -30,6 +30,8 @@ ROOT=$(git rev-parse --show-toplevel) || exit 2
 cd "$ROOT" || exit 2
 # shellcheck source=/dev/null
 . scripts/ak2.env
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
 export AWS_PROFILE
 echo "run-multi: shell flags $-" >&2
 
@@ -37,7 +39,10 @@ GATE=${1:-}; SPEC=${2:-}; NODES=${3:-}
 die() { echo "make run (multi): $*" >&2; exit 2; }
 say() { echo "make run (multi): $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
-for t in jq aws git truffle; do command -v "$t" >/dev/null || die "$t not on PATH"; done
+command -v jq >/dev/null || die "jq not on PATH"
+# Only the pinned spawn and truffle (make tools; docs/run.md, "Pinned tools"); members inherit the PATH.
+ak2_pin_tools "$ROOT" || die "the pinned spawn/truffle are not in place (above)"
+for t in jq aws git truffle spawn; do command -v "$t" >/dev/null || die "$t not on PATH"; done
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate> SPEC=runs/<file>.json NODES=<n>"
 [[ "$NODES" =~ ^[1-9][0-9]*$ ]] && [ "$NODES" -le 64 ] || die "NODES=$NODES: want 1 to 64"
 [ "$GATE" != "$AK2_CONDUCTOR_GATE" ] || die "the conductor is one instance: make run GATE=$GATE SPEC=runs/conductor*.json, without NODES (docs/conductor.md)"
@@ -303,10 +308,10 @@ finish() {
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
     --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
-    --argjson orcg "$ORC_GLOBAL" --arg finby "${AK2_FINALISED_BY:-}" --arg finrun "${AK2_CONDUCTOR_RUN_ID:-}" \
+    --argjson orcg "$ORC_GLOBAL" --argjson tools "$AK2_TOOLS_JSON" --arg finby "${AK2_FINALISED_BY:-}" --arg finrun "${AK2_CONDUCTOR_RUN_ID:-}" \
     --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" --argjson params "$LADP" \
     --argjson azo "$AZ_OVR_JSON" '{
-      cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, params:$params, nodes:$n, instance_type:$type, az:$az, region:$region,
+      cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, tools:$tools, params:$params, nodes:$n, instance_type:$type, az:$az, region:$region,
       launch_override:$azo,
       quota_check:$quota, cost_limit_check:$costchk, sample_accessions_ref:$accrec,
       prefix:$prefix, network:{vpc:$vpc, security_group:$sg, admits:"itself, 22/tcp, ICMP"}, start:$start, stop:$stop,

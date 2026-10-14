@@ -79,15 +79,20 @@ printf '#!/usr/bin/env bash\nexit 0\n' > "$T/tag.sh"
 # Stub truffle for the cost_limit check (scripts/lib/cost_check.sh): us-west-2 on-demand prices.
 cat > "$T/bin/truffle" <<'EOF'
 #!/usr/bin/env bash
+[ "$1" = version ] && { echo "Version:    0.57.1"; exit 0; }
 case $2 in c8g.large) p=0.07976 ;; x8g.24xlarge) p=9.3792 ;; *) echo '[]'; exit 0 ;; esac
 printf '[{"instance_type":"%s","on_demand_price":%s}]\n' "$2" "$p"
 EOF
-chmod +x "$T/bin/aws" "$T/bin/truffle" "$T/driver.sh" "$T/orphans.sh" "$T/tag.sh"
+# The pinned tools (scripts/lib/tools_pin.sh): run-multi.sh takes spawn and truffle only from AK2_TOOLS_BIN.
+printf '#!/usr/bin/env bash\n[ "$1" = version ] && echo "Version:    0.123.0"\n' > "$T/bin/spawn"
+export AK2_TOOLS_BIN="$T/bin"
+chmod +x "$T/bin/aws" "$T/bin/truffle" "$T/bin/spawn" "$T/driver.sh" "$T/orphans.sh" "$T/tag.sh"
 
 # A scratch repo holding run-multi.sh, ak2.env and a cohort spec.
 R="$T/repo"; mkdir -p "$R/scripts/lib" "$R/runs" "$R/results/cohort/PRJNA398089"
 cp "$HERE/scripts/run-multi.sh" "$HERE/scripts/ak2.env" "$R/scripts/"
-cp "$HERE/scripts/lib/quota_check.sh" "$HERE/scripts/lib/accessions.sh" "$HERE/scripts/lib/cost_check.sh" "$HERE/scripts/lib/ladder_levers.py" "$R/scripts/lib/"
+cp "$HERE/scripts/conductor.tools.tsv" "$R/scripts/"
+cp "$HERE/scripts/lib/tools_pin.sh" "$HERE/scripts/lib/quota_check.sh" "$HERE/scripts/lib/accessions.sh" "$HERE/scripts/lib/cost_check.sh" "$HERE/scripts/lib/ladder_levers.py" "$R/scripts/lib/"
 # A scratch AZ list with its evidence, for AK2_LAUNCH_AZ (docs/run.md, "Launch overrides").
 mkdir -p "$R/scripts/g3" "$R/results/ev"
 echo '{"instance":{"type":"x8g.24xlarge","az":"us-west-2c"}}' > "$R/results/ev/manifest.json"

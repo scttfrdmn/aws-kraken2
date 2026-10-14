@@ -1,4 +1,8 @@
-tool	version	url	sha256	member
-spawn	0.123.0	https://github.com/spore-host/spawn/releases/download/v0.123.0/spawn_0.123.0_linux_arm64.tar.gz	5bff96dbc1717bc99154d50b24bb6953dc6d395f677e4afea213145353409fdc	spawn
-truffle	0.57.1	https://github.com/spore-host/truffle/releases/download/v0.57.1/truffle_0.57.1_linux_arm64.tar.gz	7f83bd4fb247f3d345da932e4e03e2a14ef6862f83291dbe5a8e6cbbbcb510b8	truffle
-go	1.27.1	https://go.dev/dl/go1.27.1.linux-arm64.tar.gz	3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec	go/bin/go
+tool	version	os	arch	url	sha256	member
+spawn	0.123.0	darwin	arm64	https://github.com/spore-host/spawn/releases/download/v0.123.0/spawn_0.123.0_darwin_arm64.tar.gz	b7759a4efc82dc375d75b6494cb61f21b74726b683e26025cb4ab7ce0dc9c9d0	spawn
+spawn	0.123.0	linux	arm64	https://github.com/spore-host/spawn/releases/download/v0.123.0/spawn_0.123.0_linux_arm64.tar.gz	5bff96dbc1717bc99154d50b24bb6953dc6d395f677e4afea213145353409fdc	spawn
+spawn	0.123.0	linux	amd64	https://github.com/spore-host/spawn/releases/download/v0.123.0/spawn_0.123.0_linux_amd64.tar.gz	e0716b28be7b7b4c7a3fc8ddfe71b27ae9304fc0196af344426386f4ec969013	spawn
+truffle	0.57.1	darwin	arm64	https://github.com/spore-host/truffle/releases/download/v0.57.1/truffle_0.57.1_darwin_arm64.tar.gz	f36b6517b229bd3ed103c77c4469dca599804705734df1ad8bc59477a707d92e	truffle
+truffle	0.57.1	linux	arm64	https://github.com/spore-host/truffle/releases/download/v0.57.1/truffle_0.57.1_linux_arm64.tar.gz	7f83bd4fb247f3d345da932e4e03e2a14ef6862f83291dbe5a8e6cbbbcb510b8	truffle
+truffle	0.57.1	linux	amd64	https://github.com/spore-host/truffle/releases/download/v0.57.1/truffle_0.57.1_linux_amd64.tar.gz	48372276e59004e20c5224f96647924a3bd2d20914c1868d170b151d23e5cce6	truffle
+go	1.27.1	linux	arm64	https://go.dev/dl/go1.27.1.linux-arm64.tar.gz	3450b45a3f9ee8568792736a5c5e70a1f2e9b36c35a8f74958c03e51d7d92bec	go

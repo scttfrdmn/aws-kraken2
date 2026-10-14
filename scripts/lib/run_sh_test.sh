@@ -22,7 +22,7 @@ bad() { echo "run_sh_test: FAIL $*"; FAILN=$((FAILN + 1)); }
 
 mkdir -p "$T/bin"
 printf '#!/usr/bin/env bash\ncase "$1" in version) echo "Version: 0.123.0" ;; *) echo "stub spawn: $*" >&2; exit 2 ;; esac\n' > "$T/bin/spawn"
-printf '#!/usr/bin/env bash\ncase "$1" in version) echo "Version: 0.0.0" ;; *) echo "[]" ;; esac\n' > "$T/bin/truffle"
+printf '#!/usr/bin/env bash\ncase "$1" in version) echo "Version: 0.57.1" ;; *) echo "[]" ;; esac\n' > "$T/bin/truffle"
 printf '#!/usr/bin/env bash\nprintf "HTTP/1.1 200 OK\\r\\nx-amz-bucket-region: us-west-2\\r\\n\\r\\n"\n' > "$T/bin/curl"
 cat > "$T/bin/aws" <<'EOF'
 #!/usr/bin/env bash
@@ -54,6 +54,14 @@ jq -n --arg body "$(printf '# Parameters (scripts/g3/mkspec-ladder.sh S S5 1):\n
   env:{AK2_REGION:"us-west-2", AK2_ACCESSIONS:"", AK2_ALLOW_NO_BUCKETS:"1"},
   lifecycle:{ttl:"10m", cost_limit:0.1, on_complete:"terminate"}}' > "$R/runs/ladder.json"
 cp "$R/runs/plain.json" "$R/runs/conductor-x.json"
+jq '.lifecycle.ttl = "72h"' "$R/runs/plain.json" > "$R/runs/conductor-72h.json"
+jq '.lifecycle.ttl = "73h"' "$R/runs/plain.json" > "$R/runs/conductor-73h.json"
+jq '.lifecycle.ttl = "9h"' "$R/runs/plain.json" > "$R/runs/plain-9h.json"
+# Pinned tools (scripts/lib/tools_pin.sh): a wrong-version spawn dir, and a "Homebrew" spawn on PATH.
+mkdir -p "$T/wrongbin" "$T/brew"
+printf '#!/usr/bin/env bash\necho "Version: 0.128.2"\n' > "$T/wrongbin/spawn"; cp "$T/bin/truffle" "$T/wrongbin/"
+printf '#!/usr/bin/env bash\necho "Version: 0.128.2"; echo "brew spawn ran: $*" >&2; exit 2\n' > "$T/brew/spawn"
+chmod +x "$T/wrongbin/spawn" "$T/brew/spawn"
 mkdir -p "$R/results/ev"
 echo '{"instance":{"type":"x8g.24xlarge","az":"us-west-2c"}}' > "$R/results/ev/manifest.json"
 printf 'type\taz\tevidence\nx8g.24xlarge\tus-west-2c\tresults/ev/manifest.json\n' > "$R/scripts/g3/ladder.azs.tsv"
@@ -65,10 +73,10 @@ OTHER7=$(printf '%07x' $(( (16#$HEAD7 + 1) % 268435456 )))
 run() {
   local spec=$2 cid=${3:-}  # $1: the case name, for the reader
   if [ -n "$cid" ]; then
-    OUT=$(cd "$R" && PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" AK2_COHORT_ID="$cid" AK2_COHORT_RANK=0 AK2_COHORT_N=2 \
+    OUT=$(cd "$R" && PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="${TOOLS_BIN:-$T/bin}" AK2_COHORT_ID="$cid" AK2_COHORT_RANK=0 AK2_COHORT_N=2 \
       scripts/run.sh t "runs/$spec" 2>&1)
   else
-    OUT=$(cd "$R" && env ${RUN_ENV:-} PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" scripts/run.sh t "runs/$spec" 2>&1)
+    OUT=$(cd "$R" && env ${RUN_ENV:-} PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="${TOOLS_BIN:-$T/bin}" scripts/run.sh t "runs/$spec" 2>&1)
   fi
   RC=$?
   rm -rf "$R/results/t"
@@ -109,7 +117,7 @@ reached_stop && [[ "$OUT" == *"launch override: x8g.24xlarge in us-west-2c, not 
 
 # The conductor gate (docs/conductor.md).
 crun() {  # crun GATE SPEC: run.sh in the scratch repo with RUN_ENV; OUT and RC
-  OUT=$(cd "$R" && env ${RUN_ENV:-} PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" scripts/run.sh "$1" "runs/$2" 2>&1); RC=$?
+  OUT=$(cd "$R" && env ${RUN_ENV:-} PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="${TOOLS_BIN:-$T/bin}" scripts/run.sh "$1" "runs/$2" 2>&1); RC=$?
   rm -rf "$R/results/$1"
 }
 crun conductor plain.json
@@ -125,6 +133,14 @@ git clone -q --bare "$R" "$T/origin.git" && git -C "$R" remote add origin "$T/or
   bad "conductor: could not make the scratch origin"
 crun conductor conductor-x.json
 reached_stop && ok "conductor: a clean HEAD on origin passes" || bad "conductor: pushed: rc $RC: $(echo "$OUT" | tail -2)"
+crun conductor conductor-72h.json
+reached_stop && ok "ttl: a conductor may have 72 h (AK2_CONDUCTOR_MAX_TTL_S)" || bad "ttl: conductor 72h: rc $RC: $(echo "$OUT" | tail -2)"
+crun conductor conductor-73h.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"exceeds AK2_CONDUCTOR_MAX_TTL_S=259200"* ]] && ! reached_stop &&
+  ok "ttl: a conductor above 72 h is refused" || bad "ttl: conductor 73h: rc $RC: $(echo "$OUT" | tail -2)"
+crun t plain-9h.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"exceeds AK2_MAX_TTL_S=28800"* ]] && ! reached_stop &&
+  ok "ttl: a run instance keeps the 8 h ceiling" || bad "ttl: plain 9h: rc $RC: $(echo "$OUT" | tail -2)"
 touch "$R/results/stray"
 crun conductor conductor-x.json
 [ "$RC" = 2 ] && [[ "$OUT" == *"the whole tree must be clean"* ]] && [[ "$OUT" == *"results/stray"* ]] && ! reached_stop &&
@@ -142,6 +158,21 @@ RUN_ENV="AK2_FINALISED_BY=conductor" run finby-norun plain.json
   ok "finalised_by: conductor without the conductor's run id is refused" || bad "finalised_by: no run: rc $RC: $(echo "$OUT" | tail -2)"
 RUN_ENV="AK2_FINALISED_BY=conductor AK2_CONDUCTOR_RUN_ID=20261014-120000-abcdef0" run finby-ok plain.json
 reached_stop && ok "finalised_by: conductor with its run id passes" || bad "finalised_by: ok: rc $RC: $(echo "$OUT" | tail -2)"
+
+# Pinned tools: only AK2_TOOLS_BIN's spawn/truffle, at scripts/conductor.tools.tsv's versions.
+TOOLS_BIN="$T/nobin" run tools-missing plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"nobin/spawn is missing; run make tools"* ]] && ! reached_stop &&
+  ok "tools: no pinned spawn is refused" || bad "tools: missing: rc $RC: $(echo "$OUT" | tail -2)"
+TOOLS_BIN="$T/wrongbin" run tools-wrong plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"reports version '0.128.2', want 0.123.0"* ]] && ! reached_stop &&
+  ok "tools: a pinned dir holding spawn 0.128.2 is refused" || bad "tools: wrong: rc $RC: $(echo "$OUT" | tail -2)"
+OUT=$(cd "$R" && PATH="$T/brew:$T/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="$T/bin" scripts/run.sh t runs/plain.json 2>&1); RC=$?; rm -rf "$R/results/t"
+reached_stop && [[ "$OUT" != *"brew spawn ran"* ]] &&
+  ok "tools: a Homebrew spawn 0.128.2 first on PATH is never used (the pinned one is)" || bad "tools: brew: rc $RC: $(echo "$OUT" | tail -2)"
+UD=$(awk '$1=="require" && $2=="github.com/spore-host/spawn"{sub(/^v/,"",$3); print $3}' "$HERE/scripts/udsize/go.mod")
+TV=$(awk -F'\t' '$1=="spawn"{print $2; exit}' "$HERE/scripts/conductor.tools.tsv")
+[ -n "$UD" ] && [ "$UD" = "$TV" ] && ok "tools: the pinned spawn ($TV) is the one scripts/udsize measures ($UD)" ||
+  bad "tools: scripts/conductor.tools.tsv pins spawn $TV but scripts/udsize/go.mod has $UD"
 
 echo "run_sh_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]

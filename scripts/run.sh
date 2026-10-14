@@ -15,6 +15,8 @@ cd "$ROOT" || exit 2
 . scripts/ak2.env
 # shellcheck source=/dev/null
 . scripts/lib/tags.sh
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
 export AWS_PROFILE
 
 GATE=${1:-}
@@ -23,6 +25,9 @@ die() { echo "make run: $*" >&2; exit 2; }
 say() { echo "make run: $*" >&2; }
 now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
+command -v jq >/dev/null || die "jq not on PATH"
+# spawn and truffle: only the pinned ones (make tools), never whatever is on PATH (docs/run.md, "Pinned tools").
+ak2_pin_tools "$ROOT" || die "the pinned spawn/truffle are not in place (above)"
 for t in jq spawn truffle aws curl git python3; do command -v "$t" >/dev/null || die "$t not on PATH"; done
 pin_identity || die "cannot establish the upstream pin identity (scripts/pin-identity.sh)"
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate, e.g. g0a> SPEC=runs/<file>.json"
@@ -68,7 +73,10 @@ COST=$(q '.lifecycle.cost_limit // 0')
 [[ "$TTL" =~ ^([0-9]+[hms])+$ ]] || die "lifecycle.ttl '$TTL' must match ^([0-9]+[hms])+\$ (e.g. 15m, 1h30m)"
 TTL_S=$(ttl_s "$TTL")
 [ "$TTL_S" -gt 0 ] || die "lifecycle.ttl '$TTL' is zero"
-[ "$TTL_S" -le "$AK2_MAX_TTL_S" ] || die "lifecycle.ttl $TTL (${TTL_S}s) exceeds AK2_MAX_TTL_S=$AK2_MAX_TTL_S"
+# The conductor has its own ceiling (Scott, 2026-10-14); every run instance keeps AK2_MAX_TTL_S.
+MAX_TTL_S=$AK2_MAX_TTL_S; MAX_TTL_VAR=AK2_MAX_TTL_S
+[ "$CONDUCTOR" = 1 ] && { MAX_TTL_S=$AK2_CONDUCTOR_MAX_TTL_S; MAX_TTL_VAR=AK2_CONDUCTOR_MAX_TTL_S; }
+[ "$TTL_S" -le "$MAX_TTL_S" ] || die "lifecycle.ttl $TTL (${TTL_S}s) exceeds $MAX_TTL_VAR=$MAX_TTL_S"
 awk -v c="$COST" 'BEGIN{exit !(c+0 > 0)}' || die "spec has no positive lifecycle.cost_limit"
 # The upper bound on cost_limit is price-derived (TTL x on-demand price x (1 + epsilon), no budget
 # cap; scripts/lib/cost_check.sh), so it is checked once the planned type is known, below.
@@ -342,8 +350,7 @@ LAD_PARAMS=$(python3 scripts/lib/ladder_levers.py spec-params "$SPEC" ${REP:+--r
 jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$SPEC" --argjson params "$LAD_PARAMS" \
   --arg spec_sha "$(shasum -a 256 "$SPEC" | cut -d' ' -f1)" --arg sha "$SHA" --argjson dirty "$DIRTY" \
   --arg urepo "$UPSTREAM_REPO" --arg upin "$UPSTREAM_SHA" --arg udesc "$UPSTREAM_DESCRIBE" --arg region "$REGION" \
-  --arg spawn_v "$(spawn version 2>/dev/null | awk '/Version:/{print $2}')" \
-  --arg truffle_v "$(truffle version 2>/dev/null | awk '/Version:/{print $2}')" \
+  --argjson tools "$AK2_TOOLS_JSON" \
   --arg ttl "$TTL" --argjson cost "$COST" --arg prefix "$PREFIX" --arg acc "$ACCESSIONS" \
   --arg accref "$ACCESSIONS_REF" --arg acctsv "$ACCESSIONS_TSV" --arg accblob "$ACCESSIONS_BLOB" \
   --arg allowed "$ALLOWED_BUCKETS" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
@@ -351,7 +358,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" --argjson azo "$AZ_OVR_JSON" '{
     gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha, params:$params,
     commit:$sha, tree_dirty:$dirty, upstream:{repo:$urepo, pin:$upin, sha:$upin, describe:$udesc},
-    tools:{spawn:$spawn_v, truffle:$truffle_v},
+    tools:$tools,
     region:$region, ttl:$ttl, cost_limit_usd:$cost, s3_prefix:$prefix,
     sample_accessions:($acc|split(" ")|map(select(.!=""))),
     sample_accessions_ref:(if ($accref | startswith("@")) then {ref:$accref, runs_tsv:$acctsv, blob:$accblob} else null end),
@@ -465,11 +472,22 @@ if [ "$CONDUCTOR" = 1 ]; then
   NEWP=$(echo "$NEWJ" | jq -r '.IamInstanceProfileAssociation.IamInstanceProfile.Arn // empty' 2>/dev/null)
   if [[ "$NEWP" != */"$AK2_CONDUCTOR_PROFILE" ]]; then
     say "conductor: could not give $IID the instance profile $AK2_CONDUCTOR_PROFILE (association '${ASSOC:-none}': $(echo "$NEWJ" | tr '\n' ' ' | cut -c1-300)); terminating it"
-    aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
-    aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
-    mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" \
-      '.launch = {requested_at:$t, instance_id:$iid, region:$lr, error:"conductor instance profile not replaced; terminated by run.sh (make conductor-iam first)"}'
-    scripts/orphans.sh --own "$TASK_ID" "$IID"
+    aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null; TRC=$?
+    aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"; WRC=$?
+    # The instance ran from launch until now: its cost, at the planned type's on-demand price.
+    END_EPOCH=$(date -u +%s); START_EPOCH=$(python3 -c 'import calendar,sys,time; print(calendar.timegm(time.strptime(sys.argv[1], "%Y-%m-%dT%H:%M:%SZ")))' "$LAUNCH_AT")
+    CPRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2>/dev/null | jq '.[0].on_demand_price // null')
+    mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" --argjson trc "$TRC" --argjson wrc "$WRC" --argjson price "${CPRICE:-null}" \
+      --argjson secs "$(( END_EPOCH - ${START_EPOCH:-$END_EPOCH} ))" --arg end "$(now)" '
+      .launch = {requested_at:$t, instance_id:$iid, region:$lr, terminate_rc:$trc, wait_terminated_rc:$wrc,
+                 error:"conductor instance profile not replaced; terminated by run.sh (make conductor-iam first)"}
+      | .truffle_price_usd_per_hour = $price | .stop = $end | .billed_seconds = ([$secs, 60] | max)
+      | .cost_usd = (if $price == null then null else ((.billed_seconds * $price / 3600) * 1e6 | round / 1e6) end)
+      | .cost_basis = "on-demand truffle price x (run.sh terminate time - launch request), 60 s minimum: an upper-side estimate; the instance never ran the body"
+      | .manifest_finalised_at = $end'
+    [ "$TRC" = 0 ] && [ "$WRC" = 0 ] || say "WARNING: terminate rc $TRC, wait rc $WRC: check $IID by hand (make orphans)"
+    scripts/orphans.sh --own "$TASK_ID" "$IID"; ORC=$?
+    [ "$ORC" = 0 ] || { say "THIS RUN'S INSTANCE MAY STILL BE ALIVE (orphans rc $ORC)"; exit 3; }
     die "the conductor needs the instance profile $AK2_CONDUCTOR_PROFILE (make conductor-iam; docs/conductor.md)"
   fi
   mset --arg a "$ASSOC" --arg from "$OLDP" --arg to "$NEWP" --arg at "$(now)" \

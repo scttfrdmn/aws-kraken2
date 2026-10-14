@@ -5,7 +5,7 @@
 # campaign's arguments as its @PARAMS@ block (in the payload, not in env).
 #   - TYPE (default m8g.medium: 1 Graviton vCPU, 4 GiB, not burstable, so cost_usd is the bill; the
 #     2 GiB types are tight for run.sh's go build of scripts/udsize);
-#   - TTL (minutes, default AK2_MAX_TTL_S / 60): the campaign drains itself before it
+#   - TTL (minutes, default AK2_CONDUCTOR_MAX_TTL_S / 60, 72 h; Scott 2026-10-14): the campaign drains itself before it
 #     (AK2_CAMPAIGN_DEADLINE); cost_limit = the truffle on-demand price x TTL (+ $0.005, to the cent);
 #   - DRY_RUN=1: the campaign prints its plan only; DRY_MAKE_RUN=1: before it, a DRY_RUN=1 make run of
 #     the cheapest c<COHORT> rung (sizing, cost, quota and user data under the instance role).
@@ -16,7 +16,10 @@ set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
 # shellcheck source=/dev/null
 . scripts/ak2.env
-COHORT=""; RUNGS=""; REPS=2; CONC=1; LIMITS=""; DRY=""; DMR=0; TTL=$((AK2_MAX_TTL_S / 60)); TYPE=m8g.medium; OUT=runs/conductor.json
+# shellcheck source=/dev/null
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$PWD" || { echo "mkspec-conductor: the pinned truffle is not in place (make tools)" >&2; exit 2; }
+COHORT=""; RUNGS=""; REPS=2; CONC=1; LIMITS=""; DRY=""; DMR=0; TTL=$((AK2_CONDUCTOR_MAX_TTL_S / 60)); TYPE=m8g.medium; OUT=runs/conductor.json
 for kv in "$@"; do
   case "$kv" in
     *=) ;;   # an empty make variable keeps the default
@@ -32,7 +35,7 @@ die() { echo "mkspec-conductor: $*" >&2; exit 2; }
 [[ "$REPS" =~ ^[1-9][0-9]*$ ]] && [[ "$CONC" =~ ^[1-9][0-9]*$ ]] || die "REPS=$REPS CONCURRENCY=$CONC"
 [[ "$LIMITS" =~ ^[A-Za-z+=0-9,]*$ ]] || die "FAMILY_LIMITS=$LIMITS"
 [[ "$DRY" =~ ^1?$ ]] && [[ "$DMR" =~ ^[01]$ ]] || die "DRY_RUN=$DRY DRY_MAKE_RUN=$DMR"
-[[ "$TTL" =~ ^[1-9][0-9]*$ ]] && [ $((TTL * 60)) -le "$AK2_MAX_TTL_S" ] || die "TTL=$TTL minutes (at most AK2_MAX_TTL_S=$AK2_MAX_TTL_S s)"
+[[ "$TTL" =~ ^[1-9][0-9]*$ ]] && [ $((TTL * 60)) -le "$AK2_CONDUCTOR_MAX_TTL_S" ] || die "TTL=$TTL minutes (at most AK2_CONDUCTOR_MAX_TTL_S=$AK2_CONDUCTOR_MAX_TTL_S s)"
 case "$OUT" in runs/conductor*.json) ;; *) die "OUT=$OUT must be runs/conductor*.json (run.sh ties them to GATE=conductor)" ;; esac
 ls runs/g3-l-*-c"$COHORT".json > /dev/null 2>&1 || die "no committed runs/g3-l-*-c$COHORT.json"
 PRICE=$(truffle find "$TYPE" --regions us-west-2 --show-price --skip-azs -o json 2> /dev/null | jq -r '.[0].on_demand_price // empty')
