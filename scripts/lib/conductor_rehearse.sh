@@ -25,7 +25,11 @@
 #   plan     DRY_RUN=1 with the real make g3-ladder on the clone's record (python 3.9): the plan is
 #            printed, exit 0, nothing staged under tree/;
 #   norole   iam/info keeps spawn's profile: the body fails (exit 1) after AK2C_ROLE_WAIT tries,
-#            conductor.json still staged and ended (negative control for the role wait).
+#            conductor.json still staged and ended (negative control for the role wait);
+#   transient (review B1) a launch whose run dir appears unfinalised and is then deleted, as run.sh
+#            and run-multi.sh do on DRY_RUN and on refusals, while staging passes run: with the
+#            filter, harvest verifies; with AK2C_STAGE_UNFILTERED=1 (the old staging) harvest refuses
+#            "staged but not in changes.tsv" (the bug, reproduced as a negative control).
 # Record: results/rehearse/conductor-<UTC>-<commit>.log (AK2T_REC overrides).
 set +e
 set -uo pipefail
@@ -47,7 +51,7 @@ T=$(mktemp -d "$HOME/.ak2-conductor-rehearse.XXXXXX") || exit 1
 cleanup() { "${PODMAN[@]}" rm -f $("${PODMAN[@]}" ps -aq --filter "name=ak2c-$$-") >/dev/null 2>&1
   [ "${KEEP:-0}" = 1 ] && echo "rehearse-conductor: kept $T" || rm -rf "$T"; }
 trap cleanup EXIT
-mkdir -p "$T/bin" "$T/bucket"
+mkdir -p "$T/bin" "$T/tools" "$T/bucket"
 if ! "${PODMAN[@]}" image exists "$IMG"; then
   printf 'FROM %s\nRUN dnf install -y -q git jq make tar gzip findutils perl-Digest-SHA python3 util-linux-core procps-ng && dnf clean all\n' "$BASE" > "$T/Containerfile"
   "${PODMAN[@]}" build -q -t "$IMG" -f "$T/Containerfile" "$T" > /dev/null || { echo "rehearse-conductor: could not build $IMG" >&2; exit 1; }
@@ -119,8 +123,11 @@ case "${pos[0]} ${pos[1]}" in
 esac
 EOF
 printf '#!/bin/bash\n[ "$1" = -n ] && shift\nexec "$@"\n' > "$T/bin/sudo"
-printf '#!/bin/bash\necho "Version:    0.123.0"\n' > "$T/bin/spawn"
-printf '#!/bin/bash\necho "Version:    0.57.1"\n' > "$T/bin/truffle"
+# The pinned tools' stand-ins (AK2C_TOOLS_BIN): their own dir, which holds no aws, so putting it first
+# on PATH (scripts/lib/tools_pin.sh) cannot bypass the preamble's shim.
+printf '#!/bin/bash\necho "Version:    0.123.0"\n' > "$T/tools/spawn"
+printf '#!/bin/bash\necho "Version:    0.57.1"\n' > "$T/tools/truffle"
+chmod +x "$T/tools/"*
 printf '#!/bin/bash\necho "go version go1.27.1 linux/arm64 (stub)"\n' > "$T/bin/go"
 cat > "$T/bin/stub-run" <<'EOF'
 #!/usr/bin/env python3
@@ -132,6 +139,16 @@ sp = json.load(open(spec))
 rep = os.environ.get("AK2_LADDER_REP", "1")
 p = json.loads(subprocess.run(["python3", "scripts/lib/ladder_levers.py", "spec-params", spec, "--rep", rep], capture_output=True, text=True).stdout)
 sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+if os.environ.get("AK2T_TRANSIENT"):
+    # What run.sh / run-multi.sh leave for a moment and then delete (DRY_RUN, a cost or quota refusal):
+    # an unfinalised run dir that lives across staging passes.
+    td = "results/g3/%s-%s-dead-n1" % (time.strftime("%Y%m%d-%H%M%S", time.gmtime()), sha[:7])
+    os.makedirs(td + "-r0")
+    json.dump({"run_id": "x", "spec": spec}, open(td + "-r0/manifest.json", "w"))
+    open(td + "-r0/spawn-plan.txt", "w").write("plan\n")
+    time.sleep(float(os.environ["AK2T_TRANSIENT"]))
+    import shutil
+    shutil.rmtree(td + "-r0")
 cid = "%s-%s-%04x-n%d" % (time.strftime("%Y%m%d-%H%M%S", time.gmtime()), sha[:7], random.randrange(65536), n)
 print("make run (multi): cohort %s: %d x %s -> stub" % (cid, n, sp["resources"]["instance_type"]), flush=True)
 fin = {"finalised_by": os.environ.get("AK2_FINALISED_BY"), "finalised_by_run_id": os.environ.get("AK2_CONDUCTOR_RUN_ID")}
@@ -194,7 +211,7 @@ round() {
     -e "AK2_ALLOWED_BUCKETS=kraken2-ncbi-refseq-complete-v205 $RB" -e AK2_S3_PREFIX="$P" -e AK2_RUN_ID="$RUN" -e AK2_GATE=conductor \
     -e AK2_PAYLOAD_URI="$P/payload.sh" -e AK2_PAYLOAD_URL="https://$RB.s3.us-west-2.amazonaws.com/aws-kraken2/conductor/$RUN/payload.sh" \
     -e AK2_PAYLOAD_SHA256="$PSHA" -e AK2C_REHEARSE=1 -e AK2C_REPO_URL=/origin.git -e AK2C_UPSTREAM_URL=/upstream.git \
-    -e DRAIN_POLL_S=1 -e STAGE_EVERY=2 -e AK2_CAMPAIGN_POLL_S=0.2 -e AK2_CAMPAIGN_SETTLE_S=5 \
+    -e AK2C_TOOLS_BIN=/work/tools -e DRAIN_POLL_S=1 -e STAGE_EVERY=2 -e AK2_CAMPAIGN_POLL_S=0.2 -e AK2_CAMPAIGN_SETTLE_S=5 \
     -e AK2_CAMPAIGN_ORPHANS=/work/bin/stub-orphans -e AK2_CAMPAIGN_QUOTA=/work/bin/stub-quota "$@" \
     "$IMG" bash -e -c "$(cat "$T/stub.sh")" > "$T/$label.out" 2>&1 &
   local pid=$!
@@ -285,6 +302,33 @@ round norole 'COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DR
 [ "$CRC" = 1 ] && [ "$(cj .ended)" = true ] && cj .state | grep -q 'never got the ak2-conductor role' &&
   ok "norole: without the ak2-conductor role the body fails (exit 1) and still stages conductor.json ended (negative control)" ||
   bad "norole: exit $CRC, ended $(cj .ended), state '$(cj .state)'"
+
+# ---- transient (B1): an unfinalised run dir that appears and is deleted between staging passes
+round transient 'COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200' "${SEAMS[@]}" \
+  -e AK2T_TRANSIENT=5
+harvest "$STG"
+[ "$CRC" = 0 ] && [ "$HRC" = 0 ] && ! find "$STG/tree" -path '*-dead-n1*' | grep -q . &&
+  ok "transient: a run dir deleted before finalisation never reaches the stage; harvest verifies" ||
+  bad "transient: exit $CRC, harvest rc $HRC: $(echo "$HOUT" | grep FAIL | head -3)"
+git -C "$LAPTOP" clean -qfd results >/dev/null 2>&1
+round transient-old 'COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200' "${SEAMS[@]}" \
+  -e AK2T_TRANSIENT=5 -e AK2C_STAGE_UNFILTERED=1
+harvest "$STG"
+[ "$HRC" = 1 ] && echo "$HOUT" | grep -q 'staged but not in changes.tsv: .*-dead-n1-r0/' && [ -z "$(git -C "$LAPTOP" status --porcelain)" ] &&
+  ok "transient: with the old staging (AK2C_STAGE_UNFILTERED=1) harvest refuses: B1 reproduced (negative control)" ||
+  bad "transient-old: harvest rc $HRC: $(echo "$HOUT" | grep FAIL | head -3)"
+git -C "$LAPTOP" clean -qfd results >/dev/null 2>&1
+
+# ---- the tracked patch (N1): only g3_defects.tsv, with its sha256
+TM="$T/tamper-patch"; cp -R "$FULLSTG" "$TM"
+printf 'diff --git a/Makefile b/Makefile\n' >> "$TM/tracked.patch"
+harvest "$TM"
+[ "$HRC" = 1 ] && echo "$HOUT" | grep -q 'tracked.patch sha256' && ok "patch: a tracked.patch that is not its recorded sha256 is refused" ||
+  bad "patch: sha: harvest rc $HRC: $(echo "$HOUT" | grep FAIL | head -3)"
+shasum -a 256 "$TM/tracked.patch" | cut -d' ' -f1 > "$TM/tracked.patch.sha256"
+harvest "$TM"
+[ "$HRC" = 1 ] && echo "$HOUT" | grep -q 'only scripts/lib/g3_defects.tsv may change' && ok "patch: a patch touching another tracked file is refused" ||
+  bad "patch: scope: harvest rc $HRC: $(echo "$HOUT" | grep FAIL | head -3)"
 
 echo "rehearse-conductor: $([ $RC = 0 ] && echo PASS || echo FAIL) (record $REC)"
 exit $RC
