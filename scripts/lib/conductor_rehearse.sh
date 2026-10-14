@@ -114,7 +114,7 @@ case "${pos[0]} ${pos[1]}" in
   "sts get-caller-identity")
     if [ "${AK2T_PROFILE:-ak2-conductor}" = ak2-conductor ]; then echo "arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r"
     else echo "arn:aws:sts::942542972736:assumed-role/spawn-instance-x/i-0c0nduct0r"; fi ;;
-  "ec2 describe-tags") date -u -d "@$(( $(date +%s) + 7200 ))" +%Y-%m-%dT%H:%M:%SZ ;;
+  "ec2 describe-tags") date -u -d "@$(( $(date +%s) + 86400 ))" +%Y-%m-%dT%H:%M:%SZ ;;
   *) [ "$1" = --version ] && { echo "aws-cli/stub"; exit 0; }; echo "aws stub: unhandled $*" >&2; exit 0 ;;
 esac
 EOF
