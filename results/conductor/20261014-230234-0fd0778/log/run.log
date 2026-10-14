@@ -1,0 +1,26 @@
+ak2: log tee up
+ak2-phase	2026-10-14T23:03:14Z	1792018994	preamble	no
+ak2: [2026-10-14T23:03:14Z] util sampler running (pid 2725, 2 ticks so far) -> log/util.tsv
+ak2: [2026-10-14T23:03:14Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-14T23:03:14Z] after set +e $-=hBc
+ak2: [2026-10-14T23:03:14Z] gate=conductor run=20261014-230234-0fd0778
+ak2: [2026-10-14T23:03:14Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-14T23:03:14Z] imds region=us-west-2 az=us-west-2b instance=i-0a0a8765903b6410c type=m8g.medium ami=ami-0174a1ab4ff33424a
+ak2: [2026-10-14T23:03:14Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-14T23:03:15Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+ak2: [2026-10-14T23:03:15Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-14T23:03:15Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-14T23:03:15Z] region assert passed
+ak2: [2026-10-14T23:03:15Z] drop_caches_ok=true
+ak2: [2026-10-14T23:03:16Z] preamble done; spec body starts
+ak2-phase	2026-10-14T23:03:16Z	1792018996	body	no
+ak2-phase	2026-10-14T23:03:16Z	1792018996	setup	no
+ak2: [2026-10-14T23:03:16Z] conductor 20261014-230234-0fd0778: commit 0fd0778, cohort 10, rungs 'all', reps 2, concurrency 1, DRY_RUN=1, DRY_MAKE_RUN=1; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261014-230234-0fd0778/
+ak2: [2026-10-14T23:03:17Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0a0a8765903b6410c (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+remote: Not Found
+fatal: repository 'https://github.com/https://github.com/DerrickWood/kraken2.git.git/' not found
+ak2: [2026-10-14T23:03:53Z] ERROR: upstream clone failed
+ak2-phase	2026-10-14T23:03:53Z	1792019033	stage	no
+ak2: [2026-10-14T23:03:56Z] conductor: exit 1 (campaign rc none); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261014-230234-0fd0778/
+ak2: [2026-10-14T23:03:56Z] spec body exit rc=1
+ak2-phase	2026-10-14T23:03:56Z	1792019036	end	no
