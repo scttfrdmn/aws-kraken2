@@ -221,6 +221,8 @@ bad() { echo "rehearse-conductor: FAIL $*"; RC=1; }
 round() {
   local label=$1 params=$2; shift 2
   RUN="$(date -u +%Y%m%d-%H%M%S)-$SHA"
+  # Run ids are to the second: a round must not inherit an earlier round's staging (its DRAIN).
+  while [ -e "$T/bucket/$RB/aws-kraken2/results-staging/$RUN" ]; do sleep 1; RUN="$(date -u +%Y%m%d-%H%M%S)-$SHA"; done
   STG="$T/bucket/$RB/aws-kraken2/results-staging/$RUN"
   local P="s3://$RB/aws-kraken2/conductor/$RUN"
   awk -v p="$params" '$0 == "@PARAMS@" {print "# Conductor parameters (rehearsal):"; print p; next} {print}' scripts/conductor.body.sh > "$T/body.sh"
