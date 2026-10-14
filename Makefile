@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -33,6 +33,8 @@ test:
 	bash scripts/tests/ladder_stream_test.sh
 	python3 scripts/tests/ladder_levers_tables_test.py
 	python3 scripts/tests/ladder_campaign_test.py
+	python3 scripts/iam/spawn_role_name.py --self-test
+	python3 scripts/iam/conductor_policy_check.py check
 	python3 scripts/tests/ladder_select_test.py
 	python3 scripts/lib/ladder_types.py validate
 	python3 scripts/lib/ladder_ttl.py --self-test
@@ -317,6 +319,15 @@ ladder-types:
 
 orphans:
 	scripts/orphans.sh
+
+# The conductor's IAM (docs/conductor.md, "IAM"): role, instance profile and inline policy
+# ak2-conductor, the run roles' permissions boundary; idempotent, tagged project=aws-kraken2,
+# verified through the policy simulator, recorded in results/iam/conductor-<ts>.json. Laptop only.
+conductor-iam:
+	scripts/iam/conductor-iam.sh
+
+conductor-iam-verify:
+	scripts/iam/conductor-iam-verify.sh $(ROLE_ARN)
 
 report:
 	scripts/report.sh "$(GATE)" "$(RUN)"
