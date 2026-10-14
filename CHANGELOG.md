@@ -59,6 +59,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - The boundary check is simulation-based, with and without the boundary.
     - Two more simulator negatives: RunInstances with no profile, and without `spawn:managed`.
     - A failed profile swap records the terminate exit codes and a cost.
+    - A launch that launched nothing is finalised as `never-launched`, with cost 0 and its orphan
+      check (B2). Before this, harvest refused its cohort for good. The wrong-region, wrong-AZ and
+      profile-swap terminations are finalised too.
+    - The stager's loops are stopped, with their process groups, before the final pass.
+    - The spec generators (mkspec-ladder, mkspec, mkspec-u, ladder-types, ladder-advance and the
+      cohort rehearsal) use the pinned truffle.
   - **The conductor's TTL ceiling** is `AK2_CONDUCTOR_MAX_TTL_S` = 72 h, which is also the spec's
     default (Scott, 2026-10-14). Run instances keep `AK2_MAX_TTL_S` = 8 h.
   - **Rehearsal.** `make rehearse-conductor` runs on AL2023 containers with podman and no AWS:

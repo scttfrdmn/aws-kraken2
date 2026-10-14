@@ -155,6 +155,10 @@ removed later (the orphan check's scratch JSON) leaves the stage too. The rehear
 round reproduces the bug with the old staging (`AK2C_STAGE_UNFILTERED=1`: harvest refuses) and
 passes with the filter.
 
+**Background loops.** The drain poller and the stager each run in a process group of their own.
+`finish()` TERMs both groups (KILL after 30 s), including an in-flight staging pass and its aws
+children, and waits for them before the final pass.
+
 **Tracked changes (review N1):** the patch holds `scripts/lib/g3_defects.tsv` only. Any other
 tracked file the campaign changed is listed in `conductor.json` `unexpected_tracked`, warned in the
 log, and refused by harvest.
@@ -325,7 +329,11 @@ campaign has something to launch. The rounds are listed in the script's header:
 - **transient:** a run dir that appears unfinalised and is deleted while staging passes run
   (review B1): the harvest verifies; with the old staging it refuses (the bug, as a negative control);
 - **patch:** a `tracked.patch` that is not its recorded sha256, or that touches another file, is
-  refused.
+  refused;
+- **launchfail** (review B2): every launch fails at `spawn task run`. The campaign records
+  capacity, retries in the documented AZ, stops the rung (exit 1) and appends its g3_defects rows.
+  Every cohort dir and its never-launched member is staged, and harvest installs them and applies
+  the patch.
 
 **The AWS rehearsal** comes first, before the conductor drives any real rung (the issue's point 6):
 `runs/conductor.json` as committed, which is

@@ -635,6 +635,19 @@ Exit status: the task's exit code, or one of these harness codes:
   overwrites set fields. `make test` runs `scripts/lib/harness_poll_test.sh` against a stubbed
   `aws`.
 - `THIS RUN'S INSTANCE IS STILL ALIVE`, exit 3: see [orphans.md](orphans.md).
+- **A launch that launched nothing is still a finished record** (review B2). When `spawn task run`
+  fails (InsufficientInstanceCapacity, ...), or run.sh stops between writing the manifest and the
+  launch (payload upload, tagging), run.sh finalises the manifest on exit:
+  - `launch.error` (with `spawn_error`, the first 500 bytes of `launch.err`);
+  - `instance.final_state: never-launched`, `task: null`, `billed_seconds: 0`, `cost_usd: 0`;
+  - `manifest_finalised_at`, and `finalised_by` when the conductor ran it.
+
+  It runs the scoped orphan check first and records it. If the failed launch's task is alive after
+  all, the manifest is left unfinalised and run.sh exits 3. The wrong-region, wrong-AZ and
+  conductor-profile paths terminate the instance and finalise it too (`terminate_finalise`), with
+  both exit codes and a cost from launch to termination. The campaign's done check and
+  `ladder_tables` already treat such a run as a non-run: no completion record, no sample lines.
+  `scripts/lib/run_sh_test.sh` drives run.sh to a failing `spawn task run` and checks both cases.
 
 ## Multi-node runs: make run … NODES=n
 
