@@ -40,6 +40,7 @@ now() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 for t in jq aws git truffle; do command -v "$t" >/dev/null || die "$t not on PATH"; done
 [[ "$GATE" =~ ^[a-z0-9]+$ ]] || die "usage: make run GATE=<gate> SPEC=runs/<file>.json NODES=<n>"
 [[ "$NODES" =~ ^[1-9][0-9]*$ ]] && [ "$NODES" -le 64 ] || die "NODES=$NODES: want 1 to 64"
+[ "$GATE" != "$AK2_CONDUCTOR_GATE" ] || die "the conductor is one instance: make run GATE=$GATE SPEC=runs/conductor*.json, without NODES (docs/conductor.md)"
 case "$SPEC" in runs/*.json) ;; *) die "SPEC must be a checked-in runs/*.json" ;; esac
 [ -f "$SPEC" ] || die "$SPEC: no such file"
 DIRTY_PATHS=$(git status --porcelain -- scripts runs cmd internal upstream go.mod go.sum Makefile)
@@ -302,7 +303,7 @@ finish() {
     --arg vpc "$VPC" --arg sg "$SG" --arg start "$START" --arg stop "$STOP" --argjson members "$MEMBERS" \
     --arg ended "$ENDED" --argjson early "$EARLY_TERMINATED" --argjson sweepfail "$SWEEP_FAILURES" \
     --arg fetched "$FETCHED" --argjson aborted "$ABORTED" --argjson abort_fail "$ABORT_FAIL" --argjson orc "$ORC" \
-    --argjson orcg "$ORC_GLOBAL" \
+    --argjson orcg "$ORC_GLOBAL" --arg finby "${AK2_FINALISED_BY:-}" --arg finrun "${AK2_CONDUCTOR_RUN_ID:-}" \
     --argjson quota "$QUOTA_JSON" --argjson accrec "$ACC_REC" --argjson costchk "$COSTCHK_JSON" --argjson params "$LADP" \
     --argjson azo "$AZ_OVR_JSON" '{
       cohort_id:$id, gate:$gate, spec:$spec, commit:$sha, params:$params, nodes:$n, instance_type:$type, az:$az, region:$region,
@@ -313,7 +314,8 @@ finish() {
       cost_usd:(if ($members | all(.cost_usd != null)) then ($members | map(.cost_usd) | add * 1e6 | round / 1e6) else null end),
       cost_basis:"sum of the members manifest cost_usd (on-demand truffle price x billed seconds, compute only)",
       prefix_fetched:($fetched == "yes"), multipart_aborted:$aborted, multipart_abort_failures:$abort_fail,
-      orphans_rc:$orc, orphans_scope:"own", orphans_global_rc:$orcg}' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
+      orphans_rc:$orc, orphans_scope:"own", orphans_global_rc:$orcg}
+      | if $finby != "" then .finalised_by = $finby | .finalised_by_run_id = $finrun else . end' > "$CDIR/cohort.json" || say "WARNING: could not write cohort.json"
   # Fleet utilisation from the members' manifests and log/util.tsv (docs/run.md, "Utilisation").
   mkdir -p "$CDIR/tables"
   python3 scripts/lib/util.py "$CDIR" > "$CDIR/tables/util.log" 2>&1 ||

@@ -7,6 +7,10 @@
 #   cohort sha   AK2_COHORT_ID naming another commit than HEAD is refused; HEAD's sha7 passes;
 #   reference    an @-reference with a body that never calls accessions.sh is refused; with one,
 #                it passes.
+#   conductor    GATE=conductor only with runs/conductor*.json and the other way round; a dirty tree
+#                (untracked included) and a HEAD not on origin are refused; AK2_FINALISED_BY other than
+#                conductor, or conductor without a conductor run id, is refused; a clean, pushed HEAD
+#                passes.
 set +e
 set -uo pipefail
 HERE=$(cd "$(dirname "$0")/../.." && pwd)
@@ -49,6 +53,7 @@ jq -n --arg body "$(printf '# Parameters (scripts/g3/mkspec-ladder.sh S S5 1):\n
   command:["bash","-c",$body], resources:{instance_type:"x8g.24xlarge"}, placement:{availability_zone:"us-west-2b"},
   env:{AK2_REGION:"us-west-2", AK2_ACCESSIONS:"", AK2_ALLOW_NO_BUCKETS:"1"},
   lifecycle:{ttl:"10m", cost_limit:0.1, on_complete:"terminate"}}' > "$R/runs/ladder.json"
+cp "$R/runs/plain.json" "$R/runs/conductor-x.json"
 mkdir -p "$R/results/ev"
 echo '{"instance":{"type":"x8g.24xlarge","az":"us-west-2c"}}' > "$R/results/ev/manifest.json"
 printf 'type\taz\tevidence\nx8g.24xlarge\tus-west-2c\tresults/ev/manifest.json\n' > "$R/scripts/g3/ladder.azs.tsv"
@@ -101,6 +106,42 @@ RUN_ENV="AK2_LAUNCH_AZ=us-west-2c" run az-plain plain.json
 RUN_ENV="AK2_LAUNCH_AZ=us-west-2c" run az-listed ladder.json
 reached_stop && [[ "$OUT" == *"launch override: x8g.24xlarge in us-west-2c, not the spec's us-west-2b"* ]] &&
   ok "az: a documented AZ passes, the override announced" || bad "az: listed: rc $RC: $(echo "$OUT" | tail -2)"
+
+# The conductor gate (docs/conductor.md).
+crun() {  # crun GATE SPEC: run.sh in the scratch repo with RUN_ENV; OUT and RC
+  OUT=$(cd "$R" && env ${RUN_ENV:-} PATH="$T/bin:$PATH" K2_SHARED_ROOT="$R" scripts/run.sh "$1" "runs/$2" 2>&1); RC=$?
+  rm -rf "$R/results/$1"
+}
+crun conductor plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"goes with a runs/conductor*.json spec"* ]] && ! reached_stop &&
+  ok "conductor: GATE=conductor with another spec is refused" || bad "conductor: gate/spec: rc $RC: $(echo "$OUT" | tail -2)"
+crun t conductor-x.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"goes with a runs/conductor*.json spec"* ]] && ! reached_stop &&
+  ok "conductor: a conductor spec under another gate is refused" || bad "conductor: spec/gate: rc $RC: $(echo "$OUT" | tail -2)"
+crun conductor conductor-x.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"git fetch origin failed"* ]] && ! reached_stop &&
+  ok "conductor: no origin to clone from is refused" || bad "conductor: no origin: rc $RC: $(echo "$OUT" | tail -2)"
+git clone -q --bare "$R" "$T/origin.git" && git -C "$R" remote add origin "$T/origin.git" && git -C "$R" fetch -q origin ||
+  bad "conductor: could not make the scratch origin"
+crun conductor conductor-x.json
+reached_stop && ok "conductor: a clean HEAD on origin passes" || bad "conductor: pushed: rc $RC: $(echo "$OUT" | tail -2)"
+touch "$R/results/stray"
+crun conductor conductor-x.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"the whole tree must be clean"* ]] && [[ "$OUT" == *"results/stray"* ]] && ! reached_stop &&
+  ok "conductor: an untracked results/ file is refused (it would be planned again)" || bad "conductor: dirty: rc $RC: $(echo "$OUT" | tail -2)"
+rm -f "$R/results/stray"
+( cd "$R" && echo x > notes && git add notes && git -c user.email=t@t -c user.name=t commit -qm unpushed )
+crun conductor conductor-x.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"is not on origin; push it first"* ]] && ! reached_stop &&
+  ok "conductor: a HEAD not on origin is refused" || bad "conductor: unpushed: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_FINALISED_BY=laptop" run finby-bad plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"only 'conductor'"* ]] && ! reached_stop &&
+  ok "finalised_by: a value other than conductor is refused" || bad "finalised_by: bad: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_FINALISED_BY=conductor" run finby-norun plain.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"needs AK2_CONDUCTOR_RUN_ID"* ]] && ! reached_stop &&
+  ok "finalised_by: conductor without the conductor's run id is refused" || bad "finalised_by: no run: rc $RC: $(echo "$OUT" | tail -2)"
+RUN_ENV="AK2_FINALISED_BY=conductor AK2_CONDUCTOR_RUN_ID=20261014-120000-abcdef0" run finby-ok plain.json
+reached_stop && ok "finalised_by: conductor with its run id passes" || bad "finalised_by: ok: rc $RC: $(echo "$OUT" | tail -2)"
 
 echo "run_sh_test: $PASS passed, $FAILN failed"
 [ "$FAILN" = 0 ]

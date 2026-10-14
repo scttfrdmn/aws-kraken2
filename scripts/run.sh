@@ -34,6 +34,28 @@ DIRTY_PATHS=$(git status --porcelain -- scripts runs cmd internal upstream go.mo
 [ -z "$DIRTY_PATHS" ] || die "uncommitted changes in scripts/ runs/ cmd/ internal/ upstream/ go.mod go.sum Makefile; commit first:
 $DIRTY_PATHS"
 jq -e . "$SPEC" >/dev/null || die "$SPEC is not valid JSON"
+# The conductor (docs/conductor.md): GATE=conductor and only a runs/conductor*.json spec, both ways.
+# It clones HEAD from GitHub and plans from the committed record, so the whole tree must be clean
+# (results/ included: an uncommitted run dir would be planned again) and HEAD must be on origin.
+CONDUCTOR=0
+case "$SPEC" in runs/conductor*.json) CONDUCTOR=1 ;; esac
+if [ "$GATE" = "$AK2_CONDUCTOR_GATE" ] || [ "$CONDUCTOR" = 1 ]; then
+  [ "$GATE" = "$AK2_CONDUCTOR_GATE" ] && [ "$CONDUCTOR" = 1 ] ||
+    die "GATE=$AK2_CONDUCTOR_GATE goes with a runs/conductor*.json spec and only with one (got GATE=$GATE SPEC=$SPEC)"
+  CONDUCTOR=1
+  [ -z "$(git status --porcelain)" ] || die "the conductor clones HEAD and plans from the committed record: the whole tree must be clean:
+$(git status --porcelain | head -20)"
+  git fetch -q origin || die "git fetch origin failed (the conductor clones HEAD from it)"
+  [ -n "$(git branch -r --contains HEAD 2>/dev/null)" ] || die "HEAD $(git rev-parse --short HEAD) is not on origin; push it first (the conductor clones it from GitHub and holds no git credentials)"
+fi
+# AK2_FINALISED_BY=conductor (set by scripts/conductor.body.sh, with AK2_CONDUCTOR_RUN_ID): recorded as
+# manifest.finalised_by and finalised_by_run_id (make harvest checks them).
+FIN_BY=${AK2_FINALISED_BY:-}; FIN_RUN=${AK2_CONDUCTOR_RUN_ID:-}
+case "$FIN_BY" in
+  "") FIN_RUN="" ;;
+  conductor) [[ "$FIN_RUN" =~ ^[0-9]{8}-[0-9]{6}-[0-9a-f]{7}$ ]] || die "AK2_FINALISED_BY=conductor needs AK2_CONDUCTOR_RUN_ID=<the conductor's run id> (got '$FIN_RUN')" ;;
+  *) die "AK2_FINALISED_BY=$FIN_BY: only 'conductor' (or unset)" ;;
+esac
 
 q() { jq -r "$1" "$SPEC"; }
 ttl_s() { local t=$1 s=0 n; while [[ $t =~ ^([0-9]+)([hms])(.*)$ ]]; do n=${BASH_REMATCH[1]}
@@ -421,6 +443,40 @@ if [ "$LREGION" != "$REGION" ]; then
   scripts/orphans.sh --own "$TASK_ID" "$IID"
   die "launch region $LREGION != $REGION"
 fi
+# The conductor's credentials (docs/conductor.md, "IAM"): spawn task run gives every instance its
+# scoped spawn-instance-<hash> role, which cannot launch anything. The conductor needs
+# ak2-conductor (make conductor-iam), so its association is replaced here, at once; the body waits
+# until IMDS shows it before any AWS work. Any failure terminates the instance: without the role
+# it could only fail.
+if [ "$CONDUCTOR" = 1 ]; then
+  ASSOC=""; OLDP=""
+  for i in $(seq 1 24); do
+    AJ=$(aws ec2 describe-iam-instance-profile-associations --region "$LREGION" --filters "Name=instance-id,Values=$IID" \
+      --query 'IamInstanceProfileAssociations[?State==`associated`]|[0]' --output json 2>/dev/null)
+    ASSOC=$(echo "$AJ" | jq -r '.AssociationId // empty' 2>/dev/null); OLDP=$(echo "$AJ" | jq -r '.IamInstanceProfile.Arn // empty' 2>/dev/null)
+    [ -n "$ASSOC" ] && break
+    sleep 5
+  done
+  NEWJ=""
+  if [ -n "$ASSOC" ]; then
+    NEWJ=$(aws ec2 replace-iam-instance-profile-association --region "$LREGION" --association-id "$ASSOC" \
+      --iam-instance-profile "Name=$AK2_CONDUCTOR_PROFILE" --output json 2>&1)
+  fi
+  NEWP=$(echo "$NEWJ" | jq -r '.IamInstanceProfileAssociation.IamInstanceProfile.Arn // empty' 2>/dev/null)
+  if [[ "$NEWP" != */"$AK2_CONDUCTOR_PROFILE" ]]; then
+    say "conductor: could not give $IID the instance profile $AK2_CONDUCTOR_PROFILE (association '${ASSOC:-none}': $(echo "$NEWJ" | tr '\n' ' ' | cut -c1-300)); terminating it"
+    aws ec2 terminate-instances --region "$LREGION" --instance-ids "$IID" >/dev/null
+    aws ec2 wait instance-terminated --region "$LREGION" --instance-ids "$IID"
+    mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg lr "$LREGION" \
+      '.launch = {requested_at:$t, instance_id:$iid, region:$lr, error:"conductor instance profile not replaced; terminated by run.sh (make conductor-iam first)"}'
+    scripts/orphans.sh --own "$TASK_ID" "$IID"
+    die "the conductor needs the instance profile $AK2_CONDUCTOR_PROFILE (make conductor-iam; docs/conductor.md)"
+  fi
+  mset --arg a "$ASSOC" --arg from "$OLDP" --arg to "$NEWP" --arg at "$(now)" \
+    '.conductor = {instance_profile:$to, replaced:$from, association_id:$a, replaced_at:$at,
+                   staging:("s3://" + (.s3_prefix | ltrimstr("s3://") | split("/")[0]) + "/'"$AK2_RESULTS_ROOT/$AK2_STAGING_DIR"'/" + .run_id + "/")}'
+  say "conductor: $IID now has instance profile $NEWP (was $OLDP); staging s3://$RESULTS_BUCKET/$AK2_RESULTS_ROOT/$AK2_STAGING_DIR/$RUN_ID/"
+fi
 
 # aws_try OUTVAR ARGS...: one AWS CLI call with connect/read timeouts (a fresh process, so DNS
 # and connections are re-resolved after an error). Sets OUTVAR to stdout. Returns 0 on success,
@@ -642,6 +698,9 @@ mset --arg state "$STATE" --arg basis "$FINAL_BASIS" --arg end "$END_ISO" --argj
        ((([.billed_seconds, 60]|max) * .truffle_price_usd_per_hour / 3600) * 1e6 | round / 1e6) else null end)
   | .cost_basis = "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests"
   | .manifest_finalised_at = $fin'
+# Who finalised it: the conductor, from its own run (make harvest checks this against the staging id).
+[ -z "$FIN_BY" ] || mset --arg by "$FIN_BY" --arg cr "$FIN_RUN" '.finalised_by = $by | .finalised_by_run_id = $cr' ||
+  say "WARNING: could not record finalised_by in the manifest"
 EXIT=$(jq -r '.task.exit_code // 99' "$M" 2>/dev/null || echo 99)
 [ "$REQS" = null ] && say "WARNING: the spec recorded no request counts (ak2_req)"
 
