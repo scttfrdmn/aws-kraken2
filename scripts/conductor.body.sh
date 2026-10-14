@@ -138,7 +138,10 @@ FULL=$(git -C "$W/repo" rev-parse HEAD)
 cd "$W/repo" || fail "no repo"
 . scripts/pin.env
 . scripts/paths.sh
-git clone -q "${AK2C_UPSTREAM_URL:-https://github.com/$UPSTREAM_REPO.git}" "$ORACLE_SRC" || fail "upstream clone failed"
+# pin.env's UPSTREAM_REPO is the full clone URL (as oracle-build.sh uses it); the rehearsal overrides
+# it, so the default is logged and the rehearsal checks it against pin.env.
+ak2_say "upstream: default $UPSTREAM_REPO at $UPSTREAM_PIN"
+git clone -q "${AK2C_UPSTREAM_URL:-$UPSTREAM_REPO}" "$ORACLE_SRC" || fail "upstream clone failed"
 # The pinned tools (make tools, with Go): run.sh and run-multi.sh take spawn and truffle from
 # AK2_TOOLS_BIN only (scripts/lib/tools_pin.sh).
 GOV=$(awk -F'\t' '$1 == "go" {print $2; exit}' scripts/conductor.tools.tsv)
