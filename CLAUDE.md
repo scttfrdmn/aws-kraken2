@@ -121,6 +121,10 @@ targets; ad hoc commands only during exploration.
 | `make rehearse-ladder` / `make rehearse SPEC=runs/g3-l-…` (the ladder body end to end on AL2023 nodes, before any rung launches) | [docs/ladder.md](docs/ladder.md) ("The rehearsal") |
 | `make ladder-campaign COHORT=… [REPS=2] [RUNGS=…] [CONCURRENCY=1] [FAMILY_LIMITS=X=2] [DRY_RUN=1]` / `make ladder-campaign-test` (every committed c<COHORT> rung, cheapest first, rep 2 reversed, done runs skipped, one run at a time by default; `AK2_LADDER_REP` / `AK2_LAUNCH_AZ` launch overrides; run under tmux or nohup) | [docs/ladder.md](docs/ladder.md) ("The campaign"), [docs/run.md](docs/run.md) ("Launch overrides") |
 | `make util-stream-test [N=…]` / `make util DIR=…` / `make util-backfill` / `make instance-types` | [docs/util.md](docs/util.md), [docs/run.md](docs/run.md) ("Utilisation") |
+| `make tools [WITH_GO=1]` (pinned spawn and truffle in `bin/`; run.sh, run-multi.sh and the generators use only these) | [docs/run.md](docs/run.md) ("Pinned tools") |
+| `make ladder-campaign-drain [REASON=…] [CAMPAIGN=…]` / `make ladder-campaign-undrain` | [docs/ladder.md](docs/ladder.md) ("Draining") |
+| `make conductor-iam` / `make conductor-iam-verify [CUSTOM=1]` / `make conductor-spec COHORT=… [RUNGS=…] [DRY_RUN=1] [DRY_MAKE_RUN=1] [TTL=…]` / `make run GATE=conductor SPEC=runs/conductor.json` | [docs/conductor.md](docs/conductor.md) |
+| `make harvest CAMPAIGN=<id> [PARTIAL=1]` / `make rehearse-conductor` | [docs/conductor.md](docs/conductor.md) |
 | `make run GATE=… SPEC=… [NODES=n]` | [docs/run.md](docs/run.md) ("Multi-node runs"), [docs/engine.md](docs/engine.md) |
 | `make dryrun-userdata [GEN=…]` (user-data size and pre-launch checks of every spec) | [docs/run.md](docs/run.md) |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
