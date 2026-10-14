@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
+.PHONY: util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify conductor-spec ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -326,6 +326,13 @@ orphans:
 # verified through the policy simulator, recorded in results/iam/conductor-<ts>.json. Laptop only.
 conductor-iam:
 	scripts/iam/conductor-iam.sh
+
+# The conductor's spec (docs/conductor.md, "The spec"): runs/conductor.json (OUT=runs/conductor*.json)
+# from scripts/conductor.body.sh with the campaign's arguments in its PARAMS block. Commit, push, then
+# make run GATE=conductor SPEC=runs/conductor.json.
+conductor-spec:
+	scripts/mkspec-conductor.sh COHORT="$(COHORT)" RUNGS="$(RUNGS)" REPS="$(or $(REPS),2)" CONCURRENCY="$(or $(CONCURRENCY),1)" \
+		FAMILY_LIMITS="$(FAMILY_LIMITS)" DRY_RUN="$(DRY_RUN)" DRY_MAKE_RUN="$(or $(DRY_MAKE_RUN),0)" TTL="$(TTL)" TYPE="$(TYPE)" OUT="$(OUT)"
 
 conductor-iam-verify:
 	CUSTOM="$(CUSTOM)" scripts/iam/conductor-iam-verify.sh $(ROLE_ARN)
