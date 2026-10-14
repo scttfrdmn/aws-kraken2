@@ -247,6 +247,25 @@ and `requested_az`, and exits 2. If the AZ cannot be read, a warning says so;
 `make ladder-campaign` checks every member's `instance.az` as well. `scripts/lib/run_sh_test.sh` and `run_multi_test.sh` (in
 `make test`) check each refusal and that a documented AZ passes and is recorded.
 
+## The conductor gate and finalised_by
+
+`GATE=conductor` goes only with a `runs/conductor*.json` spec, and the other way round
+(docs/conductor.md). For that gate, run.sh also refuses:
+- a tree that is not clean anywhere, `results/` and untracked files included;
+- a HEAD that is not on origin.
+
+After launch it replaces the instance's profile with `ak2-conductor` (`manifest.conductor`), and
+terminates the instance if it cannot. run-multi.sh refuses the gate.
+
+Two more launch-host variables are set by the conductor's body, and refused anywhere else:
+- `AK2_FINALISED_BY=conductor` with `AK2_CONDUCTOR_RUN_ID=<conductor run id>`: recorded as
+  `manifest.finalised_by` and `finalised_by_run_id`, before util.py, and in `cohort.json`. Any
+  other value, or conductor without a run id, is refused.
+- `AK2_INSTANCE_ROLE=1`: `scripts/ak2.env` unsets `AWS_PROFILE`, so every script uses the instance
+  role.
+
+`scripts/lib/run_sh_test.sh` checks each refusal.
+
 ## cost_limit
 
 There is no budget cap (Scott, 2026-10-09, #25): spend is tracked, and each run's TTL and

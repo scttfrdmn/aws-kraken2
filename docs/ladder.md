@@ -1164,9 +1164,43 @@ Progress streams to stdout: the launches, each driver's log followed and prefixe
 r<rep>]`, waits, outcomes, checks and a summary. The coordinator commits the results and the
 g3_defects.tsv rows.
 
-**Exit:** 0 when every planned launch succeeded (a capacity retry that succeeded counts). 1 when
-a rung stopped or an item was not launched. 2 when it refused to start on a dirty tree. 3 on a
-hard stop: orphans with nothing in flight, a Law 1 DEFECT, a check that cannot judge, or a signal.
+**Exit:**
+- 0 when every planned launch succeeded (a capacity retry that succeeded counts);
+- 1 when a rung stopped or an item was not launched;
+- 2 when it refused to start, on a dirty tree or a drain flag that is set;
+- 3 on a hard stop: orphans with nothing in flight, a Law 1 DEFECT, a check that cannot judge, or
+  a signal;
+- 4 when it drained (below).
+
+### Draining
+
+```bash
+make ladder-campaign-drain [REASON=...]                 # the local flag, results/g3/ladder-campaign/DRAIN
+make ladder-campaign-undrain
+make ladder-campaign-drain CAMPAIGN=<conductor run id>  # a conductor's campaign (docs/conductor.md)
+```
+
+`scripts/g3/ladder-campaign-drain.sh` writes one line to the flag: when, who, and the reason. The
+flag is `AK2_CAMPAIGN_DRAIN`, default `results/g3/ladder-campaign/DRAIN`. It is gitignored, so it
+never dirties the tree that run.sh checks. The campaign log's header names it.
+
+**While a campaign runs:** the campaign looks for the flag at the top of every scheduling pass and
+again just before each launch. Once it is set, the campaign:
+- launches nothing more;
+- lets the runs in flight finish, judges and records them as usual (orphans and g3-ladder after
+  each);
+- logs the queued items as `not-launched` rows (`drained: drain flag … set (…)`);
+- runs the final orphan check, prints its summary and exits 4.
+
+**At start:** a new campaign refuses to start while the flag exists (exit 2) until
+`make ladder-campaign-undrain`. `DRY_RUN=1` reports the flag.
+
+**Deadline.** `AK2_CAMPAIGN_DEADLINE=<epoch s>` drains the same way when the next launch's TTL plus
+`AK2_CAMPAIGN_FINALISE_S` (default 1800 s) would end after the deadline. The conductor sets it from
+its own TTL.
+
+A campaign started before this code existed (the c10 stage 4 campaign of 2026-10-14) does not read
+the flag: Python loaded its driver at start.
 
 **The stub test** (`scripts/tests/ladder_campaign_test.py`, in `make test`, about 30 s) runs the
 real planner and driver in a scratch repo. The repo holds real committed c1 specs, the lever table
@@ -1202,6 +1236,14 @@ The cases:
   - the campaign stops after a Law 1 DEFECT;
   - it refuses to start when one is already there;
   - a g3-ladder crash (exit 1, no summary line) is a hard stop, in the run and in DRY_RUN.
+- **drain:**
+  - the flag set while a run is in flight: that run finishes and is recorded `ok`;
+  - orphans run after it and at the end, nothing launches after it, the rest are `not-launched
+    (drained)` rows, and the exit is 4;
+  - the make target's script writes the default flag, a new campaign refuses (exit 2), DRY_RUN
+    reports it, and undrain lets the campaign run;
+  - a deadline 10 min away refuses every launch (exit 4);
+  - the flag path is gitignored.
 
 **Not covered locally:** real spawn launches, real capacity errors (matched by the string
 `InsufficientInstanceCapacity`), and real quota numbers.

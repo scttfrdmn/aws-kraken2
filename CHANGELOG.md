@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The conductor: ladder campaigns off the laptop** (#77; docs/conductor.md).
+  - **Drain.** `make ladder-campaign-drain` and `make ladder-campaign-undrain` manage a flag:
+    `results/g3/ladder-campaign/DRAIN` (gitignored), or with `CAMPAIGN=<id>` an object in the
+    conductor's staging prefix. The campaign checks it before every launch. Once it is set, the
+    campaign launches nothing more, records its runs in flight and exits 4 (drained). A new campaign
+    refuses to start while it is set. `AK2_CAMPAIGN_DEADLINE` drains the same way before a TTL would
+    run out. These are in the stub test.
+  - **The conductor.** `make conductor-spec` writes `runs/conductor.json` from
+    `scripts/conductor.body.sh`, with the campaign's arguments in the payload's PARAMS block. It runs
+    on an `m8g.medium` (by default) through `make run GATE=conductor`. run.sh refuses that gate
+    unless the whole tree is clean and HEAD is on origin. It swaps the instance's profile for
+    `ak2-conductor`. On the instance:
+    - the body clones the commit;
+    - it installs spawn 0.123.0, truffle 0.57.1 and Go 1.27.1, each verified by sha256
+      (`scripts/conductor.tools.tsv`);
+    - it runs `make ladder-campaign` under the instance role (`AK2_INSTANCE_ROLE=1` unsets
+      `AWS_PROFILE`);
+    - it stages results, a patch of tracked changes, sha256s, the campaign log and its state to
+      `s3://<results bucket>/aws-kraken2/results-staging/<id>/`.
+
+    Manifests it finalises record `finalised_by: conductor` and `finalised_by_run_id`.
+    `DRY_MAKE_RUN=1` probes run.sh's whole pre-launch path under the role, launching nothing.
+  - **make harvest CAMPAIGN=<id>.** It fetches the staging prefix and verifies it: checksums,
+    finalised manifests with `finalised_by` conductor, `spec_sha256` against the committed spec,
+    `util.json` citations, and the campaign tsv. It then installs the results and prints the
+    `git add`. It commits nothing.
+  - **Orphans.** A conductor within its TTL is listed as `CONDUCTOR` and not counted, globally or
+    in scoped checks. `scripts/lib/orphans_conductor_test.sh` tests this.
+  - **IAM.** `make conductor-iam` creates or updates, idempotently:
+    - role, profile and inline policy `ak2-conductor` (`scripts/iam/`);
+    - the permissions boundary `ak2-spawn-instance-boundary` on the run role spawn passes.
+
+    It verifies them through the policy simulator: `make conductor-iam-verify`, 59 cases with
+    negative controls; `CUSTOM=1` runs them before anything exists. The offline consistency check
+    is `scripts/iam/conductor_policy_check.py check`, in make test.
+  - **Rehearsal.** `make rehearse-conductor` runs on AL2023 containers with podman and no AWS:
+    - a stubbed campaign, staged and harvested into a clone;
+    - drain mid-run and before start;
+    - the plan with the real g3-ladder;
+    - negative controls: a tampered file, a missing `finalised_by`, no role.
+
 - **The ladder's O arm for c10 stages 4–7 and any cohort** (Scott's rulings of 2026-10-13, #25;
   docs/ladder.md, "The O arm's thread ratio", "O2 at N = K", "Conditional not-run entries").
   - **Thread ratio (ruling 1).** Every O rung's THREADS is `@ratio:Sstar-time` (`Sstar-cost` on the
