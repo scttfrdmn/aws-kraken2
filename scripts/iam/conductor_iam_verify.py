@@ -2,6 +2,8 @@
 """The conductor's IAM by behaviour, through the IAM policy simulator (docs/conductor.md, "IAM").
 
   conductor_iam_verify.py CONDUCTOR_ROLE_ARN    (scripts/iam/conductor-iam-verify.sh; make conductor-iam runs it)
+  conductor_iam_verify.py --custom              the committed documents before anything exists
+                                                (simulate-custom-policy; make conductor-iam-verify CUSTOM=1)
 
 Every request the conductor's work makes (spawn task run's RunInstances, tags, PassRole and its
 refresh of the run role; run.sh's S3, quota, price and AMI calls; the campaign's terminations) is
@@ -126,11 +128,48 @@ CASES = [
 ]
 
 
+def aws_json(*a):
+    r = subprocess.run(["aws"] + list(a) + ["--output", "json"], capture_output=True, text=True)
+    if r.returncode != 0:
+        raise SystemExit("conductor-iam-verify: aws %s failed: %s" % (" ".join(a[:3]), r.stderr.strip()[:300]))
+    return json.loads(r.stdout)
+
+
+def custom_inputs():
+    """--custom: the committed documents, before anything is created (iam simulate-custom-policy).
+    The conductor: scripts/iam/conductor-policy.json. The run role: its live policies (read-only
+    calls), under the committed boundary, as they would be once make conductor-iam attaches it."""
+    here = __import__("os").path.dirname(__import__("os").path.abspath(__file__))
+    with open(here + "/conductor-policy.json") as f:
+        cond = [f.read()]
+    run = []
+    for p in aws_json("iam", "list-role-policies", "--role-name", RUN_ROLE)["PolicyNames"]:
+        run.append(json.dumps(aws_json("iam", "get-role-policy", "--role-name", RUN_ROLE, "--policy-name", p)["PolicyDocument"]))
+    for ap in aws_json("iam", "list-attached-role-policies", "--role-name", RUN_ROLE)["AttachedPolicies"]:
+        v = aws_json("iam", "get-policy", "--policy-arn", ap["PolicyArn"])["Policy"]["DefaultVersionId"]
+        run.append(json.dumps(aws_json("iam", "get-policy-version", "--policy-arn", ap["PolicyArn"], "--version-id", v)
+                              ["PolicyVersion"]["Document"]))
+    with open(here + "/spawn-instance-boundary.json") as f:
+        bnd = [f.read()]
+    return {"conductor": (cond, None), "run": (run, bnd)}
+
+
+CUSTOM = None
+
+
 def simulate(principal, case):
-    req = {"PolicySourceArn": principal, "ActionNames": [case["action"]], "ResourceArns": [case["resource"]]}
+    if CUSTOM is not None:
+        docs, bnd = CUSTOM[case["principal"]]
+        req = {"PolicyInputList": docs, "ActionNames": [case["action"]], "ResourceArns": [case["resource"]]}
+        if bnd:
+            req["PermissionsBoundaryPolicyInputList"] = bnd
+        api = "simulate-custom-policy"
+    else:
+        req = {"PolicySourceArn": principal, "ActionNames": [case["action"]], "ResourceArns": [case["resource"]]}
+        api = "simulate-principal-policy"
     if case["context"]:
         req["ContextEntries"] = case["context"]
-    r = subprocess.run(["aws", "iam", "simulate-principal-policy", "--cli-input-json", json.dumps(req), "--output", "json"],
+    r = subprocess.run(["aws", "iam", api, "--cli-input-json", json.dumps(req), "--output", "json"],
                        capture_output=True, text=True)
     if r.returncode != 0:
         return None, r.stderr.strip()[:300]
@@ -139,6 +178,10 @@ def simulate(principal, case):
 
 
 def main(a):
+    global CUSTOM
+    if a == ["--custom"]:
+        CUSTOM = custom_inputs()
+        a = ["arn:aws:iam::%s:role/ak2-conductor (not created: scripts/iam/conductor-policy.json, simulate-custom-policy)" % A]
     if len(a) != 1 or not a[0].startswith("arn:aws:iam::"):
         print(__doc__, file=sys.stderr)
         return 2

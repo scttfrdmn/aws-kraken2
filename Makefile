@@ -327,7 +327,7 @@ conductor-iam:
 	scripts/iam/conductor-iam.sh
 
 conductor-iam-verify:
-	scripts/iam/conductor-iam-verify.sh $(ROLE_ARN)
+	CUSTOM="$(CUSTOM)" scripts/iam/conductor-iam-verify.sh $(ROLE_ARN)
 
 report:
 	scripts/report.sh "$(GATE)" "$(RUN)"

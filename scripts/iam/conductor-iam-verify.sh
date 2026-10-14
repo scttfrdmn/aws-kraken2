@@ -7,5 +7,5 @@ cd "$(dirname "$0")/../.." || exit 2
 # shellcheck source=/dev/null
 . scripts/ak2.env
 export AWS_PROFILE
-ARN=${1:-arn:aws:iam::$AK2_ACCOUNT:role/$AK2_CONDUCTOR_ROLE}
+if [ "${CUSTOM:-}" = 1 ]; then ARN=--custom; else ARN=${1:-arn:aws:iam::$AK2_ACCOUNT:role/$AK2_CONDUCTOR_ROLE}; fi
 python3 scripts/iam/conductor_iam_verify.py "$ARN"
