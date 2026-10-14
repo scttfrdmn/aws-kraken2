@@ -32,7 +32,10 @@ in flight, with a clean record. The tables stub writes runs.tsv and its summary 
               and g3-ladder run after it and at the end, nothing more launches, exit 4; a flag
               already set (make ladder-campaign-drain, the default path) refuses a new campaign
               (exit 2) and undrain lets it run; AK2_CAMPAIGN_DEADLINE drains a launch whose TTL
-              would not end before it; the default flag path is gitignored.
+              would not end before it; the default flag path is gitignored; a drain after a rung
+              failed keeps exit 1;
+  conductor   a laptop campaign refuses to start while conductor_active.sh finds a conductor
+              driving the cohort (exit 1) or cannot tell (exit 2); on the conductor it does not ask.
 """
 import hashlib
 import json
@@ -290,6 +293,8 @@ def campaign(R, S, mode, rungs, reps=2, conc=None, limits="X=2,Standard=2", beha
                AK2_CAMPAIGN_ORPHANS=os.path.join(R, "stub", "orphans"), AK2_CAMPAIGN_G3LADDER=os.path.join(R, "stub", "g3ladder"),
                AK2_CAMPAIGN_QUOTA=os.path.join(R, "stub", "quota"), AK2_CAMPAIGN_POLL_S="0.05", AK2_CAMPAIGN_QUOTA_RETRY_S="0",
                DRY_RUN="", MAKEFLAGS="DRY_RUN=1")
+    env["AK2_CAMPAIGN_CONDUCTORS"] = "true"      # no conductor drives the cohort (conductor_active.sh: exit 0)
+    env.pop("AK2_FINALISED_BY", None)
     env.pop("AK2_CAMPAIGN_DRAIN", None)
     env.pop("AK2_CAMPAIGN_DEADLINE", None)
     env.update(env_over or {})
@@ -620,6 +625,31 @@ def main():
     ok(rc == 4 and not evs and "deadline: " in out and "AK2_CAMPAIGN_DEADLINE" in out,
        "drain: AK2_CAMPAIGN_DEADLINE 10 min away refuses every launch whose TTL is longer (exit 4, nothing launched)",
        "rc %d\n%s" % (rc, out[-1500:]))
+    shutil.rmtree(d)
+    # A drain after a rung failed: still exit 1 (the failure is not hidden by the drain).
+    rs = ["S2a", "S5", "S6"]
+    d, R, S = scratch(rs)
+    flag = os.path.join(S, "DRAIN")
+    rc, out, evs = campaign(R, S, "run", rs, behave={"S2a:1": {"r": "fail"}, "S5:1": {"s": 0.5, "drain": True}},
+                            env_over={"AK2_CAMPAIGN_DRAIN": flag})
+    ok(rc == 1 and "exit 1: drained" in out and "rung(s) stopped before it" in out,
+       "drain: a drained campaign in which a rung failed exits 1, not 4", "rc %d\n%s" % (rc, out[-1500:]))
+    shutil.rmtree(d)
+    # ---- one driver per cohort
+    d, R, S = scratch(["S2a"])
+    stub = os.path.join(S, "conductors")
+    open(stub, "w").write("#!/bin/sh\necho \"conductor 20261014-120000-abcdef0 (instance i-1, running) is driving cohort $1: drain it\"\nexit 1\n")
+    os.chmod(stub, 0o755)
+    rc, out, evs = campaign(R, S, "run", ["S2a"], env_over={"AK2_CAMPAIGN_CONDUCTORS": stub})
+    ok(rc == 2 and not evs and "refused: conductor 20261014-120000-abcdef0" in out and "driving cohort 1" in out,
+       "conductor: a laptop campaign refuses while a conductor drives the cohort", "rc %d\n%s" % (rc, out[-800:]))
+    open(stub, "w").write("#!/bin/sh\necho 'list-objects-v2 failed' >&2\nexit 2\n")
+    rc, out, evs = campaign(R, S, "run", ["S2a"], env_over={"AK2_CAMPAIGN_CONDUCTORS": stub})
+    ok(rc == 2 and not evs and "cannot tell whether a conductor drives cohort 1" in out,
+       "conductor: ... and when it cannot tell", "rc %d\n%s" % (rc, out[-800:]))
+    rc, out, evs = campaign(R, S, "run", ["S2a"], env_over={"AK2_CAMPAIGN_CONDUCTORS": stub, "AK2_FINALISED_BY": "conductor"})
+    ok(rc == 0 and len([e for e in evs if e["ev"] == "start"]) == 2, "conductor: on the conductor itself the campaign does not ask",
+       "rc %d\n%s" % (rc, out[-800:]))
     shutil.rmtree(d)
     g = subprocess.run(["git", "-C", HERE, "check-ignore", "-q", "results/g3/ladder-campaign/DRAIN"])
     ok(g.returncode == 0, "drain: the default flag path is gitignored (it never dirties the tree)")

@@ -5,6 +5,8 @@ STAGE (its conductor.json, changes.tsv, tracked.patch and tree/), checked agains
   harvest_check.py --stage DIR --campaign <conductor run id> [--root ROOT] [--partial]
 
 Fails (exit 1, every reason printed) unless:
+  - tracked.patch has the sha256 in tracked.patch.sha256 and touches only scripts/lib/g3_defects.tsv,
+    and conductor.json lists no other tracked change (unexpected_tracked);
   - conductor.json names this campaign and says ended (--partial: a conductor still running is
     reported, not refused);
   - changes.tsv and tree/ agree: every listed file staged with its sha256 and size, nothing else;
@@ -69,6 +71,17 @@ def main(a):
         (notes if o.partial else bad).append("the conductor has not ended (state %r, updated %s)%s" % (
             cj.get("state"), cj.get("updated_at"), "" if o.partial else "; PARTIAL=1 harvests what is staged so far"))
     commit = cj.get("commit") or ""
+    if cj.get("unexpected_tracked"):
+        bad.append("the campaign changed tracked files other than scripts/lib/g3_defects.tsv: %s" % ", ".join(cj["unexpected_tracked"]))
+    tp, ts_ = os.path.join(S, "tracked.patch"), os.path.join(S, "tracked.patch.sha256")
+    if os.path.exists(tp):
+        want = open(ts_).read().strip() if os.path.exists(ts_) else None
+        if want != sha(tp):
+            bad.append("tracked.patch sha256 %s, tracked.patch.sha256 says %s" % (sha(tp)[:12], (want or "nothing")[:12]))
+        with open(tp, errors="replace") as f:
+            touched = sorted({l.split(" b/", 1)[1].strip() for l in f if l.startswith("diff --git ")})
+        if touched and touched != ["scripts/lib/g3_defects.tsv"]:
+            bad.append("tracked.patch touches %s; only scripts/lib/g3_defects.tsv may change" % ", ".join(touched))
     # changes.tsv against tree/
     listed = {}
     cp = os.path.join(S, "changes.tsv")

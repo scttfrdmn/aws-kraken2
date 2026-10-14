@@ -12,8 +12,8 @@
 #   5. the boundary on each run role (spawn-instance-<hash>) the ladder specs launch under. The
 #      conductor may refresh that role's policies (spawn task run does it on every launch) only while
 #      the boundary is attached, so the conductor cannot widen what it passes to an instance. The
-#      boundary covers everything spawn attaches (checked live here, against the role's actual
-#      policies), so attaching it changes nothing a run can do; still, it is attached only when no
+#      boundary covers everything spawn attaches (checked live here by simulating every request the
+#      role's policies allow, without and with it), so attaching it changes nothing a run can do; still, it is attached only when no
 #      instance is using the role: otherwise this step is reported PENDING and the conductor cannot
 #      launch rungs until make conductor-iam is run again with nothing in flight;
 #   6. tags project=aws-kraken2 on the policy, role and profile;
@@ -124,19 +124,10 @@ BOUND='[]'; PENDING=0
 for R in $(python3 scripts/iam/conductor_policy_check.py roles); do
   aws iam get-role --role-name "$R" > "$TMP/r.json" || die "get-role $R failed (spawn creates it on the first laptop launch of a spec that needs it)"
   CUR=$(jq -r '.Role.PermissionsBoundary.PermissionsBoundaryArn // empty' "$TMP/r.json")
-  # What the role carries now must lie inside the boundary, or attaching it would narrow the runs.
-  docs=()
-  for p in $(aws iam list-role-policies --role-name "$R" --query PolicyNames --output text); do
-    aws iam get-role-policy --role-name "$R" --policy-name "$p" --query PolicyDocument --output json > "$TMP/$R-$p.json" || die "get-role-policy $R $p failed"
-    docs+=("$TMP/$R-$p.json")
-  done
-  for a in $(aws iam list-attached-role-policies --role-name "$R" --query 'AttachedPolicies[].PolicyArn' --output text); do
-    v=$(aws iam get-policy --policy-arn "$a" --query Policy.DefaultVersionId --output text) || die "get-policy $a failed"
-    aws iam get-policy-version --policy-arn "$a" --version-id "$v" --query PolicyVersion.Document --output json > "$TMP/$R-att-${a##*/}.json" ||
-      die "get-policy-version $a failed"
-    docs+=("$TMP/$R-att-${a##*/}.json")
-  done
-  COVER=$(python3 scripts/iam/conductor_policy_check.py covers "${docs[@]}" 2>&1); CRC=$?
+  # What the role carries now must lie inside the boundary, or attaching it would narrow the runs:
+  # every request its live policies allow, simulated without and with the boundary.
+  COVER=$(python3 scripts/iam/conductor_iam_verify.py --covers "$R" 2>&1); CRC=$?
+  [ "$CRC" = 2 ] && die "the boundary check could not run for $R: $COVER"
   USERS=$(aws ec2 describe-instances --region us-west-2 \
     --filters "Name=iam-instance-profile.arn,Values=arn:aws:iam::$ACCT:instance-profile/$R" \
               Name=instance-state-name,Values=pending,running,stopping,stopped,shutting-down \

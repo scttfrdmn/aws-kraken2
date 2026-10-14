@@ -842,6 +842,9 @@ class Campaign:
         if self.hard:
             say("exit 3: %s" % self.stop)
             return 3
+        if self.drained and self.blocked:
+            say("exit 1: drained (%s), and rung(s) stopped before it: %s" % (self.drained, "; ".join(sorted(self.blocked))))
+            return 1
         if self.drained:
             say("exit %d: drained (%s); %d item(s) not launched" % (EXIT_DRAINED, self.drained, len(self.dropped)))
             return EXIT_DRAINED
@@ -917,6 +920,16 @@ def main(a):
     if n is not None:
         say("refused: the drain flag %s is set (%s); make ladder-campaign-undrain clears it" % (drain_flag(), n))
         return 2
+    # One driver per cohort: on the laptop, refuse while a conductor drives this cohort (the
+    # conductor itself is the driver, so it does not ask).
+    if os.environ.get("AK2_FINALISED_BY") != "conductor":
+        r = subprocess.run(cmd("AK2_CAMPAIGN_CONDUCTORS", [os.path.join(ROOT, "scripts", "lib", "conductor_active.sh")]) + [str(cohort)],
+                           capture_output=True, text=True, cwd=ROOT)
+        if r.returncode != 0:
+            say("refused: %s" % ((r.stdout.strip() or r.stderr.strip() or "conductor_active.sh rc %d" % r.returncode)
+                                 if r.returncode == 1 else "cannot tell whether a conductor drives cohort %d (conductor_active.sh rc %d: %s)"
+                                 % (cohort, r.returncode, r.stderr.strip()[-300:])))
+            return 2
     os.makedirs(CAMPAIGN_DIR, exist_ok=True)
     c = Campaign(cohort, reps, [], conc, limits, ts)
     say("campaign %s: log results/g3/ladder-campaign/%s.tsv, driver logs results/g3/ladder-campaign/%s/" % (ts, ts, ts))

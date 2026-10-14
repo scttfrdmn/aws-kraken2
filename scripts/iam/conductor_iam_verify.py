@@ -4,6 +4,11 @@
   conductor_iam_verify.py CONDUCTOR_ROLE_ARN    (scripts/iam/conductor-iam-verify.sh; make conductor-iam runs it)
   conductor_iam_verify.py --custom              the committed documents before anything exists
                                                 (simulate-custom-policy; make conductor-iam-verify CUSTOM=1)
+  conductor_iam_verify.py --covers ROLE         does the committed boundary narrow ROLE? Every request
+                                                the role's live policies allow (each Allow statement's
+                                                actions x resources, with its condition values as
+                                                context) is simulated without and with the boundary;
+                                                exit 1, naming them, if any allowed one is then denied
 
 Every request the conductor's work makes (spawn task run's RunInstances, tags, PassRole and its
 refresh of the run role; run.sh's S3, quota, price and AMI calls; the campaign's terminations) is
@@ -53,6 +58,10 @@ CASES = [
     c("RunInstances: ... but another task id", "denied", "ec2:RunInstances", I,
       ctx(aws__RequestTag_SLASH_spawn__task_DASH_id="other-x", aws__RequestTag_SLASH_spawn__managed="true", ec2__InstanceProfile=PROF)),
     c("RunInstances: ... but in us-east-1", "denied", "ec2:RunInstances", I.replace("us-west-2", "us-east-1"), AK2_LAUNCH),
+    c("RunInstances: ... but with no instance profile", "denied", "ec2:RunInstances", I,
+      ctx(aws__RequestTag_SLASH_spawn__task_DASH_id="ak2-g3-x", aws__RequestTag_SLASH_spawn__managed="true")),
+    c("RunInstances: ... but without spawn:managed", "denied", "ec2:RunInstances", I,
+      ctx(aws__RequestTag_SLASH_spawn__task_DASH_id="ak2-g3-x", ec2__InstanceProfile=PROF)),
     c("RunInstances: an ak2 task's volume", "allowed", "ec2:RunInstances", V,
       ctx(aws__RequestTag_SLASH_spawn__task_DASH_id="ak2-g3-x")),
     c("RunInstances: an untagged volume", "denied", "ec2:RunInstances", V),
@@ -177,8 +186,68 @@ def simulate(principal, case):
     return res["EvalDecision"], ";".join(s.get("SourcePolicyId", "?") for s in res.get("MatchedStatements", []))
 
 
+def role_docs(role):
+    docs = []
+    for p in aws_json("iam", "list-role-policies", "--role-name", role)["PolicyNames"]:
+        docs.append(aws_json("iam", "get-role-policy", "--role-name", role, "--policy-name", p)["PolicyDocument"])
+    for ap in aws_json("iam", "list-attached-role-policies", "--role-name", role)["AttachedPolicies"]:
+        v = aws_json("iam", "get-policy", "--policy-arn", ap["PolicyArn"])["Policy"]["DefaultVersionId"]
+        docs.append(aws_json("iam", "get-policy-version", "--policy-arn", ap["PolicyArn"], "--version-id", v)["PolicyVersion"]["Document"])
+    return docs
+
+
+def covers(role, bfile=None):
+    here = __import__("os").path.dirname(__import__("os").path.abspath(__file__))
+    with open(bfile or here + "/spawn-instance-boundary.json") as f:
+        bnd = f.read()
+    docs = role_docs(role)
+    pol = [json.dumps(d) for d in docs]
+    reqs = []
+    for d in docs:
+        for st in d.get("Statement", []):
+            if st.get("Effect") != "Allow":
+                continue
+            acts = st["Action"] if isinstance(st["Action"], list) else [st["Action"]]
+            res = st.get("Resource", "*")
+            res = res if isinstance(res, list) else [res]
+            cx = []
+            for op, kv in (st.get("Condition") or {}).items():
+                for k, v in kv.items():
+                    v = v[0] if isinstance(v, list) else v
+                    cx.append({"ContextKeyName": k, "ContextKeyValues": [v.replace("*", "x") if "Like" in op else v],
+                               "ContextKeyType": "string"})
+            for a_ in acts:
+                for r in res:
+                    reqs.append((a_, r.replace("*", "x") if r != "*" else "*", cx))
+    narrowed, n = [], 0
+    for a_, r, cx in reqs:
+        out = []
+        for b in (None, bnd):
+            req = {"PolicyInputList": pol, "ActionNames": [a_], "ResourceArns": [r]}
+            if cx:
+                req["ContextEntries"] = cx
+            if b:
+                req["PermissionsBoundaryPolicyInputList"] = [b]
+            rr = subprocess.run(["aws", "iam", "simulate-custom-policy", "--cli-input-json", json.dumps(req), "--output", "json"],
+                                capture_output=True, text=True)
+            if rr.returncode != 0:
+                print("conductor-iam-verify: covers: simulate-custom-policy failed: %s" % rr.stderr.strip()[:300], file=sys.stderr)
+                return 2
+            out.append(json.loads(rr.stdout)["EvaluationResults"][0]["EvalDecision"])
+        n += 1
+        if out[0] == "allowed" and out[1] != "allowed":
+            narrowed.append("%s on %s" % (a_, r))
+    for x in narrowed:
+        print("conductor-iam-verify: covers: %s: the boundary denies %s, which the role's policies allow" % (role, x))
+    print("conductor-iam-verify: covers: %s: %d request(s) simulated without and with %s; %d narrowed" % (
+        role, n, "ak2-spawn-instance-boundary", len(narrowed)), file=sys.stderr)
+    return 1 if narrowed else 0
+
+
 def main(a):
     global CUSTOM
+    if len(a) in (2, 3) and a[0] == "--covers":
+        return covers(a[1], a[2] if len(a) == 3 else None)
     if a == ["--custom"]:
         CUSTOM = custom_inputs()
         a = ["arn:aws:iam::%s:role/ak2-conductor (not created: scripts/iam/conductor-policy.json, simulate-custom-policy)" % A]

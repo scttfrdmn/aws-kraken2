@@ -11,14 +11,20 @@
 #   campaign  make ladder-campaign COHORT=... (DRY_RUN=1: the plan only)
 #   stage     the last staging pass; conductor.json says ended
 # Staging (s3://<results bucket>/<root>/results-staging/<this run id>/, make harvest's input):
-# tree/<path> for every file the campaign added to the clone (git status: untracked), tracked.patch
-# for tracked files it changed (g3_defects.tsv rows), changes.tsv (sha256, bytes, path of each
-# staged file), campaign.log (streamed), conductor.json (state). Re-staged every STAGE_EVERY s
-# and after the campaign. DRAIN there (make ladder-campaign-drain CAMPAIGN=<this run id>) is copied
+# tree/<path> for every file the campaign added to the clone (git status: untracked). A run or
+# cohort dir (results/<gate>/<yyyymmdd-hhmmss>-...) is staged only once it is finalised (its
+# manifest has manifest_finalised_at, or it has cohort.json): run.sh and run-multi.sh delete the
+# dirs of refused or DRY_RUN launches, and those must never reach the stage. Each staged dir is
+# synced with --delete, so a file removed after finalisation leaves the stage too. tracked.patch
+# (with tracked.patch.sha256) for scripts/lib/g3_defects.tsv, the one tracked file the campaign may
+# change; any other tracked change is listed in conductor.json (unexpected_tracked), and make
+# harvest refuses it. changes.tsv (sha256, bytes, path of each staged file), campaign.log
+# (streamed), conductor.json (state). Re-staged every STAGE_EVERY s and after the campaign. DRAIN there (make ladder-campaign-drain CAMPAIGN=<this run id>) is copied
 # to the campaign's local flag within DRAIN_POLL_S s; the campaign then launches nothing more and
 # exits 4 once its runs in flight are recorded. The body exits 0 when the campaign exits 0 or 4.
 # make rehearse-conductor seams (AK2C_*; run.sh refuses them in a spec's env, so on AWS they are
-# unset): AK2C_REHEARSE=1 (no dnf, no tool downloads: stubs on PATH), AK2C_REPO_URL, AK2C_UPSTREAM_URL,
+# unset): AK2C_REHEARSE=1 (no dnf, no tool downloads: stubs in AK2C_TOOLS_BIN), AK2C_REPO_URL, AK2C_UPSTREAM_URL,
+# AK2C_STAGE_UNFILTERED=1 (stage every untracked dir, unfinalised included: the rehearsal's B1 control),
 # AK2C_ROLE_WAIT (tries, 5 s apart; 120), and DRAIN_POLL_S (30), STAGE_EVERY (60), DEADLINE_MARGIN_S (900).
 @PARAMS@
 W=$HOME/ak2c; mkdir -p "$W"
@@ -31,36 +37,56 @@ status() {  # status STATE [ended]: conductor.json, here and in the staging pref
   jq -n --arg run "$AK2_RUN_ID" --arg sha "$FULL" --arg state "$STATE" --arg stage "$STAGE" --arg ts "$CAMPAIGN_TS" \
     --arg crc "$CRC" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --argjson tools "$TOOLS" --arg ended "${2:-}" \
     --arg iid "${AK2_INSTANCE_ID:-}" --arg deadline "${AK2_CAMPAIGN_DEADLINE:-}" --arg drained "$([ -e "$W/DRAIN" ] && head -1 "$W/DRAIN")" \
+    --arg unexp "$(cat "$W/unexpected.txt" 2> /dev/null)" --arg cohort "$COHORT" \
     --arg p "COHORT=$COHORT; RUNGS=$RUNGS; REPS=$REPS; CONCURRENCY=$CONCURRENCY; FAMILY_LIMITS=$FAMILY_LIMITS; DRY_RUN=$DRY_RUN; DRY_MAKE_RUN=$DRY_MAKE_RUN" '{
       conductor_run_id:$run, commit:$sha, instance_id:$iid, state:$state, ended:($ended == "ended"), params:$p,
+      cohort:($cohort|tonumber? // null), unexpected_tracked:($unexp | split("\n") | map(select(. != ""))),
       staging:$stage, campaign_ts:$ts, campaign_rc:(if $crc == "" then null else ($crc|tonumber) end),
       drain:(if $drained == "" then null else $drained end), deadline_epoch:(if $deadline == "" then null else ($deadline|tonumber) end),
       tools:$tools, updated_at:$at}' > "$W/conductor.json"
   aws s3 cp --only-show-errors "$W/conductor.json" "$STAGE/conductor.json" || ak2_say "WARN: could not stage conductor.json"
 }
-# stage_now: everything the campaign added or changed in the clone, to the staging prefix.
+# stage_now: what the campaign added (finalised run dirs, the campaign's own files) and its
+# g3_defects.tsv rows, to the staging prefix.
+RUNDIR_RE='^results/[^/]+/[0-9]{8}-[0-9]{6}-[^/]+'
+stage_ready() {  # a run or cohort dir is staged only once finalised
+  [ "${AK2C_STAGE_UNFILTERED:-}" = 1 ] && return 0
+  [ -f "$1/cohort.json" ] && return 0
+  [ -f "$1/manifest.json" ] && [ -n "$(jq -r '.manifest_finalised_at // empty' "$1/manifest.json" 2> /dev/null)" ]
+}
 stage_now() {
   [ -d "$W/repo/.git" ] || return 0
   ( cd "$W/repo" || exit 1
-    git status --porcelain=v1 --untracked-files=normal > "$W/status.txt" || exit 1
-    : > "$W/modified.txt"
-    while IFS= read -r line; do
-      xy=${line:0:2}; p=${line:3}
-      case "$p" in \"*) ak2_say "WARN: stage: quoted path skipped: $p"; continue ;; esac
-      if [ "$xy" = "??" ]; then
-        if [ -d "$p" ]; then aws s3 sync --only-show-errors --no-progress "$p" "$STAGE/tree/${p%/}" || exit 1
-        else aws s3 cp --only-show-errors "$p" "$STAGE/tree/$p" || exit 1; fi
+    : > "$W/units.txt"; : > "$W/unexpected.txt"
+    # Units: a run/cohort dir (when finalised), a campaign dir results/g3/ladder-campaign/<ts>, else the file.
+    git ls-files --others --exclude-standard > "$W/untracked.txt" || exit 1
+    while IFS= read -r f; do
+      if [[ "$f" =~ $RUNDIR_RE ]]; then u=${BASH_REMATCH[0]}; stage_ready "$u" || continue
+      elif [[ "$f" =~ ^results/g3/ladder-campaign/[0-9]{8}-[0-9]{6}/ ]]; then u=${BASH_REMATCH[0]%/}
+      else u=$f; fi
+      echo "$u"
+    done < "$W/untracked.txt" | sort -u > "$W/units.txt"
+    : > "$W/changes.tsv"
+    while IFS= read -r u; do
+      if [ -d "$u" ]; then
+        if [ "${AK2C_STAGE_UNFILTERED:-}" = 1 ]; then aws s3 sync --only-show-errors --no-progress "$u" "$STAGE/tree/$u" || exit 1
+        else aws s3 sync --only-show-errors --no-progress --delete "$u" "$STAGE/tree/$u" || exit 1; fi
+        find "$u" -type f | sort
       else
-        echo "$p" >> "$W/modified.txt"
+        aws s3 cp --only-show-errors "$u" "$STAGE/tree/$u" || exit 1
+        echo "$u"
       fi
-    done < "$W/status.txt"
-    if [ -s "$W/modified.txt" ]; then git diff --binary HEAD -- $(cat "$W/modified.txt") > "$W/tracked.patch" || exit 1
-    else : > "$W/tracked.patch"; fi
-    aws s3 cp --only-show-errors "$W/tracked.patch" "$STAGE/tracked.patch" || exit 1
-    git ls-files --others --exclude-standard | while IFS= read -r f; do
+    done < "$W/units.txt" | while IFS= read -r f; do
       printf '%s\t%s\t%s\n' "$(sha256sum "$f" | cut -d' ' -f1)" "$(stat -c %s "$f")" "$f"; done > "$W/changes.tsv" || exit 1
+    # Tracked changes: only scripts/lib/g3_defects.tsv goes into the patch.
+    git diff --name-only HEAD | grep -vx 'scripts/lib/g3_defects.tsv' > "$W/unexpected.txt"
+    git diff --binary HEAD -- scripts/lib/g3_defects.tsv > "$W/tracked.patch" || exit 1
+    sha256sum "$W/tracked.patch" | cut -d' ' -f1 > "$W/tracked.patch.sha256"
+    aws s3 cp --only-show-errors "$W/tracked.patch" "$STAGE/tracked.patch" || exit 1
+    aws s3 cp --only-show-errors "$W/tracked.patch.sha256" "$STAGE/tracked.patch.sha256" || exit 1
     aws s3 cp --only-show-errors "$W/changes.tsv" "$STAGE/changes.tsv" || exit 1 ) ||
     { ak2_say "WARN: staging pass failed"; return 1; }
+  [ -s "$W/unexpected.txt" ] && ak2_say "WARN: tracked files changed outside g3_defects.tsv (not staged; make harvest will refuse): $(tr '\n' ' ' < "$W/unexpected.txt")"
   [ -s "$W/campaign.log" ] && aws s3 cp --only-show-errors "$W/campaign.log" "$STAGE/campaign.log"
   return 0
 }
@@ -106,24 +132,21 @@ cd "$W/repo" || fail "no repo"
 . scripts/pin.env
 . scripts/paths.sh
 git clone -q "${AK2C_UPSTREAM_URL:-https://github.com/$UPSTREAM_REPO.git}" "$ORACLE_SRC" || fail "upstream clone failed"
-mkdir -p "$W/tools/bin"
+# The pinned tools (make tools, with Go): run.sh and run-multi.sh take spawn and truffle from
+# AK2_TOOLS_BIN only (scripts/lib/tools_pin.sh).
+GOV=$(awk -F'\t' '$1 == "go" {print $2; exit}' scripts/conductor.tools.tsv)
 if [ "${AK2C_REHEARSE:-}" != 1 ]; then
-  while IFS=$'\t' read -r tool ver url sum member; do
-    [ "$tool" = tool ] && continue
-    curl -fsSL --retry 5 --retry-delay 5 -o "$W/$tool.tgz" "$url" || fail "download of $tool $ver failed"
-    got=$(sha256sum "$W/$tool.tgz" | cut -d' ' -f1)
-    [ "$got" = "$sum" ] || fail "$tool $ver: sha256 $got, scripts/conductor.tools.tsv says $sum"
-    if [ "$tool" = go ]; then tar -xzf "$W/$tool.tgz" -C "$W" || fail "untar go"
-    else tar -xzf "$W/$tool.tgz" -C "$W/tools/bin" "$member" || fail "untar $tool"; fi
-    ak2_say "tool $tool $ver: sha256 ok"
-  done < scripts/conductor.tools.tsv
+  export AK2_TOOLS_BIN="$W/repo/bin"
+  scripts/tools.sh --go || fail "make tools (spawn, truffle, go by sha256) failed"
+else
+  export AK2_TOOLS_BIN="${AK2C_TOOLS_BIN:?the rehearsal sets AK2C_TOOLS_BIN}"
 fi
-export PATH="$AK2_BIN:$W/tools/bin:$W/go/bin:$PATH" GOPATH="$W/gopath" GOMODCACHE="$W/gopath/pkg/mod" GOCACHE="$W/gocache"
+export PATH="$AK2_BIN:$AK2_TOOLS_BIN:$W/repo/.cache/tools/go-$GOV/go/bin:$PATH" GOPATH="$W/gopath" GOMODCACHE="$W/gopath/pkg/mod" GOCACHE="$W/gocache"
 hash -r
 [ "$(command -v aws)" = "$AK2_BIN/aws" ] || fail "the aws shim is not first on PATH"
 v() { "$@" 2>&1 | head -1 | tr -d '\r'; }
-TOOLS=$(jq -n --arg spawn "$(spawn version 2> /dev/null | awk '/Version:/{print $2}')" \
-  --arg truffle "$(truffle version 2> /dev/null | awk '/Version:/{print $2}')" --arg go "$(v go version)" \
+TOOLS=$(jq -n --arg spawn "$("$AK2_TOOLS_BIN/spawn" version 2> /dev/null | awk '/Version:/{print $2}')" \
+  --arg truffle "$("$AK2_TOOLS_BIN/truffle" version 2> /dev/null | awk '/Version:/{print $2}')" --arg go "$(v go version)" \
   --arg aws "$(v "$AK2_REAL_AWS" --version)" --arg git "$(v git --version)" --arg jq "$(v jq --version)" \
   --arg python "$(v python3 --version)" --arg make "$(v make --version)" --arg kernel "$(uname -r)" \
   '{spawn:$spawn, truffle:$truffle, go:$go, aws:$aws, git:$git, jq:$jq, python:$python, make:$make, kernel:$kernel}')
@@ -131,6 +154,8 @@ ak2_say "tools: $(echo "$TOOLS" | jq -c .)"
 while IFS=$'\t' read -r tool ver _; do
   case "$tool" in spawn|truffle) [ "$(echo "$TOOLS" | jq -r ".$tool")" = "$ver" ] || fail "$tool is $(echo "$TOOLS" | jq -r ".$tool"), want $ver" ;; esac
 done < scripts/conductor.tools.tsv
+. scripts/lib/tools_pin.sh
+ak2_pin_tools "$W/repo" || fail "the pinned tools do not check (above)"
 for t in spawn truffle go aws git jq python3 make shasum curl; do command -v "$t" > /dev/null || fail "$t not on PATH"; done
 
 # ---- the campaign's environment: the instance role, who finalises, the drain flag, the deadline ----
@@ -161,8 +186,11 @@ if [ "$DRY_MAKE_RUN" = 1 ]; then
       jq -r --arg f "$f" '"\(.lifecycle.cost_limit)\t\($f)"' "$f"; done | sort -g | head -1 | cut -f2)
   [ -n "$PROBE" ] || fail "no committed runs/g3-l-*-c$COHORT.json to probe"
   NP=$(python3 scripts/lib/ladder_levers.py spec-params "$PROBE" | jq -r .want_n)
-  ak2_say "probe: DRY_RUN=1 make run GATE=g3 SPEC=$PROBE NODES=$NP"
-  DRY_RUN=1 make run GATE=g3 SPEC="$PROBE" NODES="$NP" 2>&1 | tee "$W/probe.log"
+  # In a clone of its own: run.sh and run-multi.sh create run dirs and remove them on DRY_RUN, and
+  # nothing of that may touch the campaign's clone (or its stage).
+  git clone -q --shared "$W/repo" "$W/probe" && git -C "$W/probe" checkout -q "$FULL" || fail "probe clone failed"
+  ak2_say "probe: DRY_RUN=1 make run GATE=g3 SPEC=$PROBE NODES=$NP (in $W/probe)"
+  ( cd "$W/probe" && K2_SHARED_ROOT="$W/repo" DRY_RUN=1 make run GATE=g3 SPEC="$PROBE" NODES="$NP" ) 2>&1 | tee "$W/probe.log"
   PRC=${PIPESTATUS[0]}
   ak2_say "probe: rc $PRC"
   [ "$PRC" = 0 ] || fail "the probe (DRY_RUN=1 make run of $PROBE) failed: rc $PRC ($W/probe.log, in the run log above)"
