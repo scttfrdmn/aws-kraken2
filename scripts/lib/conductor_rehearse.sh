@@ -236,7 +236,7 @@ round() {
     -e AK2_EXPECT_REGION=us-west-2 -e "AK2_BUCKETS=kraken2-ncbi-refseq-complete-v205 $RB" \
     -e "AK2_ALLOWED_BUCKETS=kraken2-ncbi-refseq-complete-v205 $RB" -e AK2_S3_PREFIX="$P" -e AK2_RUN_ID="$RUN" -e AK2_GATE=conductor \
     -e AK2_PAYLOAD_URI="$P/payload.sh" -e AK2_PAYLOAD_URL="https://$RB.s3.us-west-2.amazonaws.com/aws-kraken2/conductor/$RUN/payload.sh" \
-    -e AK2_PAYLOAD_SHA256="$PSHA" -e AK2C_REHEARSE=1 -e AK2C_REPO_URL=/origin.git -e AK2C_UPSTREAM_URL=/upstream.git \
+    -e AK2_PAYLOAD_SHA256="$PSHA" -e AK2C_REHEARSE=1 -e AK2_PAYLOAD_GET=url -e AK2C_REPO_URL=/origin.git -e AK2C_UPSTREAM_URL=/upstream.git \
     -e AK2C_TOOLS_BIN=/work/tools -e DRAIN_POLL_S=1 -e STAGE_EVERY=2 -e AK2_CAMPAIGN_POLL_S=0.2 -e AK2_CAMPAIGN_SETTLE_S=5 \
     -e AK2_CAMPAIGN_ORPHANS=/work/bin/stub-orphans -e AK2_CAMPAIGN_QUOTA=/work/bin/stub-quota "$@" \
     "$IMG" bash -e -c "$(cat "$T/stub.sh")" > "$T/$label.out" 2>&1 &
@@ -270,6 +270,7 @@ NC=$(ls -d "$STG"/tree/results/g3/2*-n[0-9] 2>/dev/null | grep -cv -- '-r[0-9]*$
 grep -q "role: arn:aws:sts::942542972736:assumed-role/ak2-conductor" "$T/full.out" && grep -q 'deadline: TTL ends' "$T/full.out" &&
   ok "full: the body waited for the ak2-conductor role and set the campaign's deadline from spawn:ttl-deadline" || bad "full: role/deadline lines missing"
 grep -q 'udsize: built in [0-9]* s (GOFLAGS=-p=1)' "$T/full.out" && ok "full: the body built scripts/udsize in setup, one package at a time" || bad "full: no udsize build line"
+grep -q 'payload: inherited AK2_PAYLOAD_GET=url, unset' "$T/full.out" && ok "full: the body unset the payload mode its own launch passed in" || bad "full: no payload-mode unset line"
 grep -qF "upstream: default $UPSTREAM_REPO at $UPSTREAM_PIN" "$T/full.out" && grep -qxF 'git clone -q "${AK2C_UPSTREAM_URL:-$UPSTREAM_REPO}" "$ORACLE_SRC" || fail "upstream clone failed"' scripts/conductor.body.sh && git ls-remote --exit-code "$UPSTREAM_REPO" HEAD > /dev/null 2>&1 &&
   ok "full: the body's default upstream URL is pin.env's UPSTREAM_REPO, and it resolves" || bad "full: default upstream URL is not pin.env's UPSTREAM_REPO, or does not resolve"
 [ -s "$STG/campaign.log" ] && grep -q '^ladder-campaign: exit 0$' "$STG/campaign.log" && ok "full: the campaign log is staged" || bad "full: campaign.log not staged"

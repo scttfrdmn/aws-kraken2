@@ -178,6 +178,11 @@ go build -C scripts/udsize -o "$W/repo/bin/udsize" . || fail "go build of script
 ak2_say "udsize: built in $(( $(date +%s) - UDT0 )) s (GOFLAGS=$GOFLAGS)"
 
 # ---- the campaign's environment: the instance role, who finalises, the drain flag, the deadline ----
+# The conductor's own launch passed its payload mode (url, from the laptop) in env; left set, the
+# nested run.sh would take it as a choice and presign under this role (session token in user data;
+# results/conductor/20261015-043304-ccbf8b1's probe: url, 15279 B).
+ak2_say "payload: inherited AK2_PAYLOAD_GET=${AK2_PAYLOAD_GET:-unset}, unset (run.sh picks role under AK2_INSTANCE_ROLE=1)"
+unset AK2_PAYLOAD_GET AK2_PAYLOAD_URL
 export AK2_INSTANCE_ROLE=1 AK2_FINALISED_BY=conductor AK2_CONDUCTOR_RUN_ID="$AK2_RUN_ID" AK2_CAMPAIGN_DRAIN="$W/DRAIN"
 DL=$(aws ec2 describe-tags --filters "Name=resource-id,Values=$AK2_INSTANCE_ID" Name=key,Values=spawn:ttl-deadline \
   --query 'Tags[0].Value' --output text 2> /dev/null)
@@ -217,6 +222,7 @@ if [ "$DRY_MAKE_RUN" = 1 ]; then
   PRC=${PIPESTATUS[0]}
   ak2_say "probe: rc $PRC"
   [ "$PRC" = 0 ] || fail "the probe (DRY_RUN=1 make run of $PROBE) failed: rc $PRC ($W/probe.log, in the run log above)"
+  grep 'payload: GET by role' "$W/probe.log" > /dev/null || fail "the probe's run.sh did not choose AK2_PAYLOAD_GET=role ($W/probe.log)"
 fi
 
 # ---- the campaign ----
