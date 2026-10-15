@@ -25,6 +25,7 @@ test:
 	python3 scripts/lib/tune_tables.py --self-test
 	bash scripts/lib/quota_check_test.sh
 	bash scripts/lib/run_sh_test.sh
+	bash scripts/lib/stub_get_test.sh
 	bash scripts/lib/orphans_conductor_test.sh
 	python3 scripts/lib/ladder_levers.py --self-test
 	python3 scripts/lib/ladder_levers.py check

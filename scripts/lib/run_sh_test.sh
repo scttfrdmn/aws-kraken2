@@ -66,6 +66,8 @@ jq '.lifecycle.ttl = "72h"' "$R/runs/plain.json" > "$R/runs/conductor-72h.json"
 jq '.lifecycle.ttl = "73h"' "$R/runs/plain.json" > "$R/runs/conductor-73h.json"
 jq '.lifecycle.ttl = "9h"' "$R/runs/plain.json" > "$R/runs/plain-9h.json"
 jq '.lifecycle.cost_limit = 0.02' "$R/runs/plain.json" > "$R/runs/deep.json"
+# A run role that reads the results bucket (resources.s3_read_write): AK2_PAYLOAD_GET=role is allowed.
+jq '.resources.s3_read_write = ["s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"] | .env.AK2_DATASETS = "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"' "$R/runs/deep.json" > "$R/runs/deep-rw.json"
 # Pinned tools (scripts/lib/tools_pin.sh): a wrong-version spawn dir, and a "Homebrew" spawn on PATH.
 mkdir -p "$T/wrongbin" "$T/brew"
 printf '#!/usr/bin/env bash\necho "Version: 0.128.2"\n' > "$T/wrongbin/spawn"; cp "$T/bin/truffle" "$T/wrongbin/"
@@ -212,6 +214,7 @@ case "${pos[0]} ${pos[1]}" in
   "s3 presign") echo "https://b.s3.us-west-2.amazonaws.com/x?sig" ;;
   "s3 cp") if [ "${pos[3]}" = - ]; then cat "$(loc "${pos[2]}")"; else mkdir -p "$(dirname "$(loc "${pos[3]}")")"; cp "${pos[2]}" "$(loc "${pos[3]}")"; fi ;;
   "s3api get-object-tagging") echo '{"TagSet":[]}' ;;
+  "s3api get-bucket-request-payment") echo BucketOwner ;;
   "s3api put-object-tagging") ;;
   "ec2 describe-regions") echo us-west-2 ;;
   "ec2 describe-instances") case " $* " in *" json "*) [ -e "$AK2T_S3/alive" ] && cat "$AK2T_S3/alive" || echo '{"Reservations":[]}' ;; *) ;; esac ;;
@@ -224,7 +227,7 @@ cp "$T/bin/curl" "$D/bin/"
 chmod +x "$D/bin/"*
 deep() {  # deep [ENV...]: run.sh on runs/deep.json with the deep stubs; OUT, RC, DM (the manifest)
   rm -rf "$R/results/t"
-  OUT=$(cd "$R" && env "$@" PATH="$D/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="$D/bin" AK2T_S3="$D/s3" scripts/run.sh t runs/deep.json 2>&1); RC=$?
+  OUT=$(cd "$R" && env "$@" PATH="$D/bin:$PATH" K2_SHARED_ROOT="$R" AK2_TOOLS_BIN="$D/bin" AK2T_S3="$D/s3" scripts/run.sh t "runs/${DEEP_SPEC:-deep.json}" 2>&1); RC=$?
   DM=$(ls "$R"/results/t/*/manifest.json 2>/dev/null | head -1)
 }
 deep AK2_FINALISED_BY=conductor AK2_CONDUCTOR_RUN_ID=20261014-120000-abcdef0
@@ -235,6 +238,24 @@ if [ "$RC" = 2 ] && [ -n "$DM" ] && [[ "$OUT" == *"launch failed (rc=1)"* ]] &&
           and .finalised_by == "conductor" and .finalised_by_run_id == "20261014-120000-abcdef0"' "$DM" > /dev/null; then
   ok "launch fail: a failed spawn task run finalises the manifest as never launched (cost 0, orphan check, finalised_by)"
 else bad "launch fail: rc $RC manifest '$DM': $(jq -c '{fin:.manifest_finalised_at, instance, launch, cost_usd}' "$DM" 2>/dev/null) $(echo "$OUT" | tail -3)"; fi
+# The payload GET (AK2_PAYLOAD_GET): url from the laptop; role under an instance role, where a presigned
+# URL carries the session token (results/conductor/20261015-021611-6196b14).
+RES=$(dirname "$DM")/spec.resolved.json
+jq -e '.payload.get == "url"' "$DM" > /dev/null && jq -e '.env.AK2_PAYLOAD_GET == "url" and (.env.AK2_PAYLOAD_URL | test("redacted"))' "$RES" > /dev/null &&
+  [[ "$OUT" == *"payload: GET by url"* ]] && ok "payload: GET by url by default (manifest payload.get, the URL redacted in spec.resolved.json)" ||
+  bad "payload: url: $(jq -c .payload "$DM" 2>/dev/null) $(jq -c '.env | {AK2_PAYLOAD_GET, AK2_PAYLOAD_URL}' "$RES" 2>/dev/null)"
+DEEP_SPEC=deep-rw.json deep AK2_INSTANCE_ROLE=1
+RES=$(dirname "$DM")/spec.resolved.json
+[ "$RC" = 2 ] && [[ "$OUT" == *"launch failed (rc=1)"* ]] && [[ "$OUT" == *"payload: GET by role"* ]] &&
+  jq -e '.payload.get == "role"' "$DM" > /dev/null && jq -e '.env.AK2_PAYLOAD_GET == "role" and .env.AK2_PAYLOAD_URL == ""' "$RES" > /dev/null &&
+  ok "payload: GET by role under AK2_INSTANCE_ROLE=1, no URL, a run role that reads the results bucket" ||
+  bad "payload: role: rc $RC $(jq -c .payload "$DM" 2>/dev/null) $(jq -c '.env | {AK2_PAYLOAD_GET, AK2_PAYLOAD_URL}' "$RES" 2>/dev/null) $(echo "$OUT" | tail -3)"
+deep AK2_PAYLOAD_GET=role
+[ "$RC" = 2 ] && [[ "$OUT" == *"the run role cannot read"* ]] && [[ "$OUT" != *"command not found"* ]] &&
+  ok "payload: GET by role refused when the run role cannot read the results bucket (and the EXIT trap's finalise_unlaunched is defined)" ||
+  bad "payload: role without s3_read_write: rc $RC $(echo "$OUT" | tail -3)"
+deep AK2_PAYLOAD_GET=bogus
+[ "$RC" = 2 ] && [[ "$OUT" == *"want url or role"* ]] && ok "payload: an unknown AK2_PAYLOAD_GET is refused" || bad "payload: bogus: rc $RC $(echo "$OUT" | tail -2)"
 echo '{"Reservations":[{"Instances":[{"InstanceId":"i-x","State":{"Name":"pending"},"InstanceType":"c8g.large","LaunchTime":"2026-10-14T00:00:00Z","Tags":[{"Key":"spawn:task-id","Value":"TASK"}]}]}]}' > "$D/s3/alive.tmpl"
 # The scoped check matches the run's task id, known only once run.sh has chosen it: the spawn
 # wrapper below writes the "alive" answer under the spec's task id.

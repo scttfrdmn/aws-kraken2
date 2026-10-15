@@ -370,13 +370,24 @@ So `command[2]` is `scripts/stub.sh` with the utilisation sampler spliced in
 (`scripts/lib/mkstub.sh`; kept as the run dir's `stub.sh`), and the **payload** (`scripts/preamble.sh` +
 `\n` + the spec body, byte for byte what used to be inlined) goes to `<run prefix>/payload.sh`.
 - `run.sh` uploads the payload before launch and checks the uploaded sha256.
-- It passes the stub `AK2_PAYLOAD_URI`, `AK2_PAYLOAD_SHA256`, and `AK2_PAYLOAD_URL`, a presigned
-  GET for that one object valid for TTL + 1 h. The instance needs no extra IAM grant on the
-  results bucket.
+- It passes the stub `AK2_PAYLOAD_URI`, `AK2_PAYLOAD_SHA256` and `AK2_PAYLOAD_GET`, the way the
+  stub fetches it (recorded as the manifest's `payload.get`):
+  - `url` (the default): `AK2_PAYLOAD_URL`, a presigned GET for that one object valid for TTL + 1 h.
+    The instance needs no extra IAM grant on the results bucket.
+  - `role` (the default under `AK2_INSTANCE_ROLE=1`, the conductor; `AK2_PAYLOAD_GET=` overrides):
+    no URL. Signed with temporary credentials, the presigned URL carries the session token, about
+    1.3 KB of user data that gzip cannot shrink: the conductor's probe measured 15438 bytes where
+    the laptop measured 14118 (`results/conductor/20261015-021611-6196b14`). The stub instead
+    reads this instance's role credentials from IMDS and signs its one GET itself (`curl
+    --aws-sigv4 aws:amz:<region>:s3`, the in-region endpoint of `AK2_PAYLOAD_URI`). run.sh refuses
+    it unless the spec's run role reads the results bucket, through `resources.s3_read_write`
+    (`scripts/iam/spawn_role_name.py`); every ladder spec has it. The stub exits 97 if IMDS has no
+    credentials after 10 tries, 3 s apart.
+  `scripts/lib/stub_get_test.sh` (in `make test`) runs both on the real stub in AL2023.
 - The URL-bearing spec that spawn reads is a `mktemp` file outside `results/`, removed by an
   EXIT trap. `spec.resolved.json` under `results/` is only ever written with the URL redacted.
 - The stub checks that the URL is `https://<bucket>.s3.<region>.amazonaws.com/…` for the
-  asserted region, and unsets it before exec.
+  asserted region, and unsets it, and the role credentials, before exec.
 - The payload must be under 120 KiB, because it travels as one `bash -c` argument (Linux caps
   a single argument at 128 KiB).
 
