@@ -1,0 +1,16 @@
+{
+  "task_id": "payload-get-smoke",
+  "command": ["bash", "-c", "# The payload GET smoke (docs/run.md, \"The payload\"): a body that only proves the stub fetched,\n# verified and exec'd it. Launch with AK2_PAYLOAD_GET=role to check the run-role GET against S3\n# (the conductor's mode) from the laptop; resources.s3_read_write gives the run role read on the\n# results bucket, which role requires.\nak2_say \"payload-get-smoke: body ran; AK2_PAYLOAD_GET=${AK2_PAYLOAD_GET:-unset}\"\n"],
+  "resources": {
+    "instance_type": "c8g.medium",
+    "architecture": "arm64",
+    "s3_read_write": ["s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"]
+  },
+  "placement": {"availability_zone": "us-west-2b"},
+  "env": {
+    "AK2_REGION": "us-west-2",
+    "AK2_ACCESSIONS": "",
+    "AK2_DATASETS": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/"
+  },
+  "lifecycle": {"ttl": "10m", "on_complete": "terminate", "cost_limit": 0.01}
+}
