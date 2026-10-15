@@ -1,0 +1,533 @@
+ladder-rehearse: mode spec runs/g3-l-o3-n16-c10.json at 5fb5882 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-o3-n16-c10-20261015T170732Z-5fb5882.log
+ladder-rehearse: disk at start: 152Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-43527 (10.184.101.0/24); infra 10.184.101.2: hash.k2d at http://10.184.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.184.101.2:8003
+ladder-rehearse: ---- spec-o3-n16-c10 (6): runs/g3-l-o3-n16-c10.json (r8g.8xlarge, WANT_N 16); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-o3-n16-c10: runs/g3-l-o3-n16-c10.json sha256 3bb5801cfbdb77811e93c7bfa92876a24138ddb9a3edbc5aeb25d578d125d7fd (HEAD 5fb5882)
+ladder-rehearse: spec-o3-n16-c10: RUNG=O3-n16; ARM=O; COHORT=10; WANT_N=16; CLASSIFIER=ours-engine; THREADS=vcpus/12; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=16; PLACEMENT=mod; INFLIGHT=10; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-o3-n16-c10: cohort 10: samples SRR062634 ERR478965 SRR28305653 SRR062634b ERR478965b SRR28305653b SRR062634c ERR478965c SRR28305653c SRR062634d (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: 32 (the vCPUs of r8g.8xlarge, the spec type)
+ladder-rehearse: spec-o3-n16-c10: expected on the node: {}
+ladder-rehearse: spec-o3-n16-c10: rehearsed at INFLIGHT=1 (the spec's 10 = 10 does not fit the VM's memory; AK2_REHEARSE_ENGINE_INFLIGHT=0 runs it uncapped), GOMEMLIMIT=1536MiB
+ladder-rehearse: spec-o3-n16-c10: cohort 20261015-170739-5fb5882-1d31-n16: node exits 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ok   spec-o3-n16-c10: exit: every node's body exits 0 (rcs [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+ok   spec-o3-n16-c10: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r2: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r3: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r4: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r5: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r6: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r7: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r8: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r9: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r10: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r11: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r12: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r13: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r14: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r15: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-o3-n16-c10: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r0: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r1: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r1: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r1: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r2: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r2: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r2: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r2: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r3: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r3: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r3: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r3: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r4: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r4: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r4: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r4: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r5: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r5: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r5: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r5: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r6: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r6: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r6: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r6: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r7: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r7: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r7: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r7: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r8: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r8: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r8: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r8: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r9: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r9: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r9: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r9: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r10: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r10: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r10: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r10: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r11: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r11: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r11: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r11: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r12: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r12: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r12: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r12: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r13: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r13: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r13: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r13: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r14: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r14: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r14: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r14: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r15: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r15: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r15: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r15: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1, 'SRR062634b': 1, 'ERR478965b': 1, 'SRR28305653b': 1, 'SRR062634c': 1, 'ERR478965c': 1, 'SRR28305653c': 1, 'SRR062634d': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653', 'SRR062634b', 'ERR478965b', 'SRR28305653b', 'SRR062634c', 'ERR478965c', 'SRR28305653c', 'SRR062634d'])
+ok   spec-o3-n16-c10: samples: every sample's classify rc is 0 ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+ok   spec-o3-n16-c10: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-o3-n16-c10: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634: the file set is output and report
+ok   spec-o3-n16-c10: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-o3-n16-c10: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-o3-n16-c10: law1: ERR478965: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-o3-n16-c10: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-o3-n16-c10: law1: SRR28305653: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR062634b output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634b output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634b report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634b report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634b: the file set is output and report
+ok   spec-o3-n16-c10: law1: ERR478965b output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965b output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-o3-n16-c10: law1: ERR478965b report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965b report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-o3-n16-c10: law1: ERR478965b: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR28305653b output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653b output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-o3-n16-c10: law1: SRR28305653b report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653b report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-o3-n16-c10: law1: SRR28305653b: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR062634c output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634c output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634c report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634c report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634c: the file set is output and report
+ok   spec-o3-n16-c10: law1: ERR478965c output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965c output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-o3-n16-c10: law1: ERR478965c report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965c report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-o3-n16-c10: law1: ERR478965c: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR28305653c output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653c output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-o3-n16-c10: law1: SRR28305653c report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653c report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-o3-n16-c10: law1: SRR28305653c: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR062634d output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634d output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634d report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634d report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634d: the file set is output and report
+ok   spec-o3-n16-c10: objects: 20 objects under out/O3-n16/ (want 20)
+ok   spec-o3-n16-c10: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r1: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r2: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r2: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r2: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r3: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r3: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r3: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r4: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r4: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r4: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r5: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r5: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r5: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r6: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r6: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r6: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r7: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r7: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r7: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r8: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r8: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r8: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r9: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r9: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r9: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r10: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r10: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r10: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r11: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r11: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r11: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r12: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r12: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r12: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r13: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r13: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r13: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r14: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r14: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r14: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r15: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r15: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r15: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: net: r0: critical_measurement_s 2.446 = identity 2.446 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r0: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r0: identity_s 2.446 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r0: the samples carry their share of identity (s5-identity sum 2.394)
+ok   spec-o3-n16-c10: net: r1: critical_measurement_s 2.082 = identity 2.082 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r1: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r1: identity_s 2.082 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r1: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r1: the samples carry their share of identity (s5-identity sum 1.988)
+ok   spec-o3-n16-c10: net: r2: critical_measurement_s 2.577 = identity 2.577 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r2: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r2: identity_s 2.577 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r2: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r2: the samples carry their share of identity (s5-identity sum 2.541)
+ok   spec-o3-n16-c10: net: r3: critical_measurement_s 2.327 = identity 2.306 + sha_get 0 + sha_critical 0.021
+ok   spec-o3-n16-c10: net: r3: sha_critical_s 0.021 == the sum of its samples' sha-critical 0.021
+ok   spec-o3-n16-c10: net: r3: identity_s 2.306 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r3: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r3: the samples carry their share of identity (s5-identity sum 2.266)
+ok   spec-o3-n16-c10: net: r4: critical_measurement_s 2.055 = identity 2.055 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r4: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r4: identity_s 2.055 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r4: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r4: the samples carry their share of identity (s5-identity sum 2.012)
+ok   spec-o3-n16-c10: net: r5: critical_measurement_s 2.419 = identity 2.397 + sha_get 0 + sha_critical 0.022
+ok   spec-o3-n16-c10: net: r5: sha_critical_s 0.022 == the sum of its samples' sha-critical 0.022
+ok   spec-o3-n16-c10: net: r5: identity_s 2.397 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r5: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r5: the samples carry their share of identity (s5-identity sum 2.348)
+ok   spec-o3-n16-c10: net: r6: critical_measurement_s 2.116 = identity 2.089 + sha_get 0 + sha_critical 0.027
+ok   spec-o3-n16-c10: net: r6: sha_critical_s 0.027 == the sum of its samples' sha-critical 0.027
+ok   spec-o3-n16-c10: net: r6: identity_s 2.089 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r6: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r6: the samples carry their share of identity (s5-identity sum 2.05)
+ok   spec-o3-n16-c10: net: r7: critical_measurement_s 1.875 = identity 1.875 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r7: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r7: identity_s 1.875 equals the identity phase (2 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r7: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r7: the samples carry their share of identity (s5-identity sum 1.857)
+ok   spec-o3-n16-c10: net: r8: critical_measurement_s 2.569 = identity 2.569 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r8: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r8: identity_s 2.569 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r8: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r8: the samples carry their share of identity (s5-identity sum 2.529)
+ok   spec-o3-n16-c10: net: r9: critical_measurement_s 1.965 = identity 1.965 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r9: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r9: identity_s 1.965 equals the identity phase (2 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r9: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r9: the samples carry their share of identity (s5-identity sum 1.924)
+ok   spec-o3-n16-c10: net: r10: critical_measurement_s 0.027 = identity 0.027 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r10: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r10: identity_s 0.027 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r10: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r11: critical_measurement_s 0.015 = identity 0.015 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r11: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r11: identity_s 0.015 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r11: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r12: critical_measurement_s 0.019 = identity 0.019 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r12: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r12: identity_s 0.019 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r12: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r13: critical_measurement_s 0.018 = identity 0.018 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r13: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r13: identity_s 0.018 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r13: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r14: critical_measurement_s 0.021 = identity 0.021 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r14: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r14: identity_s 0.021 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r14: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r15: critical_measurement_s 0.01 = identity 0.01 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r15: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r15: identity_s 0.01 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r15: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: requests: r0: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r1: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r2: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r3: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r4: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r5: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r6: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r7: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r8: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r9: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r10: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r11: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r12: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r13: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r14: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r15: the shard load's ranged GETs counted (GetObject-range 20)
+ok   spec-o3-n16-c10: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 20 (want 20, the objects)
+ok   spec-o3-n16-c10: requests: input fetches counted: fetch.sh's HeadObject = 20 (want 20, one per input file)
+ok   spec-o3-n16-c10: engine: r0: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r1: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r2: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r3: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r4: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r5: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r6: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r7: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r8: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r9: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r10: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r11: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r12: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r13: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r14: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r15: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: 10 of 16 shards homed samples ({0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1}, 10 sample(s)): the placement spread them
+ok   spec-o3-n16-c10: engine: replica 0 has its own rendezvous (g0: ['rank-0000.json', 'rank-0001.json', 'rank-0002.json', 'rank-0003.json', 'rank-0004.json', 'rank-0005.json', 'rank-0006.json', 'rank-0007.json', 'rank-0008.json', 'rank-0009.json', 'rank-0010.json', 'rank-0011.json', 'rank-0012.json', 'rank-0013.json', 'rank-0014.json', 'rank-0015.json'])
+ok   spec-o3-n16-c10: engine: replica 0 rank-0000.json: shard address 10.184.101.10:44665 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0001.json: shard address 10.184.101.11:39897 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0002.json: shard address 10.184.101.12:37673 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0003.json: shard address 10.184.101.13:44535 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0004.json: shard address 10.184.101.14:41659 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0005.json: shard address 10.184.101.15:34957 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0006.json: shard address 10.184.101.16:46835 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0007.json: shard address 10.184.101.17:32855 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0008.json: shard address 10.184.101.18:38373 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0009.json: shard address 10.184.101.19:38791 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0010.json: shard address 10.184.101.20:45731 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0011.json: shard address 10.184.101.21:43621 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0012.json: shard address 10.184.101.22:35957 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0013.json: shard address 10.184.101.23:36253 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0014.json: shard address 10.184.101.24:39531 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0015.json: shard address 10.184.101.25:42763 is the node's own, not loopback
+ok   spec-o3-n16-c10: inflight: r0: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r0: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r0: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r1: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r1: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r1: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r2: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r2: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r2: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r3: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r3: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r3: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r4: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r4: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r4: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r5: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r5: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r5: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r6: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r6: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r6: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r7: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r7: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r7: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r8: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r8: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r8: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r9: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r9: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r9: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r10: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r10: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r10: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r11: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r11: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r11: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r12: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r12: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r12: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r13: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r13: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r13: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r14: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r14: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r14: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r15: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r15: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r15: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: build: r0: overlap: waited in build-wait, build_end 1792084138.396 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r1: overlap: waited in build-wait, build_end 1792084138.678 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r2: overlap: waited in build-wait, build_end 1792084138.457 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r3: overlap: waited in build-wait, build_end 1792084138.259 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r4: overlap: waited in build-wait, build_end 1792084138.481 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r5: overlap: waited in build-wait, build_end 1792084138.481 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r6: overlap: waited in build-wait, build_end 1792084138.421 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r7: overlap: waited in build-wait, build_end 1792084138.426 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r8: overlap: waited in build-wait, build_end 1792084138.496 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r9: overlap: waited in build-wait, build_end 1792084138.277 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r10: overlap: waited in build-wait, build_end 1792084138.587 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r11: overlap: waited in build-wait, build_end 1792084138.36 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r12: overlap: waited in build-wait, build_end 1792084138.471 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r13: overlap: waited in build-wait, build_end 1792084138.299 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r14: overlap: waited in build-wait, build_end 1792084138.355 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: build: r15: overlap: waited in build-wait, build_end 1792084138.47 recorded, before identity (1792084138)
+ok   spec-o3-n16-c10: s5: r0: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r0: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r0: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r0: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r0: SRR062634: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r0: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r1: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r1: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r1: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r1: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r1: ERR478965: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r1: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r1: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r2: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r2: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r2: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r2: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r2: SRR28305653: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r2: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r2: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r2: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r3: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r3: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r3: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r3: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r3: SRR062634b: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r3: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r3: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r3: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r4: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r4: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r4: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r4: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r4: ERR478965b: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r4: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r4: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r4: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r5: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r5: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r5: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r5: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r5: SRR28305653b: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r5: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r5: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r5: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r6: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r6: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r6: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r6: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r6: SRR062634c: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r6: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r6: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r6: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r7: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r7: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r7: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r7: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r7: ERR478965c: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r7: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r7: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r7: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r8: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r8: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r8: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r8: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r8: SRR28305653c: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r8: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r8: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r8: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r9: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r9: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r9: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r9: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r9: SRR062634d: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r9: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r9: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r9: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r10: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r10: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r10: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r10: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r10: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r10: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r10: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r11: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r11: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r11: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r11: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r11: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r11: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r11: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r12: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r12: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r12: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r12: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r12: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r12: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r12: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r13: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r13: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r13: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r13: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r13: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r13: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r13: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r14: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r14: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r14: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r14: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r14: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r14: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r14: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r15: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r15: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r15: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r15: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r15: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r15: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r15: the body's own shim check (lad-shim ok True)
+ladder-rehearse: spec-o3-n16-c10: memory: r0: engine VmHWM 586 MiB, lowest MemAvailable 26681 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r1: engine VmHWM 541 MiB, lowest MemAvailable 26688 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r10: engine VmHWM 76 MiB, lowest MemAvailable 26970 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r11: engine VmHWM 86 MiB, lowest MemAvailable 26680 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r12: engine VmHWM 75 MiB, lowest MemAvailable 26682 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r13: engine VmHWM 73 MiB, lowest MemAvailable 26853 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r14: engine VmHWM 78 MiB, lowest MemAvailable 26878 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r15: engine VmHWM 71 MiB, lowest MemAvailable 26860 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r2: engine VmHWM 609 MiB, lowest MemAvailable 26807 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r3: engine VmHWM 579 MiB, lowest MemAvailable 26858 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r4: engine VmHWM 505 MiB, lowest MemAvailable 26884 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r5: engine VmHWM 624 MiB, lowest MemAvailable 26560 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r6: engine VmHWM 664 MiB, lowest MemAvailable 26913 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r7: engine VmHWM 559 MiB, lowest MemAvailable 26481 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r8: engine VmHWM 638 MiB, lowest MemAvailable 26874 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r9: engine VmHWM 610 MiB, lowest MemAvailable 26498 MiB
+ladder-rehearse: disk: 152Gi free
+ladder-rehearse: summary (spec runs/g3-l-o3-n16-c10.json at 5fb5882):
+item | case                       | what                                                       | checks |   failed | result
+6    | spec-o3-n16-c10            | runs/g3-l-o3-n16-c10.json end to end                       | 497 ok |   0 FAIL | PASS
+ladder-rehearse: disk at end: 152Gi free
+ladder-rehearse: ok (1 cases)
