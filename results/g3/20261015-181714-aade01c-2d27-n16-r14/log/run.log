@@ -1,0 +1,15 @@
+ak2: log tee up
+ak2-phase	2026-10-15T18:18:46Z	1792088326	preamble	no
+ak2: [2026-10-15T18:18:46Z] util sampler running (pid 7543, 2 ticks so far) -> log/util.tsv
+ak2: [2026-10-15T18:18:46Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-15T18:18:46Z] after set +e $-=hBc
+ak2: [2026-10-15T18:18:46Z] gate=g3 run=20261015-181714-aade01c-2d27-n16-r14
+ak2: [2026-10-15T18:18:46Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-15T18:18:46Z] imds region=us-west-2 az=us-west-2b instance=i-0f1a62943df65b0a7 type=r8g.8xlarge ami=ami-0ee1339efd529bb50
+ak2: [2026-10-15T18:18:46Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-15T18:18:47Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-15T18:18:47Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-15T18:18:58Z] bucket kraken2-ncbi-refseq-complete-v205 region=
+ak2: [2026-10-15T18:18:58Z] ERROR: FATAL: bucket kraken2-ncbi-refseq-complete-v205 is in 'unknown', instance in us-west-2
+ak2: [2026-10-15T18:18:58Z] spec body exit rc=97
+ak2-phase	2026-10-15T18:18:58Z	1792088338	end	no

@@ -396,6 +396,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Fan-out transients in c10 stage 5** (conductor 20261015-173735-aade01c):
+  - The AWS Pricing API throttled a 32-member cohort. spawn's price check, truffle's price check
+    and the post-launch price lookup now each try three times. The lookup then falls back to the
+    cost check's price for the same type (`truffle_price_source`).
+  - The preamble's bucket-region HEAD now tries three times.
+  - `make harvest` accepts a cohort member that refused before it made a run dir.
+  - `make cost-backfill` filled the three cohorts left with null costs, from each member's own
+    `cost_limit_check` price (Scott, 2026-10-15).
+  - The two failed cohorts are in `scripts/lib/g3_defects.tsv`.
+
 - **Launches from the conductor overran the user-data margin.** Presigned with its instance role's
   temporary credentials, the payload URL carried the session token: 15438 bytes against 14118 from
   the laptop (`results/conductor/20261015-021611-6196b14`). Under `AK2_INSTANCE_ROLE=1` run.sh now

@@ -1,0 +1,26 @@
+Loading database information...ak2-timing	opts	0.003503	0.000586	1	0	0.000047	0.000000
+ak2-timing	taxo	0.004097	0.588780	87798	2	0.048479	0.066609
+ak2-engine	mem	t_s	15.0	rss_kib	26045292	hwm_kib	26045296	heap_inuse	402145280	sys	428280168	avail_kib	230608164
+ak2-timing	shard-load-19	0.753743	20.303568	23868	0	19.725557	17.706755
+ak2-timing	etag	21.482233	3.617157	28306	0	64.023948	0.000000
+ak2-engine	mem	t_s	30.0	rss_kib	36801180	hwm_kib	36801184	heap_inuse	523042816	sys	550316424	avail_kib	219956308
+ak2-engine	mem	t_s	45.0	rss_kib	36804248	hwm_kib	36804252	heap_inuse	527171584	sys	550578568	avail_kib	219981552
+ak2-timing	rendezvous	25.099632	25.737350	2350	7	0.065871	0.000000
+ak2-timing	connect	50.837745	0.040925	9	0	0.002889	0.000000
+ak2-timing	hash	0.592964	50.285723	56726	19	83.833922	17.710175
+ done.
+ak2-engine	mem	t_s	60.0	rss_kib	36821992	hwm_kib	36821996	heap_inuse	544964608	sys	571550088	avail_kib	220008592
+ak2-engine	mem	t_s	75.0	rss_kib	36837476	hwm_kib	36837480	heap_inuse	560709632	sys	584133000	avail_kib	219985100
+ak2-engine	mem	t_s	90.0	rss_kib	36843816	hwm_kib	36843820	heap_inuse	567042048	sys	592591256	avail_kib	219983360
+ak2-engine	mem	t_s	105.0	rss_kib	36845232	hwm_kib	36845236	heap_inuse	568483840	sys	592591256	avail_kib	219973896
+ak2-timing	batch-barrier-0	50.878692	59.308931	9974	0	3.678227	0.053638
+ak2-engine	shard	0	n	32	lo	176505795028	hi	185795573713	tail	302	full	false	empty_at	9289778689	keys	137469960	batches	2908	probe_s	2.800004	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	110.2	rss_kib	36845512	hwm_kib	36845516	heap_inuse	568762368	sys	592591256	avail_kib	219914004
+ak2-engine	rendezvous	puts	2	gets	601
+ak2-engine	s3	client	sdk	put	2	get	601	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	115481572	cross_bytes	211769644	hash_s	3.617150	combine_s	0.000741
+ak2-engine	load	seconds	20.303564	requests	572	retries	0	bytes	37159181548
+ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+ak2-timing	total	0.000002	110.251076	154872	22	87.564816	17.892209

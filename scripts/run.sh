@@ -449,8 +449,12 @@ mset() {
 }
 
 # ---- plan, then launch ----
-spawn task run --spec "$LIVE_SPEC" --region "$REGION" --dry-run > "$RUN_DIR/spawn-plan.txt" 2>&1 ||
-  { cat "$RUN_DIR/spawn-plan.txt" >&2; die "spawn dry-run failed"; }
+for PLAN_TRY in 1 2 3; do   # the Pricing API throttle, as for the launch below
+  spawn task run --spec "$LIVE_SPEC" --region "$REGION" --dry-run > "$RUN_DIR/spawn-plan.txt" 2>&1 && break
+  [ "$PLAN_TRY" -lt 3 ] && grep 'cannot determine the on-demand price' "$RUN_DIR/spawn-plan.txt" > /dev/null ||
+    { cat "$RUN_DIR/spawn-plan.txt" >&2; die "spawn dry-run failed"; }
+  say "plan: spawn could not price the type (try $PLAN_TRY of 3); retrying in $((PLAN_TRY * 10)) s"; sleep $((PLAN_TRY * 10))
+done
 say "plan: $(grep -E 'Instance|Max cost' "$RUN_DIR/spawn-plan.txt" | tr -s ' ' | paste -sd ';' -)"
 # Pin the planned type for the real launch: spawn's sizing takes minutes per call (truffle
 # search + live price per candidate), and the launch must be the box the plan priced.
@@ -492,13 +496,24 @@ GOT=$(aws s3 cp --only-show-errors --region "$REGION" "$PAYLOAD_URI" - | shasum 
 ak2_tag_object "$RESULTS_BUCKET" "${PAYLOAD_URI#s3://$RESULTS_BUCKET/}" payload >/dev/null ||
   die "could not tag the payload object"
 LAUNCH_AT=$(now)
-spawn task run --spec "$LIVE_SPEC" --region "$REGION" -o json > "$RUN_DIR/launch.json" 2> "$RUN_DIR/launch.err"
-LRC=$?
+# spawn prices the type (AWS Pricing GetProducts) to enforce --cost-limit before it provisions. A
+# cohort's members do that at once and the API throttles them: O3-cost-n32 at c10, rank 2
+# ("cannot determine the on-demand price ... exceeded maximum number of attempts", nothing
+# launched; results/g3/20261015-184025-aade01c-e2ed-n32). That failure, and only it, is retried.
+LAUNCH_TRIES=0
+while :; do
+  LAUNCH_TRIES=$((LAUNCH_TRIES + 1))
+  spawn task run --spec "$LIVE_SPEC" --region "$REGION" -o json > "$RUN_DIR/launch.json" 2> "$RUN_DIR/launch.err"
+  LRC=$?
+  [ $LRC -ne 0 ] && [ "$LAUNCH_TRIES" -lt 3 ] && grep 'cannot determine the on-demand price' "$RUN_DIR/launch.err" > /dev/null || break
+  say "launch: spawn could not price $PLANNED (try $LAUNCH_TRIES of 3; nothing launched); retrying in $((LAUNCH_TRIES * 10)) s"
+  sleep $((LAUNCH_TRIES * 10))
+done
 rm -f "$LIVE_SPEC"
 if [ $LRC -ne 0 ] || ! jq -e .instance_id "$RUN_DIR/launch.json" >/dev/null 2>&1; then
   cat "$RUN_DIR/launch.err" >&2
   mset --arg t "$LAUNCH_AT" --arg e "$(tr '\n' ' ' < "$RUN_DIR/launch.err" | cut -c1-500)" \
-    '.launch = {at:$t, error:"spawn task run failed", spawn_error:$e}'
+--argjson tries "$LAUNCH_TRIES" '.launch = {at:$t, error:"spawn task run failed", spawn_error:$e, tries:$tries}'
   # Did the failed launch leave an instance after all? The scoped check decides whether this is a
   # non-run (finalised as never launched, on exit) or a possible orphan (left for make orphans).
   AK2_ORPHANS_JSON="$RUN_DIR/orphan_check.json" scripts/orphans.sh --own "$TASK_ID" 2>&1 | tee "$RUN_DIR/orphans.txt"
@@ -654,14 +669,26 @@ else
   TYPEINFO=null; say "WARNING: describe-instance-types $ITYPE failed; instance.type_info stays null (util.py falls back to results/instance-types/)"
 fi
 PRICE_ERR=$(mktemp)
-PRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2> "$PRICE_ERR" | jq '.[0].on_demand_price // null')
+# Three tries (the Pricing API throttles a cohort's members; O3-cost-n16 at c10, r9 and r11, had no
+# price and no cost, results/g3/20261015-193101-aade01c-dbe2-n16); then the cost check's own truffle
+# price for this type, taken just before launch (truffle_price_source says which).
+for PRICE_TRY in 1 2 3; do
+  PRICE=$(truffle find "$ITYPE" --regions "$LREGION" --show-price --skip-azs -o json 2> "$PRICE_ERR" | jq '.[0].on_demand_price // null')
+  [ "${PRICE:-null}" = null ] && [ "$PRICE_TRY" -lt 3 ] || break
+  sleep $((PRICE_TRY * 5))
+done
 mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg type "$ITYPE" --arg lr "$LREGION" \
   --argjson price "${PRICE:-null}" --arg perr "$(cat "$PRICE_ERR")" --argjson d "${DESC:-null}" --argjson ti "${TYPEINFO:-null}" '
   .launch = {requested_at:$t, instance_id:$iid, region:$lr}
   | .instance = {type:$type, count:1, ami:$d.ImageId, az:$d.Placement.AvailabilityZone,
                  launch_time:$d.LaunchTime, architecture:$d.Architecture,
                  lifecycle:($d.InstanceLifecycle // "on-demand"), type_info:$ti}
-  | .truffle_price_usd_per_hour = $price | .truffle_price_note = $perr'
+  | .truffle_price_usd_per_hour = $price | .truffle_price_note = $perr
+  | .truffle_price_source = (if $price == null then "none" else "truffle at launch" end)
+  | if $price == null and (.cost_limit_check.price_usd_per_hour // null) != null and .cost_limit_check.instance_type == $type
+    then .truffle_price_usd_per_hour = .cost_limit_check.price_usd_per_hour
+         | .truffle_price_source = "cost_limit_check (truffle just before launch; the lookup at launch gave none)"
+    else . end'
 rm -f "$PRICE_ERR"
 
 # ---- wait: tail the streamed log until the completion record lands or the instance is gone ----

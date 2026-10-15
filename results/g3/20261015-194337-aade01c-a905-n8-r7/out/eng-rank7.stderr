@@ -1,0 +1,29 @@
+Loading database information...ak2-timing	opts	0.004417	0.000532	0	0	0.000000	0.000041
+ak2-timing	taxo	0.004958	0.544670	87824	2	0.025340	0.077098
+ak2-engine	mem	t_s	15.0	rss_kib	37760472	hwm_kib	37760480	heap_inuse	407068672	sys	448584040	avail_kib	347866808
+ak2-engine	mem	t_s	30.0	rss_kib	77446604	hwm_kib	77446608	heap_inuse	409337856	sys	448846184	avail_kib	308089204
+ak2-engine	mem	t_s	45.0	rss_kib	117131508	hwm_kib	117131512	heap_inuse	412590080	sys	453564776	avail_kib	268235092
+ak2-timing	shard-load-7	0.738079	55.513501	79784	0	107.212833	99.579215
+ak2-engine	mem	t_s	60.3	rss_kib	145559212	hwm_kib	145559216	heap_inuse	415072256	sys	457824616	avail_kib	239853568
+ak2-timing	etag	56.725848	5.668322	133	0	254.361815	0.000000
+ak2-timing	rendezvous	62.394396	10.325661	661	7	0.016654	0.000000
+ak2-timing	connect	72.720848	0.009667	0	0	0.000557	0.000000
+ak2-timing	hash	0.549694	72.180832	82741	18	361.607500	99.587343
+ done.
+ak2-engine	mem	t_s	75.3	rss_kib	147054900	hwm_kib	147054900	heap_inuse	1444126720	sys	1993679576	avail_kib	237874396
+3036382 sequences (569.20 Mbp) processed in 5.027s (36238.1 Kseq/m, 6793.24 Mbp/m).
+  2817388 sequences classified (92.79%)
+  218994 sequences unclassified (7.21%)
+ak2-sample	batch	0	name	SRR5935747	mode	parallel	s3client	-	rank	7	role	home	inflight	10	threads	4	start_s	72.730538	wall_s	5.096524	setup_s	0.000069	classify_s	5.027385	close_s	0.000017	report_s	0.063601	status	0	sequences	3036382	bases	569204188	classified	2817388	place	mod	weight	3036382
+ak2-engine	mem	t_s	90.3	rss_kib	147155636	hwm_kib	147155636	heap_inuse	1100898304	sys	2083451624	avail_kib	237540060
+ak2-timing	batch-barrier-0	77.827092	25.498769	95	0	9.788043	0.000000
+ak2-engine	shard	0	n	8	lo	260113803199	hi	297272917942	tail	302	full	false	empty_at	37159114742	keys	549042567	batches	2908	probe_s	11.741798	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	103.3	rss_kib	147155660	hwm_kib	147155660	heap_inuse	1101725696	sys	2083451624	avail_kib	237920440
+ak2-engine	rendezvous	puts	2	gets	162
+ak2-engine	s3	client	sdk	put	2	get	162	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	1108	requests	0	retries	0	bytes	0	cross_bytes	615836	hash_s	5.668312	combine_s	0.000765
+ak2-engine	load	seconds	55.513497	requests	2234	retries	0	bytes	148636525780
+ak2-engine	route	transport	nodes	calls	81	keys	123024095	batches	648	route_s	0.975715	wait_s	0.835576	gather_s	0.240435
+ak2-engine	worker	scan_s	7.206917	lookup_s	2.051781	classify_s	9.559340
+ak2-timing	total	0.000002	103.583897	572081	22	394.918934	99.667429

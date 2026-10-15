@@ -335,6 +335,23 @@ change the `spec_sha256` their manifests cite. They stay refused until someone r
 on-demand price, rounded up to the cent, as part of that re-run. The recorded runs keep citing the
 spec sha256 they ran with.
 
+## Cost
+
+A member's `cost_usd` is `max(billed_seconds, 60)` × `truffle_price_usd_per_hour` / 3600: compute
+only, at the pinned truffle's on-demand price. run.sh looks the price up at launch, three tries.
+If all three give none (the AWS Pricing API throttles a cohort's members), it takes the cost
+check's own truffle price for the same type, from just before launch. `truffle_price_source` says
+which was used.
+
+Before that fallback existed, c10 stage 5 left `cost_usd` null on some members (conductor
+20261015-173735-aade01c). `make cost-backfill DIRS="<cohort dirs>" [WRITE=1]`
+(`scripts/lib/cost_backfill.py`) fills those from the same field of the member's own manifest:
+- it records `truffle_price_source` and `cost_backfill {at, by, from}`;
+- it gives a member that refused before launch, which has no run dir, `cost_usd` 0;
+- it re-sums the cohort, as run-multi.sh does.
+
+Nothing is imputed from another run (Scott, 2026-10-15: "fill three missing costs").
+
 ## DRY_RUN of every spec
 
 ```bash
