@@ -1,0 +1,27 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-15T03:47:31Z] wrapper start
+spawn: [2026-10-15T03:47:31Z] stage-in start
+spawn: [2026-10-15T03:47:31Z] stage-in done rc=0
+spawn: [2026-10-15T03:47:31Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload GET signed with role spawn-instance-27cce928
+ak2-stub: payload verified (sha256 5ab01712c0b230418dbeacd0cd8ba92a061949eb57d1ab83a4f677ab1f1cbab2); exec
+ak2: log tee up
+ak2-phase	2026-10-15T03:47:31Z	1792036051	preamble	no
+ak2: [2026-10-15T03:47:31Z] util sampler running (pid 2687, 2 ticks so far) -> log/util.tsv
+ak2: [2026-10-15T03:47:31Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-15T03:47:31Z] after set +e $-=hBc
+ak2: [2026-10-15T03:47:31Z] gate=payloadget run=20261015-034705-ae03b85
+ak2: [2026-10-15T03:47:31Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-15T03:47:31Z] imds region=us-west-2 az=us-west-2b instance=i-0f3eac35755df890f type=c8g.medium ami=ami-0174a1ab4ff33424a
+ak2: [2026-10-15T03:47:31Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-15T03:47:33Z] bucket aws-kraken2-942542972736-us-west-2 payer=UNKNOWN
+ak2: [2026-10-15T03:47:33Z] WARN: could not read Payer of aws-kraken2-942542972736-us-west-2 from the instance (launch host verified it)
+ak2: [2026-10-15T03:47:33Z] region assert passed
+ak2: [2026-10-15T03:47:33Z] drop_caches_ok=true
+ak2: [2026-10-15T03:47:34Z] preamble done; spec body starts
+ak2-phase	2026-10-15T03:47:34Z	1792036054	body	no
+ak2: [2026-10-15T03:47:34Z] payload-get-smoke: body ran; AK2_PAYLOAD_GET=role
+spawn: [2026-10-15T03:47:35Z] command exit rc=0

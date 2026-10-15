@@ -396,6 +396,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Launches from the conductor overran the user-data margin.** Presigned with its instance role's
+  temporary credentials, the payload URL carried the session token: 15438 bytes against 14118 from
+  the laptop (`results/conductor/20261015-021611-6196b14`). Under `AK2_INSTANCE_ROLE=1` run.sh now
+  passes `AK2_PAYLOAD_GET=role` and no URL, and the stub signs its one GET with the run instance's
+  role from IMDS (`curl --aws-sigv4`); run.sh refuses that unless the spec's run role reads the
+  results bucket (`resources.s3_read_write`). The manifest records `payload.get`. Tests:
+  `scripts/lib/stub_get_test.sh`, run_sh_test's `payload:` cases (docs/run.md, "The payload").
+- **run.sh's EXIT trap called `finalise_unlaunched` before it was defined**, so a refusal between
+  the two ("command not found") skipped it. The function is now defined first.
+- **`grep -q` behind jq under pipefail** (run.sh, run-multi.sh, ladder-respec.sh) could SIGPIPE jq
+  and fail the check on a body that passes it (#80).
+- **The conductor cloned `https://github.com/<full URL>.git`** (#79), and froze on m8g.medium in
+  the go build of `scripts/udsize` (#81).
 - **The ladder tables re-raised recorded defects.** A run listed in `scripts/lib/g3_defects.tsv`
   (capacity refusals, failed launches) is now reported once, as `recorded defect (<class>):
   excluded`, and its contract and incomplete checks are no longer DEFECTs. They do not count toward

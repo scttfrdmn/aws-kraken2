@@ -290,10 +290,31 @@ RESOLVED="$RUN_DIR/spec.resolved.json"
 LIVE_SPEC=$(mktemp "${TMPDIR:-/tmp}/ak2-spec.XXXXXX") || die "mktemp failed"
 # On every exit: the presigned spec goes, and a manifest that launched nothing is finalised
 # (finalise_unlaunched, below; review B2).
+# finalise_unlaunched: run.sh is exiting with a manifest but no instance. A launch failure
+# (InsufficientInstanceCapacity, ...) or a refusal between manifest and launch (payload upload, tag):
+# the manifest is finalised as a non-run, so the record, the campaign and make harvest see a finished
+# record, not a driver that died. Not when the dir was removed (DRY_RUN and the pre-launch
+# refusals do that), when an instance was launched (that path finalises itself, or is left to
+# scripts/refinalise.sh), when it is already finalised, or when this run's task may be alive
+# (NO_FINALISE: its orphan check failed).
+finalise_unlaunched() {
+  [ -f "${M:-}" ] && [ -z "$IID" ] && [ "$NO_FINALISE" = 0 ] || return 0
+  jq -e '.manifest_finalised_at' "$M" > /dev/null 2>&1 && return 0
+  local tmp; tmp=$(mktemp) || return 0
+  jq --arg why "${DIE_MSG:-run.sh exited ${RC_EXIT:-?} before launching}" --arg fin "$(now)" --arg by "$FIN_BY" --arg cr "$FIN_RUN" '
+    .launch = ((.launch // {}) + {error: ((.launch.error // "") + (if (.launch.error // "") == "" then "" else "; " end) + $why)})
+    | .instance = {final_state:"never-launched", final_state_basis:"no instance was launched"}
+    | .task = null | .start = null | .stop = null | .billed_seconds = 0 | .cost_usd = 0
+    | .cost_basis = "no instance was launched: nothing billed"
+    | .manifest_finalised_at = $fin
+    | if $by != "" then .finalised_by = $by | .finalised_by_run_id = $cr else . end' "$M" > "$tmp" && mv "$tmp" "$M" ||
+    echo "make run: WARNING: could not finalise $M as never launched" >&2
+  rm -f "$tmp"
+}
 IID=""; NO_FINALISE=0
 trap 'RC_EXIT=$?; rm -f "$LIVE_SPEC"; finalise_unlaunched; exit $RC_EXIT' EXIT
 write_resolved() {
-  jq '.env.AK2_PAYLOAD_URL = "<presigned GET of env.AK2_PAYLOAD_URI; redacted>"' "$LIVE_SPEC" > "$RESOLVED"
+  jq 'if (.env.AK2_PAYLOAD_URL // "") != "" then .env.AK2_PAYLOAD_URL = "<presigned GET of env.AK2_PAYLOAD_URI; redacted>" else . end' "$LIVE_SPEC" > "$RESOLVED"
 }
 PAYLOAD="$RUN_DIR/payload.sh"
 { cat scripts/preamble.sh; printf '\n'; q '.command[2]'; } > "$PAYLOAD" || die "could not write $PAYLOAD"
@@ -306,14 +327,28 @@ PAYLOAD_BYTES=$(wc -c < "$PAYLOAD" | tr -d ' ')
 [ "$PAYLOAD_BYTES" -lt 122880 ] || { rm -rf "$RUN_DIR"; die "payload is $PAYLOAD_BYTES bytes; the limit is 120 KiB (one bash -c argument)"; }
 PAYLOAD_SHA=$(shasum -a 256 "$PAYLOAD" | cut -d' ' -f1)
 PAYLOAD_URI="$PREFIX/payload.sh"
-# A presigned GET for this one object, so the instance needs no extra IAM grant on the (shared)
-# results bucket. Signing is local; the object is uploaded just before launch.
-PAYLOAD_URL=$(aws s3 presign "$PAYLOAD_URI" --region "$REGION" --expires-in $((TTL_S + 3600))) ||
-  die "could not presign $PAYLOAD_URI"
+# How the stub GETs it (AK2_PAYLOAD_GET): url, a presigned GET for this one object, so the instance
+# needs no extra IAM grant on the (shared) results bucket (signing is local; the object is uploaded
+# just before launch); or role, the stub signs the GET with the run instance's own role. role is the
+# default under an instance role (the conductor): signed with its temporary credentials, the URL
+# carries the session token, ~1.3 KB of user data gzip cannot shrink
+# (results/conductor/20261015-021611-6196b14: 15438 bytes, over the margin). The spec's run role
+# reads the results bucket only through resources.s3_read_write (scripts/iam/spawn_role_name.py).
+PAYLOAD_GET=${AK2_PAYLOAD_GET:-url}
+[ -n "${AK2_PAYLOAD_GET:-}" ] || [ "${AK2_INSTANCE_ROLE:-}" != 1 ] || PAYLOAD_GET=role
+case "$PAYLOAD_GET" in
+  url) PAYLOAD_URL=$(aws s3 presign "$PAYLOAD_URI" --region "$REGION" --expires-in $((TTL_S + 3600))) ||
+         die "could not presign $PAYLOAD_URI" ;;
+  role) PAYLOAD_URL=""
+    q '.resources.s3_read_write // [] | .[]' | grep "^s3://$RESULTS_BUCKET/" > /dev/null ||
+      die "AK2_PAYLOAD_GET=role: the run role cannot read $PAYLOAD_URI (no resources.s3_read_write in s3://$RESULTS_BUCKET/)" ;;
+  *) die "AK2_PAYLOAD_GET=$PAYLOAD_GET: want url or role" ;;
+esac
+say "payload: GET by $PAYLOAD_GET"
 jq --rawfile stub "$STUB" --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
    --arg expect "$EXPECT" --arg buckets "$BUCKETS" --arg allowed "$ALLOWED_BUCKETS" \
    --arg run "$RUN_ID" --arg gate "$GATE" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
-   --arg purl "$PAYLOAD_URL" --arg cid "$COHORT_ID" --arg crank "$COHORT_RANK" --arg cn "$COHORT_N" \
+   --arg purl "$PAYLOAD_URL" --arg pget "$PAYLOAD_GET" --arg cid "$COHORT_ID" --arg crank "$COHORT_RANK" --arg cn "$COHORT_N" \
    --arg cprefix "$COHORT_PREFIX" --argjson azo "$AZ_OVR_JSON" '
   .task_id = $tid
   | .results_prefix = ($prefix + "/spawn")
@@ -321,7 +356,7 @@ jq --rawfile stub "$STUB" --arg tid "$TASK_ID" --arg prefix "$PREFIX" \
   | .command[2] = $stub
   | .env += {AK2_EXPECT_REGION: $expect, AK2_BUCKETS: $buckets, AK2_ALLOWED_BUCKETS: $allowed,
              AK2_S3_PREFIX: $prefix, AK2_RUN_ID: $run, AK2_GATE: $gate,
-             AK2_PAYLOAD_URI: $puri, AK2_PAYLOAD_URL: $purl, AK2_PAYLOAD_SHA256: $psha}
+             AK2_PAYLOAD_URI: $puri, AK2_PAYLOAD_URL: $purl, AK2_PAYLOAD_GET: $pget, AK2_PAYLOAD_SHA256: $psha}
   | if $cid != "" then .env += {AK2_COHORT_ID: $cid, AK2_COHORT_PREFIX: $cprefix,
         AK2_ENGINE_N: $cn, AK2_ENGINE_RANK: $crank, AK2_ENGINE_RENDEZVOUS: ($cprefix + "/rendezvous")} else . end
   | if .outputs then .outputs |= map(.destination |= gsub("\\$\\{AK2_OUT\\}"; $prefix + "/out")) else . end
@@ -357,7 +392,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
   --argjson tools "$AK2_TOOLS_JSON" \
   --arg ttl "$TTL" --argjson cost "$COST" --arg prefix "$PREFIX" --arg acc "$ACCESSIONS" \
   --arg accref "$ACCESSIONS_REF" --arg acctsv "$ACCESSIONS_TSV" --arg accblob "$ACCESSIONS_BLOB" \
-  --arg allowed "$ALLOWED_BUCKETS" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" \
+  --arg allowed "$ALLOWED_BUCKETS" --arg puri "$PAYLOAD_URI" --arg psha "$PAYLOAD_SHA" --arg pget "$PAYLOAD_GET" \
   --arg pbytes "$(wc -c < "$PAYLOAD" | tr -d ' ')" --argjson ud "$UD" \
   --argjson ds "$DS_JSON" --argjson payer "$PAYER_JSON" --arg created "$(now)" --argjson azo "$AZ_OVR_JSON" '{
     gate:$gate, run_id:$run, task_id:$task, spec:$spec, spec_sha256:$spec_sha, params:$params,
@@ -367,7 +402,7 @@ jq -n --arg gate "$GATE" --arg run "$RUN_ID" --arg task "$TASK_ID" --arg spec "$
     sample_accessions:($acc|split(" ")|map(select(.!=""))),
     sample_accessions_ref:(if ($accref | startswith("@")) then {ref:$accref, runs_tsv:$acctsv, blob:$accblob} else null end),
     allowed_buckets:($allowed|split(" ")),
-    payload:{uri:$puri, sha256:$psha, bytes:($pbytes|tonumber)}, user_data:$ud,
+    payload:{uri:$puri, sha256:$psha, bytes:($pbytes|tonumber), get:$pget}, user_data:$ud,
     datasets:$ds, bucket_payer:$payer, manifest_created_at:$created
   } | if $azo != null then .launch_override = $azo else . end' > "$M" || die "could not write $M"
 if [ -n "$COHORT_ID" ]; then
@@ -378,27 +413,6 @@ if [ -n "$COHORT_ID" ]; then
 fi
 # After launch a manifest write failure must not abandon the instance: record it, carry on,
 # and exit non-zero at the end.
-# finalise_unlaunched: run.sh is exiting with a manifest but no instance. A launch failure
-# (InsufficientInstanceCapacity, ...) or a refusal between manifest and launch (payload upload, tag):
-# the manifest is finalised as a non-run, so the record, the campaign and make harvest see a finished
-# record, not a driver that died. Not when the dir was removed (DRY_RUN and the pre-launch
-# refusals do that), when an instance was launched (that path finalises itself, or is left to
-# scripts/refinalise.sh), when it is already finalised, or when this run's task may be alive
-# (NO_FINALISE: its orphan check failed).
-finalise_unlaunched() {
-  [ -f "${M:-}" ] && [ -z "$IID" ] && [ "$NO_FINALISE" = 0 ] || return 0
-  jq -e '.manifest_finalised_at' "$M" > /dev/null 2>&1 && return 0
-  local tmp; tmp=$(mktemp) || return 0
-  jq --arg why "${DIE_MSG:-run.sh exited ${RC_EXIT:-?} before launching}" --arg fin "$(now)" --arg by "$FIN_BY" --arg cr "$FIN_RUN" '
-    .launch = ((.launch // {}) + {error: ((.launch.error // "") + (if (.launch.error // "") == "" then "" else "; " end) + $why)})
-    | .instance = {final_state:"never-launched", final_state_basis:"no instance was launched"}
-    | .task = null | .start = null | .stop = null | .billed_seconds = 0 | .cost_usd = 0
-    | .cost_basis = "no instance was launched: nothing billed"
-    | .manifest_finalised_at = $fin
-    | if $by != "" then .finalised_by = $by | .finalised_by_run_id = $cr else . end' "$M" > "$tmp" && mv "$tmp" "$M" ||
-    echo "make run: WARNING: could not finalise $M as never launched" >&2
-  rm -f "$tmp"
-}
 # terminate_finalise ERROR [JQ_EXTRA_LAUNCH_FIELDS_JSON]: run.sh gives up on an instance it launched
 # (wrong region, wrong AZ, the conductor's profile not swapped). Terminate it and wait, record both exit
 # codes, a cost from the launch request to now at the on-demand price, and finalise the manifest; then

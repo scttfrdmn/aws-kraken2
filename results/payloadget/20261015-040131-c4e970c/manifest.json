@@ -1,0 +1,214 @@
+{
+  "gate": "payloadget",
+  "run_id": "20261015-040131-c4e970c",
+  "task_id": "ak2-payloadget-20261015-040131-c4e970c",
+  "spec": "runs/payload-get-smoke.json",
+  "spec_sha256": "b867b48a7fcdfa7331412161735d43e9b3a736361098d504425513212ecd2fd9",
+  "params": null,
+  "commit": "c4e970c606d44c5fa8e4f6511295afc444958a18",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "spawn_path": "/private/tmp/ak2-pr/bin/spawn",
+    "spawn_sha256": "9b42b4efd8980d28405c7f3359fe7e95a82712a6df5bd0ff6b4afcfec8fcc5d4",
+    "truffle": "0.57.1",
+    "truffle_path": "/private/tmp/ak2-pr/bin/truffle",
+    "truffle_sha256": "e33d85e108e084fd6c2662943c305756f9b3497e0f895dc8df67f330625d3046"
+  },
+  "region": "us-west-2",
+  "ttl": "10m",
+  "cost_limit_usd": 0.01,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/payloadget/20261015-040131-c4e970c",
+  "sample_accessions": [],
+  "sample_accessions_ref": null,
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/payloadget/20261015-040131-c4e970c/payload.sh",
+    "sha256": "5ab01712c0b230418dbeacd0cd8ba92a061949eb57d1ab83a4f677ab1f1cbab2",
+    "bytes": 16573,
+    "get": "role"
+  },
+  "user_data": {
+    "base64_bytes": 18132,
+    "bootstrap_bytes": 41186,
+    "gzip_bytes": 13599
+  },
+  "datasets": [
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/",
+      "kind": "prefix"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-15T04:01:33Z",
+  "cost_limit_check": {
+    "region": "us-west-2",
+    "instance_type": "c8g.medium",
+    "ttl": "10m",
+    "ttl_s": 600,
+    "nodes": 1,
+    "price_usd_per_hour": 0.03988,
+    "epsilon": 0.10,
+    "cent_allowance_usd": 0.01,
+    "cost_limit_usd": 0.01,
+    "expected_usd": 0.0066,
+    "max_cost_limit_usd": 0.0173,
+    "total_cost_limit_usd": 0.01,
+    "total_max_usd": 0.0173,
+    "max_cost_usd_override": null,
+    "within_price": true,
+    "within_override": true,
+    "ok": true
+  },
+  "quota_check": {
+    "region": "us-west-2",
+    "instance_type": "c8g.medium",
+    "count": 1,
+    "quota_code": "L-1216C47A",
+    "family": "Standard(A,C,D,H,I,M,R,T,Z)",
+    "quota_vcpus": 1989,
+    "vcpus_per_instance": 1,
+    "requested_vcpus": 1,
+    "running_vcpus": 72,
+    "running_instances": 9,
+    "total_vcpus": 73,
+    "within_quota": true,
+    "checked_at": "2026-10-15T04:01:36Z"
+  },
+  "launch": {
+    "requested_at": "2026-10-15T04:01:39Z",
+    "instance_id": "i-07774130b33d20e6a",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "c8g.medium",
+    "count": 1,
+    "ami": "ami-0174a1ab4ff33424a",
+    "az": "us-west-2b",
+    "launch_time": "2026-10-15T04:01:44+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "type_info": {
+      "vcpus": 1,
+      "memory_mib": 2048,
+      "network_performance": "Up to 12.5 Gigabit",
+      "baseline_gbps": 0.52,
+      "peak_gbps": 12.5,
+      "source": "ec2 describe-instance-types",
+      "queried_at": "2026-10-15T04:01:46Z"
+    },
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-15T04:04:37Z"
+  },
+  "truffle_price_usd_per_hour": 0.03988,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/payloadget/20261015-040131-c4e970c/: 8 objects, 7 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-15T04:01:59Z",
+      "seconds": 3,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-15T04:02:02Z",
+      "seconds": 0,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 3,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "HeadBucket-anon": 1
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-payloadget-20261015-040131-c4e970c",
+    "run_id": "200bacf5-fbb8-43c6-bda0-a50bcb25112b",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-15T04:01:59Z",
+    "ended_at": "2026-10-15T04:02:04Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/payloadget/20261015-040131-c4e970c/spawn/ak2-payloadget-20261015-040131-c4e970c/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2b",
+    "instance_id": "i-07774130b33d20e6a",
+    "instance_type": "c8g.medium",
+    "ami": "ami-0174a1ab4ff33424a",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-15T04:02:01Z"
+  },
+  "start": "2026-10-15T04:01:44+00:00",
+  "stop": "2026-10-15T04:04:37Z",
+  "billed_seconds": 173,
+  "cost_usd": 0.001916,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-15T04:05:28Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-payloadget-20261015-040131-c4e970c",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-15T04:05:30Z"
+  }
+}
