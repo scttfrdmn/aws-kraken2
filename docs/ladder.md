@@ -1460,7 +1460,7 @@ the scratch dir. The tree must be committed: the nodes clone HEAD.
   samples × 16 threads per node is about 7 GB per node, against 8 GiB for both nodes. At bceac14,
   O0b and O1 at c10 were OOM-killed in the VM (dmesg `global_oom`, aws-kraken2 anon-rss 4.6 GB).
   The engine case therefore runs INFLIGHT = min(the spec's, `AK2_REHEARSE_ENGINE_INFLIGHT`, default
-  2) at the spec's THREADS, with `GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT` (default 1536MiB)
+  2, or 1 above 8 nodes) at the spec's THREADS, with `GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT` (default 1536MiB)
   on the nodes. GOMEMLIMIT changes GC pacing only. Without it, 2 × 16 still needs about 4.3 GB per
   node; with it, about 2.6 GB. The cap is an exact edit of the case's parameter block, made after
   the committed-body check, and is logged. The `inflight` check verifies it. The case logs each
@@ -1470,6 +1470,13 @@ the scratch dir. The tree must be committed: the nodes clone HEAD.
   - the spec's own INFLIGHT, that is, more than 2 samples in flight per node;
   - the node's memory at that INFLIGHT;
   - the default GC pacing.
+- **The fleet's nodes share the VM.** O3's fleets at c10 need the podman machine at 48 GiB (`podman
+  machine set --memory 49152`; Scott, 2026-10-15; it was 8 GiB, where O3-n4 was OOM-killed). VM peaks
+  (`free -m` every 5 s): O3-n4 11.2 GB and O3-n8 12.9 GB at INFLIGHT 2; O3-n16 24.9 GB at 1. O3-n32
+  OOMs even at INFLIGHT 1 with GOMEMLIMIT=768MiB (47.7 GB, 31 of 32 nodes exit 137), so **O3-n32 and
+  O3-cost-n32 are not rehearsed**: O3-n16 is the largest fleet rehearsed, and the n32 fleets launch on
+  it (`results/rehearse/ladder-o3-n32-c10-*` records the attempts). Above c1 a node can home no
+  sample (O3-n16 at c10: 16 nodes, 10 samples); the `inflight` check passes such a node.
 
   The memory on the spec's host is `fits()`'s to check. One engine process at THREADS 16, on the
   viral DB, measured on the host (macOS max RSS less the 0.65 GB table): a 2M-pair sample in
