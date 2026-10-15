@@ -111,6 +111,8 @@ mk x.json x8g.24xlarge 1h 9.38 "@PRJNA398089:1-2" "$RESOLVE"
 mk badref.json c8g.large 1h 0.08 "@PRJNA398089:1-1001" "$RESOLVE"
 # A reference whose body never resolves it; a cost_limit typo (\$93.80 for \$9.38).
 mk nobody.json c8g.large 1h 0.08 "@PRJNA398089:1-2" 'echo hi'
+# The call on line 1 of a body far past a pipe buffer (no SIGPIPE refusal under pipefail).
+mk big.json x8g.24xlarge 1h 9.38 "@PRJNA398089:1-2" "$(printf '%s\n' "$RESOLVE"; yes '# filler line for the pipe-buffer case' | head -2500)"
 mk typo.json x8g.24xlarge 1h 93.8 "" 'echo hi'
 ( cd "$R" && git init -q && git add -A && git -c user.email=t@t -c user.name=t commit -qm t ) || { echo "run_multi_test: cannot make the scratch repo"; exit 1; }
 
@@ -210,6 +212,9 @@ echo "$CJ" | jq -e --arg b "$(git -C "$R" rev-parse HEAD:results/cohort/PRJNA398
 pre_launch nobody 1 runs/nobody.json
 [ "$RC" = 2 ] && grep -q "never calls scripts/lib/accessions.sh" "$S/out" && ! grep -q launch "$S/log" &&
   ok "accessions: a reference with a body that never resolves it refused before any launch" || { bad "accessions: nobody exit $RC"; tail -5 "$S/out"; }
+pre_launch big 1 runs/big.json
+[ "$RC" = 0 ] && grep -q 'accessions: @PRJNA398089:1-2 -> 2 runs' "$S/out" && grep -q 'launch i-0' "$S/log" &&
+  ok "accessions: a 100 KB body calling accessions.sh on line 1 passes (no SIGPIPE under pipefail)" || { bad "accessions: big exit $RC"; tail -5 "$S/out"; }
 pre_launch typo 1 runs/typo.json
 [ "$RC" = 2 ] && grep -q "cost_check: REFUSED: 1 x cost_limit \$93.8" "$S/out" && ! grep -q launch "$S/log" &&
   ok "cost_limit: a typo (\$93.80 for 60m of x8g.24xlarge) refused before any launch" || { bad "cost_limit: typo exit $RC"; tail -5 "$S/out"; }

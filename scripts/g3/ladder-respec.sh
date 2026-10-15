@@ -24,7 +24,7 @@ for f in $(git ls-files "$pat"); do
   # Above c1 a given TTL is kept; an estimated one (its comment cites scripts/lib/ladder_ttl.py) is
   # estimated again from the same record, so it comes out the same unless the c1 record changed.
   ttl=()
-  if [ "$coh" != 1 ] && ! jq -r '.command[2]' "$f" | grep -q '^# TTL .*(scripts/lib/ladder_ttl.py)'; then
+  if [ "$coh" != 1 ] && ! jq -r '.command[2]' "$f" | grep '^# TTL .*(scripts/lib/ladder_ttl.py)' > /dev/null; then
     ttl=("TTL=$(jq -r '.lifecycle.ttl' "$f" | sed 's/m$//')")
   fi
   old=$(mktemp); git show "HEAD:$f" > "$old" 2> /dev/null || cp "$f" "$old"

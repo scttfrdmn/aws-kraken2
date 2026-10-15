@@ -52,6 +52,9 @@ spec() {  # spec FILE ACCESSIONS BODY
 spec plain.json "" 'echo hi'
 spec ref-nobody.json "@PRJNA398089:1-3" 'echo hi'
 spec ref-body.json "@PRJNA398089:1-3" 'ACC=$("$W/repo/scripts/lib/accessions.sh" -r "$W/repo" "$AK2_ACCESSIONS")'
+# A body far past a pipe buffer with the call on line 1: grep -q would exit at the match and,
+# under pipefail, jq's SIGPIPE (141) refused it (the conductor's probe, 20261014-234256).
+spec ref-big.json "@PRJNA398089:1-3" "$(printf '%s\n' 'ACC=$("$W/repo/scripts/lib/accessions.sh" -r "$W/repo" "$AK2_ACCESSIONS")'; yes '# filler line for the pipe-buffer case' | head -2500)"
 # A ladder spec (PARAMS block, pinned type and AZ) and a scratch AZ list with its evidence, for
 # the launch overrides AK2_LADDER_REP and AK2_LAUNCH_AZ.
 jq -n --arg body "$(printf '# Parameters (scripts/g3/mkspec-ladder.sh S S5 1):\nRUNG=S5; ARM=S; COHORT=1; WANT_N=1\necho hi')" '{
@@ -101,6 +104,9 @@ run ref-nobody ref-nobody.json
 run ref-body ref-body.json
 reached_stop && [[ "$OUT" == *"accessions: @PRJNA398089:1-3 -> 3 runs"* ]] &&
   ok "reference: a body calling accessions.sh passes, the reference expanded" || bad "reference: body: rc $RC: $(echo "$OUT" | tail -2)"
+run ref-big ref-big.json
+reached_stop && [[ "$OUT" == *"accessions: @PRJNA398089:1-3 -> 3 runs"* ]] &&
+  ok "reference: a 100 KB body calling accessions.sh on line 1 passes (no SIGPIPE under pipefail)" || bad "reference: big: rc $RC: $(echo "$OUT" | tail -2)"
 
 # Launch overrides (docs/run.md, "Launch overrides").
 RUN_ENV="AK2_LADDER_REP=0" run rep-bad ladder.json
