@@ -553,7 +553,9 @@ print(json.dumps(ex))' "$line" "$tv" "$coh") || return 1
     # than one sample in flight on every node) with GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT on the
     # nodes (GC pacing only), and checks that exactly that many ran at once at the spec's THREADS.
     if [[ $line == *CLASSIFIER=ours-engine* ]]; then
-      local inf capinf=${AK2_REHEARSE_ENGINE_INFLIGHT:-2} gml=${AK2_REHEARSE_ENGINE_GOMEMLIMIT:-1536MiB} exi
+      # Above 8 nodes, 1 in flight: at 2, O3-n16 at c10 needs ~45 GB (n4 peaked 11.2 GB, 2.8 per node);
+      # at 1 it peaked 24.9 GB in a 48 GiB VM. O3-n32 OOMs even at 1 with 768MiB (docs/ladder.md).
+      local inf capinf=${AK2_REHEARSE_ENGINE_INFLIGHT:-$([ "$wn" -gt 8 ] && echo 1 || echo 2)} gml=${AK2_REHEARSE_ENGINE_GOMEMLIMIT:-1536MiB} exi
       exi=$(python3 -c 'import sys, json; sys.path.insert(0, "scripts/lib"); import ladder_levers as L
 kv = dict(x.split("=", 1) for x in sys.argv[1].split("; ") if "=" in x); v, cap = int(sys.argv[2] or 8), int(sys.argv[3])
 spec = L.vc(kv["INFLIGHT"], v)

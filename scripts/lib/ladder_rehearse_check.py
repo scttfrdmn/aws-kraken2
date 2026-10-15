@@ -308,7 +308,9 @@ def check(c, expect_fail):
                    f"r{r}: lad-config resolved inflight {res.get('inflight')} threads {res.get('threads')} "
                    f"(want {want} and {wt}: the spec's INFLIGHT {xi['spec']} = {xi['spec_value']}, rehearsed at {want}; THREADS at nproc {res.get('nproc')})")
             es = [s.get("engine") or {} for s in per_node[r]["samples"]]
-            K.need("inflight", es and all(e.get("inflight") == str(want) and e.get("threads") == str(wt) for e in es),
+            # A node homes no sample only when the fleet has more nodes than samples (O3-n16 and -n32
+            # at c10); the engine check above has already required the placement to spread them.
+            K.need("inflight", (es or len(samples) < len(nodes)) and all(e.get("inflight") == str(want) and e.get("threads") == str(wt) for e in es),
                    f"r{r}: every home sample's ak2-sample line has inflight {want} and threads {wt} "
                    f"({sorted({(e.get('inflight'), e.get('threads')) for e in es})})")
             # At most INFLIGHT at once (the engine's semaphore), and, with two or more home samples

@@ -1460,7 +1460,7 @@ the scratch dir. The tree must be committed: the nodes clone HEAD.
   samples × 16 threads per node is about 7 GB per node, against 8 GiB for both nodes. At bceac14,
   O0b and O1 at c10 were OOM-killed in the VM (dmesg `global_oom`, aws-kraken2 anon-rss 4.6 GB).
   The engine case therefore runs INFLIGHT = min(the spec's, `AK2_REHEARSE_ENGINE_INFLIGHT`, default
-  2) at the spec's THREADS, with `GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT` (default 1536MiB)
+  2, or 1 above 8 nodes) at the spec's THREADS, with `GOMEMLIMIT=AK2_REHEARSE_ENGINE_GOMEMLIMIT` (default 1536MiB)
   on the nodes. GOMEMLIMIT changes GC pacing only. Without it, 2 × 16 still needs about 4.3 GB per
   node; with it, about 2.6 GB. The cap is an exact edit of the case's parameter block, made after
   the committed-body check, and is logged. The `inflight` check verifies it. The case logs each
@@ -1470,6 +1470,17 @@ the scratch dir. The tree must be committed: the nodes clone HEAD.
   - the spec's own INFLIGHT, that is, more than 2 samples in flight per node;
   - the node's memory at that INFLIGHT;
   - the default GC pacing.
+- **The fleet's nodes share the VM.** O3's fleets at c10 need the podman machine at 48 GiB (`podman
+  machine set --memory 49152`; Scott chose it 2026-10-15; at 8 GiB O3-n4 to -n32 were all OOM-killed).
+  The VM's used memory (`free -m`, every 5 s; `results/rehearse/vm-mem-o3-n*-c10-20261015.txt`) peaked
+  at 11236 MiB for O3-n4 and 12936 MiB for O3-n8 (INFLIGHT 2), and 24864 MiB for O3-n16 (INFLIGHT 1).
+  O3-n32 reached 47733 MiB and was OOM-killed even at INFLIGHT 1 with GOMEMLIMIT=768MiB (31 of 32
+  nodes exit 137). So **O3-n32 and O3-cost-n32 are not rehearsed** and launch on O3-n16, the largest
+  fleet rehearsed (Scott, 2026-10-15: if n32 does not fit the 48 GiB VM, n16 is the largest shape
+  rehearsed; `results/rehearse/ladder-o3-n32-c10-*` records the attempts). Above c1 a node can home no
+  sample (O3-n16 at c10: 16 nodes, 10 samples); the `inflight` check passes such a node when the
+  fleet has more nodes than planned samples (exact for one replica; with several, any node may pass
+  empty, and the engine check's `homes` is untested there).
 
   The memory on the spec's host is `fits()`'s to check. One engine process at THREADS 16, on the
   viral DB, measured on the host (macOS max RSS less the 0.65 GB table): a 2M-pair sample in
