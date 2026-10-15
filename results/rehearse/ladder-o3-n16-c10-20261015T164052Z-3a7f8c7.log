@@ -1,0 +1,949 @@
+ladder-rehearse: mode spec runs/g3-l-o3-n16-c10.json at 3a7f8c7 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-o3-n16-c10-20261015T164052Z-3a7f8c7.log
+ladder-rehearse: disk at start: 154Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-27960 (10.158.101.0/24); infra 10.158.101.2: hash.k2d at http://10.158.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.158.101.2:8003
+ladder-rehearse: ---- spec-o3-n16-c10 (6): runs/g3-l-o3-n16-c10.json (r8g.8xlarge, WANT_N 16); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-o3-n16-c10: runs/g3-l-o3-n16-c10.json sha256 3bb5801cfbdb77811e93c7bfa92876a24138ddb9a3edbc5aeb25d578d125d7fd (HEAD 3a7f8c7)
+ladder-rehearse: spec-o3-n16-c10: RUNG=O3-n16; ARM=O; COHORT=10; WANT_N=16; CLASSIFIER=ours-engine; THREADS=vcpus/12; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=16; PLACEMENT=mod; INFLIGHT=10; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-o3-n16-c10: cohort 10: samples SRR062634 ERR478965 SRR28305653 SRR062634b ERR478965b SRR28305653b SRR062634c ERR478965c SRR28305653c SRR062634d (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: 32 (the vCPUs of r8g.8xlarge, the spec type)
+ladder-rehearse: spec-o3-n16-c10: expected on the node: {}
+ladder-rehearse: spec-o3-n16-c10: rehearsed at INFLIGHT=1 (the spec's 10 = 10 does not fit the VM's memory; AK2_REHEARSE_ENGINE_INFLIGHT=0 runs it uncapped), GOMEMLIMIT=1536MiB
+ladder-rehearse: spec-o3-n16-c10: cohort 20261015-164059-3a7f8c7-8349-n16: node exits 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ok   spec-o3-n16-c10: exit: every node's body exits 0 (rcs [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+ok   spec-o3-n16-c10: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r2: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r3: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r4: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r5: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r6: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r7: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r8: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r9: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r10: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r11: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r12: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r13: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r14: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r15: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-o3-n16-c10: stream: r0: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r0: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r0: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r0: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r1: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r1: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r1: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r2: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r2: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r2: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r2: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r3: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r3: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r3: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r3: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r4: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r4: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r4: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r4: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r5: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r5: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r5: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r5: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r6: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r6: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r6: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r6: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r7: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r7: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r7: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r7: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r8: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r8: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r8: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r8: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r9: 1 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (1)
+ok   spec-o3-n16-c10: stream: r9: the container's own stdout (the stream as it happened) has the same 1 lad-sample lines
+ok   spec-o3-n16-c10: stream: r9: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r9: lever lines streamed (17) equal the pushed lever.jsonl (17)
+ok   spec-o3-n16-c10: stream: r10: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r10: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r10: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r10: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r11: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r11: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r11: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r11: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r12: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r12: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r12: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r12: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r13: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r13: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r13: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r13: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r14: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r14: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r14: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r14: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: stream: r15: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r15: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n16-c10: stream: r15: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n16-c10: stream: r15: lever lines streamed (9) equal the pushed lever.jsonl (9)
+ok   spec-o3-n16-c10: samples: each planned sample has exactly one lad-sample line across the fleet ({'SRR062634': 1, 'ERR478965': 1, 'SRR28305653': 1, 'SRR062634b': 1, 'ERR478965b': 1, 'SRR28305653b': 1, 'SRR062634c': 1, 'ERR478965c': 1, 'SRR28305653c': 1, 'SRR062634d': 1}; planned ['SRR062634', 'ERR478965', 'SRR28305653', 'SRR062634b', 'ERR478965b', 'SRR28305653b', 'SRR062634c', 'ERR478965c', 'SRR28305653c', 'SRR062634d'])
+ok   spec-o3-n16-c10: samples: every sample's classify rc is 0 ([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+ok   spec-o3-n16-c10: samples: every lad-sample is contract v1 with the run's rung and arm
+ok   spec-o3-n16-c10: law1: SRR062634 output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634 output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634 report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634 report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634: the file set is output and report
+ok   spec-o3-n16-c10: law1: ERR478965 output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965 output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-o3-n16-c10: law1: ERR478965 report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965 report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-o3-n16-c10: law1: ERR478965: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR28305653 output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653 output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-o3-n16-c10: law1: SRR28305653 report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653 report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-o3-n16-c10: law1: SRR28305653: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR062634b output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634b output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634b report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634b report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634b: the file set is output and report
+ok   spec-o3-n16-c10: law1: ERR478965b output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965b output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-o3-n16-c10: law1: ERR478965b report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965b report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-o3-n16-c10: law1: ERR478965b: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR28305653b output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653b output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-o3-n16-c10: law1: SRR28305653b report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653b report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-o3-n16-c10: law1: SRR28305653b: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR062634c output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634c output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634c report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634c report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634c: the file set is output and report
+ok   spec-o3-n16-c10: law1: ERR478965c output: on-node sha256 339ce5ad82a601e0 == oracle 339ce5ad82a601e0 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965c output: the uploaded object's sha256 339ce5ad82a601e0 == the recorded 339ce5ad82a601e0
+ok   spec-o3-n16-c10: law1: ERR478965c report: on-node sha256 1f7a65806fcef7c6 == oracle 1f7a65806fcef7c6 (upstream at the pin, ERR478965)
+ok   spec-o3-n16-c10: objects: ERR478965c report: the uploaded object's sha256 1f7a65806fcef7c6 == the recorded 1f7a65806fcef7c6
+ok   spec-o3-n16-c10: law1: ERR478965c: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR28305653c output: on-node sha256 1b3fef049ca7fc93 == oracle 1b3fef049ca7fc93 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653c output: the uploaded object's sha256 1b3fef049ca7fc93 == the recorded 1b3fef049ca7fc93
+ok   spec-o3-n16-c10: law1: SRR28305653c report: on-node sha256 f5ffc9beb513b235 == oracle f5ffc9beb513b235 (upstream at the pin, SRR28305653)
+ok   spec-o3-n16-c10: objects: SRR28305653c report: the uploaded object's sha256 f5ffc9beb513b235 == the recorded f5ffc9beb513b235
+ok   spec-o3-n16-c10: law1: SRR28305653c: the file set is output and report
+ok   spec-o3-n16-c10: law1: SRR062634d output: on-node sha256 bebbf3380833d5da == oracle bebbf3380833d5da (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634d output: the uploaded object's sha256 bebbf3380833d5da == the recorded bebbf3380833d5da
+ok   spec-o3-n16-c10: law1: SRR062634d report: on-node sha256 14c3ea3aa2f37f0b == oracle 14c3ea3aa2f37f0b (upstream at the pin, SRR062634)
+ok   spec-o3-n16-c10: objects: SRR062634d report: the uploaded object's sha256 14c3ea3aa2f37f0b == the recorded 14c3ea3aa2f37f0b
+ok   spec-o3-n16-c10: law1: SRR062634d: the file set is output and report
+ok   spec-o3-n16-c10: objects: 20 objects under out/O3-n16/ (want 20)
+ok   spec-o3-n16-c10: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r1: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r2: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r2: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r2: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r3: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r3: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r3: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r4: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r4: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r4: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r5: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r5: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r5: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r6: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r6: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r6: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r7: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r7: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r7: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r8: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r8: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r8: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r9: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r9: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r9: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r10: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r10: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r10: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r11: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r11: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r11: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r12: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r12: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r12: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r13: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r13: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r13: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r14: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r14: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r14: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: phases: r15: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n16-c10: phases: r15: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n16-c10: phases: r15: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n16-c10: net: r0: critical_measurement_s 2.496 = identity 2.476 + sha_get 0 + sha_critical 0.02
+ok   spec-o3-n16-c10: net: r0: sha_critical_s 0.02 == the sum of its samples' sha-critical 0.02
+ok   spec-o3-n16-c10: net: r0: identity_s 2.476 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r0: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r0: the samples carry their share of identity (s5-identity sum 2.44)
+ok   spec-o3-n16-c10: net: r1: critical_measurement_s 2.185 = identity 2.185 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r1: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r1: identity_s 2.185 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r1: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r1: the samples carry their share of identity (s5-identity sum 2.139)
+ok   spec-o3-n16-c10: net: r2: critical_measurement_s 2.493 = identity 2.471 + sha_get 0 + sha_critical 0.022
+ok   spec-o3-n16-c10: net: r2: sha_critical_s 0.022 == the sum of its samples' sha-critical 0.022
+ok   spec-o3-n16-c10: net: r2: identity_s 2.471 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r2: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r2: the samples carry their share of identity (s5-identity sum 2.435)
+ok   spec-o3-n16-c10: net: r3: critical_measurement_s 2.512 = identity 2.512 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r3: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r3: identity_s 2.512 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r3: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r3: the samples carry their share of identity (s5-identity sum 2.484)
+ok   spec-o3-n16-c10: net: r4: critical_measurement_s 2.19 = identity 2.19 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r4: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r4: identity_s 2.19 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r4: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r4: the samples carry their share of identity (s5-identity sum 2.144)
+ok   spec-o3-n16-c10: net: r5: critical_measurement_s 2.649 = identity 2.649 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r5: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r5: identity_s 2.649 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r5: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r5: the samples carry their share of identity (s5-identity sum 2.605)
+ok   spec-o3-n16-c10: net: r6: critical_measurement_s 2.267 = identity 2.266 + sha_get 0 + sha_critical 0.001
+ok   spec-o3-n16-c10: net: r6: sha_critical_s 0.001 == the sum of its samples' sha-critical 0.001
+ok   spec-o3-n16-c10: net: r6: identity_s 2.266 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r6: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r6: the samples carry their share of identity (s5-identity sum 2.215)
+ok   spec-o3-n16-c10: net: r7: critical_measurement_s 2.251 = identity 2.251 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r7: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r7: identity_s 2.251 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r7: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r7: the samples carry their share of identity (s5-identity sum 2.211)
+ok   spec-o3-n16-c10: net: r8: critical_measurement_s 2.651 = identity 2.628 + sha_get 0 + sha_critical 0.023
+ok   spec-o3-n16-c10: net: r8: sha_critical_s 0.023 == the sum of its samples' sha-critical 0.023
+ok   spec-o3-n16-c10: net: r8: identity_s 2.628 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r8: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r8: the samples carry their share of identity (s5-identity sum 2.593)
+ok   spec-o3-n16-c10: net: r9: critical_measurement_s 2.302 = identity 2.281 + sha_get 0 + sha_critical 0.021
+ok   spec-o3-n16-c10: net: r9: sha_critical_s 0.021 == the sum of its samples' sha-critical 0.021
+ok   spec-o3-n16-c10: net: r9: identity_s 2.281 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r9: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r9: the samples carry their share of identity (s5-identity sum 2.191)
+ok   spec-o3-n16-c10: net: r10: critical_measurement_s 0.011 = identity 0.011 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r10: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r10: identity_s 0.011 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r10: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r11: critical_measurement_s 0.098 = identity 0.098 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r11: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r11: identity_s 0.098 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r11: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r12: critical_measurement_s 0.01 = identity 0.01 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r12: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r12: identity_s 0.01 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r12: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r13: critical_measurement_s 0.011 = identity 0.011 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r13: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r13: identity_s 0.011 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r13: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r14: critical_measurement_s 0.03 = identity 0.03 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r14: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r14: identity_s 0.03 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r14: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: net: r15: critical_measurement_s 0.036 = identity 0.036 + sha_get 0 + sha_critical 0
+ok   spec-o3-n16-c10: net: r15: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n16-c10: net: r15: identity_s 0.036 equals the identity phase (1 s, whole-second markers)
+ok   spec-o3-n16-c10: net: r15: sha_get_s 0 is 0 (no sha-get phase)
+ok   spec-o3-n16-c10: requests: r0: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r1: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r2: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r3: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r4: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r5: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r6: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r7: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r8: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r9: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r10: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r11: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r12: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r13: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r14: the shard load's ranged GETs counted (GetObject-range 19)
+ok   spec-o3-n16-c10: requests: r15: the shard load's ranged GETs counted (GetObject-range 20)
+ok   spec-o3-n16-c10: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 20 (want 20, the objects)
+ok   spec-o3-n16-c10: requests: input fetches counted: fetch.sh's HeadObject = 20 (want 20, one per input file)
+ok   spec-o3-n16-c10: engine: r0: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r1: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r2: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r3: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r4: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r5: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r6: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r7: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r8: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r9: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r10: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r11: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r12: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r13: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r14: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: r15: ak2-engine etag line: etag ad5902eb40c1159905f34121bab8036b-39 computed ad5902eb40c1159905f34121bab8036b-39
+ok   spec-o3-n16-c10: engine: 10 of 16 shards homed samples ({0: 1, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1}, 10 sample(s)): the placement spread them
+ok   spec-o3-n16-c10: engine: replica 0 has its own rendezvous (g0: ['rank-0000.json', 'rank-0001.json', 'rank-0002.json', 'rank-0003.json', 'rank-0004.json', 'rank-0005.json', 'rank-0006.json', 'rank-0007.json', 'rank-0008.json', 'rank-0009.json', 'rank-0010.json', 'rank-0011.json', 'rank-0012.json', 'rank-0013.json', 'rank-0014.json', 'rank-0015.json'])
+ok   spec-o3-n16-c10: engine: replica 0 rank-0000.json: shard address 10.158.101.10:41681 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0001.json: shard address 10.158.101.11:43735 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0002.json: shard address 10.158.101.12:41573 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0003.json: shard address 10.158.101.13:46575 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0004.json: shard address 10.158.101.14:37129 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0005.json: shard address 10.158.101.15:46601 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0006.json: shard address 10.158.101.16:39501 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0007.json: shard address 10.158.101.17:41997 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0008.json: shard address 10.158.101.18:45163 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0009.json: shard address 10.158.101.19:35591 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0010.json: shard address 10.158.101.20:42989 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0011.json: shard address 10.158.101.21:43655 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0012.json: shard address 10.158.101.22:44777 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0013.json: shard address 10.158.101.23:42927 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0014.json: shard address 10.158.101.24:34411 is the node's own, not loopback
+ok   spec-o3-n16-c10: engine: replica 0 rank-0015.json: shard address 10.158.101.25:37369 is the node's own, not loopback
+ok   spec-o3-n16-c10: inflight: r0: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r0: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r0: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r1: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r1: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r1: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r2: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r2: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r2: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r3: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r3: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r3: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r4: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r4: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r4: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r5: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r5: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r5: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r6: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r6: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r6: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r7: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r7: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r7: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r8: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r8: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r8: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r9: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+ok   spec-o3-n16-c10: inflight: r9: every home sample's ak2-sample line has inflight 1 and threads 2 ([('1', '2')])
+ok   spec-o3-n16-c10: inflight: r9: 1 of its 1 home samples ran at once (want 1 .. 1)
+ok   spec-o3-n16-c10: inflight: r10: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+FAIL spec-o3-n16-c10: inflight: r10: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r10: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r11: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+FAIL spec-o3-n16-c10: inflight: r11: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r11: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r12: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+FAIL spec-o3-n16-c10: inflight: r12: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r12: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r13: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+FAIL spec-o3-n16-c10: inflight: r13: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r13: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r14: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+FAIL spec-o3-n16-c10: inflight: r14: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r14: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: inflight: r15: lad-config resolved inflight 1 threads 2 (want 1 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 1; THREADS at nproc 32)
+FAIL spec-o3-n16-c10: inflight: r15: every home sample's ak2-sample line has inflight 1 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r15: 0 of its 0 home samples ran at once (want 0 .. 1)
+ok   spec-o3-n16-c10: build: r0: overlap: waited in build-wait, build_end 1792082542.935 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r1: overlap: waited in build-wait, build_end 1792082543.297 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r2: overlap: waited in build-wait, build_end 1792082543.116 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r3: overlap: waited in build-wait, build_end 1792082542.971 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r4: overlap: waited in build-wait, build_end 1792082543.369 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r5: overlap: waited in build-wait, build_end 1792082543.038 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r6: overlap: waited in build-wait, build_end 1792082542.915 recorded, before identity (1792082542)
+ok   spec-o3-n16-c10: build: r7: overlap: waited in build-wait, build_end 1792082543.406 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r8: overlap: waited in build-wait, build_end 1792082543.148 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r9: overlap: waited in build-wait, build_end 1792082543.146 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r10: overlap: waited in build-wait, build_end 1792082542.944 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r11: overlap: waited in build-wait, build_end 1792082543.161 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r12: overlap: waited in build-wait, build_end 1792082542.973 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r13: overlap: waited in build-wait, build_end 1792082543.138 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r14: overlap: waited in build-wait, build_end 1792082543.211 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: build: r15: overlap: waited in build-wait, build_end 1792082543.196 recorded, before identity (1792082543)
+ok   spec-o3-n16-c10: s5: r0: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r0: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r0: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r0: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r0: SRR062634: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r0: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r0: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r1: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r1: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r1: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r1: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r1: ERR478965: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r1: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r1: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r2: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r2: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r2: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r2: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r2: SRR28305653: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r2: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r2: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r2: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r3: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r3: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r3: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r3: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r3: SRR062634b: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r3: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r3: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r3: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r4: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r4: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r4: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r4: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r4: ERR478965b: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r4: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r4: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r4: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r5: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r5: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r5: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r5: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r5: SRR28305653b: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r5: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r5: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r5: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r6: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r6: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r6: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r6: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r6: SRR062634c: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r6: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r6: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r6: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r7: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r7: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r7: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r7: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r7: ERR478965c: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r7: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r7: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r7: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r8: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r8: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r8: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r8: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r8: SRR28305653c: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r8: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r8: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r8: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r9: one identity line per input file this node read (2)
+ok   spec-o3-n16-c10: s5: r9: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r9: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r9: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r9: SRR062634d: s5 identical/none P 16 gz_exit [0, 0] gz_warning [False, False] rg_exit [0, 0] (want identical/none)
+ok   spec-o3-n16-c10: s5: r9: gzip-shim.calls has 2 rapidgzip calls (want 2: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r9: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r9: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r10: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r10: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r10: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r10: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r10: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r10: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r10: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r11: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r11: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r11: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r11: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r11: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r11: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r11: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r12: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r12: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r12: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r12: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r12: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r12: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r12: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r13: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r13: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r13: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r13: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r13: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r13: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r13: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r14: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r14: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r14: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r14: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r14: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r14: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r14: the body's own shim check (lad-shim ok True)
+ok   spec-o3-n16-c10: s5: r15: one identity line per input file this node read (0)
+ok   spec-o3-n16-c10: s5: r15: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r15: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r15: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r15: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r15: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n16-c10: s5: r15: the body's own shim check (lad-shim ok True)
+ladder-rehearse: spec-o3-n16-c10: tail of r0.out
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	59
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	59	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	9784580	cross_bytes	9786996	hash_s	0.118089	combine_s	0.000012
+    | [O3-n16] ak2-engine	load	seconds	0.018762	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	7	keys	9016552	batches	112	route_s	0.293862	wait_s	0.334315	gather_s	0.072852
+    | [O3-n16] ak2-engine	worker	scan_s	2.021232	lookup_s	0.701041	classify_s	0.521991
+    | [O3-n16] ak2-timing	total	0.000002	2.961227	155912	0	0.990250	0.142677
+    | lever {"kind":"upload-enqueue","t":1792082550.300,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","sha256_seconds":0.020,"session":"1792082546252388204"}
+    | lever {"kind":"upload-enqueue","t":1792082550.316,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","sha256_seconds":0.002,"session":"1792082546252388204"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n16","cohort":10,"accession":"SRR062634","pairs":200000,"rc":0,"phases":{"classify":2.284,"sha":0.022,"sha-critical":0.02,"s5-identity":2.44,"engine-setup":0,"engine-classify":2.284,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f"},"report":{"bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":32,"gz_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"rg_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":0,"idx":0,"t_start":1792082546.781,"t_end":1792082549.065,"input_bytes":0,"threads":2,"replica":0,"lane":"rank0","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR062634","mode":"parallel","s3client":"-","rank":"0","role":"home","inflight":"1","threads":"2","start_s":"0.514875","wall_s":"2.284474","setup_s":"0.000107","classify_s":"2.283793","close_s":"0.000006","report_s":"0.000474","status":"0","sequences":"200000","bases":"40000000","classified":"2167","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792082550.455,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634/output","sub":"cp","rc":0,"seconds":0.013,"requests":"PutObject 1 (8794824 bytes)"}
+    | lever {"kind":"upload","t":1792082550.460,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","t_enqueue":1792082550.278,"t_start":1792082550.436,"t_end":1792082550.458,"rc":0,"session":"1792082546252388204","requests":"PutObject 1 (8794824 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082550.478,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634/report","sub":"cp","rc":0,"seconds":0.006,"requests":"PutObject 1 (7311 bytes)"}
+    | lever {"kind":"upload","t":1792082550.483,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","t_enqueue":1792082550.312,"t_start":1792082550.467,"t_end":1792082550.481,"rc":0,"session":"1792082546252388204","requests":"PutObject 1 (7311 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000122	0.000009	4	0	0.000002	0.000006
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.524,"mode":"s5cmd-overlap","session":"1792082546252388204","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8802135,"upload_s":0.036,"overlap_s":0.036,"t_drain":1792082551.425,"drain_wait_s":0.089}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":0,"critical_measurement_s":2.496,"identity_s":2.476,"sha_get_s":0,"sha_critical_s":0.02}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.634498896,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":34927325184,"free_huge_bytes":24612175872,"free_huge_frac":0.704668,"buddy":[147349,170317,108901,45307,15089,6835,3973,2178,934,330,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34107264,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 0 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r1.out
+    | lever {"kind":"upload","t":1792082548.882,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965/output","bytes":8323460,"sha256":"339ce5ad82a601e08280fa109ffe36c986262d6fdae7476439c44d88e833c81e","t_enqueue":1792082548.629,"t_start":1792082548.776,"t_end":1792082548.878,"rc":0,"session":"1792082546488116905","requests":"PutObject 1 (8323460 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082548.966,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/ERR478965/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965/report","sub":"cp","rc":0,"seconds":0.026,"requests":"PutObject 1 (14084 bytes)"}
+    | lever {"kind":"upload","t":1792082548.988,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965/report","bytes":14084,"sha256":"1f7a65806fcef7c6e2fc00a8dbafe5cff741499992b1332e3e3ecd56287ff3db","t_enqueue":1792082548.725,"t_start":1792082548.907,"t_end":1792082548.980,"rc":0,"session":"1792082546488116905","requests":"PutObject 1 (14084 bytes)","estimate":false}
+    | [O3-n16] ak2-engine	mem	t_s	2.5	rss_kib	541944	hwm_kib	541944	heap_inuse	529924096	sys	547494280	avail_kib	27997000
+    | [O3-n16] ak2-timing	batch-barrier-0	2.061403	0.817491	1448	0	0.074213	0.005786
+    | [O3-n16] ak2-engine	shard	0	n	16	lo	10136457	hi	20272914	tail	302	full	false	empty_at	10136475	keys	6553534	batches	73	probe_s	1.018350	tail_probes	0	wrap_probes	0
+    | [O3-n16] ak2-engine	mem	t_s	2.9	rss_kib	543352	hwm_kib	543352	heap_inuse	531365888	sys	551688584	avail_kib	33525212
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	66
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	66	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	2793184	cross_bytes	12580180	hash_s	0.069521	combine_s	0.000013
+    | [O3-n16] ak2-engine	load	seconds	0.033443	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	6	keys	7634946	batches	96	route_s	0.157072	wait_s	0.297072	gather_s	0.113256
+    | [O3-n16] ak2-engine	worker	scan_s	1.130145	lookup_s	0.567407	classify_s	0.423054
+    | [O3-n16] ak2-timing	total	0.000002	2.879763	125700	0	0.897565	0.099991
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000150	0.000014	4	0	0.000014	0.000000
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.662,"mode":"s5cmd-overlap","session":"1792082546488116905","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8337544,"upload_s":0.175,"overlap_s":0.175,"t_drain":1792082551.550,"drain_wait_s":0.099}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":1,"critical_measurement_s":2.185,"identity_s":2.185,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.771987673,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":35060662272,"free_huge_bytes":24620564480,"free_huge_frac":0.702228,"buddy":[159592,169202,109764,46279,15420,6889,4010,2177,934,334,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34237976,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 1 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r10.out
+    | [O3-n16] ak2-engine	mem	t_s	5.5	rss_kib	72524	hwm_kib	72524	heap_inuse	22175744	sys	39688456	avail_kib	34197984
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	145
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	145	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	6979480	cross_bytes	20952772	hash_s	0.175623	combine_s	0.000034
+    | [O3-n16] ak2-engine	load	seconds	0.069804	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+    | [O3-n16] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+    | [O3-n16] ak2-timing	total	0.000002	5.528978	7427	0	0.278200	0.035202
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.009735	0.000015	4	0	0.000000	0.000014
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | Traceback (most recent call last):
+    |   File "/work/bin/aws-stub.py", line 50, in <module>
+    |     shutil.copyfile(src, p + ".tmp-stub"); os.replace(p + ".tmp-stub", p)
+    |   File "/usr/lib64/python3.9/shutil.py", line 264, in copyfile
+    |     with open(src, 'rb') as fsrc:
+    | FileNotFoundError: [Errno 2] No such file or directory: '/home/ec2-user/ak2/lever/gzip-shim.calls'
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082552.465,"mode":"s5cmd-overlap","session":"1792082544524586387","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792082552.296,"drain_wait_s":0.159}
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	push	no
+    | lad-net {"v":1,"rank":10,"critical_measurement_s":0.011,"identity_s":0.011,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.556580058,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":44765167616,"free_huge_bytes":25153241088,"free_huge_frac":0.561893,"buddy":[160412,135730,120949,79270,41230,19874,11111,5481,2070,504,5745],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":43715716,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 10 done: 0 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r11.out
+    | [O3-n16] ak2-engine	mem	t_s	5.5	rss_kib	88912	hwm_kib	88912	heap_inuse	19824640	sys	56736008	avail_kib	34349756
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	143
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	143	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	16765300	cross_bytes	23747196	hash_s	0.240339	combine_s	0.000083
+    | [O3-n16] ak2-engine	load	seconds	0.040009	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+    | [O3-n16] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+    | [O3-n16] ak2-timing	total	0.000002	5.534795	11565	0	0.295816	0.042159
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000122	0.000010	4	0	0.000009	0.000000
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | Traceback (most recent call last):
+    |   File "/work/bin/aws-stub.py", line 50, in <module>
+    |     shutil.copyfile(src, p + ".tmp-stub"); os.replace(p + ".tmp-stub", p)
+    |   File "/usr/lib64/python3.9/shutil.py", line 264, in copyfile
+    |     with open(src, 'rb') as fsrc:
+    | FileNotFoundError: [Errno 2] No such file or directory: '/home/ec2-user/ak2/lever/gzip-shim.calls'
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082552.267,"mode":"s5cmd-overlap","session":"1792082544515819951","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792082552.243,"drain_wait_s":0.011}
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	push	no
+    | lad-net {"v":1,"rank":11,"critical_measurement_s":0.098,"identity_s":0.098,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.352490657,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":43910758400,"free_huge_bytes":25012731904,"free_huge_frac":0.569627,"buddy":[167148,141432,123225,78878,39908,18997,10634,5096,1799,455,5736],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":42881776,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 11 done: 0 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r12.out
+    | [O3-n16] ak2-engine	mem	t_s	5.5	rss_kib	76644	hwm_kib	76644	heap_inuse	23437312	sys	44161288	avail_kib	34463628
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	142
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	142	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	9773904	cross_bytes	26541620	hash_s	0.236705	combine_s	0.000016
+    | [O3-n16] ak2-engine	load	seconds	0.030559	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+    | [O3-n16] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+    | [O3-n16] ak2-timing	total	0.000001	5.534886	8485	0	0.293670	0.034885
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000126	0.000009	4	0	0.000000	0.000009
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | Traceback (most recent call last):
+    |   File "/work/bin/aws-stub.py", line 50, in <module>
+    |     shutil.copyfile(src, p + ".tmp-stub"); os.replace(p + ".tmp-stub", p)
+    |   File "/usr/lib64/python3.9/shutil.py", line 264, in copyfile
+    |     with open(src, 'rb') as fsrc:
+    | FileNotFoundError: [Errno 2] No such file or directory: '/home/ec2-user/ak2/lever/gzip-shim.calls'
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082552.465,"mode":"s5cmd-overlap","session":"1792082544522606040","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792082552.275,"drain_wait_s":0.180}
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	push	no
+    | lad-net {"v":1,"rank":12,"critical_measurement_s":0.01,"identity_s":0.01,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.556037638,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":44766715904,"free_huge_bytes":25153241088,"free_huge_frac":0.561874,"buddy":[160790,135730,120949,79270,41230,19874,11111,5481,2070,504,5745],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":43717336,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 12 done: 0 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r13.out
+    | [O3-n16] ak2-engine	mem	t_s	5.5	rss_kib	79156	hwm_kib	79156	heap_inuse	28934144	sys	43899144	avail_kib	34151040
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	150
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	150	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	2782508	cross_bytes	12558828	hash_s	0.220595	combine_s	0.000020
+    | [O3-n16] ak2-engine	load	seconds	0.022425	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+    | [O3-n16] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+    | [O3-n16] ak2-timing	total	0.000002	5.539466	9058	0	0.288555	0.028125
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000816	0.000011	3	0	0.000004	0.000007
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | Traceback (most recent call last):
+    |   File "/work/bin/aws-stub.py", line 50, in <module>
+    |     shutil.copyfile(src, p + ".tmp-stub"); os.replace(p + ".tmp-stub", p)
+    |   File "/usr/lib64/python3.9/shutil.py", line 264, in copyfile
+    |     with open(src, 'rb') as fsrc:
+    | FileNotFoundError: [Errno 2] No such file or directory: '/home/ec2-user/ak2/lever/gzip-shim.calls'
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082552.467,"mode":"s5cmd-overlap","session":"1792082544531916395","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792082552.328,"drain_wait_s":0.130}
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	push	no
+    | lad-net {"v":1,"rank":13,"critical_measurement_s":0.011,"identity_s":0.011,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.557138645,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":44765167616,"free_huge_bytes":25153241088,"free_huge_frac":0.561893,"buddy":[160412,135730,120949,79270,41230,19874,11111,5481,2070,504,5745],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":43715716,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 13 done: 0 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r14.out
+    | [O3-n16] ak2-engine	mem	t_s	5.5	rss_kib	80504	hwm_kib	80504	heap_inuse	23994368	sys	47876376	avail_kib	34245152
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	143
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	143	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	12568328	cross_bytes	15353252	hash_s	0.143656	combine_s	0.000026
+    | [O3-n16] ak2-engine	load	seconds	0.062405	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+    | [O3-n16] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+    | [O3-n16] ak2-timing	total	0.000002	5.453825	9463	0	0.291048	0.039593
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000139	0.000008	3	0	0.000004	0.000004
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | Traceback (most recent call last):
+    |   File "/work/bin/aws-stub.py", line 50, in <module>
+    |     shutil.copyfile(src, p + ".tmp-stub"); os.replace(p + ".tmp-stub", p)
+    |   File "/usr/lib64/python3.9/shutil.py", line 264, in copyfile
+    |     with open(src, 'rb') as fsrc:
+    | FileNotFoundError: [Errno 2] No such file or directory: '/home/ec2-user/ak2/lever/gzip-shim.calls'
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082552.543,"mode":"s5cmd-overlap","session":"1792082544621575594","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792082552.350,"drain_wait_s":0.183}
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	push	no
+    | lad-net {"v":1,"rank":14,"critical_measurement_s":0.03,"identity_s":0.03,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.631876575,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":44766199808,"free_huge_bytes":25153241088,"free_huge_frac":0.561880,"buddy":[159660,135740,120995,79302,41242,19879,11114,5481,2070,504,5745],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":43717068,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 14 done: 0 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r15.out
+    | [O3-n16] ak2-engine	mem	t_s	5.5	rss_kib	72276	hwm_kib	72276	heap_inuse	21889024	sys	35510536	avail_kib	34077412
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	165
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	165	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	0	retries	0	bytes	0	cross_bytes	12570744	hash_s	0.086959	combine_s	0.000014
+    | [O3-n16] ak2-engine	load	seconds	0.076659	requests	20	retries	0	bytes	40612640
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	0	keys	0	batches	0	route_s	0.000000	wait_s	0.000000	gather_s	0.000000
+    | [O3-n16] ak2-engine	worker	scan_s	0.000000	lookup_s	0.000000	classify_s	0.000000
+    | [O3-n16] ak2-timing	total	0.000002	5.451422	7349	0	0.276571	0.028660
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000936	0.000015	3	0	0.000000	0.000015
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":0,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | Traceback (most recent call last):
+    |   File "/work/bin/aws-stub.py", line 50, in <module>
+    |     shutil.copyfile(src, p + ".tmp-stub"); os.replace(p + ".tmp-stub", p)
+    |   File "/usr/lib64/python3.9/shutil.py", line 264, in copyfile
+    |     with open(src, 'rb') as fsrc:
+    | FileNotFoundError: [Errno 2] No such file or directory: '/home/ec2-user/ak2/lever/gzip-shim.calls'
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082552.469,"mode":"s5cmd-overlap","session":"1792082544555176055","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792082552.328,"drain_wait_s":0.132}
+    | ak2-phase	2026-10-15T16:42:32Z	1792082552	push	no
+    | lad-net {"v":1,"rank":15,"critical_measurement_s":0.036,"identity_s":0.036,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.558210319,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":44765167616,"free_huge_bytes":25153241088,"free_huge_frac":0.561893,"buddy":[160412,135730,120949,79270,41230,19874,11111,5481,2070,504,5745],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":43715716,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 15 done: 0 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r2.out
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	36
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	36	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	12579004	cross_bytes	15374604	hash_s	0.081065	combine_s	0.000013
+    | [O3-n16] ak2-engine	load	seconds	0.030084	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	9	keys	15357053	batches	144	route_s	0.284112	wait_s	0.368636	gather_s	0.128147
+    | [O3-n16] ak2-engine	worker	scan_s	2.241214	lookup_s	0.780905	classify_s	0.643616
+    | [O3-n16] ak2-timing	total	0.000002	2.704550	155861	0	1.330636	0.149742
+    | lever {"kind":"upload-enqueue","t":1792082550.364,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653/output","bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e","sha256_seconds":0.022,"session":"1792082546487726819"}
+    | lever {"kind":"upload-enqueue","t":1792082550.380,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653/report","bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e","sha256_seconds":0.002,"session":"1792082546487726819"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n16","cohort":10,"accession":"SRR28305653","pairs":200000,"rc":0,"phases":{"classify":2.409,"sha":0.024,"sha-critical":0.022,"s5-identity":2.435,"engine-setup":0,"engine-classify":2.408,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e"},"report":{"bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":32,"gz_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"rg_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":2,"idx":2,"t_start":1792082546.788,"t_end":1792082549.197,"input_bytes":0,"threads":2,"replica":0,"lane":"rank2","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR28305653","mode":"parallel","s3client":"-","rank":"2","role":"home","inflight":"1","threads":"2","start_s":"0.287654","wall_s":"2.409117","setup_s":"0.000220","classify_s":"2.408297","close_s":"0.000015","report_s":"0.000475","status":"0","sequences":"200000","bases":"60000000","classified":"3191","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792082550.476,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653/output","sub":"cp","rc":0,"seconds":0.016,"requests":"PutObject 1 (9759968 bytes)"}
+    | lever {"kind":"upload","t":1792082550.481,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653/output","bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e","t_enqueue":1792082550.340,"t_start":1792082550.455,"t_end":1792082550.480,"rc":0,"session":"1792082546487726819","requests":"PutObject 1 (9759968 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082550.500,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653/report","sub":"cp","rc":0,"seconds":0.006,"requests":"PutObject 1 (10507 bytes)"}
+    | lever {"kind":"upload","t":1792082550.505,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653/report","bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e","t_enqueue":1792082550.376,"t_start":1792082550.489,"t_end":1792082550.503,"rc":0,"session":"1792082546487726819","requests":"PutObject 1 (10507 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000130	0.000010	4	0	0.000000	0.000009
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.536,"mode":"s5cmd-overlap","session":"1792082546487726819","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":9770475,"upload_s":0.039,"overlap_s":0.039,"t_drain":1792082551.489,"drain_wait_s":0.035}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":2,"critical_measurement_s":2.493,"identity_s":2.471,"sha_get_s":0,"sha_critical_s":0.022}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.640312561,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":34927325184,"free_huge_bytes":24612175872,"free_huge_frac":0.704668,"buddy":[147349,170317,108901,45307,15089,6835,3973,2178,934,330,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34107264,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 2 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r3.out
+    | [O3-n16] ak2-timing	batch-barrier-0	2.785603	0.158254	38	0	0.013050	0.001007
+    | [O3-n16] ak2-engine	shard	0	n	16	lo	30409371	hi	40545828	tail	302	full	false	empty_at	10136459	keys	6494431	batches	73	probe_s	0.876406	tail_probes	9	wrap_probes	0
+    | [O3-n16] ak2-engine	mem	t_s	2.9	rss_kib	611780	hwm_kib	611780	heap_inuse	371531776	sys	627976600	avail_kib	29248704
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	55
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	55	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	5587608	cross_bytes	18169028	hash_s	0.112798	combine_s	0.000016
+    | [O3-n16] ak2-engine	load	seconds	0.021992	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	7	keys	9016552	batches	112	route_s	0.166642	wait_s	0.217778	gather_s	0.049485
+    | [O3-n16] ak2-engine	worker	scan_s	1.846408	lookup_s	0.433912	classify_s	0.520571
+    | [O3-n16] ak2-timing	total	0.000002	2.945563	145173	0	1.005859	0.127685
+    | lever {"kind":"s5","t":1792082549.247,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634b/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634b/output","sub":"cp","rc":0,"seconds":0.024,"requests":"PutObject 1 (8794824 bytes)"}
+    | lever {"kind":"upload","t":1792082549.254,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634b/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634b/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","t_enqueue":1792082549.145,"t_start":1792082549.214,"t_end":1792082549.251,"rc":0,"session":"1792082546257859408","requests":"PutObject 1 (8794824 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082549.283,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634b/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634b/report","sub":"cp","rc":0,"seconds":0.011,"requests":"PutObject 1 (7311 bytes)"}
+    | lever {"kind":"upload","t":1792082549.290,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634b/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634b/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","t_enqueue":1792082549.191,"t_start":1792082549.265,"t_end":1792082549.288,"rc":0,"session":"1792082546257859408","requests":"PutObject 1 (7311 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.001147	0.000012	4	0	0.000004	0.000008
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.535,"mode":"s5cmd-overlap","session":"1792082546257859408","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8802135,"upload_s":0.060,"overlap_s":0.060,"t_drain":1792082551.513,"drain_wait_s":0.011}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":3,"critical_measurement_s":2.512,"identity_s":2.512,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.638965802,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":34927325184,"free_huge_bytes":24612175872,"free_huge_frac":0.704668,"buddy":[147349,170317,108901,45307,15089,6835,3973,2178,934,330,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34107264,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 3 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r4.out
+    | [O3-n16] ak2-timing	batch-barrier-0	2.368009	0.372700	1095	0	0.044611	0.002982
+    | [O3-n16] ak2-engine	shard	0	n	16	lo	40545828	hi	50682285	tail	302	full	false	empty_at	10136462	keys	6511008	batches	73	probe_s	0.956058	tail_probes	6	wrap_probes	0
+    | [O3-n16] ak2-engine	mem	t_s	2.7	rss_kib	551872	hwm_kib	551872	heap_inuse	532275200	sys	552016264	avail_kib	30468296
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	53
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	53	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	15373428	cross_bytes	20963452	hash_s	0.077441	combine_s	0.000013
+    | [O3-n16] ak2-engine	load	seconds	0.036498	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	6	keys	7634946	batches	96	route_s	0.180377	wait_s	0.302862	gather_s	0.085800
+    | [O3-n16] ak2-engine	worker	scan_s	1.730556	lookup_s	0.569045	classify_s	0.466473
+    | [O3-n16] ak2-timing	total	0.000001	2.742172	127863	0	0.934195	0.093282
+    | lever {"kind":"s5","t":1792082549.247,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/ERR478965b/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965b/output","sub":"cp","rc":0,"seconds":0.021,"requests":"PutObject 1 (8323460 bytes)"}
+    | lever {"kind":"upload","t":1792082549.255,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965b/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965b/output","bytes":8323460,"sha256":"339ce5ad82a601e08280fa109ffe36c986262d6fdae7476439c44d88e833c81e","t_enqueue":1792082549.026,"t_start":1792082549.218,"t_end":1792082549.253,"rc":0,"session":"1792082546487752986","requests":"PutObject 1 (8323460 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082549.288,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/ERR478965b/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965b/report","sub":"cp","rc":0,"seconds":0.008,"requests":"PutObject 1 (14084 bytes)"}
+    | lever {"kind":"upload","t":1792082549.294,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965b/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965b/report","bytes":14084,"sha256":"1f7a65806fcef7c6e2fc00a8dbafe5cff741499992b1332e3e3ecd56287ff3db","t_enqueue":1792082549.085,"t_start":1792082549.272,"t_end":1792082549.292,"rc":0,"session":"1792082546487752986","requests":"PutObject 1 (14084 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000153	0.000010	4	0	0.000005	0.000005
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.537,"mode":"s5cmd-overlap","session":"1792082546487752986","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8337544,"upload_s":0.055,"overlap_s":0.055,"t_drain":1792082551.418,"drain_wait_s":0.108}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":4,"critical_measurement_s":2.19,"identity_s":2.19,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.638743592,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":34927325184,"free_huge_bytes":24612175872,"free_huge_frac":0.704668,"buddy":[147349,170317,108901,45307,15089,6835,3973,2178,934,330,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34107264,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 4 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r5.out
+    | [O3-n16] ak2-timing	batch-barrier-0	2.292691	0.385510	215	0	0.044036	0.006072
+    | [O3-n16] ak2-engine	shard	0	n	16	lo	50682285	hi	60818742	tail	302	full	false	empty_at	10136458	keys	6805383	batches	73	probe_s	0.955617	tail_probes	0	wrap_probes	0
+    | [O3-n16] ak2-engine	mem	t_s	2.7	rss_kib	681748	hwm_kib	681748	heap_inuse	425197568	sys	677779880	avail_kib	29070692
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	52
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	52	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	8382032	cross_bytes	23757876	hash_s	0.062851	combine_s	0.000014
+    | [O3-n16] ak2-engine	load	seconds	0.019624	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	9	keys	15357053	batches	144	route_s	0.223128	wait_s	0.402975	gather_s	0.103759
+    | [O3-n16] ak2-engine	worker	scan_s	2.355758	lookup_s	0.729872	classify_s	0.561127
+    | [O3-n16] ak2-timing	total	0.000002	2.679243	160130	0	1.358828	0.131964
+    | lever {"kind":"s5","t":1792082549.260,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653b/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653b/output","sub":"cp","rc":0,"seconds":0.027,"requests":"PutObject 1 (9759968 bytes)"}
+    | lever {"kind":"upload","t":1792082549.267,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653b/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653b/output","bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e","t_enqueue":1792082548.976,"t_start":1792082549.225,"t_end":1792082549.265,"rc":0,"session":"1792082546526123208","requests":"PutObject 1 (9759968 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082549.295,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653b/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653b/report","sub":"cp","rc":0,"seconds":0.010,"requests":"PutObject 1 (10507 bytes)"}
+    | lever {"kind":"upload","t":1792082549.302,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653b/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653b/report","bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e","t_enqueue":1792082549.077,"t_start":1792082549.278,"t_end":1792082549.301,"rc":0,"session":"1792082546526123208","requests":"PutObject 1 (10507 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.001651	0.000011	3	0	0.000005	0.000005
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.544,"mode":"s5cmd-overlap","session":"1792082546526123208","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":9770475,"upload_s":0.063,"overlap_s":0.063,"t_drain":1792082551.414,"drain_wait_s":0.118}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":5,"critical_measurement_s":2.649,"identity_s":2.649,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.651263136,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":34926936064,"free_huge_bytes":24612175872,"free_huge_frac":0.704676,"buddy":[147318,170285,108901,45307,15089,6835,3973,2178,934,330,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34107264,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 5 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r6.out
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	69
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	69	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	1390636	cross_bytes	9775084	hash_s	0.121709	combine_s	0.000015
+    | [O3-n16] ak2-engine	load	seconds	0.038917	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	7	keys	9016552	batches	112	route_s	0.112497	wait_s	0.257510	gather_s	0.146980
+    | [O3-n16] ak2-engine	worker	scan_s	2.207695	lookup_s	0.516995	classify_s	0.361068
+    | [O3-n16] ak2-timing	total	0.000002	3.317291	147616	0	1.035810	0.121182
+    | lever {"kind":"upload-enqueue","t":1792082549.309,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634c/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","sha256_seconds":0.022,"session":"1792082545897633228"}
+    | lever {"kind":"upload-enqueue","t":1792082549.327,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634c/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634c/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","sha256_seconds":0.003,"session":"1792082545897633228"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n16","cohort":10,"accession":"SRR062634c","pairs":200000,"rc":0,"phases":{"classify":2.096,"sha":0.025,"sha-critical":0.001,"s5-identity":2.215,"engine-setup":0,"engine-classify":2.095,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f"},"report":{"bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":32,"gz_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"rg_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":6,"idx":6,"t_start":1792082547.016,"t_end":1792082549.112,"input_bytes":0,"threads":2,"replica":0,"lane":"rank6","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR062634c","mode":"parallel","s3client":"-","rank":"6","role":"home","inflight":"1","threads":"2","start_s":"1.061594","wall_s":"2.095918","setup_s":"0.000047","classify_s":"2.095338","close_s":"0.000007","report_s":"0.000417","status":"0","sequences":"200000","bases":"40000000","classified":"2167","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792082549.519,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634c/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634c/output","sub":"cp","rc":0,"seconds":0.014,"requests":"PutObject 1 (8794824 bytes)"}
+    | lever {"kind":"upload","t":1792082549.523,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634c/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","t_enqueue":1792082549.285,"t_start":1792082549.500,"t_end":1792082549.522,"rc":0,"session":"1792082545897633228","requests":"PutObject 1 (8794824 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082549.541,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634c/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634c/report","sub":"cp","rc":0,"seconds":0.006,"requests":"PutObject 1 (7311 bytes)"}
+    | lever {"kind":"upload","t":1792082549.546,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634c/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634c/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","t_enqueue":1792082549.322,"t_start":1792082549.531,"t_end":1792082549.544,"rc":0,"session":"1792082545897633228","requests":"PutObject 1 (7311 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000138	0.000018	11	0	0.000012	0.000007
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.803,"mode":"s5cmd-overlap","session":"1792082545897633228","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8802135,"upload_s":0.035,"overlap_s":0.035,"t_drain":1792082551.668,"drain_wait_s":0.121}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":6,"critical_measurement_s":2.267,"identity_s":2.266,"sha_get_s":0,"sha_critical_s":0.001}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.970763954,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":39470686208,"free_huge_bytes":24763170816,"free_huge_frac":0.627381,"buddy":[161342,160868,123540,63319,28882,12736,7882,3333,1196,376,5716],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":38546052,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 6 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r7.out
+    | lever {"kind":"upload","t":1792082548.889,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965c/output","bytes":8323460,"sha256":"339ce5ad82a601e08280fa109ffe36c986262d6fdae7476439c44d88e833c81e","t_enqueue":1792082548.608,"t_start":1792082548.827,"t_end":1792082548.884,"rc":0,"session":"1792082546505821194","requests":"PutObject 1 (8323460 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082548.973,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/ERR478965c/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965c/report","sub":"cp","rc":0,"seconds":0.039,"requests":"PutObject 1 (14084 bytes)"}
+    | lever {"kind":"upload","t":1792082548.990,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965c/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/ERR478965c/report","bytes":14084,"sha256":"1f7a65806fcef7c6e2fc00a8dbafe5cff741499992b1332e3e3ecd56287ff3db","t_enqueue":1792082548.708,"t_start":1792082548.911,"t_end":1792082548.984,"rc":0,"session":"1792082546505821194","requests":"PutObject 1 (14084 bytes)","estimate":false}
+    | [O3-n16] ak2-engine	mem	t_s	2.5	rss_kib	535304	hwm_kib	535304	heap_inuse	525295616	sys	543357320	avail_kib	27995772
+    | [O3-n16] ak2-timing	batch-barrier-0	1.968119	0.780834	856	0	0.091963	0.012502
+    | [O3-n16] ak2-engine	shard	0	n	16	lo	70955199	hi	81091657	tail	302	full	false	empty_at	10136459	keys	6564175	batches	73	probe_s	0.789254	tail_probes	0	wrap_probes	0
+    | [O3-n16] ak2-engine	mem	t_s	2.7	rss_kib	536712	hwm_kib	536712	heap_inuse	526786560	sys	543357320	avail_kib	32343548
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	71
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	71	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	11176452	cross_bytes	12569504	hash_s	0.061550	combine_s	0.000057
+    | [O3-n16] ak2-engine	load	seconds	0.028955	requests	19	retries	0	bytes	40612640
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	6	keys	7634946	batches	96	route_s	0.190019	wait_s	0.301660	gather_s	0.054658
+    | [O3-n16] ak2-engine	worker	scan_s	1.450024	lookup_s	0.546343	classify_s	0.374822
+    | [O3-n16] ak2-timing	total	0.000002	2.750406	124037	0	0.912531	0.114801
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000143	0.000009	4	0	0.000005	0.000005
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.659,"mode":"s5cmd-overlap","session":"1792082546505821194","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8337544,"upload_s":0.130,"overlap_s":0.130,"t_drain":1792082551.528,"drain_wait_s":0.117}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":7,"critical_measurement_s":2.251,"identity_s":2.251,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.761021639,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":35060662272,"free_huge_bytes":24620564480,"free_huge_frac":0.702228,"buddy":[159592,169202,109764,46279,15420,6889,4010,2177,934,334,5703],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":34237976,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:31Z] ladder O3-n16 rank 7 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r8.out
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	33
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	33	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	2	requests	1	retries	0	bytes	4185056	cross_bytes	15363924	hash_s	0.042638	combine_s	0.000010
+    | [O3-n16] ak2-engine	load	seconds	0.017320	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	9	keys	15357053	batches	144	route_s	0.259937	wait_s	0.465286	gather_s	0.145280
+    | [O3-n16] ak2-engine	worker	scan_s	2.854027	lookup_s	0.870513	classify_s	0.749682
+    | [O3-n16] ak2-timing	total	0.000001	2.611818	151943	0	1.328196	0.140043
+    | lever {"kind":"upload-enqueue","t":1792082549.294,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653c/output","bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e","sha256_seconds":0.026,"session":"1792082546614104229"}
+    | lever {"kind":"upload-enqueue","t":1792082549.315,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653c/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653c/report","bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e","sha256_seconds":0.003,"session":"1792082546614104229"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n16","cohort":10,"accession":"SRR28305653c","pairs":200000,"rc":0,"phases":{"classify":2.483,"sha":0.029,"sha-critical":0.023,"s5-identity":2.593,"engine-setup":0,"engine-classify":2.482,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e"},"report":{"bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":32,"gz_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"rg_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":8,"idx":8,"t_start":1792082546.701,"t_end":1792082549.184,"input_bytes":0,"threads":2,"replica":0,"lane":"rank8","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR28305653c","mode":"parallel","s3client":"-","rank":"8","role":"home","inflight":"1","threads":"2","start_s":"0.071357","wall_s":"2.482271","setup_s":"0.000028","classify_s":"2.481707","close_s":"0.000009","report_s":"0.000435","status":"0","sequences":"200000","bases":"60000000","classified":"3191","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792082549.366,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653c/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653c/output","sub":"cp","rc":0,"seconds":0.018,"requests":"PutObject 1 (9759968 bytes)"}
+    | lever {"kind":"upload","t":1792082549.370,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653c/output","bytes":9759968,"sha256":"1b3fef049ca7fc93c4635b44164ef8d7fdd8877d97c7ca43315343073380847e","t_enqueue":1792082549.266,"t_start":1792082549.343,"t_end":1792082549.369,"rc":0,"session":"1792082546614104229","requests":"PutObject 1 (9759968 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082549.390,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653c/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653c/report","sub":"cp","rc":0,"seconds":0.007,"requests":"PutObject 1 (10507 bytes)"}
+    | lever {"kind":"upload","t":1792082549.395,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653c/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR28305653c/report","bytes":10507,"sha256":"f5ffc9beb513b2359624f6162421f504b65c2f984276de683142dfd67e9bea5e","t_enqueue":1792082549.310,"t_start":1792082549.377,"t_end":1792082549.394,"rc":0,"session":"1792082546614104229","requests":"PutObject 1 (10507 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000126	0.000008	6	0	0.000018	0.000000
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.869,"mode":"s5cmd-overlap","session":"1792082546614104229","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":9770475,"upload_s":0.043,"overlap_s":0.043,"t_drain":1792082551.647,"drain_wait_s":0.191}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":8,"critical_measurement_s":2.651,"identity_s":2.628,"sha_get_s":0,"sha_critical_s":0.023}
+    | ht-record {"kind":"ht","label":"end","t":1792082552.011768777,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":40291635200,"free_huge_bytes":24847056896,"free_huge_frac":0.616680,"buddy":[169265,156342,123625,66195,31034,13591,8185,3633,1345,400,5724],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":39348296,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 8 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: tail of r9.out
+    | [O3-n16] ak2-engine	rendezvous	puts	2	gets	59
+    | [O3-n16] ak2-engine	s3	client	sdk	put	2	get	59	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+    | [O3-n16] ak2-engine	etag	etag	ad5902eb40c1159905f34121bab8036b-39	computed	ad5902eb40c1159905f34121bab8036b-39	part_bytes	16777216	parts	39	hashed	3	requests	1	retries	0	bytes	13970876	cross_bytes	18158348	hash_s	0.108017	combine_s	0.000031
+    | [O3-n16] ak2-engine	load	seconds	0.026727	requests	19	retries	0	bytes	40612636
+    | [O3-n16] ak2-engine	route	transport	nodes	calls	7	keys	9016552	batches	112	route_s	0.262763	wait_s	0.369271	gather_s	0.080923
+    | [O3-n16] ak2-engine	worker	scan_s	1.971421	lookup_s	0.712967	classify_s	0.575823
+    | [O3-n16] ak2-timing	total	0.000002	2.956760	151559	0	1.026502	0.124256
+    | lever {"kind":"upload-enqueue","t":1792082549.264,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634d/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634d/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","sha256_seconds":0.021,"session":"1792082546244800652"}
+    | lever {"kind":"upload-enqueue","t":1792082549.290,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634d/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634d/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","sha256_seconds":0.006,"session":"1792082546244800652"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n16","cohort":10,"accession":"SRR062634d","pairs":200000,"rc":0,"phases":{"classify":2.261,"sha":0.027,"sha-critical":0.021,"s5-identity":2.191,"engine-setup":0,"engine-classify":2.261,"engine-close":0,"engine-report":0.001},"outputs":{"output":{"bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f"},"report":{"bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":32,"gz_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"rg_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":9,"idx":9,"t_start":1792082546.787,"t_end":1792082549.048,"input_bytes":0,"threads":2,"replica":0,"lane":"rank9","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR062634d","mode":"parallel","s3client":"-","rank":"9","role":"home","inflight":"1","threads":"2","start_s":"0.528785","wall_s":"2.261560","setup_s":"0.000097","classify_s":"2.260815","close_s":"0.000011","report_s":"0.000513","status":"0","sequences":"200000","bases":"40000000","classified":"2167","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792082549.458,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634d/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634d/output","sub":"cp","rc":0,"seconds":0.015,"requests":"PutObject 1 (8794824 bytes)"}
+    | lever {"kind":"upload","t":1792082549.462,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634d/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634d/output","bytes":8794824,"sha256":"bebbf3380833d5da28c6a6dce448303048d70fb295acc72b85b7dcb11e2c5c0f","t_enqueue":1792082549.240,"t_start":1792082549.438,"t_end":1792082549.461,"rc":0,"session":"1792082546244800652","requests":"PutObject 1 (8794824 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792082549.481,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634d/report s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634d/report","sub":"cp","rc":0,"seconds":0.006,"requests":"PutObject 1 (7311 bytes)"}
+    | lever {"kind":"upload","t":1792082549.486,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634d/report","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-164059-3a7f8c7-8349-n16/out/O3-n16/SRR062634d/report","bytes":7311,"sha256":"14c3ea3aa2f37f0b9b3ecee9f5073289b73b4245ee3c861d104f5d17d481bba7","t_enqueue":1792082549.281,"t_start":1792082549.470,"t_end":1792082549.485,"rc":0,"session":"1792082546244800652","requests":"PutObject 1 (7311 bytes)","estimate":false}
+    | [O3-n16 stderr] Loading database information...ak2-timing	opts	0.000132	0.000010	4	0	0.000003	0.000007
+    | [O3-n16 stderr]  done.
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":2,"want_at_least":2,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792082551.733,"mode":"s5cmd-overlap","session":"1792082546244800652","enqueued":2,"uploaded":2,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":8802135,"upload_s":0.038,"overlap_s":0.038,"t_drain":1792082551.628,"drain_wait_s":0.091}
+    | ak2-phase	2026-10-15T16:42:31Z	1792082551	push	no
+    | lad-net {"v":1,"rank":9,"critical_measurement_s":2.302,"identity_s":2.281,"sha_get_s":0,"sha_critical_s":0.021}
+    | ht-record {"kind":"ht","label":"end","t":1792082551.881909761,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":39444873216,"free_huge_bytes":24754782208,"free_huge_frac":0.627579,"buddy":[185208,165804,124280,61254,27835,12578,7853,3327,1196,374,5715],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":0,"compact_free_scanned":0,"compact_isolated":3072,"compact_stall":0,"compact_fail":0,"compact_success":0,"compact_daemon_wake":0,"compact_daemon_migrate_scanned":0,"compact_daemon_free_scanned":0,"thp_fault_alloc":916,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":0,"thp_collapse_alloc_failed":0,"thp_file_alloc":0,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":0,"thp_split_page":0,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":0,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":0,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":38520768,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T16:42:32Z] ladder O3-n16 rank 9 done: 1 samples, FAIL=0
+ladder-rehearse: spec-o3-n16-c10: memory: r0: engine VmHWM 649 MiB, lowest MemAvailable 26656 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r1: engine VmHWM 530 MiB, lowest MemAvailable 26061 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r10: engine VmHWM 70 MiB, lowest MemAvailable 25902 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r11: engine VmHWM 86 MiB, lowest MemAvailable 25900 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r12: engine VmHWM 74 MiB, lowest MemAvailable 25901 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r13: engine VmHWM 77 MiB, lowest MemAvailable 25904 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r14: engine VmHWM 78 MiB, lowest MemAvailable 26120 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r15: engine VmHWM 70 MiB, lowest MemAvailable 25904 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r2: engine VmHWM 645 MiB, lowest MemAvailable 26047 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r3: engine VmHWM 597 MiB, lowest MemAvailable 26426 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r4: engine VmHWM 538 MiB, lowest MemAvailable 26020 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r5: engine VmHWM 665 MiB, lowest MemAvailable 25903 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r6: engine VmHWM 616 MiB, lowest MemAvailable 26153 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r7: engine VmHWM 524 MiB, lowest MemAvailable 26013 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r8: engine VmHWM 627 MiB, lowest MemAvailable 26117 MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r9: engine VmHWM 631 MiB, lowest MemAvailable 26494 MiB
+ladder-rehearse: disk: 153Gi free
+ladder-rehearse: summary (spec runs/g3-l-o3-n16-c10.json at 3a7f8c7):
+item | case                       | what                                                       | checks |   failed | result
+6    | spec-o3-n16-c10            | runs/g3-l-o3-n16-c10.json end to end                       | 491 ok |   6 FAIL | FAIL
+ladder-rehearse: disk at end: 153Gi free
+ladder-rehearse: FAILED: 1 of 1 cases (KEEP=1 keeps /Users/scttfrdmn/.ak2-ladreh.mVmj9s)

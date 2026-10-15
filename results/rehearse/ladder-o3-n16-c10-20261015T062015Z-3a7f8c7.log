@@ -1,0 +1,816 @@
+ladder-rehearse: mode spec runs/g3-l-o3-n16-c10.json at 3a7f8c7 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-o3-n16-c10-20261015T062015Z-3a7f8c7.log
+ladder-rehearse: disk at start: 155Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-80559 (10.177.101.0/24); infra 10.177.101.2: hash.k2d at http://10.177.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.177.101.2:8003
+ladder-rehearse: ---- spec-o3-n16-c10 (6): runs/g3-l-o3-n16-c10.json (r8g.8xlarge, WANT_N 16); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-o3-n16-c10: runs/g3-l-o3-n16-c10.json sha256 3bb5801cfbdb77811e93c7bfa92876a24138ddb9a3edbc5aeb25d578d125d7fd (HEAD 3a7f8c7)
+ladder-rehearse: spec-o3-n16-c10: RUNG=O3-n16; ARM=O; COHORT=10; WANT_N=16; CLASSIFIER=ours-engine; THREADS=vcpus/12; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=16; PLACEMENT=mod; INFLIGHT=10; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-o3-n16-c10: cohort 10: samples SRR062634 ERR478965 SRR28305653 SRR062634b ERR478965b SRR28305653b SRR062634c ERR478965c SRR28305653c SRR062634d (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: 32 (the vCPUs of r8g.8xlarge, the spec type)
+ladder-rehearse: spec-o3-n16-c10: expected on the node: {}
+ladder-rehearse: spec-o3-n16-c10: rehearsed at INFLIGHT=2 (the spec's 10 = 10 does not fit the VM's memory; AK2_REHEARSE_ENGINE_INFLIGHT=0 runs it uncapped), GOMEMLIMIT=1536MiB
+ladder-rehearse: spec-o3-n16-c10: rank 1 exited 1: stopping the others (fail fast, as run-multi.sh)
+ladder-rehearse: spec-o3-n16-c10: cohort 20261015-062022-3a7f8c7-c512-n16: node exits 137 1 1 1 137 1 137 1 137 1 1 1 137 137 1 1
+FAIL spec-o3-n16-c10: exit: every node's body exits 0 (rcs [137, 1, 1, 1, 137, 1, 137, 1, 137, 1, 1, 1, 137, 137, 1, 1])
+ok   spec-o3-n16-c10: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r2: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r3: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r4: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r5: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r6: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r7: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r8: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r9: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r10: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r11: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r12: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r13: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r14: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: preamble: r15: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n16-c10: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-o3-n16-c10: stream: r0: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r0: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r0: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r0: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r1: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r1: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r1: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r1: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r2: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r2: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r2: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r2: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r3: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r3: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r3: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r3: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r4: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r4: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r4: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r4: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r5: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r5: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r5: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r5: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r6: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r6: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r6: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r6: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r7: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r7: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r7: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r7: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r8: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r8: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r8: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r8: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r9: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r9: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r9: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r9: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r10: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r10: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r10: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r10: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r11: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r11: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r11: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r11: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r12: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r12: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r12: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r12: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r13: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r13: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r13: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r13: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r14: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r14: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r14: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r14: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n16-c10: stream: r15: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n16-c10: stream: r15: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n16-c10: stream: r15: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n16-c10: stream: r15: lever lines streamed (0) equal the pushed lever.jsonl (0)
+FAIL spec-o3-n16-c10: samples: each planned sample has exactly one lad-sample line across the fleet ({}; planned ['SRR062634', 'ERR478965', 'SRR28305653', 'SRR062634b', 'ERR478965b', 'SRR28305653b', 'SRR062634c', 'ERR478965c', 'SRR28305653c', 'SRR062634d'])
+ok   spec-o3-n16-c10: samples: every sample's classify rc is 0 ([])
+ok   spec-o3-n16-c10: samples: every lad-sample is contract v1 with the run's rung and arm
+FAIL spec-o3-n16-c10: objects: 0 objects under out/O3-n16/ (want 20)
+FAIL spec-o3-n16-c10: phases: r0: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r0: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r0: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r1: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r1: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r1: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r2: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r2: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r2: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r3: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r3: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r3: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r4: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r4: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r4: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r5: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r5: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r5: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r6: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r6: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r6: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r7: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r7: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r7: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r8: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r8: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r8: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r9: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r9: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r9: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r10: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r10: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r10: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r11: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r11: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r11: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r12: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r12: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r12: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r13: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r13: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r13: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r14: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r14: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r14: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: phases: r15: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n16-c10: phases: r15: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n16-c10: phases: r15: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n16-c10: net: r0: no lad-net line
+FAIL spec-o3-n16-c10: net: r1: no lad-net line
+FAIL spec-o3-n16-c10: net: r2: no lad-net line
+FAIL spec-o3-n16-c10: net: r3: no lad-net line
+FAIL spec-o3-n16-c10: net: r4: no lad-net line
+FAIL spec-o3-n16-c10: net: r5: no lad-net line
+FAIL spec-o3-n16-c10: net: r6: no lad-net line
+FAIL spec-o3-n16-c10: net: r7: no lad-net line
+FAIL spec-o3-n16-c10: net: r8: no lad-net line
+FAIL spec-o3-n16-c10: net: r9: no lad-net line
+FAIL spec-o3-n16-c10: net: r10: no lad-net line
+FAIL spec-o3-n16-c10: net: r11: no lad-net line
+FAIL spec-o3-n16-c10: net: r12: no lad-net line
+FAIL spec-o3-n16-c10: net: r13: no lad-net line
+FAIL spec-o3-n16-c10: net: r14: no lad-net line
+FAIL spec-o3-n16-c10: net: r15: no lad-net line
+FAIL spec-o3-n16-c10: requests: r0: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r1: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r2: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r3: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r4: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r5: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r6: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r7: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r8: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r9: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r10: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r11: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r12: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r13: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r14: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: r15: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n16-c10: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 0 (want 20, the objects)
+FAIL spec-o3-n16-c10: requests: input fetches counted: fetch.sh's HeadObject = 0 (want 20, one per input file)
+FAIL spec-o3-n16-c10: engine: r0: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r1: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r2: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r3: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r4: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r5: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r6: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r7: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r8: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r9: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r10: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r11: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r12: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r13: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r14: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n16-c10: engine: r15: ak2-engine etag line: etag - computed -
+ok   spec-o3-n16-c10: engine: 0 of 16 shards homed samples ({}, 0 sample(s)): the placement spread them
+FAIL spec-o3-n16-c10: engine: replica 0 has its own rendezvous (g0: [])
+FAIL spec-o3-n16-c10: inflight: r0: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r0: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r0: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r1: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r1: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r1: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r2: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r2: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r2: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r3: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r3: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r3: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r4: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r4: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r4: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r5: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r5: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r5: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r6: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r6: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r6: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r7: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r7: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r7: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r8: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r8: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r8: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r9: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r9: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r9: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r10: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r10: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r10: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r11: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r11: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r11: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r12: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r12: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r12: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r13: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r13: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r13: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r14: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r14: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r14: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: inflight: r15: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n16-c10: inflight: r15: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n16-c10: inflight: r15: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n16-c10: build: r0: no lad-build line
+FAIL spec-o3-n16-c10: build: r1: no lad-build line
+FAIL spec-o3-n16-c10: build: r2: no lad-build line
+FAIL spec-o3-n16-c10: build: r3: no lad-build line
+FAIL spec-o3-n16-c10: build: r4: no lad-build line
+FAIL spec-o3-n16-c10: build: r5: no lad-build line
+FAIL spec-o3-n16-c10: build: r6: no lad-build line
+FAIL spec-o3-n16-c10: build: r7: no lad-build line
+FAIL spec-o3-n16-c10: build: r8: no lad-build line
+FAIL spec-o3-n16-c10: build: r9: no lad-build line
+FAIL spec-o3-n16-c10: build: r10: no lad-build line
+FAIL spec-o3-n16-c10: build: r11: no lad-build line
+FAIL spec-o3-n16-c10: build: r12: no lad-build line
+FAIL spec-o3-n16-c10: build: r13: no lad-build line
+FAIL spec-o3-n16-c10: build: r14: no lad-build line
+FAIL spec-o3-n16-c10: build: r15: no lad-build line
+ok   spec-o3-n16-c10: s5: r0: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r0: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r0: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r0: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r0: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r0: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r1: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r1: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r1: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r1: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r1: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r1: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r2: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r2: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r2: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r2: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r2: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r2: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r2: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r3: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r3: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r3: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r3: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r3: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r3: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r3: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r4: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r4: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r4: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r4: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r4: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r4: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r4: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r5: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r5: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r5: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r5: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r5: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r5: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r5: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r6: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r6: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r6: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r6: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r6: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r6: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r6: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r7: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r7: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r7: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r7: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r7: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r7: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r7: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r8: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r8: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r8: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r8: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r8: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r8: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r8: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r9: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r9: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r9: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r9: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r9: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r9: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r9: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r10: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r10: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r10: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r10: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r10: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r10: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r10: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r11: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r11: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r11: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r11: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r11: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r11: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r11: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r12: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r12: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r12: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r12: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r12: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r12: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r12: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r13: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r13: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r13: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r13: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r13: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r13: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r13: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r14: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r14: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r14: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r14: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r14: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r14: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r14: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n16-c10: s5: r15: one identity line per input file this node read (0)
+FAIL spec-o3-n16-c10: s5: r15: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n16-c10: s5: r15: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n16-c10: s5: r15: input_defect on [] (want [])
+ok   spec-o3-n16-c10: s5: r15: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n16-c10: s5: r15: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n16-c10: s5: r15: the body's own shim check (lad-shim ok None)
+ladder-rehearse: spec-o3-n16-c10: tail of r0.out
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 0 of 16 (replica 0, shard 0 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:20:28Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:20:28Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045228.783587464,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":2916352000,"free_huge_bytes":421527552,"free_huge_frac":0.144539,"buddy":[7724,8356,5615,3800,3509,2958,1871,1157,442,133,34],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2522204,"compact_free_scanned":6957821,"compact_isolated":1263040,"compact_stall":711,"compact_fail":71,"compact_success":640,"compact_daemon_wake":1162,"compact_daemon_migrate_scanned":2521919,"compact_daemon_free_scanned":6935692,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":2848468,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n16-c10: tail of r1.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 1 of 16 (replica 0, shard 1 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r10.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 10 of 16 (replica 0, shard 10 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r11.out
+    | ak2: [2026-10-15T06:20:23Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:23Z	1792045223	body	no
+    | ak2: [2026-10-15T06:20:23Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:23Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:23Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 11 of 16 (replica 0, shard 11 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:23Z	1792045223	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r12.out
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 12 of 16 (replica 0, shard 12 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:20:28Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:20:28Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045228.810234094,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":2948980736,"free_huge_bytes":421527552,"free_huge_frac":0.142940,"buddy":[7722,9350,6226,4070,3533,2973,1867,1157,445,133,34],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2522204,"compact_free_scanned":6957821,"compact_isolated":1263040,"compact_stall":711,"compact_fail":71,"compact_success":640,"compact_daemon_wake":1162,"compact_daemon_migrate_scanned":2521919,"compact_daemon_free_scanned":6935692,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":2880780,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n16-c10: tail of r13.out
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 13 of 16 (replica 0, shard 13 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:20:29Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:20:29Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:29Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:29Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045229.768873677,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":3177664512,"free_huge_bytes":469762048,"free_huge_frac":0.147832,"buddy":[4853,4184,4926,5161,3427,2813,2353,1277,500,146,39],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2522204,"compact_free_scanned":6957821,"compact_isolated":1263040,"compact_stall":711,"compact_fail":71,"compact_success":640,"compact_daemon_wake":1162,"compact_daemon_migrate_scanned":2521919,"compact_daemon_free_scanned":6935692,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":3104124,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n16-c10: tail of r14.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 14 of 16 (replica 0, shard 14 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r15.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 15 of 16 (replica 0, shard 15 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:28Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r2.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 2 of 16 (replica 0, shard 2 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r3.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:23Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:23Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 3 of 16 (replica 0, shard 3 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:23Z	1792045223	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r4.out
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 4 of 16 (replica 0, shard 4 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:20:28Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:20:28Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045228.732968631,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":2792013824,"free_huge_bytes":398458880,"free_huge_frac":0.142714,"buddy":[6734,5901,4795,3227,3216,2912,1880,1117,441,124,33],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2522204,"compact_free_scanned":6957821,"compact_isolated":1263040,"compact_stall":711,"compact_fail":71,"compact_success":640,"compact_daemon_wake":1162,"compact_daemon_migrate_scanned":2521919,"compact_daemon_free_scanned":6935692,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":2726888,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n16-c10: tail of r5.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 5 of 16 (replica 0, shard 5 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r6.out
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 6 of 16 (replica 0, shard 6 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:20:28Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:20:28Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:28Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045229.015983857,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":2781249536,"free_huge_bytes":421527552,"free_huge_frac":0.151560,"buddy":[4834,4465,4283,3143,2722,2949,1853,1159,450,135,33],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2522204,"compact_free_scanned":6957821,"compact_isolated":1263040,"compact_stall":711,"compact_fail":71,"compact_success":640,"compact_daemon_wake":1162,"compact_daemon_migrate_scanned":2521919,"compact_daemon_free_scanned":6935692,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":2716868,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n16-c10: tail of r7.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 7 of 16 (replica 0, shard 7 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: tail of r8.out
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 8 of 16 (replica 0, shard 8 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:20:29Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:20:29Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:29Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:20:29Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045229.147982001,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":2761129984,"free_huge_bytes":432013312,"free_huge_frac":0.156463,"buddy":[5122,4635,4652,3260,2175,2960,1848,1153,446,136,35],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2522204,"compact_free_scanned":6957821,"compact_isolated":1263040,"compact_stall":711,"compact_fail":71,"compact_success":640,"compact_daemon_wake":1162,"compact_daemon_migrate_scanned":2521919,"compact_daemon_free_scanned":6935692,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":2697228,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n16-c10: tail of r9.out
+    | ak2: [2026-10-15T06:20:22Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	body	no
+    | ak2: [2026-10-15T06:20:22Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:20:22Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:20:22Z] ladder O3-n16 (O, ours-engine) cohort 10: rank 9 of 16 (replica 0, shard 9 of 16); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:20:22Z	1792045222	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:20:27Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n16-c10: memory: r0: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r1: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r10: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r11: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r12: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r13: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r14: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r15: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r2: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r3: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r4: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r5: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r6: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r7: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r8: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n16-c10: memory: r9: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: disk: 155Gi free
+ladder-rehearse: summary (spec runs/g3-l-o3-n16-c10.json at 3a7f8c7):
+item | case                       | what                                                       | checks |   failed | result
+6    | spec-o3-n16-c10            | runs/g3-l-o3-n16-c10.json end to end                       | 149 ok | 214 FAIL | FAIL
+ladder-rehearse: disk at end: 155Gi free
+ladder-rehearse: FAILED: 1 of 1 cases (KEEP=1 keeps /Users/scttfrdmn/.ak2-ladreh.lVkhGb)

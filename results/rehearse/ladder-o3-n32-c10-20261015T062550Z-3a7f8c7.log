@@ -1,0 +1,1590 @@
+ladder-rehearse: mode spec runs/g3-l-o3-n32-c10.json at 3a7f8c7 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-o3-n32-c10-20261015T062550Z-3a7f8c7.log
+ladder-rehearse: disk at start: 155Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-82503 (10.196.101.0/24); infra 10.196.101.2: hash.k2d at http://10.196.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.196.101.2:8003
+ladder-rehearse: ---- spec-o3-n32-c10 (6): runs/g3-l-o3-n32-c10.json (r8g.8xlarge, WANT_N 32); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-o3-n32-c10: runs/g3-l-o3-n32-c10.json sha256 bb24c3e404f3d6d5f7d0926968323a858cc076683de00a9545e146be48730f0a (HEAD 3a7f8c7)
+ladder-rehearse: spec-o3-n32-c10: RUNG=O3-n32; ARM=O; COHORT=10; WANT_N=32; CLASSIFIER=ours-engine; THREADS=vcpus/12; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=32; PLACEMENT=mod; INFLIGHT=10; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-o3-n32-c10: cohort 10: samples SRR062634 ERR478965 SRR28305653 SRR062634b ERR478965b SRR28305653b SRR062634c ERR478965c SRR28305653c SRR062634d (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: 32 (the vCPUs of r8g.8xlarge, the spec type)
+ladder-rehearse: spec-o3-n32-c10: expected on the node: {}
+ladder-rehearse: spec-o3-n32-c10: rehearsed at INFLIGHT=2 (the spec's 10 = 10 does not fit the VM's memory; AK2_REHEARSE_ENGINE_INFLIGHT=0 runs it uncapped), GOMEMLIMIT=1536MiB
+ladder-rehearse: spec-o3-n32-c10: rank 3 exited 1: stopping the others (fail fast, as run-multi.sh)
+ladder-rehearse: spec-o3-n32-c10: cohort 20261015-062557-3a7f8c7-9737-n32: node exits 1 1 1 1 1 1 1 1 1 137 1 1 1 1 1 1 1 1 1 137 1 137 1 1 1 1 1 1 1 1 1 1
+FAIL spec-o3-n32-c10: exit: every node's body exits 0 (rcs [1, 1, 1, 1, 1, 1, 1, 1, 1, 137, 1, 1, 1, 1, 1, 1, 1, 1, 1, 137, 1, 137, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+ok   spec-o3-n32-c10: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r2: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r3: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r4: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r5: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r6: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r7: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r8: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r9: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r10: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r11: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r12: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r13: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r14: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r15: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r16: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r17: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r18: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r19: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r20: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r21: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r22: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r23: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r24: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r25: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r26: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r27: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r28: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r29: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r30: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: preamble: r31: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n32-c10: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-o3-n32-c10: stream: r0: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r0: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r0: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r0: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r1: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r1: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r1: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r1: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r2: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r2: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r2: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r2: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r3: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r3: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r3: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r3: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r4: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r4: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r4: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r4: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r5: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r5: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r5: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r5: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r6: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r6: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r6: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r6: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r7: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r7: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r7: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r7: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r8: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r8: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r8: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r8: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r9: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r9: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r9: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r9: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r10: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r10: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r10: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r10: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r11: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r11: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r11: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r11: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r12: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r12: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r12: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r12: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r13: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r13: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r13: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r13: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r14: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r14: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r14: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r14: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r15: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r15: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r15: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r15: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r16: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r16: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r16: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r16: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r17: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r17: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r17: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r17: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r18: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r18: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r18: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r18: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r19: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r19: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r19: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r19: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r20: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r20: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r20: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r20: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r21: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r21: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r21: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r21: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r22: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r22: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r22: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r22: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r23: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r23: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r23: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r23: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r24: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r24: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r24: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r24: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r25: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r25: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r25: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r25: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r26: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r26: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r26: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r26: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r27: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r27: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r27: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r27: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r28: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r28: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r28: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r28: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r29: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r29: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r29: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r29: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r30: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r30: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r30: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r30: lever lines streamed (0) equal the pushed lever.jsonl (0)
+ok   spec-o3-n32-c10: stream: r31: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n32-c10: stream: r31: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+FAIL spec-o3-n32-c10: stream: r31: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n32-c10: stream: r31: lever lines streamed (0) equal the pushed lever.jsonl (0)
+FAIL spec-o3-n32-c10: samples: each planned sample has exactly one lad-sample line across the fleet ({}; planned ['SRR062634', 'ERR478965', 'SRR28305653', 'SRR062634b', 'ERR478965b', 'SRR28305653b', 'SRR062634c', 'ERR478965c', 'SRR28305653c', 'SRR062634d'])
+ok   spec-o3-n32-c10: samples: every sample's classify rc is 0 ([])
+ok   spec-o3-n32-c10: samples: every lad-sample is contract v1 with the run's rung and arm
+FAIL spec-o3-n32-c10: objects: 0 objects under out/O3-n32/ (want 20)
+FAIL spec-o3-n32-c10: phases: r0: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r0: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r0: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r1: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r1: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r1: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r2: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r2: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r2: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r3: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r3: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r3: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r4: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r4: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r4: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r5: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r5: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r5: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r6: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r6: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r6: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r7: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r7: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r7: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r8: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r8: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r8: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r9: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r9: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r9: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r10: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r10: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r10: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r11: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r11: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r11: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r12: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r12: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r12: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r13: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r13: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r13: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r14: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r14: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r14: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r15: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r15: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r15: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r16: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r16: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r16: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r17: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r17: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r17: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r18: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r18: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r18: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r19: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r19: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r19: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r20: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r20: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r20: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r21: phases ['preamble', 'body', 'setup'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r21: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r21: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r22: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r22: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r22: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r23: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r23: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r23: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r24: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r24: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r24: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r25: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r25: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r25: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r26: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r26: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r26: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r27: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r27: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r27: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r28: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r28: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r28: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r29: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r29: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r29: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r30: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r30: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r30: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: phases: r31: phases ['preamble', 'body', 'setup', 'end'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+FAIL spec-o3-n32-c10: phases: r31: phases.tsv cold markers ['setup'] (want setup and load: the body's two drop_caches)
+FAIL spec-o3-n32-c10: phases: r31: 1 drop_caches calls in the log (want 2)
+FAIL spec-o3-n32-c10: net: r0: no lad-net line
+FAIL spec-o3-n32-c10: net: r1: no lad-net line
+FAIL spec-o3-n32-c10: net: r2: no lad-net line
+FAIL spec-o3-n32-c10: net: r3: no lad-net line
+FAIL spec-o3-n32-c10: net: r4: no lad-net line
+FAIL spec-o3-n32-c10: net: r5: no lad-net line
+FAIL spec-o3-n32-c10: net: r6: no lad-net line
+FAIL spec-o3-n32-c10: net: r7: no lad-net line
+FAIL spec-o3-n32-c10: net: r8: no lad-net line
+FAIL spec-o3-n32-c10: net: r9: no lad-net line
+FAIL spec-o3-n32-c10: net: r10: no lad-net line
+FAIL spec-o3-n32-c10: net: r11: no lad-net line
+FAIL spec-o3-n32-c10: net: r12: no lad-net line
+FAIL spec-o3-n32-c10: net: r13: no lad-net line
+FAIL spec-o3-n32-c10: net: r14: no lad-net line
+FAIL spec-o3-n32-c10: net: r15: no lad-net line
+FAIL spec-o3-n32-c10: net: r16: no lad-net line
+FAIL spec-o3-n32-c10: net: r17: no lad-net line
+FAIL spec-o3-n32-c10: net: r18: no lad-net line
+FAIL spec-o3-n32-c10: net: r19: no lad-net line
+FAIL spec-o3-n32-c10: net: r20: no lad-net line
+FAIL spec-o3-n32-c10: net: r21: no lad-net line
+FAIL spec-o3-n32-c10: net: r22: no lad-net line
+FAIL spec-o3-n32-c10: net: r23: no lad-net line
+FAIL spec-o3-n32-c10: net: r24: no lad-net line
+FAIL spec-o3-n32-c10: net: r25: no lad-net line
+FAIL spec-o3-n32-c10: net: r26: no lad-net line
+FAIL spec-o3-n32-c10: net: r27: no lad-net line
+FAIL spec-o3-n32-c10: net: r28: no lad-net line
+FAIL spec-o3-n32-c10: net: r29: no lad-net line
+FAIL spec-o3-n32-c10: net: r30: no lad-net line
+FAIL spec-o3-n32-c10: net: r31: no lad-net line
+FAIL spec-o3-n32-c10: requests: r0: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r1: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r2: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r3: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r4: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r5: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r6: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r7: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r8: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r9: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r10: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r11: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r12: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r13: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r14: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r15: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r16: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r17: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r18: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r19: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r20: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r21: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r22: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r23: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r24: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r25: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r26: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r27: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r28: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r29: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r30: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: r31: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n32-c10: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 0 (want 20, the objects)
+FAIL spec-o3-n32-c10: requests: input fetches counted: fetch.sh's HeadObject = 0 (want 20, one per input file)
+FAIL spec-o3-n32-c10: engine: r0: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r1: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r2: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r3: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r4: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r5: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r6: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r7: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r8: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r9: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r10: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r11: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r12: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r13: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r14: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r15: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r16: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r17: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r18: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r19: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r20: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r21: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r22: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r23: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r24: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r25: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r26: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r27: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r28: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r29: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r30: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n32-c10: engine: r31: ak2-engine etag line: etag - computed -
+ok   spec-o3-n32-c10: engine: 0 of 32 shards homed samples ({}, 0 sample(s)): the placement spread them
+FAIL spec-o3-n32-c10: engine: replica 0 has its own rendezvous (g0: [])
+FAIL spec-o3-n32-c10: inflight: r0: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r0: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r0: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r1: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r1: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r1: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r2: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r2: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r2: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r3: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r3: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r3: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r4: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r4: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r4: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r5: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r5: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r5: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r6: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r6: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r6: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r7: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r7: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r7: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r8: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r8: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r8: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r9: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r9: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r9: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r10: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r10: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r10: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r11: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r11: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r11: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r12: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r12: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r12: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r13: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r13: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r13: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r14: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r14: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r14: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r15: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r15: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r15: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r16: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r16: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r16: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r17: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r17: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r17: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r18: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r18: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r18: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r19: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r19: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r19: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r20: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r20: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r20: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r21: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r21: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r21: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r22: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r22: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r22: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r23: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r23: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r23: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r24: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r24: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r24: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r25: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r25: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r25: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r26: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r26: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r26: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r27: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r27: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r27: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r28: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r28: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r28: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r29: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r29: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r29: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r30: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r30: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r30: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: inflight: r31: lad-config resolved inflight None threads None (want 2 and 2: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc None)
+FAIL spec-o3-n32-c10: inflight: r31: every home sample's ak2-sample line has inflight 2 and threads 2 ([])
+ok   spec-o3-n32-c10: inflight: r31: 0 of its 0 home samples ran at once (want 0 .. 2)
+FAIL spec-o3-n32-c10: build: r0: no lad-build line
+FAIL spec-o3-n32-c10: build: r1: no lad-build line
+FAIL spec-o3-n32-c10: build: r2: no lad-build line
+FAIL spec-o3-n32-c10: build: r3: no lad-build line
+FAIL spec-o3-n32-c10: build: r4: no lad-build line
+FAIL spec-o3-n32-c10: build: r5: no lad-build line
+FAIL spec-o3-n32-c10: build: r6: no lad-build line
+FAIL spec-o3-n32-c10: build: r7: no lad-build line
+FAIL spec-o3-n32-c10: build: r8: no lad-build line
+FAIL spec-o3-n32-c10: build: r9: no lad-build line
+FAIL spec-o3-n32-c10: build: r10: no lad-build line
+FAIL spec-o3-n32-c10: build: r11: no lad-build line
+FAIL spec-o3-n32-c10: build: r12: no lad-build line
+FAIL spec-o3-n32-c10: build: r13: no lad-build line
+FAIL spec-o3-n32-c10: build: r14: no lad-build line
+FAIL spec-o3-n32-c10: build: r15: no lad-build line
+FAIL spec-o3-n32-c10: build: r16: no lad-build line
+FAIL spec-o3-n32-c10: build: r17: no lad-build line
+FAIL spec-o3-n32-c10: build: r18: no lad-build line
+FAIL spec-o3-n32-c10: build: r19: no lad-build line
+FAIL spec-o3-n32-c10: build: r20: no lad-build line
+FAIL spec-o3-n32-c10: build: r21: no lad-build line
+FAIL spec-o3-n32-c10: build: r22: no lad-build line
+FAIL spec-o3-n32-c10: build: r23: no lad-build line
+FAIL spec-o3-n32-c10: build: r24: no lad-build line
+FAIL spec-o3-n32-c10: build: r25: no lad-build line
+FAIL spec-o3-n32-c10: build: r26: no lad-build line
+FAIL spec-o3-n32-c10: build: r27: no lad-build line
+FAIL spec-o3-n32-c10: build: r28: no lad-build line
+FAIL spec-o3-n32-c10: build: r29: no lad-build line
+FAIL spec-o3-n32-c10: build: r30: no lad-build line
+FAIL spec-o3-n32-c10: build: r31: no lad-build line
+ok   spec-o3-n32-c10: s5: r0: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r0: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r0: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r0: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r0: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r0: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r1: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r1: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r1: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r1: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r1: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r1: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r2: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r2: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r2: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r2: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r2: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r2: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r2: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r3: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r3: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r3: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r3: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r3: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r3: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r3: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r4: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r4: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r4: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r4: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r4: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r4: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r4: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r5: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r5: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r5: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r5: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r5: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r5: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r5: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r6: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r6: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r6: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r6: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r6: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r6: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r6: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r7: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r7: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r7: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r7: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r7: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r7: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r7: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r8: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r8: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r8: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r8: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r8: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r8: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r8: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r9: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r9: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r9: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r9: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r9: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r9: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r9: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r10: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r10: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r10: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r10: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r10: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r10: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r10: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r11: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r11: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r11: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r11: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r11: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r11: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r11: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r12: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r12: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r12: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r12: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r12: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r12: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r12: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r13: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r13: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r13: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r13: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r13: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r13: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r13: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r14: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r14: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r14: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r14: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r14: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r14: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r14: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r15: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r15: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r15: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r15: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r15: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r15: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r15: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r16: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r16: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r16: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r16: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r16: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r16: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r16: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r17: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r17: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r17: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r17: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r17: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r17: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r17: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r18: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r18: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r18: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r18: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r18: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r18: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r18: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r19: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r19: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r19: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r19: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r19: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r19: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r19: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r20: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r20: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r20: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r20: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r20: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r20: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r20: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r21: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r21: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r21: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r21: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r21: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r21: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r21: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r22: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r22: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r22: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r22: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r22: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r22: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r22: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r23: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r23: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r23: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r23: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r23: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r23: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r23: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r24: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r24: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r24: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r24: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r24: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r24: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r24: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r25: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r25: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r25: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r25: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r25: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r25: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r25: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r26: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r26: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r26: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r26: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r26: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r26: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r26: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r27: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r27: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r27: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r27: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r27: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r27: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r27: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r28: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r28: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r28: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r28: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r28: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r28: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r28: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r29: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r29: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r29: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r29: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r29: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r29: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r29: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r30: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r30: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r30: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r30: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r30: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r30: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r30: the body's own shim check (lad-shim ok None)
+ok   spec-o3-n32-c10: s5: r31: one identity line per input file this node read (0)
+FAIL spec-o3-n32-c10: s5: r31: identity at the run's -P None (lad-config gunzip_P)
+ok   spec-o3-n32-c10: s5: r31: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n32-c10: s5: r31: input_defect on [] (want [])
+ok   spec-o3-n32-c10: s5: r31: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n32-c10: s5: r31: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n32-c10: s5: r31: the body's own shim check (lad-shim ok None)
+ladder-rehearse: spec-o3-n32-c10: tail of r0.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 0 of 32 (replica 0, shard 0 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r1.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r1
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r1 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:37Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	body	no
+    | ak2: [2026-10-15T06:23:37Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 1 of 32 (replica 0, shard 1 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:44Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r10.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r10
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r10 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:37Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:37Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	body	no
+    | ak2: [2026-10-15T06:23:37Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 10 of 32 (replica 0, shard 10 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:44Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r11.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r11
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r11 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 11 of 32 (replica 0, shard 11 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:43Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r12.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 12 of 32 (replica 0, shard 12 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:53Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r13.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 13 of 32 (replica 0, shard 13 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r14.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 14 of 32 (replica 0, shard 14 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:24:00Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r15.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 15 of 32 (replica 0, shard 15 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r16.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 16 of 32 (replica 0, shard 16 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:49Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r17.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 17 of 32 (replica 0, shard 17 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:57Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r18.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	preamble	no
+    | ak2: [2026-10-15T06:23:35Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:35Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:35Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:35Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r18
+    | ak2: [2026-10-15T06:23:35Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:35Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r18 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:35Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:35Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:35Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:35Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:35Z] region assert passed
+    | ak2: [2026-10-15T06:23:35Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 18 of 32 (replica 0, shard 18 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:43Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r19.out
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 19 of 32 (replica 0, shard 19 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:24:01Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:24:01Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:24:01Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:24:01Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045441.798152470,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":5958524928,"free_huge_bytes":432013312,"free_huge_frac":0.072503,"buddy":[54776,36759,23882,24398,13620,6466,3355,1415,428,114,46],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2684460,"compact_free_scanned":7676616,"compact_isolated":1357379,"compact_stall":912,"compact_fail":72,"compact_success":840,"compact_daemon_wake":1431,"compact_daemon_migrate_scanned":2684141,"compact_daemon_free_scanned":7654487,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":5819324,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n32-c10: tail of r2.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 2 of 32 (replica 0, shard 2 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:53Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r20.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	preamble	no
+    | ak2: [2026-10-15T06:23:35Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:35Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:35Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:35Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r20
+    | ak2: [2026-10-15T06:23:35Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:35Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r20 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 20 of 32 (replica 0, shard 20 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r21.out
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 21 of 32 (replica 0, shard 21 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | ak2: [2026-10-15T06:24:01Z] lever.sh loaded from /home/ec2-user/ak2/repo (LV_DIR=/home/ec2-user/ak2/lever; s5cmd 2.3.0, rapidgzip 0.14.5 pins)
+    | ht-apply 1 2026-10-15T06:24:01Z none enabled madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:24:01Z none defrag madvise - madvise kept
+    | ht-apply 1 2026-10-15T06:24:01Z none proactiveness 20 - 20 kept
+    | ht-record {"kind":"ht","label":"setup","t":1792045441.823055969,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":5953880064,"free_huge_bytes":432013312,"free_huge_frac":0.072560,"buddy":[53642,36759,23882,24398,13620,6466,3355,1415,428,114,46],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":2684460,"compact_free_scanned":7676616,"compact_isolated":1357379,"compact_stall":912,"compact_fail":72,"compact_success":840,"compact_daemon_wake":1431,"compact_daemon_migrate_scanned":2684141,"compact_daemon_free_scanned":7654487,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":5814728,"AnonHugePages":0,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+ladder-rehearse: spec-o3-n32-c10: tail of r22.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	preamble	no
+    | ak2: [2026-10-15T06:23:35Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:35Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:35Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:35Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r22
+    | ak2: [2026-10-15T06:23:35Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:35Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r22 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 22 of 32 (replica 0, shard 22 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r23.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 23 of 32 (replica 0, shard 23 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:49Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r24.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 24 of 32 (replica 0, shard 24 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:49Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r25.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r25
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r25 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 25 of 32 (replica 0, shard 25 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:44Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r26.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 26 of 32 (replica 0, shard 26 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:47Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r27.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r27
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r27 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	body	no
+    | ak2: [2026-10-15T06:23:37Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 27 of 32 (replica 0, shard 27 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:44Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r28.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 28 of 32 (replica 0, shard 28 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:55Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r29.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 29 of 32 (replica 0, shard 29 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:49Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r3.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r3
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r3 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	body	no
+    | ak2: [2026-10-15T06:23:37Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 3 of 32 (replica 0, shard 3 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:43Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r30.out
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:36Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:36Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 30 of 32 (replica 0, shard 30 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r31.out
+    | ak2: log tee up
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	preamble	no
+    | ak2: [2026-10-15T06:23:36Z] WARN: no util sampler (/tmp/ak2-util.sh missing): this run records no utilisation
+    | ak2: [2026-10-15T06:23:36Z] inherited $-=ehBc (stub, as spawn started it: $-=none)
+    | ak2: [2026-10-15T06:23:36Z] after set +e $-=hBc
+    | ak2: [2026-10-15T06:23:36Z] gate=g3 run=20261015-062557-3a7f8c7-9737-n32-r31
+    | ak2: [2026-10-15T06:23:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+    | ak2: [2026-10-15T06:23:36Z] imds region=us-west-2 az=us-west-2b instance=i-rehearsal-spec-o3-n32-c10-r31 type=r8g.8xlarge ami=ami-rehearsal
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+    | ak2: [2026-10-15T06:23:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:37Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	body	no
+    | ak2: [2026-10-15T06:23:37Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 31 of 32 (replica 0, shard 31 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | error: index-pack died of signal 9
+    | error: index-pack died
+    | fatal: remote transport reported error
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r4.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 4 of 32 (replica 0, shard 4 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:49Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r5.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 5 of 32 (replica 0, shard 5 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:49Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r6.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 6 of 32 (replica 0, shard 6 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:57Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r7.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 7 of 32 (replica 0, shard 7 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    97 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:45Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r8.out
+    | ak2: [2026-10-15T06:23:35Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	body	no
+    | ak2: [2026-10-15T06:23:35Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:35Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:35Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 8 of 32 (replica 0, shard 8 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:35Z	1792045415	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+    | /work/bin/git: line 6:    95 Killed                  /usr/bin/git clone -q /work/repo.bundle "$dst"
+    | ak2: [2026-10-15T06:23:47Z] ERROR: clone failed
+ladder-rehearse: spec-o3-n32-c10: tail of r9.out
+    | ak2: [2026-10-15T06:23:36Z] region assert passed
+    | ak2: [2026-10-15T06:23:36Z] drop_caches_ok=true
+    | ak2: [2026-10-15T06:23:36Z] preamble done; spec body starts
+    | ak2-phase	2026-10-15T06:23:36Z	1792045416	body	no
+    | ak2: [2026-10-15T06:23:36Z] rehearsal: pipefail off
+    | ak2: [2026-10-15T06:23:37Z] drop_caches done; next phase is cold
+    | ak2: [2026-10-15T06:23:37Z] ladder O3-n32 (O, ours-engine) cohort 10: rank 9 of 32 (replica 0, shard 9 of 32); commit 3a7f8c7; RODA kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205; samples aws-kraken2-942542972736-us-west-2/aws-kraken2/data/cohort
+    | ak2-phase	2026-10-15T06:23:37Z	1792045417	setup	yes
+    | Note: switching to '3a7f8c7d383990f616cce680fa1f35177daef321'.
+    | 
+    | You are in 'detached HEAD' state. You can look around, make experimental
+    | changes and commit them, and you can discard any commits you make in this
+    | state without impacting any branches by switching back to a branch.
+    | 
+    | If you want to create a new branch to retain commits you create, you may
+    | do so (now or later) by using -c with the switch command. Example:
+    | 
+    |   git switch -c <new-branch-name>
+    | 
+    | Or undo this operation with:
+    | 
+    |   git switch -
+    | 
+    | Turn off this advice by setting config variable advice.detachedHead to false
+    | 
+ladder-rehearse: spec-o3-n32-c10: memory: r0: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r1: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r10: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r11: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r12: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r13: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r14: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r15: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r16: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r17: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r18: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r19: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r2: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r20: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r21: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r22: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r23: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r24: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r25: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r26: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r27: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r28: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r29: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r3: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r30: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r31: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r4: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r5: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r6: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r7: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r8: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: spec-o3-n32-c10: memory: r9: engine VmHWM 0 MiB, lowest MemAvailable - MiB
+ladder-rehearse: disk: 155Gi free
+ladder-rehearse: summary (spec runs/g3-l-o3-n32-c10.json at 3a7f8c7):
+item | case                       | what                                                       | checks |   failed | result
+6    | spec-o3-n32-c10            | runs/g3-l-o3-n32-c10.json end to end                       | 293 ok | 422 FAIL | FAIL
+ladder-rehearse: disk at end: 155Gi free
+ladder-rehearse: FAILED: 1 of 1 cases (KEEP=1 keeps /Users/scttfrdmn/.ak2-ladreh.xWo1Um)

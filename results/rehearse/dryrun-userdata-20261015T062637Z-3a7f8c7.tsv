@@ -1,0 +1,105 @@
+spec	driver	rc	gzip_bytes	limit	headroom	quota	scratch_commit	note
+runs/conductor-c10.json	run.sh	2	-	15360	-	-	-	make run: the conductor clones HEAD and plans from the committed record: the whole tree must be clean:
+runs/conductor.json	run.sh	2	-	15360	-	-	-	make run: the conductor clones HEAD and plans from the committed record: the whole tree must be clean:
+runs/g0a.json	run.sh	2	13852	15360	1508	-	-	make run: refused before launch: lifecycle.cost_limit $0.05 is above what 15m of t4g.micro can cost (above)
+runs/g0c-probes.json	run.sh	2	13966	15360	1394	-	-	make run: refused before launch: lifecycle.cost_limit $0.5 is above what 40m of c7g.large can cost (above)
+runs/g0c-runs.json	run.sh	2	13843	15360	1517	-	-	make run: refused before launch: lifecycle.cost_limit $1.0 is above what 50m of c8gn.2xlarge can cost (above)
+runs/g1-oracle.json	run.sh	2	13989	15360	1371	-	-	make run: refused before launch: lifecycle.cost_limit $3.0 is above what 3h of m7g.2xlarge can cost (above)
+runs/g2-c8gd.json	run.sh	2	14039	15360	1321	-	-	make run: refused before launch: lifecycle.cost_limit $6.0 is above what 3h of c8gd.8xlarge can cost (above)
+runs/g2-c9gd.json	run.sh	2	14038	15360	1322	-	-	make run: refused before launch: lifecycle.cost_limit $6.5 is above what 3h of c9gd.8xlarge can cost (above)
+runs/g2-nvme.json	run.sh	0	14037	15360	1323	ok 1xr8gd.16xlarge 136/1989 L-1216C47A	-	
+runs/g2-nvme2.json	run.sh	0	14036	15360	1324	ok 1xr8gd.16xlarge 136/1989 L-1216C47A	-	
+runs/g2-nvme3.json	run.sh	0	14040	15360	1320	ok 1xr8gd.16xlarge 136/1989 L-1216C47A	-	
+runs/g2-ram.json	run.sh	0	14039	15360	1321	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g2-ram2.json	run.sh	0	13905	15360	1455	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g2-smoke.json	run.sh	2	13932	15360	1428	-	-	make run: refused before launch: lifecycle.cost_limit $1.0 is above what 1h of r8gd.xlarge can cost (above)
+runs/g3-diag44-r8gd.16xlarge.json	run-multi n=1	0	13949	15360	1411	ok 1xr8gd.16xlarge 136/1989 L-1216C47A	-	
+runs/g3-e1.json	run-multi n=1	0	13981	15360	1379	ok 1xx8g.4xlarge 16/256 L-7295265B	-	
+runs/g3-e2-x8g.12xlarge-n2.json	run-multi n=2	0	14266	15360	1094	ok 2xx8g.12xlarge 96/256 L-7295265B	-	
+runs/g3-e2-x8g.24xlarge-n1.json	run-multi n=1	0	14261	15360	1099	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-e2-x8g.2xlarge-n16.json	run-multi n=16	0	14262	15360	1098	ok 16xx8g.2xlarge 128/256 L-7295265B	-	
+runs/g3-e2-x8g.4xlarge-n8.json	run-multi n=8	0	14262	15360	1098	ok 8xx8g.4xlarge 128/256 L-7295265B	-	
+runs/g3-e2-x8g.8xlarge-n4.json	run-multi n=4	0	14262	15360	1098	ok 4xx8g.8xlarge 128/256 L-7295265B	-	
+runs/g3-e3-c8g.12xlarge-n16.json	run-multi n=16	0	14263	15360	1097	ok 16xc8g.12xlarge 840/1989 L-1216C47A	-	
+runs/g3-e3-c9g.12xlarge-n16.json	run-multi n=16	0	14266	15360	1094	ok 16xc9g.12xlarge 840/1989 L-1216C47A	-	
+runs/g3-e3-r8g.4xlarge-n16.json	run-multi n=16	0	14261	15360	1099	ok 16xr8g.4xlarge 328/1989 L-1216C47A	-	
+runs/g3-e4-c8g.12xlarge-n32.json	run-multi n=32	0	14263	15360	1097	ok 32xc8g.12xlarge 1608/1989 L-1216C47A	-	
+runs/g3-l-o0-c1.json	run-multi n=1	0	13958	15360	1402	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-o0-c10.json	run-multi n=2	0	13960	15360	1400	ok 2xr8gd.48xlarge 456/1989 L-1216C47A	-	
+runs/g3-l-o0-cost-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xx8g.24xlarge 192/256 L-7295265B	-	
+runs/g3-l-o0b-c1.json	run-multi n=1	0	13957	15360	1403	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-o0b-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xr8gd.48xlarge 456/1989 L-1216C47A	-	
+runs/g3-l-o0b-cost-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xx8g.24xlarge 192/256 L-7295265B	-	
+runs/g3-l-o1-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xr8gd.48xlarge 456/1989 L-1216C47A	-	
+runs/g3-l-o1-cost-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xx8g.24xlarge 192/256 L-7295265B	-	
+runs/g3-l-o2-cost-r8g-c10.json	run-multi n=2	0	13958	15360	1402	ok 2xr8g.24xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-o2-cost-x8g-c10.json	run-multi n=2	0	13962	15360	1398	ok 2xx8g.12xlarge 96/256 L-7295265B	-	
+runs/g3-l-o2-r8g-c1.json	run-multi n=1	0	13959	15360	1401	ok 1xr8g.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-o2-r8g-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xr8g.24xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-o2-x8g-c10.json	run-multi n=2	0	13960	15360	1400	ok 2xx8g.12xlarge 96/256 L-7295265B	-	
+runs/g3-l-o3-cost-n16-c10.json	run-multi n=16	0	13957	15360	1403	ok 16xx8g.4xlarge 256/256 L-7295265B	-	
+runs/g3-l-o3-cost-n32-c10.json	run-multi n=32	0	13961	15360	1399	ok 32xx8g.2xlarge 256/256 L-7295265B	-	
+runs/g3-l-o3-cost-n4-c10.json	run-multi n=4	0	13958	15360	1402	ok 4xx8g.8xlarge 128/256 L-7295265B	-	
+runs/g3-l-o3-cost-n8-c10.json	run-multi n=8	0	13953	15360	1407	ok 8xx8g.4xlarge 128/256 L-7295265B	-	
+runs/g3-l-o3-n16-c1.json	run-multi n=16	0	13965	15360	1395	ok 16xx8g.2xlarge 128/256 L-7295265B	-	
+runs/g3-l-o3-n16-c10.json	run-multi n=16	0	13957	15360	1403	ok 16xr8g.8xlarge 584/1989 L-1216C47A	-	
+runs/g3-l-o3-n2-c1.json	run-multi n=2	0	13960	15360	1400	ok 2xx8g.12xlarge 96/256 L-7295265B	-	
+runs/g3-l-o3-n32-c1.json	run-multi n=32	0	13959	15360	1401	ok 32xx8g.2xlarge 256/256 L-7295265B	-	
+runs/g3-l-o3-n32-c10.json	run-multi n=32	0	13959	15360	1401	ok 32xr8g.8xlarge 1096/1989 L-1216C47A	-	
+runs/g3-l-o3-n4-c1.json	run-multi n=4	0	13962	15360	1398	ok 4xx8g.8xlarge 128/256 L-7295265B	-	
+runs/g3-l-o3-n4-c10.json	run-multi n=4	0	13959	15360	1401	ok 4xr8g.16xlarge 328/1989 L-1216C47A	-	
+runs/g3-l-o3-n8-c1.json	run-multi n=8	0	13958	15360	1402	ok 8xx8g.4xlarge 128/256 L-7295265B	-	
+runs/g3-l-o3-n8-c10.json	run-multi n=8	0	13959	15360	1401	ok 8xr8g.12xlarge 456/1989 L-1216C47A	-	
+runs/g3-l-o4a-c1.json	run-multi n=32	0	13959	15360	1401	ok 32xx8g.2xlarge 256/256 L-7295265B	-	
+runs/g3-l-o4a-cost-c1.json	run-multi n=16	0	13958	15360	1402	ok 16xx8g.2xlarge 128/256 L-7295265B	-	
+runs/g3-l-o5-c1.json	run-multi n=32	0	13959	15360	1401	ok 32xx8g.2xlarge 256/256 L-7295265B	-	
+runs/g3-l-o5-cost-c1.json	run-multi n=16	0	13960	15360	1400	ok 16xx8g.2xlarge 128/256 L-7295265B	-	
+runs/g3-l-s0-t1-c1.json	run-multi n=1	0	13960	15360	1400	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s0-t1-c10.json	run-multi n=1	0	13957	15360	1403	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s0-tv-c1.json	run-multi n=1	0	13958	15360	1402	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s0-tv-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s1-c1.json	run-multi n=1	0	13963	15360	1397	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s1-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2a-c1.json	run-multi n=1	0	13957	15360	1403	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s2a-c10.json	run-multi n=1	0	13958	15360	1402	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s2b-i-c1.json	run-multi n=1	0	13956	15360	1404	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2b-i-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2b-ii-c1.json	run-multi n=1	0	13964	15360	1396	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2b-ii-c10.json	run-multi n=1	0	13955	15360	1405	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2c-c1.json	run-multi n=1	0	13961	15360	1399	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2c-c10.json	run-multi n=1	0	13959	15360	1401	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2d-c1.json	run-multi n=1	0	13961	15360	1399	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s2d-c10.json	run-multi n=1	0	13957	15360	1403	ok 1xr8gd.48xlarge 264/1989 L-1216C47A	-	
+runs/g3-l-s4-t12-c10.json	run-multi n=1	0	13955	15360	1405	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s4-t16-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s4-t24-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s4-t32-c10.json	run-multi n=1	0	13960	15360	1400	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s4-t48-c10.json	run-multi n=1	0	13959	15360	1401	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s5-c1.json	run-multi n=1	0	13962	15360	1398	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s5-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s6-c1.json	run-multi n=1	0	13959	15360	1401	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s6-c10.json	run-multi n=1	0	13956	15360	1404	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s7a-c1.json	run-multi n=1	0	13959	15360	1401	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s7a-c10.json	run-multi n=1	0	13958	15360	1402	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s7b-c1.json	run-multi n=1	0	13957	15360	1403	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s7b-c10.json	run-multi n=1	0	13961	15360	1399	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s8-k2-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xx8g.24xlarge 192/256 L-7295265B	-	
+runs/g3-l-s9-c1.json	run-multi n=1	0	13958	15360	1402	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-l-s9-c10.json	run-multi n=2	0	13958	15360	1402	ok 2xx8g.24xlarge 192/256 L-7295265B	-	
+runs/g3-l-sstar-r8g-c1.json	run-multi n=1	0	13961	15360	1399	ok 1xr8g.48xlarge 232/1989 L-1216C47A	-	
+runs/g3-l-sstar-r8g-c10.json	run-multi n=2	0	13959	15360	1401	ok 2xr8g.48xlarge 424/1989 L-1216C47A	-	
+runs/g3-l-sstar-r8gd-c1.json	run-multi n=1	0	13958	15360	1402	ok 1xr8gd.48xlarge 232/1989 L-1216C47A	-	
+runs/g3-l-sstar-r8gd-c10.json	run-multi n=2	0	13958	15360	1402	ok 2xr8gd.48xlarge 416/1989 L-1216C47A	-	
+runs/g3-probe-awscp-r8gd.48xlarge.json	run-multi n=1	0	13945	15360	1415	ok 1xr8gd.48xlarge 224/1989 L-1216C47A	-	
+runs/g3-probe-cont-c8gn.4xlarge.json	run-multi n=1	0	13956	15360	1404	ok 1xc8gn.4xlarge 32/1989 L-1216C47A	-	
+runs/g3-probe-decomp-c8g.4xlarge.json	run-multi n=1	0	13953	15360	1407	ok 1xc8g.4xlarge 16/1989 L-1216C47A	-	
+runs/g3-probe-stage-x8g.24xlarge.json	run-multi n=1	0	13950	15360	1410	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-probe-tune-x8g.24xlarge.json	run-multi n=1	0	13960	15360	1400	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-roda-n8.json	run-multi n=1	0	14006	15360	1354	ok 1xx8g.4xlarge 16/256 L-7295265B	-	
+runs/g3-std8.json	run-multi n=1	2	-	15360	-	-	-	make run (multi): refused before launch: 1 x cost_limit $1.0 is above what 1h of 1 x c8g.2xlarge can cost (above)
+runs/g3-u1-x8g.24xlarge.json	run-multi n=1	0	13948	15360	1412	ok 1xx8g.24xlarge 96/256 L-7295265B	-	
+runs/g3-u2-r8gd.16xlarge.json	run-multi n=1	0	13948	15360	1412	ok 1xr8gd.16xlarge 64/1989 L-1216C47A	-	
+runs/loadbench-g4.json	run.sh	2	13876	15360	1484	-	-	make run: refused before launch: lifecycle.cost_limit $3.0 is above what 2h30m of r8gd.2xlarge can cost (above)
+runs/loadbench.json	run.sh	2	13878	15360	1482	-	-	make run: refused before launch: lifecycle.cost_limit $2.0 is above what 2h30m of m7g.2xlarge can cost (above)
+runs/payload-get-smoke.json	run-multi n=1	0	13871	15360	1489	ok 1xc8g.medium 1/1989 L-1216C47A	-	
+runs/stage-cohort.json	run-multi n=1	2	-	15360	-	-	-	make run (multi): refused before launch: 1 x cost_limit $0.5 is above what 4h of 1 x c8g.large can cost (above)

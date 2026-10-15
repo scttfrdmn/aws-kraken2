@@ -1,0 +1,238 @@
+ladder-rehearse: mode spec runs/g3-l-o3-n4-c10.json at 3a7f8c7 (rehearsal scripts committed); shell flags huB; record results/rehearse/ladder-o3-n4-c10-20261015T061247Z-3a7f8c7.log
+ladder-rehearse: disk at start: 153Gi free of 926Gi
+ladder-rehearse: image localhost/ak2-ladder-rehearse:d1f9ce8e8e29 (0e1f23063058); AL2023 aarch64
+ladder-rehearse: RODA stand-in: /Users/scttfrdmn/src/aws-kraken2/.cache/db/k2_viral_20260626/hash.k2d (648733288 bytes), ETag ad5902eb40c1159905f34121bab8036b-39
+ladder-rehearse: oracle SRR062634: 2167 sequences classified (1.08%); output bebbf3380833d5da report 14c3ea3aa2f37f0b
+ladder-rehearse: oracle ERR478965: 482 sequences classified (0.24%); output 339ce5ad82a601e0 report 1f7a65806fcef7c6
+ladder-rehearse: oracle SRR28305653: 3191 sequences classified (1.60%); output 1b3fef049ca7fc93 report f5ffc9beb513b235
+ladder-rehearse: network ak2lad-75640 (10.158.101.0/24); infra 10.158.101.2: hash.k2d at http://10.158.101.2:8001/Kraken2_RefSeqCompleteV205/hash.k2d (and a wrong ETag at :8002), fakes3 at http://10.158.101.2:8003
+ladder-rehearse: ---- spec-o3-n4-c10 (6): runs/g3-l-o3-n4-c10.json (r8g.16xlarge, WANT_N 4); its body is the committed body plus its parameters: yes
+ladder-rehearse: spec-o3-n4-c10: runs/g3-l-o3-n4-c10.json sha256 0ac77849b6ca20b8c8c0804b8b1e6c32d180cd9679876bafd8f0cfb3d741626f (HEAD 3a7f8c7)
+ladder-rehearse: spec-o3-n4-c10: RUNG=O3-n4; ARM=O; COHORT=10; WANT_N=4; CLASSIFIER=ours-engine; THREADS=vcpus/12; PROCS=1; DB_STAGE=ranged-get; DB_PLACE=memory; DB_LOAD=resident; HOST_TUNES=none; GUNZIP=rapidgzip-Pauto; IN_FETCH=lanes16; IN_CLIENT=default; IN_DEST=tmpfs; OUT_UPLOAD=s5cmd-overlap; REPLICAS=1; SHARDS=4; PLACEMENT=mod; INFLIGHT=10; SETUP=overlap; ETAG_CHECK=on
+ladder-rehearse: spec-o3-n4-c10: cohort 10: samples SRR062634 ERR478965 SRR28305653 SRR062634b ERR478965b SRR28305653b SRR062634c ERR478965c SRR28305653c SRR062634d (each a real 200,000-pair read set, checked against its oracle); nproc on the nodes: 64 (the vCPUs of r8g.16xlarge, the spec type)
+ladder-rehearse: spec-o3-n4-c10: expected on the node: {}
+ladder-rehearse: spec-o3-n4-c10: rehearsed at INFLIGHT=2 (the spec's 10 = 10 does not fit the VM's memory; AK2_REHEARSE_ENGINE_INFLIGHT=0 runs it uncapped), GOMEMLIMIT=1536MiB
+ladder-rehearse: spec-o3-n4-c10: rank 1 exited 1: stopping the others (fail fast, as run-multi.sh)
+ladder-rehearse: spec-o3-n4-c10: cohort 20261015-061258-3a7f8c7-30cf-n4: node exits 137 1 137 1
+FAIL spec-o3-n4-c10: exit: every node's body exits 0 (rcs [137, 1, 137, 1])
+ok   spec-o3-n4-c10: preamble: r0: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n4-c10: preamble: r1: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n4-c10: preamble: r2: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n4-c10: preamble: r3: the payload ran under bash -e -c and the preamble's set +e (pushed log/run.log)
+ok   spec-o3-n4-c10: pipefail: the body ran with pipefail off (as on the node: bash -e -c, then the preamble's set +e)
+ok   spec-o3-n4-c10: stream: r0: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+FAIL spec-o3-n4-c10: stream: r0: the container's own stdout (the stream as it happened) has the same 3 lad-sample lines
+FAIL spec-o3-n4-c10: stream: r0: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n4-c10: stream: r0: lever lines streamed (10) equal the pushed lever.jsonl (9)
+ok   spec-o3-n4-c10: stream: r1: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n4-c10: stream: r1: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n4-c10: stream: r1: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n4-c10: stream: r1: lever lines streamed (11) equal the pushed lever.jsonl (11)
+ok   spec-o3-n4-c10: stream: r2: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+FAIL spec-o3-n4-c10: stream: r2: the container's own stdout (the stream as it happened) has the same 2 lad-sample lines
+FAIL spec-o3-n4-c10: stream: r2: one lad-net line streamed and the same one pushed (0, 0)
+FAIL spec-o3-n4-c10: stream: r2: lever lines streamed (10) equal the pushed lever.jsonl (9)
+ok   spec-o3-n4-c10: stream: r3: 0 lad-sample lines streamed into run.log, equal to the pushed out/lad-samples.jsonl (0)
+ok   spec-o3-n4-c10: stream: r3: the container's own stdout (the stream as it happened) has the same 0 lad-sample lines
+ok   spec-o3-n4-c10: stream: r3: one lad-net line streamed and the same one pushed (1, 1)
+ok   spec-o3-n4-c10: stream: r3: lever lines streamed (11) equal the pushed lever.jsonl (11)
+FAIL spec-o3-n4-c10: samples: each planned sample has exactly one lad-sample line across the fleet ({}; planned ['SRR062634', 'ERR478965', 'SRR28305653', 'SRR062634b', 'ERR478965b', 'SRR28305653b', 'SRR062634c', 'ERR478965c', 'SRR28305653c', 'SRR062634d'])
+ok   spec-o3-n4-c10: samples: every sample's classify rc is 0 ([])
+ok   spec-o3-n4-c10: samples: every lad-sample is contract v1 with the run's rung and arm
+FAIL spec-o3-n4-c10: objects: 5 objects under out/O3-n4/ (want 20)
+FAIL spec-o3-n4-c10: phases: r0: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+ok   spec-o3-n4-c10: phases: r0: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n4-c10: phases: r0: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n4-c10: phases: r1: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n4-c10: phases: r1: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n4-c10: phases: r1: 2 drop_caches calls in the log (want 2)
+FAIL spec-o3-n4-c10: phases: r2: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify'] (want ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end'])
+ok   spec-o3-n4-c10: phases: r2: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n4-c10: phases: r2: 2 drop_caches calls in the log (want 2)
+ok   spec-o3-n4-c10: phases: r3: phases ['preamble', 'body', 'setup', 'fetch-db', 'fetch-inputs', 'build-wait', 'identity', 'load', 'etag-hash.k2d', 'classify', 'upload-drain', 'push', 'end']
+ok   spec-o3-n4-c10: phases: r3: phases.tsv cold markers ['setup', 'load'] (want setup and load: the body's two drop_caches)
+ok   spec-o3-n4-c10: phases: r3: 2 drop_caches calls in the log (want 2)
+FAIL spec-o3-n4-c10: net: r0: no lad-net line
+ok   spec-o3-n4-c10: net: r1: critical_measurement_s 1.699 = identity 1.699 + sha_get 0 + sha_critical 0
+ok   spec-o3-n4-c10: net: r1: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n4-c10: net: r1: identity_s 1.699 equals the identity phase (3 s, whole-second markers)
+ok   spec-o3-n4-c10: net: r1: sha_get_s 0 is 0 (no sha-get phase)
+FAIL spec-o3-n4-c10: net: r2: no lad-net line
+ok   spec-o3-n4-c10: net: r3: critical_measurement_s 1.486 = identity 1.486 + sha_get 0 + sha_critical 0
+ok   spec-o3-n4-c10: net: r3: sha_critical_s 0 == the sum of its samples' sha-critical 0
+ok   spec-o3-n4-c10: net: r3: identity_s 1.486 equals the identity phase (2 s, whole-second markers)
+ok   spec-o3-n4-c10: net: r3: sha_get_s 0 is 0 (no sha-get phase)
+FAIL spec-o3-n4-c10: requests: r0: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n4-c10: requests: r1: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n4-c10: requests: r2: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n4-c10: requests: r3: the shard load's ranged GETs counted (GetObject-range 0)
+FAIL spec-o3-n4-c10: requests: output uploads counted: PutObject + CompleteMultipartUpload - Rendezvous-PutObject = 0 (want 20, the objects)
+ok   spec-o3-n4-c10: requests: input fetches counted: fetch.sh's HeadObject = 20 (want 20, one per input file)
+FAIL spec-o3-n4-c10: engine: r0: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n4-c10: engine: r1: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n4-c10: engine: r2: ak2-engine etag line: etag - computed -
+FAIL spec-o3-n4-c10: engine: r3: ak2-engine etag line: etag - computed -
+ok   spec-o3-n4-c10: engine: 0 of 4 shards homed samples ({}, 0 sample(s)): the placement spread them
+ok   spec-o3-n4-c10: engine: replica 0 has its own rendezvous (g0: ['rank-0000.json', 'rank-0001.json', 'rank-0002.json', 'rank-0003.json'])
+ok   spec-o3-n4-c10: engine: replica 0 rank-0000.json: shard address 10.158.101.10:40643 is the node's own, not loopback
+ok   spec-o3-n4-c10: engine: replica 0 rank-0001.json: shard address 10.158.101.11:40735 is the node's own, not loopback
+ok   spec-o3-n4-c10: engine: replica 0 rank-0002.json: shard address 10.158.101.12:38521 is the node's own, not loopback
+ok   spec-o3-n4-c10: engine: replica 0 rank-0003.json: shard address 10.158.101.13:38723 is the node's own, not loopback
+ok   spec-o3-n4-c10: inflight: r0: lad-config resolved inflight 2 threads 5 (want 2 and 5: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc 64)
+FAIL spec-o3-n4-c10: inflight: r0: every home sample's ak2-sample line has inflight 2 and threads 5 ([])
+ok   spec-o3-n4-c10: inflight: r0: 0 of its 0 home samples ran at once (want 0 .. 2)
+ok   spec-o3-n4-c10: inflight: r1: lad-config resolved inflight 2 threads 5 (want 2 and 5: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc 64)
+FAIL spec-o3-n4-c10: inflight: r1: every home sample's ak2-sample line has inflight 2 and threads 5 ([])
+ok   spec-o3-n4-c10: inflight: r1: 0 of its 0 home samples ran at once (want 0 .. 2)
+ok   spec-o3-n4-c10: inflight: r2: lad-config resolved inflight 2 threads 5 (want 2 and 5: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc 64)
+FAIL spec-o3-n4-c10: inflight: r2: every home sample's ak2-sample line has inflight 2 and threads 5 ([])
+ok   spec-o3-n4-c10: inflight: r2: 0 of its 0 home samples ran at once (want 0 .. 2)
+ok   spec-o3-n4-c10: inflight: r3: lad-config resolved inflight 2 threads 5 (want 2 and 5: the spec's INFLIGHT 10 = 10, rehearsed at 2; THREADS at nproc 64)
+FAIL spec-o3-n4-c10: inflight: r3: every home sample's ak2-sample line has inflight 2 and threads 5 ([])
+ok   spec-o3-n4-c10: inflight: r3: 0 of its 0 home samples ran at once (want 0 .. 2)
+ok   spec-o3-n4-c10: build: r0: overlap: waited in build-wait, build_end 1792044801.723 recorded, before identity (1792044801)
+ok   spec-o3-n4-c10: build: r1: overlap: waited in build-wait, build_end 1792044801.959 recorded, before identity (1792044801)
+ok   spec-o3-n4-c10: build: r2: overlap: waited in build-wait, build_end 1792044801.769 recorded, before identity (1792044801)
+ok   spec-o3-n4-c10: build: r3: overlap: waited in build-wait, build_end 1792044801.8 recorded, before identity (1792044801)
+FAIL spec-o3-n4-c10: s5: r0: one identity line per input file this node read (6)
+ok   spec-o3-n4-c10: s5: r0: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n4-c10: s5: r0: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n4-c10: s5: r0: input_defect on [] (want [])
+ok   spec-o3-n4-c10: s5: r0: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n4-c10: s5: r0: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n4-c10: s5: r0: the body's own shim check (lad-shim ok None)
+FAIL spec-o3-n4-c10: s5: r1: one identity line per input file this node read (6)
+ok   spec-o3-n4-c10: s5: r1: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n4-c10: s5: r1: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n4-c10: s5: r1: input_defect on [] (want [])
+FAIL spec-o3-n4-c10: s5: r1: gzip-shim.calls has 4 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n4-c10: s5: r1: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n4-c10: s5: r1: the body's own shim check (lad-shim ok True)
+FAIL spec-o3-n4-c10: s5: r2: one identity line per input file this node read (4)
+ok   spec-o3-n4-c10: s5: r2: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n4-c10: s5: r2: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n4-c10: s5: r2: input_defect on [] (want [])
+ok   spec-o3-n4-c10: s5: r2: gzip-shim.calls has 0 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n4-c10: s5: r2: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+FAIL spec-o3-n4-c10: s5: r2: the body's own shim check (lad-shim ok None)
+FAIL spec-o3-n4-c10: s5: r3: one identity line per input file this node read (4)
+ok   spec-o3-n4-c10: s5: r3: identity at the run's -P 16 (lad-config gunzip_P)
+ok   spec-o3-n4-c10: s5: r3: gz_warning (GNU gzip's exit 2) on [] (want []), and exactly where gzip exited 2
+ok   spec-o3-n4-c10: s5: r3: input_defect on [] (want [])
+FAIL spec-o3-n4-c10: s5: r3: gzip-shim.calls has 4 rapidgzip calls (want 0: two mates of each non-fallback sample)
+ok   spec-o3-n4-c10: s5: r3: s5-fallback.calls has 0 GNU gzip calls (want 0), naming the fallback samples' inputs
+ok   spec-o3-n4-c10: s5: r3: the body's own shim check (lad-shim ok True)
+ladder-rehearse: spec-o3-n4-c10: tail of r0.out
+    | [O3-n4] ak2-engine	mem	t_s	1.0	rss_kib	183792	hwm_kib	183792	heap_inuse	25845760	sys	43960600	avail_kib	343040
+    | [O3-n4] ak2-engine	mem	t_s	1.5	rss_kib	226032	hwm_kib	226032	heap_inuse	78635008	sys	94378280	avail_kib	59148
+    | [O3-n4] ak2-engine	mem	t_s	2.1	rss_kib	227952	hwm_kib	228464	heap_inuse	81911808	sys	94378280	avail_kib	111936
+    | [O3-n4] ak2-engine	mem	t_s	2.6	rss_kib	996220	hwm_kib	996220	heap_inuse	812941312	sys	881541592	avail_kib	892760
+    | [O3-n4] ak2-sample	batch	0	name	ERR478965b	mode	parallel	s3client	-	rank	0	role	home	inflight	2	threads	5	start_s	0.765893	wall_s	2.135600	setup_s	0.000034	classify_s	2.135552	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	mod	weight	200000
+    | [O3-n4] ak2-sample	batch	0	name	SRR062634	mode	parallel	s3client	-	rank	0	role	home	inflight	2	threads	5	start_s	0.766720	wall_s	2.212207	setup_s	0.000021	classify_s	2.212179	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	mod	weight	200000
+    | lever {"kind":"upload-enqueue","t":1792044806.635,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965b/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/ERR478965b/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","sha256_seconds":0.011,"session":"1792044803580475795"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n4","cohort":10,"accession":"ERR478965b","pairs":200000,"rc":1,"phases":{"classify":2.135,"sha":0.011,"sha-critical":0,"s5-identity":1.342,"engine-setup":0,"engine-classify":2.136,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":64,"gz_sha256":["385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7"],"rg_sha256":["385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":0,"idx":4,"t_start":1792044804.358,"t_end":1792044806.493,"input_bytes":0,"threads":5,"replica":0,"lane":"rank0","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"ERR478965b","mode":"parallel","s3client":"-","rank":"0","role":"home","inflight":"2","threads":"5","start_s":"0.765893","wall_s":"2.135600","setup_s":"0.000034","classify_s":"2.135552","close_s":"0.000000","report_s":"0.000000","status":"1","sequences":"0","bases":"0","classified":"0","place":"mod","weight":"200000"}}
+    | lever {"kind":"upload-enqueue","t":1792044806.717,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR062634/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","sha256_seconds":0.006,"session":"1792044803580475795"}
+    | [O3-n4] ak2-engine	mem	t_s	3.1	rss_kib	1637000	hwm_kib	1637000	heap_inuse	750419968	sys	1563774584	avail_kib	426276
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n4","cohort":10,"accession":"SRR062634","pairs":200000,"rc":1,"phases":{"classify":2.212,"sha":0.006,"sha-critical":0,"s5-identity":1.566,"engine-setup":0,"engine-classify":2.212,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":64,"gz_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"rg_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":0,"idx":0,"t_start":1792044804.359,"t_end":1792044806.571,"input_bytes":0,"threads":5,"replica":0,"lane":"rank0","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR062634","mode":"parallel","s3client":"-","rank":"0","role":"home","inflight":"2","threads":"5","start_s":"0.766720","wall_s":"2.212207","setup_s":"0.000021","classify_s":"2.212179","close_s":"0.000000","report_s":"0.000000","status":"1","sequences":"0","bases":"0","classified":"0","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792044806.786,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/ERR478965b/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/ERR478965b/output","sub":"cp","rc":0,"seconds":0.015,"requests":"PutObject 1 (0 bytes)"}
+    | lever {"kind":"upload","t":1792044806.795,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/ERR478965b/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/ERR478965b/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","t_enqueue":1792044806.620,"t_start":1792044806.761,"t_end":1792044806.791,"rc":0,"session":"1792044803580475795","requests":"PutObject 1 (0 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792044806.825,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR062634/output","sub":"cp","rc":0,"seconds":0.011,"requests":"PutObject 1 (0 bytes)"}
+    | lever {"kind":"upload","t":1792044806.832,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR062634/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","t_enqueue":1792044806.709,"t_start":1792044806.804,"t_end":1792044806.830,"rc":0,"session":"1792044803580475795","requests":"PutObject 1 (0 bytes)","estimate":false}
+    | [O3-n4] ak2-sample	batch	0	name	SRR28305653c	mode	parallel	s3client	-	rank	0	role	home	inflight	2	threads	5	start_s	2.901511	wall_s	0.348630	setup_s	0.000053	classify_s	0.348573	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	mod	weight	200000
+    | lever {"kind":"upload-enqueue","t":1792044806.982,"seq":3,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR28305653c/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","sha256_seconds":0.006,"session":"1792044803580475795"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n4","cohort":10,"accession":"SRR28305653c","pairs":200000,"rc":1,"phases":{"classify":0.348,"sha":0.006,"sha-critical":0,"s5-identity":1.584,"engine-setup":0,"engine-classify":0.349,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":64,"gz_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"rg_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":0,"idx":8,"t_start":1792044806.494,"t_end":1792044806.842,"input_bytes":0,"threads":5,"replica":0,"lane":"rank0","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR28305653c","mode":"parallel","s3client":"-","rank":"0","role":"home","inflight":"2","threads":"5","start_s":"2.901511","wall_s":"0.348630","setup_s":"0.000053","classify_s":"0.348573","close_s":"0.000000","report_s":"0.000000","status":"1","sequences":"0","bases":"0","classified":"0","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792044807.054,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653c/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR28305653c/output","sub":"cp","rc":0,"seconds":0.006,"requests":"PutObject 1 (0 bytes)"}
+    | lever {"kind":"upload","t":1792044807.060,"seq":3,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR28305653c/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","t_enqueue":1792044806.974,"t_start":1792044807.043,"t_end":1792044807.058,"rc":0,"session":"1792044803580475795","requests":"PutObject 1 (0 bytes)","estimate":false}
+    | [O3-n4] ak2-engine	mem	t_s	3.6	rss_kib	1553244	hwm_kib	1637128	heap_inuse	872890368	sys	1563774584	avail_kib	781704
+    | [O3-n4] ak2-engine	mem	t_s	4.1	rss_kib	1553244	hwm_kib	1637128	heap_inuse	872931328	sys	1563774584	avail_kib	783220
+    | [O3-n4] ak2-engine	mem	t_s	4.6	rss_kib	1553244	hwm_kib	1637128	heap_inuse	872939520	sys	1563774584	avail_kib	779856
+    | [O3-n4] ak2-engine	mem	t_s	5.1	rss_kib	1553244	hwm_kib	1637128	heap_inuse	873037824	sys	1563774584	avail_kib	1677168
+    | [O3-n4] ak2-engine	mem	t_s	5.7	rss_kib	1553244	hwm_kib	1637128	heap_inuse	873037824	sys	1563774584	avail_kib	2582732
+ladder-rehearse: spec-o3-n4-c10: tail of r1.out
+    | [O3-n4] ak2-timing	taxo	0.000168	0.001368	1508	0	0.000495	0.001400
+    | [O3-n4] ak2-timing	shard-load-1	0.002076	0.025047	388	0	0.005180	0.018177
+    | [O3-n4] ak2-timing	etag	0.028801	0.066329	2809	0	0.228989	0.000000
+    | [O3-n4] ak2-timing	rendezvous	0.095328	0.003056	397	0	0.000000	0.001256
+    | [O3-n4] ak2-timing	connect	0.098397	0.000456	2	0	0.000000	0.000297
+    | [O3-n4] ak2-timing	hash	0.001545	0.097315	4073	0	0.235790	0.020181
+    | ak2-phase	2026-10-15T06:13:24Z	1792044804	etag-hash.k2d	no
+    | lad-phase {"kind":"phase","phase":"etag-hash.k2d","t":1792044804.294,"how":"engine shard-load line (its in-memory ETag check follows)"}
+    | ak2-phase	2026-10-15T06:13:24Z	1792044804	classify	no
+    | lad-phase {"kind":"phase","phase":"classify","t":1792044804.308,"how":"engine connect line (ETag verified on every shard)"}
+    | [O3-n4] ak2-engine	mem	t_s	0.5	rss_kib	907840	hwm_kib	907840	heap_inuse	737435648	sys	782113208	avail_kib	372776
+    | environment: line 779:  3955 Killed                  env "${ENGINE_ENV[@]}" "$OURS" --db "$DBDIR" --paired 2> >(tee "$W/eng.stderr" | grep --line-buffered -E '^ak2-(sample|timing|engine)' | sed -u "s/^/[$RUNG] /") > /dev/null
+    | ak2: [2026-10-15T06:13:26Z] a classifier exited non-zero
+    | [O3-n4 stderr] Loading database information...ak2-timing	opts	0.000150	0.000010	3	0	0.000007	0.000003
+    | [O3-n4 stderr]  done.
+    | ak2: [2026-10-15T06:13:27Z] ERROR: no ak2-engine etag line: the in-memory ETag check did not run
+    | ak2: [2026-10-15T06:13:27Z] ERROR: engine: 3 of 3 home samples have no ak2-sample line: ERR478965 SRR28305653b SRR062634d
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":4,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T06:13:28Z	1792044808	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792044808.204,"mode":"s5cmd-overlap","session":"1792044804076811657","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792044808.062,"drain_wait_s":0.131}
+    | ak2-phase	2026-10-15T06:13:28Z	1792044808	push	no
+    | lad-net {"v":1,"rank":1,"critical_measurement_s":1.699,"identity_s":1.699,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792044808.286133392,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":794456064,"free_huge_bytes":127926272,"free_huge_frac":0.161024,"buddy":[5701,5529,2716,1770,1283,784,463,205,76,39,11],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":1573757,"compact_free_scanned":5228892,"compact_isolated":459228,"compact_stall":140,"compact_fail":67,"compact_success":73,"compact_daemon_wake":923,"compact_daemon_migrate_scanned":1573472,"compact_daemon_free_scanned":5206763,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":776036,"AnonHugePages":315392,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T06:13:28Z] ladder O3-n4 rank 1 done: 0 samples, FAIL=1
+ladder-rehearse: spec-o3-n4-c10: tail of r2.out
+    | [O3-n4] ak2-engine	mem	t_s	0.5	rss_kib	189428	hwm_kib	189428	heap_inuse	23502848	sys	39749912	avail_kib	3082604
+    | [O3-n4] ak2-timing	rendezvous	0.389510	0.357530	432	0	0.002404	0.000000
+    | [O3-n4] ak2-timing	connect	0.747059	0.015242	4	0	0.000261	0.000000
+    | [O3-n4] ak2-timing	hash	0.001882	0.760434	5409	0	0.259965	0.527781
+    | ak2-phase	2026-10-15T06:13:24Z	1792044804	classify	no
+    | lad-phase {"kind":"phase","phase":"classify","t":1792044804.619,"how":"engine connect line (ETag verified on every shard)"}
+    | [O3-n4] ak2-engine	mem	t_s	1.0	rss_kib	198644	hwm_kib	198644	heap_inuse	43204608	sys	64915736	avail_kib	332220
+    | [O3-n4] ak2-engine	mem	t_s	2.1	rss_kib	220040	hwm_kib	220296	heap_inuse	66838528	sys	81709336	avail_kib	139884
+    | [O3-n4] ak2-engine	mem	t_s	2.6	rss_kib	1000908	hwm_kib	1000908	heap_inuse	825843712	sys	893075928	avail_kib	879808
+    | [O3-n4] ak2-sample	batch	0	name	SRR062634c	mode	parallel	s3client	-	rank	2	role	home	inflight	2	threads	5	start_s	0.762335	wall_s	2.285637	setup_s	0.000035	classify_s	2.285589	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	mod	weight	200000
+    | [O3-n4] ak2-sample	batch	0	name	SRR28305653	mode	parallel	s3client	-	rank	2	role	home	inflight	2	threads	5	start_s	0.762339	wall_s	2.298655	setup_s	0.000035	classify_s	2.298609	close_s	0.000000	report_s	0.000000	status	1	sequences	0	bases	0	classified	0	place	mod	weight	200000
+    | [O3-n4] ak2-engine	mem	t_s	3.1	rss_kib	1584524	hwm_kib	1680216	heap_inuse	1355563008	sys	1745903272	avail_kib	438212
+    | lever {"kind":"upload-enqueue","t":1792044806.796,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR062634c/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","sha256_seconds":0.006,"session":"1792044803611981671"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n4","cohort":10,"accession":"SRR062634c","pairs":200000,"rc":1,"phases":{"classify":2.286,"sha":0.006,"sha-critical":0,"s5-identity":1.483,"engine-setup":0,"engine-classify":2.286,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":64,"gz_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"rg_sha256":["7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":2,"idx":6,"t_start":1792044804.392,"t_end":1792044806.678,"input_bytes":0,"threads":5,"replica":0,"lane":"rank2","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR062634c","mode":"parallel","s3client":"-","rank":"2","role":"home","inflight":"2","threads":"5","start_s":"0.762335","wall_s":"2.285637","setup_s":"0.000035","classify_s":"2.285589","close_s":"0.000000","report_s":"0.000000","status":"1","sequences":"0","bases":"0","classified":"0","place":"mod","weight":"200000"}}
+    | lever {"kind":"upload-enqueue","t":1792044806.845,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR28305653/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","sha256_seconds":0.003,"session":"1792044803611981671"}
+    | lad-sample {"v":1,"arm":"O","rung":"O3-n4","cohort":10,"accession":"SRR28305653","pairs":200000,"rc":1,"phases":{"classify":2.299,"sha":0.003,"sha-critical":0,"s5-identity":2.031,"engine-setup":0,"engine-classify":2.299,"engine-close":0,"engine-report":0},"outputs":{"output":{"bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}},"s5":{"status":"identical","fallback":"none","P":16,"nproc":64,"gz_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"rg_sha256":["ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a"],"gz_exit":[0,0],"gz_warning":[false,false],"rg_exit":[0,0]},"rank":2,"idx":2,"t_start":1792044804.392,"t_end":1792044806.691,"input_bytes":0,"threads":5,"replica":0,"lane":"rank2","classifier":"ours-engine","out_upload":"s5cmd-overlap","sha256_source":"node, at lv_upload_enqueue before the upload","s5_verdict":null,"engine":{"batch":"0","name":"SRR28305653","mode":"parallel","s3client":"-","rank":"2","role":"home","inflight":"2","threads":"5","start_s":"0.762339","wall_s":"2.298655","setup_s":"0.000035","classify_s":"2.298609","close_s":"0.000000","report_s":"0.000000","status":"1","sequences":"0","bases":"0","classified":"0","place":"mod","weight":"200000"}}
+    | lever {"kind":"s5","t":1792044806.992,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR062634c/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR062634c/output","sub":"cp","rc":0,"seconds":0.007,"requests":"PutObject 1 (0 bytes)"}
+    | lever {"kind":"upload","t":1792044806.997,"seq":1,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR062634c/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR062634c/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","t_enqueue":1792044806.784,"t_start":1792044806.980,"t_end":1792044806.995,"rc":0,"session":"1792044803611981671","requests":"PutObject 1 (0 bytes)","estimate":false}
+    | lever {"kind":"s5","t":1792044807.016,"args":"--numworkers 256 cp --concurrency 16 --part-size 64 /mnt/ak2-ramdb/inputs/out/SRR28305653/output s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR28305653/output","sub":"cp","rc":0,"seconds":0.006,"requests":"PutObject 1 (0 bytes)"}
+    | lever {"kind":"upload","t":1792044807.021,"seq":2,"mode":"s5cmd-overlap","local":"/mnt/ak2-ramdb/inputs/out/SRR28305653/output","url":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-061258-3a7f8c7-30cf-n4/out/O3-n4/SRR28305653/output","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","t_enqueue":1792044806.839,"t_start":1792044807.005,"t_end":1792044807.019,"rc":0,"session":"1792044803611981671","requests":"PutObject 1 (0 bytes)","estimate":false}
+    | [O3-n4] ak2-engine	mem	t_s	3.6	rss_kib	1584652	hwm_kib	1680216	heap_inuse	1382260736	sys	1745903272	avail_kib	781704
+    | [O3-n4] ak2-engine	mem	t_s	4.1	rss_kib	1584652	hwm_kib	1680216	heap_inuse	1382309888	sys	1745903272	avail_kib	783220
+    | [O3-n4] ak2-engine	mem	t_s	4.6	rss_kib	1584652	hwm_kib	1680216	heap_inuse	1382318080	sys	1745903272	avail_kib	779628
+    | [O3-n4] ak2-engine	mem	t_s	5.1	rss_kib	1584652	hwm_kib	1680216	heap_inuse	1382400000	sys	1745903272	avail_kib	1677168
+    | [O3-n4] ak2-engine	mem	t_s	5.6	rss_kib	1584652	hwm_kib	1680216	heap_inuse	1382408192	sys	1745903272	avail_kib	2582732
+ladder-rehearse: spec-o3-n4-c10: tail of r3.out
+    | ak2-phase	2026-10-15T06:13:24Z	1792044804	etag-hash.k2d	no
+    | lad-phase {"kind":"phase","phase":"etag-hash.k2d","t":1792044804.012,"how":"engine shard-load line (its in-memory ETag check follows)"}
+    | [O3-n4] ak2-engine	mem	t_s	0.5	rss_kib	173640	hwm_kib	173640	heap_inuse	6848512	sys	22903048	avail_kib	3191800
+    | [O3-n4] ak2-timing	rendezvous	0.351234	0.360033	417	0	0.002976	0.000000
+    | [O3-n4] ak2-timing	connect	0.711285	0.000487	4	0	0.000250	0.000000
+    | [O3-n4] ak2-timing	hash	0.001720	0.710064	1327	0	0.211892	0.354952
+    | ak2-phase	2026-10-15T06:13:24Z	1792044804	classify	no
+    | lad-phase {"kind":"phase","phase":"classify","t":1792044804.533,"how":"engine connect line (ETag verified on every shard)"}
+    | [O3-n4] ak2-engine	mem	t_s	1.0	rss_kib	284232	hwm_kib	284232	heap_inuse	131440640	sys	145553704	avail_kib	388616
+    | [O3-n4] ak2-engine	mem	t_s	1.6	rss_kib	480328	hwm_kib	480328	heap_inuse	334102528	sys	354158936	avail_kib	58640
+    | [O3-n4] ak2-engine	mem	t_s	2.3	rss_kib	813724	hwm_kib	813852	heap_inuse	670081024	sys	694380968	avail_kib	514868
+    | environment: line 779:  3969 Killed                  env "${ENGINE_ENV[@]}" "$OURS" --db "$DBDIR" --paired 2> >(tee "$W/eng.stderr" | grep --line-buffered -E '^ak2-(sample|timing|engine)' | sed -u "s/^/[$RUNG] /") > /dev/null
+    | ak2: [2026-10-15T06:13:27Z] a classifier exited non-zero
+    | [O3-n4 stderr] Loading database information...ak2-timing	opts	0.000111	0.000008	4	0	0.000000	0.000008
+    | [O3-n4 stderr]  done.
+    | ak2: [2026-10-15T06:13:28Z] ERROR: no ak2-engine etag line: the in-memory ETag check did not run
+    | ak2: [2026-10-15T06:13:28Z] ERROR: engine: 2 of 2 home samples have no ak2-sample line: SRR062634b ERR478965c
+    | lad-shim {"kind":"shim","mode":"rapidgzip-P16","rapidgzip_calls":4,"want_at_least":0,"fallback_calls":0,"fallback_want_at_least":0,"ok":true}
+    | ak2-phase	2026-10-15T06:13:28Z	1792044808	upload-drain	no
+    | lever {"kind":"upload-drain","t":1792044808.602,"mode":"s5cmd-overlap","session":"1792044803580417045","enqueued":0,"uploaded":0,"failed":0,"lane_rc":0,"end_write_failed":false,"bytes":0,"upload_s":0.000,"overlap_s":0.000,"t_drain":1792044808.431,"drain_wait_s":0.164}
+    | ak2-phase	2026-10-15T06:13:28Z	1792044808	push	no
+    | lad-net {"v":1,"rank":3,"critical_measurement_s":1.486,"identity_s":1.486,"sha_get_s":0,"sha_critical_s":0}
+    | ht-record {"kind":"ht","label":"end","t":1792044808.676915473,"enabled":"madvise","defrag":"madvise","proactiveness":"20","page_bytes":4096,"huge_order":9,"free_bytes":1688834048,"free_huge_bytes":127926272,"free_huge_frac":0.075748,"buddy":[21595,14859,8782,9582,4606,2075,501,206,76,39,11],"vmstat":{"thp_migration_success":0,"thp_migration_fail":0,"thp_migration_split":0,"compact_migrate_scanned":1573757,"compact_free_scanned":5228892,"compact_isolated":459228,"compact_stall":140,"compact_fail":67,"compact_success":73,"compact_daemon_wake":923,"compact_daemon_migrate_scanned":1573472,"compact_daemon_free_scanned":5206763,"thp_fault_alloc":36140,"thp_fault_fallback":0,"thp_fault_fallback_charge":0,"thp_collapse_alloc":2,"thp_collapse_alloc_failed":0,"thp_file_alloc":31086,"thp_file_fallback":0,"thp_file_fallback_charge":0,"thp_file_mapped":72829,"thp_split_page":380,"thp_split_page_failed":0,"thp_deferred_split_page":0,"thp_underused_split_page":0,"thp_split_pmd":0,"thp_scan_exceed_none_pte":42291,"thp_scan_exceed_swap_pte":0,"thp_scan_exceed_share_pte":0,"thp_zero_page_alloc":7,"thp_zero_page_alloc_failed":0,"thp_swpout":0,"thp_swpout_fallback":0},"meminfo_kb":{"MemFree":1649492,"AnonHugePages":315392,"ShmemHugePages":0,"ShmemPmdMapped":0,"FileHugePages":0,"FilePmdMapped":0}}
+    | upstream-cohort: shell flags huB
+    | ak2: [2026-10-15T06:13:28Z] ladder O3-n4 rank 3 done: 0 samples, FAIL=1
+ladder-rehearse: spec-o3-n4-c10: memory: r0: engine VmHWM 1598 MiB, lowest MemAvailable 57 MiB
+ladder-rehearse: spec-o3-n4-c10: memory: r1: engine VmHWM 886 MiB, lowest MemAvailable 364 MiB
+ladder-rehearse: spec-o3-n4-c10: memory: r2: engine VmHWM 1640 MiB, lowest MemAvailable 136 MiB
+ladder-rehearse: spec-o3-n4-c10: memory: r3: engine VmHWM 794 MiB, lowest MemAvailable 57 MiB
+ladder-rehearse: disk: 155Gi free
+ladder-rehearse: summary (spec runs/g3-l-o3-n4-c10.json at 3a7f8c7):
+item | case                       | what                                                       | checks |   failed | result
+6    | spec-o3-n4-c10             | runs/g3-l-o3-n4-c10.json end to end                        |  75 ok |  34 FAIL | FAIL
+ladder-rehearse: disk at end: 155Gi free
+ladder-rehearse: FAILED: 1 of 1 cases (KEEP=1 keeps /Users/scttfrdmn/.ak2-ladreh.ESGhMy)
