@@ -196,7 +196,11 @@ case "$1 $2" in
   "version "*) echo "Version: 0.123.0" ;;
   "task run")
     case " $* " in *" --dry-run "*) printf 'Instance: c8g.large (2 vCPU, 4 GiB)\nMax cost: $0.02\n' ;;
-      *) echo "launch task: InsufficientInstanceCapacity: We currently do not have sufficient c8g.large capacity" >&2; exit 1 ;; esac ;;
+      *) if [ -n "${AK2T_PRICE_FAILS:-}" ] && [ "$(cat "$AK2T_S3/price-fails" 2>/dev/null || echo 0)" -lt "$AK2T_PRICE_FAILS" ]; then
+           echo $(( $(cat "$AK2T_S3/price-fails" 2>/dev/null || echo 0) + 1 )) > "$AK2T_S3/price-fails"
+           echo "launch task: provision: launch: cannot determine the on-demand price for c8g.large in us-west-2, required to enforce --cost-limit 0.02: price list GetProducts: exceeded maximum number of attempts, 3" >&2; exit 1
+         fi
+         echo "launch task: InsufficientInstanceCapacity: We currently do not have sufficient c8g.large capacity" >&2; exit 1 ;; esac ;;
   *) exit 2 ;;
 esac
 EOF
@@ -238,6 +242,15 @@ if [ "$RC" = 2 ] && [ -n "$DM" ] && [[ "$OUT" == *"launch failed (rc=1)"* ]] &&
           and .finalised_by == "conductor" and .finalised_by_run_id == "20261014-120000-abcdef0"' "$DM" > /dev/null; then
   ok "launch fail: a failed spawn task run finalises the manifest as never launched (cost 0, orphan check, finalised_by)"
 else bad "launch fail: rc $RC manifest '$DM': $(jq -c '{fin:.manifest_finalised_at, instance, launch, cost_usd}' "$DM" 2>/dev/null) $(echo "$OUT" | tail -3)"; fi
+# The Pricing API throttle (c10 stage 5): spawn's pricing failure is retried, and only it: one
+# pricing failure, then the capacity failure, is 2 tries, with the capacity error recorded.
+rm -f "$D/s3/price-fails"
+deep AK2T_PRICE_FAILS=1
+[ "$RC" = 2 ] && [[ "$OUT" == *"spawn could not price c8g.large (try 1 of 3; nothing launched)"* ]] &&
+  jq -e '.launch.tries == 2 and (.launch.spawn_error | test("InsufficientInstanceCapacity")) and .instance.final_state == "never-launched"' "$DM" > /dev/null &&
+  ok "launch: a spawn pricing failure is retried (2 tries), a capacity failure is not; finalised as never launched" ||
+  bad "launch: pricing retry: rc $RC $(jq -c .launch "$DM" 2>/dev/null) $(echo "$OUT" | grep -E 'price|launch' | tail -3)"
+rm -f "$D/s3/price-fails"
 # The payload GET (AK2_PAYLOAD_GET): url from the laptop; role under an instance role, where a presigned
 # URL carries the session token (results/conductor/20261015-021611-6196b14).
 RES=$(dirname "$DM")/spec.resolved.json

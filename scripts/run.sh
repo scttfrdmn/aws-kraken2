@@ -684,7 +684,7 @@ mset --arg t "$LAUNCH_AT" --arg iid "$IID" --arg type "$ITYPE" --arg lr "$LREGIO
                  launch_time:$d.LaunchTime, architecture:$d.Architecture,
                  lifecycle:($d.InstanceLifecycle // "on-demand"), type_info:$ti}
   | .truffle_price_usd_per_hour = $price | .truffle_price_note = $perr
-  | .truffle_price_source = "truffle at launch"
+  | .truffle_price_source = (if $price == null then "none" else "truffle at launch" end)
   | if $price == null and (.cost_limit_check.price_usd_per_hour // null) != null and .cost_limit_check.instance_type == $type
     then .truffle_price_usd_per_hour = .cost_limit_check.price_usd_per_hour
          | .truffle_price_source = "cost_limit_check (truffle just before launch; the lookup at launch gave none)"

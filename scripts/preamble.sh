@@ -236,7 +236,7 @@ for AK2_B in $AK2_BUCKETS; do
     AK2_BR=$(curl -sI -m 10 "https://$AK2_B.s3.amazonaws.com/" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-amz-bucket-region"{print $2}')
     ak2_req HeadBucket-anon 1 "$AK2_B"
     [ -n "$AK2_BR" ] && break
-    ak2_say "WARN: no region for bucket $AK2_B (try $AK2_T3 of 3)"; sleep 2
+    ak2_say "WARN: no region for bucket $AK2_B (try $AK2_T3 of 3)"; [ "$AK2_T3" = 3 ] || sleep 2
   done
   ak2_say "bucket $AK2_B region=$AK2_BR"
   [ "$AK2_BR" = "$AK2_REGION" ] || ak2_fatal "bucket $AK2_B is in '${AK2_BR:-unknown}', instance in $AK2_REGION"
