@@ -1,0 +1,265 @@
+{
+  "gate": "conductor",
+  "run_id": "20261015-043304-ccbf8b1",
+  "task_id": "ak2-conductor-20261015-043304-ccbf8b1",
+  "spec": "runs/conductor.json",
+  "spec_sha256": "b91c3ad89415747a2616a5b1b2cc374e9fd46a21e8132b80feca9e09741b73ca",
+  "params": null,
+  "commit": "ccbf8b1f9734d09de9161f04dd7f5d230b183d4b",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "spawn_path": "/Users/scttfrdmn/src/aws-kraken2/bin/spawn",
+    "spawn_sha256": "9b42b4efd8980d28405c7f3359fe7e95a82712a6df5bd0ff6b4afcfec8fcc5d4",
+    "truffle": "0.57.1",
+    "truffle_path": "/Users/scttfrdmn/src/aws-kraken2/bin/truffle",
+    "truffle_sha256": "e33d85e108e084fd6c2662943c305756f9b3497e0f895dc8df67f330625d3046"
+  },
+  "region": "us-west-2",
+  "ttl": "60m",
+  "cost_limit_usd": 0.09,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261015-043304-ccbf8b1",
+  "sample_accessions": [],
+  "sample_accessions_ref": null,
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2",
+    "kraken2-ncbi-refseq-complete-v205"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261015-043304-ccbf8b1/payload.sh",
+    "sha256": "d70bd9ebc7b9c53a37336aa76a1d6e12d7e05a06fc81b787247f4f2d3e38f691",
+    "bytes": 33080,
+    "get": "url"
+  },
+  "user_data": {
+    "base64_bytes": 18452,
+    "bootstrap_bytes": 41694,
+    "gzip_bytes": 13839
+  },
+  "datasets": [
+    {
+      "uri": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/",
+      "kind": "prefix"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/",
+      "kind": "prefix"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    },
+    {
+      "bucket": "kraken2-ncbi-refseq-complete-v205",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-15T04:33:06Z",
+  "cost_limit_check": {
+    "region": "us-west-2",
+    "instance_type": "m8g.large",
+    "ttl": "60m",
+    "ttl_s": 3600,
+    "nodes": 1,
+    "price_usd_per_hour": 0.08976,
+    "epsilon": 0.10,
+    "cent_allowance_usd": 0.01,
+    "cost_limit_usd": 0.09,
+    "expected_usd": 0.0898,
+    "max_cost_limit_usd": 0.1087,
+    "total_cost_limit_usd": 0.09,
+    "total_max_usd": 0.1087,
+    "max_cost_usd_override": null,
+    "within_price": true,
+    "within_override": true,
+    "ok": true
+  },
+  "quota_check": {
+    "region": "us-west-2",
+    "instance_type": "m8g.large",
+    "count": 1,
+    "quota_code": "L-1216C47A",
+    "family": "Standard(A,C,D,H,I,M,R,T,Z)",
+    "quota_vcpus": 1989,
+    "vcpus_per_instance": 2,
+    "requested_vcpus": 2,
+    "running_vcpus": 0,
+    "running_instances": 0,
+    "total_vcpus": 2,
+    "within_quota": true,
+    "checked_at": "2026-10-15T04:33:09Z"
+  },
+  "conductor": {
+    "instance_profile": "arn:aws:iam::942542972736:instance-profile/ak2-conductor",
+    "replaced": "arn:aws:iam::942542972736:instance-profile/spawn-instance-c77244a6",
+    "association_id": "iip-assoc-06c3dc0863db0aca2",
+    "replaced_at": "2026-10-15T04:33:25Z",
+    "staging": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-043304-ccbf8b1/"
+  },
+  "launch": {
+    "requested_at": "2026-10-15T04:33:11Z",
+    "instance_id": "i-0e9d04cc518f3da41",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "m8g.large",
+    "count": 1,
+    "ami": "ami-0174a1ab4ff33424a",
+    "az": "us-west-2b",
+    "launch_time": "2026-10-15T04:33:17+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "type_info": {
+      "vcpus": 2,
+      "memory_mib": 8192,
+      "network_performance": "Up to 12.5 Gigabit",
+      "baseline_gbps": 0.937,
+      "peak_gbps": 12.5,
+      "source": "ec2 describe-instance-types",
+      "queried_at": "2026-10-15T04:33:27Z"
+    },
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-15T04:38:04Z"
+  },
+  "truffle_price_usd_per_hour": 0.08976,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.58.0\n  https://github.com/spore-host/truffle/releases/tag/v0.58.0",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261015-043304-ccbf8b1/: 8 objects, 7 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-15T04:33:30Z",
+      "seconds": 2,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-15T04:33:32Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-15T04:33:32Z",
+      "seconds": 156,
+      "cold": false
+    },
+    {
+      "phase": "probe",
+      "start": "2026-10-15T04:36:08Z",
+      "seconds": 12,
+      "cold": false
+    },
+    {
+      "phase": "campaign",
+      "start": "2026-10-15T04:36:20Z",
+      "seconds": 3,
+      "cold": false
+    },
+    {
+      "phase": "stage",
+      "start": "2026-10-15T04:36:23Z",
+      "seconds": 2,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 4,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "HeadBucket-anon": 2
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-conductor-20261015-043304-ccbf8b1",
+    "run_id": "eb94e9a3-ad86-4a35-af4a-0da58f7e1bc4",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-15T04:33:30Z",
+    "ended_at": "2026-10-15T04:36:26Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261015-043304-ccbf8b1/spawn/ak2-conductor-20261015-043304-ccbf8b1/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2b",
+    "instance_id": "i-0e9d04cc518f3da41",
+    "instance_type": "m8g.large",
+    "ami": "ami-0174a1ab4ff33424a",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "BucketOwner"
+      },
+      {
+        "bucket": "kraken2-ncbi-refseq-complete-v205",
+        "region": "us-west-2",
+        "payer": "BucketOwner"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2 kraken2-ncbi-refseq-complete-v205",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-15T04:33:31Z"
+  },
+  "start": "2026-10-15T04:33:17+00:00",
+  "stop": "2026-10-15T04:38:04Z",
+  "billed_seconds": 287,
+  "cost_usd": 0.007156,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-15T04:38:42Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-conductor-20261015-043304-ccbf8b1",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-15T04:38:45Z"
+  }
+}
