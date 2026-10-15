@@ -37,7 +37,9 @@ in the payload and not in env:
   dependency tree: MemAvailable fell from 2.9 GB to 0.6 GB in 75 s, then the sampler, log stream
   and probe all stopped and the TTL ended it (`results/conductor/20261015-003557-bb04dfb`). The
   body now builds udsize once in setup with `GOFLAGS=-p=1` (kept for run.sh's own builds, which
-  then hit `GOCACHE`), and logs `udsize: built in N s`.
+  then hit `GOCACHE`), and logs `udsize: built in N s`. A cold build on the laptop (macOS arm64,
+  Go 1.27.1, 2026-10-15) peaks at 3.56 GB resident in one process with `-p=1` (2.74 GB at full
+  parallelism, 14 s against 36 s), so no 4 GiB type can hold it even serially; 8 GiB leaves about 4 GB.
 - **TTL:** 72 h by default and at most (`AK2_CONDUCTOR_MAX_TTL_S`, Scott 2026-10-14; run instances
   keep `AK2_MAX_TTL_S`, 8 h). `cost_limit` is the pinned truffle's price × TTL (+ $0.005, to the
   cent): $6.47 for 72 h of m8g.large. The campaign still launches nothing that would outlive the
