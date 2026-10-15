@@ -31,14 +31,16 @@ in the payload and not in env:
 `OUT=runs/conductor-<x>.json` writes another name. run.sh ties `runs/conductor*.json` to
 `GATE=conductor` in both directions.
 
-- **Type:** `m8g.medium` by default (`TYPE=`): 1 Graviton vCPU, 4 GiB, $0.04488/h on demand
-  (truffle 0.57.1, 2026-10-14). It is not burstable, so `cost_usd` is the bill. The 2 GiB types
-  (`t4g.small` $0.0168/h, `c8g.medium` $0.03988/h) are tight for run.sh's `go build` of
-  `scripts/udsize`. `t4g` is also burstable: unlimited-mode CPU credits are charged outside
-  `cost_usd`.
+- **Type:** `m8g.large` by default (`TYPE=`): 2 Graviton vCPU, 8 GiB, $0.08976/h on demand
+  (truffle 0.57.1, 2026-10-15). It is not burstable, so `cost_usd` is the bill. `m8g.medium`
+  (3.7 GiB, no swap) froze in the `go build` of `scripts/udsize`, which links spawn's whole
+  dependency tree: MemAvailable fell from 2.9 GB to 0.6 GB in 75 s, then the sampler, log stream
+  and probe all stopped and the TTL ended it (`results/conductor/20261015-003557-bb04dfb`). The
+  body now builds udsize once in setup with `GOFLAGS=-p=1` (kept for run.sh's own builds, which
+  then hit `GOCACHE`), and logs `udsize: built in N s`.
 - **TTL:** 72 h by default and at most (`AK2_CONDUCTOR_MAX_TTL_S`, Scott 2026-10-14; run instances
   keep `AK2_MAX_TTL_S`, 8 h). `cost_limit` is the pinned truffle's price × TTL (+ $0.005, to the
-  cent): $3.24 for 72 h of m8g.medium. The campaign still launches nothing that would outlive the
+  cent): $6.47 for 72 h of m8g.large. The campaign still launches nothing that would outlive the
   conductor (the deadline, below).
 - **Buckets:** `AK2_DATASETS` declares the RODA prefix and the results bucket's `aws-kraken2/`. The
   preamble's aws shim therefore allows the nested run.sh's Payer, head-object, payload and staging
@@ -337,8 +339,8 @@ campaign has something to launch. The rounds are listed in the script's header:
 
 **The AWS rehearsal** comes first, before the conductor drives any real rung (the issue's point 6):
 `runs/conductor.json` as committed, which is
-`make conductor-spec COHORT=10 DRY_RUN=1 DRY_MAKE_RUN=1 TTL=60` (m8g.medium, TTL 60m,
-`cost_limit` $0.05). It launches nothing. With the commit pushed and `make conductor-iam` done:
+`make conductor-spec COHORT=10 DRY_RUN=1 DRY_MAKE_RUN=1 TTL=60` (m8g.large, TTL 60m,
+`cost_limit` $0.09). It launches nothing. With the commit pushed and `make conductor-iam` done:
 
 ```bash
 make run GATE=conductor SPEC=runs/conductor.json     # waits for the conductor to end (about 15-25 min)

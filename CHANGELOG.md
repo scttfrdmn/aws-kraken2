@@ -23,12 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     run out. These are in the stub test.
   - **The conductor.** `make conductor-spec` writes `runs/conductor.json` from
     `scripts/conductor.body.sh`, with the campaign's arguments in the payload's PARAMS block. It runs
-    on an `m8g.medium` (by default) through `make run GATE=conductor`. run.sh refuses that gate
+    on an `m8g.large` (by default; `m8g.medium` froze in the `go build` of `scripts/udsize`) through `make run GATE=conductor`. run.sh refuses that gate
     unless the whole tree is clean and HEAD is on origin. It swaps the instance's profile for
     `ak2-conductor`. On the instance:
     - the body clones the commit;
     - it installs spawn 0.123.0, truffle 0.57.1 and Go 1.27.1, each verified by sha256
       (`scripts/conductor.tools.tsv`);
+    - it builds `scripts/udsize` once, with `GOFLAGS=-p=1`;
     - it runs `make ladder-campaign` under the instance role (`AK2_INSTANCE_ROLE=1` unsets
       `AWS_PROFILE`);
     - it stages results, a patch of tracked changes, sha256s, the campaign log and its state to

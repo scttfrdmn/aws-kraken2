@@ -167,6 +167,15 @@ done < scripts/conductor.tools.tsv
 . scripts/lib/tools_pin.sh
 ak2_pin_tools "$W/repo" || fail "the pinned tools do not check (above)"
 for t in spawn truffle go aws git jq python3 make shasum curl; do command -v "$t" > /dev/null || fail "$t not on PATH"; done
+# scripts/udsize links spawn's whole dependency tree. run.sh builds it on every launch; built here once,
+# one package at a time (GOFLAGS=-p=1, kept for the nested builds, which then hit GOCACHE), so it fails
+# in setup and not inside the probe. On m8g.medium (3.7 GiB, no swap) the probe's parallel build froze
+# the instance until its TTL (results/conductor/20261015-003557-bb04dfb).
+export GOFLAGS=-p=1
+UDT0=$(date +%s)
+go build -C scripts/udsize -o "$W/repo/bin/udsize" . || fail "go build of scripts/udsize failed"
+[ "${AK2C_REHEARSE:-}" = 1 ] || [ -x "$W/repo/bin/udsize" ] || fail "go build of scripts/udsize left no binary"
+ak2_say "udsize: built in $(( $(date +%s) - UDT0 )) s (GOFLAGS=$GOFLAGS)"
 
 # ---- the campaign's environment: the instance role, who finalises, the drain flag, the deadline ----
 export AK2_INSTANCE_ROLE=1 AK2_FINALISED_BY=conductor AK2_CONDUCTOR_RUN_ID="$AK2_RUN_ID" AK2_CAMPAIGN_DRAIN="$W/DRAIN"
