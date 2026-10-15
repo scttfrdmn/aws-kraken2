@@ -29,6 +29,7 @@ mkdir -p "$T/bin"
 cat > "$T/bin/curl" <<'EOF'
 #!/bin/bash
 echo "curl $*" >> /out/curl.log
+case " $* " in *" -K - "*) sed 's/^/stdin: /' >> /out/curl.log ;; esac
 out=""; url=""; prev=""
 for a in "$@"; do [ "$prev" = -o ] && out=$a; case $a in http*) url=$a ;; esac; prev=$a; done
 case $url in
@@ -62,8 +63,10 @@ case_run url url
   ok "url: the presigned URL fetched unsigned; the payload ran without it" || bad "url: rc $RC: $(echo "$OUT" | tail -3) | $(GET)"
 case_run role role
 [ "$RC" = 0 ] && [[ "$OUT" == *"payload GET signed with role spawn-instance-test"* ]] && [[ "$OUT" == *"payload ran: url=[] creds=[]"* ]] &&
-  GET | grep -qF -- '--aws-sigv4 aws:amz:us-west-2:s3 --user ASIATEST:SECRET/TEST+x -H x-amz-security-token: TOKEN/test+== -H x-amz-content-sha256: UNSIGNED-PAYLOAD -o /tmp/ak2-payload.sh https://ak2-results-test.s3.us-west-2.amazonaws.com/aws-kraken2/g9/run-x/payload.sh' &&
-  ok "role: the GET signed with the IMDS role credentials at the in-region endpoint; the payload ran without them" ||
+  GET | grep -qF -- '-K - --aws-sigv4 aws:amz:us-west-2:s3 -H x-amz-content-sha256: UNSIGNED-PAYLOAD -o /tmp/ak2-payload.sh https://ak2-results-test.s3.us-west-2.amazonaws.com/aws-kraken2/g9/run-x/payload.sh' &&
+  ! GET | grep -qE 'ASIATEST|SECRET|TOKEN' &&
+  echo "$LOG" | grep -qxF 'stdin: user = "ASIATEST:SECRET/TEST+x"' && echo "$LOG" | grep -qxF 'stdin: header = "x-amz-security-token: TOKEN/test+=="' &&
+  ok "role: the GET signed with the IMDS role credentials (on stdin, not argv) at the in-region endpoint; the payload ran without them" ||
   bad "role: rc $RC: $(echo "$OUT" | tail -3) | $(GET)"
 case_run nocreds role
 [ "$RC" = 97 ] && [[ "$OUT" == *"no role credentials in IMDS"* ]] && [[ "$OUT" != *"payload ran"* ]] && [ -z "$(GET)" ] &&

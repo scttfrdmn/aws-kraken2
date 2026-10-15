@@ -41,9 +41,10 @@ case "${AK2_PAYLOAD_GET:-url}" in
     ak2_c() { printf '%s\n' "$AK2_C" | sed -n "s/.*\"$1\" *: *\"\([^\"]*\)\".*/\1/p"; }
     [ -n "$(ak2_c AccessKeyId)" ] || { echo "ak2-stub: FATAL: no role credentials in IMDS for the payload GET"; exit 97; }
     echo "ak2-stub: payload GET signed with role $AK2_RN"
-    curl -sf -m 60 --retry 3 --aws-sigv4 "aws:amz:$AK2_R:s3" --user "$(ak2_c AccessKeyId):$(ak2_c SecretAccessKey)" \
-      -H "x-amz-security-token: $(ak2_c Token)" -H "x-amz-content-sha256: UNSIGNED-PAYLOAD" \
-      -o /tmp/ak2-payload.sh "$AK2_EP${AK2_PAYLOAD_URI#s3://$AK2_PB/}"
+    # The credentials go in on stdin (-K -), not in argv, which /proc shows to every process.
+    printf 'user = "%s:%s"\nheader = "x-amz-security-token: %s"\n' "$(ak2_c AccessKeyId)" "$(ak2_c SecretAccessKey)" "$(ak2_c Token)" |
+      curl -sf -m 60 --retry 3 -K - --aws-sigv4 "aws:amz:$AK2_R:s3" -H "x-amz-content-sha256: UNSIGNED-PAYLOAD" \
+        -o /tmp/ak2-payload.sh "$AK2_EP${AK2_PAYLOAD_URI#s3://$AK2_PB/}"
     ;;
   *) echo "ak2-stub: FATAL: AK2_PAYLOAD_GET=$AK2_PAYLOAD_GET"; exit 97 ;;
 esac || { echo "ak2-stub: FATAL: could not fetch $AK2_PAYLOAD_URI"; exit 97; }

@@ -374,12 +374,13 @@ So `command[2]` is `scripts/stub.sh` with the utilisation sampler spliced in
   stub fetches it (recorded as the manifest's `payload.get`):
   - `url` (the default): `AK2_PAYLOAD_URL`, a presigned GET for that one object valid for TTL + 1 h.
     The instance needs no extra IAM grant on the results bucket.
-  - `role` (the default under `AK2_INSTANCE_ROLE=1`, the conductor; `AK2_PAYLOAD_GET=` overrides):
+  - `role` (the default under `AK2_INSTANCE_ROLE=1`, the conductor; `AK2_PAYLOAD_GET=url` overrides):
     no URL. Signed with temporary credentials, the presigned URL carries the session token, about
     1.3 KB of user data that gzip cannot shrink: the conductor's probe measured 15438 bytes where
     the laptop measured 14118 (`results/conductor/20261015-021611-6196b14`). The stub instead
     reads this instance's role credentials from IMDS and signs its one GET itself (`curl
-    --aws-sigv4 aws:amz:<region>:s3`, the in-region endpoint of `AK2_PAYLOAD_URI`). run.sh refuses
+    --aws-sigv4 aws:amz:<region>:s3`, the in-region endpoint of `AK2_PAYLOAD_URI`; the
+    credentials on stdin, `-K -`, not in argv). run.sh refuses
     it unless the spec's run role reads the results bucket, through `resources.s3_read_write`
     (`scripts/iam/spawn_role_name.py`); every ladder spec has it. The stub exits 97 if IMDS has no
     credentials after 10 tries, 3 s apart.
