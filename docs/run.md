@@ -383,7 +383,9 @@ So `command[2]` is `scripts/stub.sh` with the utilisation sampler spliced in
     it unless the spec's run role reads the results bucket, through `resources.s3_read_write`
     (`scripts/iam/spawn_role_name.py`); every ladder spec has it. The stub exits 97 if IMDS has no
     credentials after 10 tries, 3 s apart.
-  `scripts/lib/stub_get_test.sh` (in `make test`) runs both on the real stub in AL2023.
+  `scripts/lib/stub_get_test.sh` (in `make test`) runs both on the real stub in AL2023, and
+  `runs/payload-get-smoke.json` (c8g.medium, 10 m, a body that only says it ran) checks `role`
+  against S3 from the laptop: `AK2_PAYLOAD_GET=role make run GATE=payload-get SPEC=runs/payload-get-smoke.json`.
 - The URL-bearing spec that spawn reads is a `mktemp` file outside `results/`, removed by an
   EXIT trap. `spec.resolved.json` under `results/` is only ever written with the URL redacted.
 - The stub checks that the URL is `https://<bucket>.s3.<region>.amazonaws.com/…` for the
