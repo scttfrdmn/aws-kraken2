@@ -36,8 +36,14 @@ while [[ $t =~ ^([0-9]+)([hms])(.*)$ ]]; do
 done
 [ "$TTL_S" -gt 0 ] || die "TTL '$TTL' is zero"
 
-PRICE=$(truffle find "$TYPE" --regions "$REGION" --show-price --skip-azs -o json 2>/dev/null |
-  jq --arg t "$TYPE" '[.. | objects | select(has("on_demand_price") and .instance_type == $t)][0].on_demand_price // empty')
+# Three tries: a cohort's members price at once and the Pricing API throttles (O3-cost-n32 at c10,
+# rank 5: no price, refused; results/g3/20261015-184025-aade01c-e2ed-n32).
+for TRY in 1 2 3; do
+  PRICE=$(truffle find "$TYPE" --regions "$REGION" --show-price --skip-azs -o json 2>/dev/null |
+    jq --arg t "$TYPE" '[.. | objects | select(has("on_demand_price") and .instance_type == $t)][0].on_demand_price // empty')
+  [ -n "$PRICE" ] || [ "$TRY" = 3 ] || { sleep $((TRY * 5)); continue; }
+  break
+done
 [[ "$PRICE" =~ ^[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$ ]] && awk -v p="$PRICE" 'BEGIN{exit !(p > 0)}' ||
   die "truffle gave no on-demand price for $TYPE in $REGION ('$PRICE'); cannot judge cost_limit"
 

@@ -14,7 +14,8 @@ Fails (exit 1, every reason printed) unless:
   - every staged run dir's manifest is finalised, finalised_by conductor with this campaign's run id,
     from the conductor's commit; its spec_sha256 is its spec.json's and the committed spec's (at that
     commit); its tables/util.json inputs have the sha256 they cite (staged, else ROOT, else at the commit);
-  - every staged cohort.json records finalised_by conductor and its members are staged;
+  - every staged cohort.json records finalised_by conductor and its members are staged (but a member
+    it records as refused before it made a run dir: manifest "missing", rc not 0);
   - the campaign tsv (results/g3/ladder-campaign/<ts>.tsv) is staged when a campaign ran, every row
     names a run dir that exists (staged for launched rows, staged or in ROOT for skips) or none, and
     every staged cohort dir is in it.
@@ -149,8 +150,13 @@ def main(a):
         cohorts.append(rd)
         if cjj.get("finalised_by") != "conductor" or cjj.get("finalised_by_run_id") != cid:
             bad.append("%s: cohort.json finalised_by %r, not conductor %s" % (rd, cjj.get("finalised_by"), cid))
+        # A member whose run.sh refused before it made a run dir has none to stage: cohort.json records
+        # it as {rank, rc != 0, manifest: "missing"} (run-multi.sh; O3-cost-n32 at c10, r5/r9/r19/r25,
+        # the cost check refused when the Pricing API throttled).
+        refused = {m.get("rank") for m in cjj.get("members") or []
+                   if m.get("manifest") == "missing" and str(m.get("rc")) not in ("0", "", "None")}
         for k in range(cjj.get("nodes") or 0):
-            if not os.path.exists(os.path.join(T, "%s-r%d" % (rd, k), "manifest.json")):
+            if not os.path.exists(os.path.join(T, "%s-r%d" % (rd, k), "manifest.json")) and k not in refused:
                 bad.append("%s: member r%d not staged" % (rd, k))
         if isinstance(cjj.get("cost_usd"), (int, float)):
             spend += cjj["cost_usd"]

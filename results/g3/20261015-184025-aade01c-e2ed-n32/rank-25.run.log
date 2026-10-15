@@ -1,0 +1,9 @@
+make run: accessions: @PRJNA398089:1-10 -> 10 runs from results/cohort/PRJNA398089/runs.tsv (blob 8f52155b14c83c0ee6e6fe197abb8c2af42de5f4)
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261015-184025-aade01c-e2ed-n32-r25  task ak2-g3-20261015-184025-aade01c-e2ed-n32-r25  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261015-184025-aade01c-e2ed-n32-r25
+make run: payload: GET by role
+make run: user data: 13762 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: x8g.2xlarge (0 vCPU, 0 GiB)
+cost_check: truffle gave no on-demand price for x8g.2xlarge in us-west-2 (''); cannot judge cost_limit
+make run: refused before launch: the cost_limit check could not judge x8g.2xlarge in us-west-2 (above)

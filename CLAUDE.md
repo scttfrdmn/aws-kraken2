@@ -127,6 +127,7 @@ targets; ad hoc commands only during exploration.
 | `make harvest CAMPAIGN=<id> [PARTIAL=1]` / `make rehearse-conductor` | [docs/conductor.md](docs/conductor.md) |
 | `make run GATE=… SPEC=… [NODES=n]` | [docs/run.md](docs/run.md) ("Multi-node runs"), [docs/engine.md](docs/engine.md) |
 | `make dryrun-userdata [GEN=…]` (user-data size and pre-launch checks of every spec) | [docs/run.md](docs/run.md) |
+| `make cost-backfill DIRS=… [WRITE=1]` (a member's null cost_usd from its own cost_limit_check price) | [docs/run.md](docs/run.md) ("Cost") |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
 | `make report GATE=… RUN=…` | [docs/report.md](docs/report.md) |
 | spore.host usage notes | [docs/spore-host.md](docs/spore-host.md) |

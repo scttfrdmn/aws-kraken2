@@ -230,8 +230,14 @@ ak2_fatal() { ak2_err "${2:-97}" "FATAL: $1"; exit "${2:-97}"; }
 
 AK2_PAYERS=""
 for AK2_B in $AK2_BUCKETS; do
-  AK2_BR=$(curl -sI -m 10 "https://$AK2_B.s3.amazonaws.com/" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-amz-bucket-region"{print $2}')
-  ak2_req HeadBucket-anon 1 "$AK2_B"
+  # Three tries: one timed out on O3-n16 at c10, rank 14 ('unknown' after 11 s, exit 97;
+  # results/g3/20261015-181714-aade01c-2d27-n16-r14). An answer is still asserted below.
+  for AK2_T3 in 1 2 3; do
+    AK2_BR=$(curl -sI -m 10 "https://$AK2_B.s3.amazonaws.com/" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-amz-bucket-region"{print $2}')
+    ak2_req HeadBucket-anon 1 "$AK2_B"
+    [ -n "$AK2_BR" ] && break
+    ak2_say "WARN: no region for bucket $AK2_B (try $AK2_T3 of 3)"; sleep 2
+  done
   ak2_say "bucket $AK2_B region=$AK2_BR"
   [ "$AK2_BR" = "$AK2_REGION" ] || ak2_fatal "bucket $AK2_B is in '${AK2_BR:-unknown}', instance in $AK2_REGION"
   AK2_P=$(aws s3api get-bucket-request-payment --bucket "$AK2_B" --query Payer --output text 2>/dev/null) ||
