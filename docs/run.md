@@ -385,7 +385,7 @@ So `command[2]` is `scripts/stub.sh` with the utilisation sampler spliced in
     credentials after 10 tries, 3 s apart.
   `scripts/lib/stub_get_test.sh` (in `make test`) runs both on the real stub in AL2023, and
   `runs/payload-get-smoke.json` (c8g.medium, 10 m, a body that only says it ran) checks `role`
-  against S3 from the laptop: `AK2_PAYLOAD_GET=role make run GATE=payload-get SPEC=runs/payload-get-smoke.json`.
+  against S3 from the laptop: `AK2_PAYLOAD_GET=role make run GATE=payloadget SPEC=runs/payload-get-smoke.json`.
 - The URL-bearing spec that spawn reads is a `mktemp` file outside `results/`, removed by an
   EXIT trap. `spec.resolved.json` under `results/` is only ever written with the URL redacted.
 - The stub checks that the URL is `https://<bucket>.s3.<region>.amazonaws.com/…` for the
