@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # make conductor-spec COHORT=<c> [RUNGS=S1,O0] [REPS=2] [CONCURRENCY=1] [FAMILY_LIMITS=X=2]
-#   [DRY_RUN=1] [DRY_MAKE_RUN=1] [TTL=<minutes>] [TYPE=m8g.medium] [OUT=runs/conductor.json]
+#   [DRY_RUN=1] [DRY_MAKE_RUN=1] [TTL=<minutes>] [TYPE=m8g.large] [OUT=runs/conductor.json]
 # (docs/conductor.md, "The spec"): the conductor's TaskSpec, from scripts/conductor.body.sh with the
 # campaign's arguments as its @PARAMS@ block (in the payload, not in env).
-#   - TYPE (default m8g.medium: 1 Graviton vCPU, 4 GiB, not burstable, so cost_usd is the bill; the
-#     2 GiB types are tight for run.sh's go build of scripts/udsize);
+#   - TYPE (default m8g.large: 2 Graviton vCPU, 8 GiB, not burstable, so cost_usd is the bill;
+#     m8g.medium's 3.7 GiB froze in the go build of scripts/udsize, results/conductor/20261015-003557-bb04dfb);
 #   - TTL (minutes, default AK2_CONDUCTOR_MAX_TTL_S / 60, 72 h; Scott 2026-10-14): the campaign drains itself before it
 #     (AK2_CAMPAIGN_DEADLINE); cost_limit = the truffle on-demand price x TTL (+ $0.005, to the cent);
 #   - DRY_RUN=1: the campaign prints its plan only; DRY_MAKE_RUN=1: before it, a DRY_RUN=1 make run of
@@ -19,7 +19,7 @@ cd "$(dirname "$0")/.." || exit 1
 # shellcheck source=/dev/null
 . scripts/lib/tools_pin.sh
 ak2_pin_tools "$PWD" || { echo "mkspec-conductor: the pinned truffle is not in place (make tools)" >&2; exit 2; }
-COHORT=""; RUNGS=""; REPS=2; CONC=1; LIMITS=""; DRY=""; DMR=0; TTL=$((AK2_CONDUCTOR_MAX_TTL_S / 60)); TYPE=m8g.medium; OUT=runs/conductor.json
+COHORT=""; RUNGS=""; REPS=2; CONC=1; LIMITS=""; DRY=""; DMR=0; TTL=$((AK2_CONDUCTOR_MAX_TTL_S / 60)); TYPE=m8g.large; OUT=runs/conductor.json
 for kv in "$@"; do
   case "$kv" in
     *=) ;;   # an empty make variable keeps the default

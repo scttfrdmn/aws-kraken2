@@ -1,0 +1,222 @@
+rehearse-conductor: at 0be363c; shell flags huB; record results/rehearse/conductor-20261015T014827Z-0be363c.log
+rehearse-conductor: image localhost/ak2-conductor-rehearse:al2023 (af3de12694ed), rootful (podman-machine-default-root)
+rehearse-conductor: scratch commit 0ef98c6 drops 8 run dir(s) of c1 S2a/S5 from the record
+rehearse-conductor: round full: run 20261015-014836-0ef98c6; COHORT=1; RUNGS="S2a,S5"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round full: container exit 0
+  full | ak2: [2026-10-15T01:48:36Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  full | ak2: [2026-10-15T01:48:36Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  full | ak2: [2026-10-15T01:48:36Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  full | ak2: [2026-10-15T01:48:36Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  full | ak2: [2026-10-15T01:48:36Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  full | ak2: [2026-10-15T01:48:36Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  full | ak2: [2026-10-15T01:48:36Z] region assert passed
+  full | ak2: [2026-10-15T01:48:36Z] drop_caches_ok=false
+  full | ak2: [2026-10-15T01:48:36Z] preamble done; spec body starts
+  full | ak2: [2026-10-15T01:48:36Z] conductor 20261015-014836-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S2a,S5', reps 1, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014836-0ef98c6/
+  full | ak2: [2026-10-15T01:48:36Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  full | ak2: [2026-10-15T01:48:38Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+  full | ak2: [2026-10-15T01:48:38Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64 (stub)","aws":"aws-cli/stub","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.12.13-200.fc41.aarch64"}
+  full | ak2: [2026-10-15T01:48:38Z] udsize: built in 0 s (GOFLAGS=-p=1)
+  full | ak2: [2026-10-15T01:48:38Z] deadline: TTL ends 2026-10-16T01:48:38Z; no launch whose TTL + finalisation ends after 2026-10-16T01:33:38Z
+  full | ak2: [2026-10-15T01:48:38Z] campaign: make ladder-campaign COHORT=1 REPS=1 CONCURRENCY=1 RUNGS=S2a,S5
+  full | ladder-campaign: launch S2a rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s2a-c1.json NODES=1 (AK2_LADDER_REP=1; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014838/S2a-rep1.log)
+  full | ladder-campaign: ended S2a rep 1: class ok, make run rc 0, cost 0.5, run dir results/g3/20261015-014839-0ef98c6-6816-n1 (clean record, in the attribution)
+  full | ladder-campaign: launch S5 rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s5-c1.json NODES=1 (AK2_LADDER_REP=1; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014838/S5-rep1.log)
+  full | ladder-campaign: ended S5 rep 1: class ok, make run rc 0, cost 0.5, run dir results/g3/20261015-014841-0ef98c6-7eb8-n1 (clean record, in the attribution)
+  full | ladder-campaign: summary (results/g3/ladder-campaign/20261015-014838.tsv):
+  full | ladder-campaign: exit 0: every planned launch succeeded
+  full | ladder-campaign: exit 0
+  full | ak2: [2026-10-15T01:48:43Z] campaign: make rc 0, campaign exit 0 (campaign 20261015-014838)
+  full | ak2: [2026-10-15T01:48:43Z] conductor: exit 0 (campaign rc 0); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014836-0ef98c6/
+rehearse-conductor: ok   full: body exit 0 (in the streamed log/run.log), conductor.json ended, campaign rc 0, 2 cohort dirs staged with changes.tsv
+rehearse-conductor: ok   full: the body waited for the ak2-conductor role and set the campaign's deadline from spawn:ttl-deadline
+rehearse-conductor: ok   full: the body built scripts/udsize in setup, one package at a time
+rehearse-conductor: ok   full: the body's default upstream URL is pin.env's UPSTREAM_REPO, and it resolves
+rehearse-conductor: ok   full: the campaign log is staged
+rehearse-conductor: ok   full: make harvest verified and installed it; git status shows exactly the printed git add (7 path(s))
+rehearse-conductor: ok   full: harvest again is a no-op that passes (identical files)
+rehearse-conductor: ok   full: a tampered staged file is refused, nothing installed (negative control)
+rehearse-conductor: ok   full: a manifest without finalised_by conductor is refused (negative control)
+rehearse-conductor: round drain: run 20261015-014847-0ef98c6; COHORT=1; RUNGS="S2a,S5"; REPS=2; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round drain: container exit 0
+  drain | ak2: [2026-10-15T01:48:47Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  drain | ak2: [2026-10-15T01:48:47Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  drain | ak2: [2026-10-15T01:48:47Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  drain | ak2: [2026-10-15T01:48:47Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  drain | ak2: [2026-10-15T01:48:47Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  drain | ak2: [2026-10-15T01:48:47Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  drain | ak2: [2026-10-15T01:48:47Z] region assert passed
+  drain | ak2: [2026-10-15T01:48:47Z] drop_caches_ok=false
+  drain | ak2: [2026-10-15T01:48:47Z] preamble done; spec body starts
+  drain | ak2: [2026-10-15T01:48:47Z] conductor 20261015-014847-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S2a,S5', reps 2, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014847-0ef98c6/
+  drain | ak2: [2026-10-15T01:48:47Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  drain | ak2: [2026-10-15T01:48:49Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+  drain | ak2: [2026-10-15T01:48:49Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64 (stub)","aws":"aws-cli/stub","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.12.13-200.fc41.aarch64"}
+  drain | ak2: [2026-10-15T01:48:49Z] udsize: built in 0 s (GOFLAGS=-p=1)
+  drain | ak2: [2026-10-15T01:48:49Z] deadline: TTL ends 2026-10-16T01:48:49Z; no launch whose TTL + finalisation ends after 2026-10-16T01:33:49Z
+  drain | ak2: [2026-10-15T01:48:49Z] campaign: make ladder-campaign COHORT=1 REPS=2 CONCURRENCY=1 RUNGS=S2a,S5
+  drain | ladder-campaign: launch S2a rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s2a-c1.json NODES=1 (AK2_LADDER_REP=1; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014849/S2a-rep1.log)
+  drain | ak2: [2026-10-15T01:48:52Z] drain: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014847-0ef98c6/DRAIN found (drained_at=mid by=rehearsal reason=mid-run); the campaign launches nothing more
+  drain | ladder-campaign: DRAIN: drain flag /root/ak2c/DRAIN set (drained_at=mid by=rehearsal reason=mid-run); 1 run(s) in flight finish and are recorded, nothing more launches
+  drain | ladder-campaign: ended S2a rep 1: class ok, make run rc 0, cost 0.5, run dir results/g3/20261015-014850-0ef98c6-d867-n1 (clean record, in the attribution)
+  drain | ladder-campaign: summary (results/g3/ladder-campaign/20261015-014849.tsv):
+  drain | ladder-campaign: exit 4: drained (drain flag /root/ak2c/DRAIN set (drained_at=mid by=rehearsal reason=mid-run)); 3 item(s) not launched
+  drain | ladder-campaign: exit 4
+  drain | ak2: [2026-10-15T01:48:56Z] campaign: make rc 2, campaign exit 4 (campaign 20261015-014849)
+  drain | ak2: [2026-10-15T01:48:56Z] conductor: exit 0 (campaign rc 4); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014847-0ef98c6/
+rehearse-conductor: ok   drain: DRAIN in the staging prefix reached the campaign: exit 4, body 0, 1 of 4 launched, each staged
+rehearse-conductor: ok   drain: the drained campaign harvests (every launched run finalised, the tsv consistent)
+rehearse-conductor: round early: run 20261015-014857-0ef98c6; COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round early: container exit 0
+  early | ak2: [2026-10-15T01:48:57Z] util sampler running (pid 4, 2 ticks so far) -> log/util.tsv
+  early | ak2: [2026-10-15T01:48:57Z] inherited $-=hBc (stub, as spawn started it: $-=ehBc)
+  early | ak2: [2026-10-15T01:48:57Z] after set +e $-=hBc
+  early | ak2: [2026-10-15T01:48:57Z] gate=conductor run=20261015-014857-0ef98c6
+  early | ak2: [2026-10-15T01:48:57Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  early | ak2: [2026-10-15T01:48:57Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  early | ak2: [2026-10-15T01:48:57Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  early | ak2: [2026-10-15T01:48:57Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  early | ak2: [2026-10-15T01:48:57Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  early | ak2: [2026-10-15T01:48:57Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  early | ak2: [2026-10-15T01:48:57Z] region assert passed
+  early | ak2: [2026-10-15T01:48:57Z] drop_caches_ok=false
+  early | ak2: [2026-10-15T01:48:57Z] preamble done; spec body starts
+  early | ak2: [2026-10-15T01:48:58Z] conductor 20261015-014857-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S2a', reps 1, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014857-0ef98c6/
+  early | ak2: [2026-10-15T01:48:58Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  early | ak2: [2026-10-15T01:48:58Z] drain flag already set in s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014857-0ef98c6/DRAIN: nothing to do
+  early | ak2: [2026-10-15T01:48:58Z] conductor: exit 0 (campaign rc none); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014857-0ef98c6/
+rehearse-conductor: ok   early: a DRAIN set before start ends the body at once (exit 0, nothing launched)
+rehearse-conductor: round plan: run 20261015-014858-0ef98c6; COHORT=1; RUNGS=""; REPS=2; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=1; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round plan: container exit 0
+  plan | ak2: [2026-10-15T01:48:58Z] util sampler running (pid 4, 2 ticks so far) -> log/util.tsv
+  plan | ak2: [2026-10-15T01:48:58Z] inherited $-=hBc (stub, as spawn started it: $-=ehBc)
+  plan | ak2: [2026-10-15T01:48:58Z] after set +e $-=hBc
+  plan | ak2: [2026-10-15T01:48:58Z] gate=conductor run=20261015-014858-0ef98c6
+  plan | ak2: [2026-10-15T01:48:58Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  plan | ak2: [2026-10-15T01:48:58Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  plan | ak2: [2026-10-15T01:48:58Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  plan | ak2: [2026-10-15T01:48:58Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  plan | ak2: [2026-10-15T01:48:58Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  plan | ak2: [2026-10-15T01:48:58Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  plan | ak2: [2026-10-15T01:48:58Z] region assert passed
+  plan | ak2: [2026-10-15T01:48:58Z] drop_caches_ok=false
+  plan | ak2: [2026-10-15T01:48:58Z] preamble done; spec body starts
+  plan | ak2: [2026-10-15T01:48:58Z] conductor 20261015-014858-0ef98c6: commit 0ef98c6, cohort 1, rungs 'all', reps 2, concurrency 1, DRY_RUN=1, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014858-0ef98c6/
+  plan | ak2: [2026-10-15T01:48:58Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  plan | ak2: [2026-10-15T01:49:01Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+  plan | ak2: [2026-10-15T01:49:01Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64 (stub)","aws":"aws-cli/stub","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.12.13-200.fc41.aarch64"}
+  plan | ak2: [2026-10-15T01:49:01Z] udsize: built in 0 s (GOFLAGS=-p=1)
+  plan | ak2: [2026-10-15T01:49:01Z] deadline: TTL ends 2026-10-16T01:49:01Z; no launch whose TTL + finalisation ends after 2026-10-16T01:34:01Z
+  plan | ak2: [2026-10-15T01:49:01Z] campaign: make ladder-campaign COHORT=1 REPS=2 CONCURRENCY=1 DRY_RUN=1
+  plan | ladder-campaign: exit 0
+  plan | ak2: [2026-10-15T01:49:02Z] campaign: make rc 0, campaign exit 0
+  plan | ak2: [2026-10-15T01:49:02Z] conductor: exit 0 (campaign rc 0); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014858-0ef98c6/
+rehearse-conductor: ok   plan: DRY_RUN=1 with the real make g3-ladder on AL2023's python: judged, S2a/S5 planned, nothing staged under tree/
+rehearse-conductor: round norole: run 20261015-014903-0ef98c6; COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round norole: container exit 1
+  norole | ak2: [2026-10-15T01:49:03Z] util sampler running (pid 4, 2 ticks so far) -> log/util.tsv
+  norole | ak2: [2026-10-15T01:49:03Z] inherited $-=hBc (stub, as spawn started it: $-=ehBc)
+  norole | ak2: [2026-10-15T01:49:03Z] after set +e $-=hBc
+  norole | ak2: [2026-10-15T01:49:03Z] gate=conductor run=20261015-014903-0ef98c6
+  norole | ak2: [2026-10-15T01:49:03Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  norole | ak2: [2026-10-15T01:49:03Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  norole | ak2: [2026-10-15T01:49:03Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  norole | ak2: [2026-10-15T01:49:03Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  norole | ak2: [2026-10-15T01:49:03Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  norole | ak2: [2026-10-15T01:49:03Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  norole | ak2: [2026-10-15T01:49:03Z] region assert passed
+  norole | ak2: [2026-10-15T01:49:03Z] drop_caches_ok=false
+  norole | ak2: [2026-10-15T01:49:03Z] preamble done; spec body starts
+  norole | ak2: [2026-10-15T01:49:03Z] conductor 20261015-014903-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S2a', reps 1, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014903-0ef98c6/
+  norole | ak2: [2026-10-15T01:49:03Z] waiting for the ak2-conductor role (profile 'arn:aws:iam::942542972736:instance-profile/spawn-instance-27cce928', caller 'arn:aws:sts::942542972736:assumed-role/spawn-instance-x/i-0c0nduct0r')
+  norole | ak2: [2026-10-15T01:49:13Z] ERROR: the instance never got the ak2-conductor role (make conductor-iam; run.sh replaces the profile after launch)
+  norole | ak2: [2026-10-15T01:49:13Z] conductor: exit 1 (campaign rc none); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014903-0ef98c6/
+rehearse-conductor: ok   norole: without the ak2-conductor role the body fails (exit 1) and still stages conductor.json ended (negative control)
+rehearse-conductor: round launchfail: run 20261015-014914-0ef98c6; COHORT=1; RUNGS="S5"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round launchfail: container exit 1
+  launchfail | ak2: [2026-10-15T01:49:14Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  launchfail | ak2: [2026-10-15T01:49:14Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  launchfail | ak2: [2026-10-15T01:49:14Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  launchfail | ak2: [2026-10-15T01:49:14Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  launchfail | ak2: [2026-10-15T01:49:14Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  launchfail | ak2: [2026-10-15T01:49:14Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  launchfail | ak2: [2026-10-15T01:49:14Z] region assert passed
+  launchfail | ak2: [2026-10-15T01:49:14Z] drop_caches_ok=false
+  launchfail | ak2: [2026-10-15T01:49:14Z] preamble done; spec body starts
+  launchfail | ak2: [2026-10-15T01:49:14Z] conductor 20261015-014914-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S5', reps 1, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014914-0ef98c6/
+  launchfail | ak2: [2026-10-15T01:49:14Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  launchfail | ak2: [2026-10-15T01:49:16Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+  launchfail | ak2: [2026-10-15T01:49:16Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64 (stub)","aws":"aws-cli/stub","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.12.13-200.fc41.aarch64"}
+  launchfail | ak2: [2026-10-15T01:49:16Z] udsize: built in 0 s (GOFLAGS=-p=1)
+  launchfail | ak2: [2026-10-15T01:49:16Z] deadline: TTL ends 2026-10-16T01:49:16Z; no launch whose TTL + finalisation ends after 2026-10-16T01:34:16Z
+  launchfail | ak2: [2026-10-15T01:49:16Z] campaign: make ladder-campaign COHORT=1 REPS=1 CONCURRENCY=1 RUNGS=S5
+  launchfail | ladder-campaign: launch S5 rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s5-c1.json NODES=1 (AK2_LADDER_REP=1; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014916/S5-rep1.log)
+  launchfail | ladder-campaign: ended S5 rep 1: class capacity, make run rc 2, cost 0, run dir results/g3/20261015-014917-0ef98c6-a8b2-n1 (InsufficientInstanceCapacity)
+  launchfail | ladder-campaign: launch S5 rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s5-c1.json NODES=1 (AK2_LADDER_REP=1, AK2_LAUNCH_AZ=us-west-2c; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014916/S5-rep1-us-west-2c.log)
+  launchfail | ladder-campaign: ended S5 rep 1: class capacity, make run rc 2, cost 0, run dir results/g3/20261015-014917-0ef98c6-5f2b-n1 (InsufficientInstanceCapacity)
+  launchfail | ladder-campaign: summary (results/g3/ladder-campaign/20261015-014916.tsv):
+  launchfail | ladder-campaign: exit 1: not every planned launch succeeded
+  launchfail | ladder-campaign: exit 1
+  launchfail | ak2: [2026-10-15T01:49:18Z] campaign: make rc 2, campaign exit 1 (campaign 20261015-014916)
+  launchfail | ak2: [2026-10-15T01:49:18Z] conductor: exit 1 (campaign rc 1); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014914-0ef98c6/
+rehearse-conductor: ok   launchfail: capacity recorded, the rung stopped (campaign exit 1), all 2 cohort dir(s) and their never-launched members staged, the g3_defects.tsv patch staged
+rehearse-conductor: ok   launchfail: harvest verifies the failed launches, installs them and applies the g3_defects.tsv rows
+rehearse-conductor: round transient: run 20261015-014919-0ef98c6; COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round transient: container exit 0
+  transient | ak2: [2026-10-15T01:49:19Z] after set +e $-=hBc
+  transient | ak2: [2026-10-15T01:49:19Z] gate=conductor run=20261015-014919-0ef98c6
+  transient | ak2: [2026-10-15T01:49:19Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  transient | ak2: [2026-10-15T01:49:19Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  transient | ak2: [2026-10-15T01:49:19Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  transient | ak2: [2026-10-15T01:49:19Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  transient | ak2: [2026-10-15T01:49:19Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  transient | ak2: [2026-10-15T01:49:19Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  transient | ak2: [2026-10-15T01:49:19Z] region assert passed
+  transient | ak2: [2026-10-15T01:49:19Z] drop_caches_ok=false
+  transient | ak2: [2026-10-15T01:49:19Z] preamble done; spec body starts
+  transient | ak2: [2026-10-15T01:49:19Z] conductor 20261015-014919-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S2a', reps 1, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014919-0ef98c6/
+  transient | ak2: [2026-10-15T01:49:19Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  transient | ak2: [2026-10-15T01:49:22Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+  transient | ak2: [2026-10-15T01:49:22Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64 (stub)","aws":"aws-cli/stub","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.12.13-200.fc41.aarch64"}
+  transient | ak2: [2026-10-15T01:49:22Z] udsize: built in 0 s (GOFLAGS=-p=1)
+  transient | ak2: [2026-10-15T01:49:22Z] deadline: TTL ends 2026-10-16T01:49:22Z; no launch whose TTL + finalisation ends after 2026-10-16T01:34:22Z
+  transient | ak2: [2026-10-15T01:49:22Z] campaign: make ladder-campaign COHORT=1 REPS=1 CONCURRENCY=1 RUNGS=S2a
+  transient | ladder-campaign: launch S2a rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s2a-c1.json NODES=1 (AK2_LADDER_REP=1; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014922/S2a-rep1.log)
+  transient | ladder-campaign: ended S2a rep 1: class ok, make run rc 0, cost 0.5, run dir results/g3/20261015-014927-0ef98c6-3acd-n1 (clean record, in the attribution)
+  transient | ladder-campaign: summary (results/g3/ladder-campaign/20261015-014922.tsv):
+  transient | ladder-campaign: exit 0: every planned launch succeeded
+  transient | ladder-campaign: exit 0
+  transient | ak2: [2026-10-15T01:49:29Z] campaign: make rc 0, campaign exit 0 (campaign 20261015-014922)
+  transient | ak2: [2026-10-15T01:49:30Z] conductor: exit 0 (campaign rc 0); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014919-0ef98c6/
+rehearse-conductor: ok   transient: a run dir deleted before finalisation never reaches the stage; harvest verifies
+rehearse-conductor: round transient-old: run 20261015-014931-0ef98c6; COHORT=1; RUNGS="S2a"; REPS=1; CONCURRENCY=1; FAMILY_LIMITS=""; DRY_RUN=; DRY_MAKE_RUN=0; TTL_S=7200
+rehearse-conductor: round transient-old: container exit 0
+  transient-old | ak2: [2026-10-15T01:49:31Z] after set +e $-=hBc
+  transient-old | ak2: [2026-10-15T01:49:31Z] gate=conductor run=20261015-014931-0ef98c6
+  transient-old | ak2: [2026-10-15T01:49:31Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /work/bin/aws)
+  transient-old | ak2: [2026-10-15T01:49:31Z] imds region=us-west-2 az=us-west-2a instance=i-0c0nduct0r type=m8g.large ami=ami-test
+  transient-old | ak2: [2026-10-15T01:49:31Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+  transient-old | ak2: [2026-10-15T01:49:31Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+  transient-old | ak2: [2026-10-15T01:49:31Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+  transient-old | ak2: [2026-10-15T01:49:31Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+  transient-old | ak2: [2026-10-15T01:49:31Z] region assert passed
+  transient-old | ak2: [2026-10-15T01:49:31Z] drop_caches_ok=false
+  transient-old | ak2: [2026-10-15T01:49:31Z] preamble done; spec body starts
+  transient-old | ak2: [2026-10-15T01:49:31Z] conductor 20261015-014931-0ef98c6: commit 0ef98c6, cohort 1, rungs 'S2a', reps 1, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=0; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014931-0ef98c6/
+  transient-old | ak2: [2026-10-15T01:49:31Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0c0nduct0r (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+  transient-old | ak2: [2026-10-15T01:49:34Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+  transient-old | ak2: [2026-10-15T01:49:34Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64 (stub)","aws":"aws-cli/stub","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.12.13-200.fc41.aarch64"}
+  transient-old | ak2: [2026-10-15T01:49:34Z] udsize: built in 0 s (GOFLAGS=-p=1)
+  transient-old | ak2: [2026-10-15T01:49:34Z] deadline: TTL ends 2026-10-16T01:49:34Z; no launch whose TTL + finalisation ends after 2026-10-16T01:34:34Z
+  transient-old | ak2: [2026-10-15T01:49:34Z] campaign: make ladder-campaign COHORT=1 REPS=1 CONCURRENCY=1 RUNGS=S2a
+  transient-old | ladder-campaign: launch S2a rep 1: /work/bin/stub-run GATE=g3 SPEC=runs/g3-l-s2a-c1.json NODES=1 (AK2_LADDER_REP=1; 1 x x8g.24xlarge, family X; driver log results/g3/ladder-campaign/20261015-014934/S2a-rep1.log)
+  transient-old | ladder-campaign: ended S2a rep 1: class ok, make run rc 0, cost 0.5, run dir results/g3/20261015-014939-0ef98c6-6567-n1 (clean record, in the attribution)
+  transient-old | ladder-campaign: summary (results/g3/ladder-campaign/20261015-014934.tsv):
+  transient-old | ladder-campaign: exit 0: every planned launch succeeded
+  transient-old | ladder-campaign: exit 0
+  transient-old | ak2: [2026-10-15T01:49:41Z] campaign: make rc 0, campaign exit 0 (campaign 20261015-014934)
+  transient-old | ak2: [2026-10-15T01:49:41Z] conductor: exit 0 (campaign rc 0); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261015-014931-0ef98c6/
+rehearse-conductor: ok   transient: with the old staging (AK2C_STAGE_UNFILTERED=1) harvest refuses: B1 reproduced (negative control)
+rehearse-conductor: ok   patch: a tracked.patch that is not its recorded sha256 is refused
+rehearse-conductor: ok   patch: a patch touching another tracked file is refused
+rehearse-conductor: PASS (record results/rehearse/conductor-20261015T014827Z-0be363c.log)
