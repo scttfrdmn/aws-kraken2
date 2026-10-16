@@ -1,0 +1,40 @@
+Loading database information...ak2-timing	opts	0.003790	0.000587	5	0	0.000043	0.000000
+ak2-timing	taxo	0.004388	0.547453	87892	4	0.026603	0.095188
+ak2-engine	mem	t_s	15.0	rss_kib	26012604	hwm_kib	26012608	heap_inuse	394149888	sys	409450856	avail_kib	100177104
+ak2-timing	shard-load-2	0.758287	20.393400	22132	0	18.563212	21.310655
+ak2-engine	mem	t_s	30.3	rss_kib	36731444	hwm_kib	36731448	heap_inuse	452608000	sys	468240760	avail_kib	89896656
+ak2-timing	etag	21.824550	9.205310	14127	0	63.831679	0.000000
+ak2-engine	mem	t_s	45.3	rss_kib	36751920	hwm_kib	36751924	heap_inuse	473333760	sys	485935480	avail_kib	90074048
+ak2-engine	mem	t_s	60.3	rss_kib	36769296	hwm_kib	36769300	heap_inuse	490651648	sys	502778232	avail_kib	90097624
+ak2-engine	mem	t_s	75.3	rss_kib	36785464	hwm_kib	36785468	heap_inuse	506724352	sys	520247688	avail_kib	90080732
+ak2-engine	mem	t_s	90.3	rss_kib	36800496	hwm_kib	36800500	heap_inuse	521822208	sys	537287048	avail_kib	90050016
+ak2-engine	mem	t_s	105.3	rss_kib	36814260	hwm_kib	36814264	heap_inuse	535461888	sys	550197640	avail_kib	90056544
+ak2-engine	mem	t_s	120.3	rss_kib	36825800	hwm_kib	36825804	heap_inuse	547184640	sys	563157384	avail_kib	90052768
+ak2-engine	mem	t_s	135.3	rss_kib	36827612	hwm_kib	36827612	heap_inuse	193748992	sys	563902856	avail_kib	90054060
+ak2-engine	mem	t_s	150.3	rss_kib	36827664	hwm_kib	36827664	heap_inuse	198279168	sys	563902856	avail_kib	90060260
+ak2-timing	rendezvous	31.030116	124.746523	24590	7	0.593711	0.000000
+ak2-timing	connect	155.777328	0.184382	1	0	0.009554	0.000000
+ak2-timing	hash	0.551902	155.409828	63025	17	83.013239	21.317152
+ done.
+ak2-engine	mem	t_s	165.3	rss_kib	37157112	hwm_kib	37157112	heap_inuse	572661760	sys	897616344	avail_kib	89323028
+ak2-engine	mem	t_s	180.3	rss_kib	37159308	hwm_kib	37159308	heap_inuse	613695488	sys	897616344	avail_kib	88974652
+ak2-engine	mem	t_s	195.3	rss_kib	37176012	hwm_kib	37176012	heap_inuse	476012544	sys	910330328	avail_kib	88742384
+ak2-engine	mem	t_s	210.3	rss_kib	37176064	hwm_kib	37176064	heap_inuse	499343360	sys	910592472	avail_kib	88540992
+ak2-engine	mem	t_s	225.3	rss_kib	37171004	hwm_kib	37175204	heap_inuse	489349120	sys	910592472	avail_kib	88336992
+12325847 sequences (2261.51 Mbp) processed in 72.160s (10248.8 Kseq/m, 1880.41 Mbp/m).
+  11791754 sequences classified (95.67%)
+  534093 sequences unclassified (4.33%)
+ak2-sample	batch	0	name	SRR5935742	mode	parallel	s3client	-	rank	2	role	home	inflight	8	threads	1	start_s	155.961749	wall_s	72.242790	setup_s	0.000114	classify_s	72.160047	close_s	0.000021	report_s	0.078218	status	0	sequences	12325847	bases	2261511731	classified	11791754	place	mod	weight	12325847
+ak2-engine	mem	t_s	240.3	rss_kib	37171076	hwm_kib	37175204	heap_inuse	518774784	sys	910854616	avail_kib	88478376
+ak2-engine	mem	t_s	255.3	rss_kib	37171080	hwm_kib	37175204	heap_inuse	520388608	sys	910854616	avail_kib	88615176
+ak2-timing	batch-barrier-0	228.204571	41.523625	7	0	0.429081	0.130856
+ak2-engine	shard	0	n	32	lo	18579557371	hi	27869336057	tail	302	full	false	empty_at	9289778686	keys	137483654	batches	2908	probe_s	3.188237	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	269.7	rss_kib	37171080	hwm_kib	37175204	heap_inuse	521207808	sys	910854616	avail_kib	88635676
+ak2-engine	rendezvous	puts	2	gets	2227
+ak2-engine	s3	client	sdk	put	2	get	2227	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	277	requests	1	retries	0	bytes	57586500	cross_bytes	95979504	hash_s	9.205305	combine_s	0.000666
+ak2-engine	load	seconds	20.393396	requests	572	retries	0	bytes	37159181552
+ak2-engine	route	transport	nodes	calls	321	keys	482756453	batches	10272	route_s	3.694070	wait_s	2.315102	gather_s	0.800317
+ak2-engine	worker	scan_s	27.269005	lookup_s	6.809808	classify_s	36.741937
+ak2-timing	total	0.000003	269.819268	240196	23	159.246221	24.752419
