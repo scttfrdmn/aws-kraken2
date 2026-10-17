@@ -218,6 +218,14 @@ def record(res, variant=""):
     elif variant == "o5crash":
         # rapidgzip segfaulted on the O arm (O4b-if4 at c10): its output is a crash's, matching no S entry.
         o0 = [sample("O", "O0", s5="differs", fallback="gzip-crash", rg=RG2)]
+    elif variant in ("o5crashmate", "o5crashout"):
+        # Two mates, rapidgzip crashed on mate 1. o5crashmate: mate 2 (exit 0) differs from gzip too,
+        # so the crash does not exempt it. o5crashout: mate 2 equal, but the kraken2 output differs.
+        x = sample("O", "O0", {"output": {"bytes": 10, "sha256": SHA_BAD}, "report": GOOD["report"]} if variant == "o5crashout" else None,
+                   s5="differs", fallback="gzip")
+        x["s5"].update(gz_sha256=[GZ, GZ], rg_sha256=[RG2, RG2 if variant == "o5crashmate" else GZ],
+                       gz_exit=[0, 0], rg_exit=[139, 0])
+        o0 = [x]
     single(res, "20261010-000010-aaaaaaa", "O", "O0", 2, 302, samples=o0)
     # O1 rep 1: a 2-node cohort. Launches T0, T0+1; terminations T0+150, T0+200: wall 200; billed 0.1 + 0.1.
     cid = "20261010-000011-aaaaaaa-1234-n2"
@@ -673,6 +681,13 @@ def variants():
     check("O-arm crash is a finding against the lever",
           any(f.startswith("O0: rapidgzip crashed on 1 of ") and "SRR1 in 20261010-000010-aaaaaaa (exit 139)" in f
               for f in T["manifest"]["findings"]), True)
+    rc, T = run("o5crashmate")
+    check("crash on mate 1, a deterministic difference on mate 2: the rg_sha256 rule applies (DEFECT, exit 1)",
+          (rc, one(T["runs.tsv"], run_id="20261010-000010-aaaaaaa").get("in_attribution")),
+          (1, "no: DEFECT (Law 1): SRR1: O-arm s5 differs and no S entry has the same rg_sha256"))
+    rc, T = run("o5crashout")
+    check("crash with the gzip fallback but a kraken2 output mismatch: Law 1 DEFECT (exit 1)",
+          (rc, one(T["law1.tsv"], accession="SRR1").get("status")), (1, "DEFECT"))
     rc, T = run("s5none")
     check("s5 differs without a gzip fallback: contract DEFECT, exit 1", rc, 1)
     check("s5 differs without a fallback: excluded",

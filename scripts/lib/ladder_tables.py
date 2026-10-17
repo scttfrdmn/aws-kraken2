@@ -944,8 +944,16 @@ def s5_crashed(s):
     a deterministic difference, so it is not compared by rg_sha256 (Scott, 2026-10-17: not a Law 1
     DEFECT; the classifier outputs are still compared byte for byte). The exit codes, or None."""
     x = s.get("s5") if isinstance(s.get("s5"), dict) else {}
-    codes = [c for c in (x.get("rg_exit") or []) if c not in (0, None)]
-    return codes if codes and s5_of(s) == ("differs", "gzip") else None
+    ex, rg, gz = x.get("rg_exit") or [], x.get("rg_sha256") or [], x.get("gz_sha256") or []
+    codes = [c for c in ex if c not in (0, None)]
+    if not codes or s5_of(s) != ("differs", "gzip"):
+        return None
+    # Per mate: every mate rapidgzip did not crash on must equal gzip's, or a deterministic
+    # difference on it would ride on the crash (review of #87).
+    for i, c in enumerate(ex):
+        if c == 0 and (i >= len(rg) or i >= len(gz) or rg[i] != gz[i]):
+            return None
+    return codes
 
 
 RECORDED_CLASSES = ("contract", "incomplete")   # the checks a recorded defect's run does not re-raise
