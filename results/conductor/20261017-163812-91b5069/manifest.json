@@ -1,0 +1,266 @@
+{
+  "gate": "conductor",
+  "run_id": "20261017-163812-91b5069",
+  "task_id": "ak2-conductor-20261017-163812-91b5069",
+  "spec": "runs/conductor-c10.json",
+  "spec_sha256": "6369dccb873ab08b2c5a97bb685f8091be2aa3f503303e75665f0aebd5e23fbe",
+  "params": null,
+  "commit": "91b50692d00e072594864c4e1e70e5b144f3729a",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "spawn_path": "/Users/scttfrdmn/src/aws-kraken2/bin/spawn",
+    "spawn_sha256": "9b42b4efd8980d28405c7f3359fe7e95a82712a6df5bd0ff6b4afcfec8fcc5d4",
+    "truffle": "0.57.1",
+    "truffle_path": "/Users/scttfrdmn/src/aws-kraken2/bin/truffle",
+    "truffle_sha256": "e33d85e108e084fd6c2662943c305756f9b3497e0f895dc8df67f330625d3046"
+  },
+  "region": "us-west-2",
+  "ttl": "1440m",
+  "cost_limit_usd": 2.16,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261017-163812-91b5069",
+  "sample_accessions": [],
+  "sample_accessions_ref": null,
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2",
+    "kraken2-ncbi-refseq-complete-v205"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261017-163812-91b5069/payload.sh",
+    "sha256": "76c0e88abacda747e4fd8e33ff12bb233bb042bd7bf22367d5dc28947d53405a",
+    "bytes": 33988,
+    "get": "url"
+  },
+  "user_data": {
+    "base64_bytes": 18456,
+    "bootstrap_bytes": 41695,
+    "gzip_bytes": 13842
+  },
+  "datasets": [
+    {
+      "uri": "s3://kraken2-ncbi-refseq-complete-v205/Kraken2_RefSeqCompleteV205/",
+      "kind": "prefix"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/",
+      "kind": "prefix"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    },
+    {
+      "bucket": "kraken2-ncbi-refseq-complete-v205",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-17T16:38:15Z",
+  "cost_limit_check": {
+    "region": "us-west-2",
+    "instance_type": "m8g.large",
+    "ttl": "1440m",
+    "ttl_s": 86400,
+    "nodes": 1,
+    "price_usd_per_hour": 0.08976,
+    "epsilon": 0.10,
+    "cent_allowance_usd": 0.01,
+    "cost_limit_usd": 2.16,
+    "expected_usd": 2.1542,
+    "max_cost_limit_usd": 2.3797,
+    "total_cost_limit_usd": 2.16,
+    "total_max_usd": 2.3797,
+    "max_cost_usd_override": null,
+    "within_price": true,
+    "within_override": true,
+    "ok": true
+  },
+  "quota_check": {
+    "region": "us-west-2",
+    "instance_type": "m8g.large",
+    "count": 1,
+    "quota_code": "L-1216C47A",
+    "family": "Standard(A,C,D,H,I,M,R,T,Z)",
+    "quota_vcpus": 1989,
+    "vcpus_per_instance": 2,
+    "requested_vcpus": 2,
+    "running_vcpus": 8,
+    "running_instances": 4,
+    "total_vcpus": 10,
+    "within_quota": true,
+    "checked_at": "2026-10-17T16:38:19Z"
+  },
+  "conductor": {
+    "instance_profile": "arn:aws:iam::942542972736:instance-profile/ak2-conductor",
+    "replaced": "arn:aws:iam::942542972736:instance-profile/spawn-instance-c77244a6",
+    "association_id": "iip-assoc-0125ce5030d625f82",
+    "replaced_at": "2026-10-17T16:38:33Z",
+    "staging": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261017-163812-91b5069/"
+  },
+  "launch": {
+    "requested_at": "2026-10-17T16:38:21Z",
+    "instance_id": "i-02c63c8c2255722f9",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "m8g.large",
+    "count": 1,
+    "ami": "ami-0957e38de3db270cc",
+    "az": "us-west-2b",
+    "launch_time": "2026-10-17T16:38:26+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "type_info": {
+      "vcpus": 2,
+      "memory_mib": 8192,
+      "network_performance": "Up to 12.5 Gigabit",
+      "baseline_gbps": 0.937,
+      "peak_gbps": 12.5,
+      "source": "ec2 describe-instance-types",
+      "queried_at": "2026-10-17T16:38:34Z"
+    },
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-17T17:51:12Z"
+  },
+  "truffle_price_usd_per_hour": 0.08976,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.59.0\n  https://github.com/spore-host/truffle/releases/tag/v0.59.0",
+  "truffle_price_source": "truffle at launch",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261017-163812-91b5069/: 8 objects, 7 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-17T16:38:39Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-17T16:38:40Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-17T16:38:40Z",
+      "seconds": 159,
+      "cold": false
+    },
+    {
+      "phase": "probe",
+      "start": "2026-10-17T16:41:19Z",
+      "seconds": 14,
+      "cold": false
+    },
+    {
+      "phase": "campaign",
+      "start": "2026-10-17T16:41:33Z",
+      "seconds": 4131,
+      "cold": false
+    },
+    {
+      "phase": "stage",
+      "start": "2026-10-17T17:50:24Z",
+      "seconds": 17,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 4,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "HeadBucket-anon": 2
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "kraken2-ncbi-refseq-complete-v205"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-conductor-20261017-163812-91b5069",
+    "run_id": "4a37eac7-7c99-4b29-9a76-d162cd2bda99",
+    "exit_code": 3,
+    "state": "failed",
+    "started_at": "2026-10-17T16:38:39Z",
+    "ended_at": "2026-10-17T17:50:42Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/conductor/20261017-163812-91b5069/spawn/ak2-conductor-20261017-163812-91b5069/command.log"
+    ],
+    "retry_class": "app_error"
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2b",
+    "instance_id": "i-02c63c8c2255722f9",
+    "instance_type": "m8g.large",
+    "ami": "ami-0957e38de3db270cc",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "BucketOwner"
+      },
+      {
+        "bucket": "kraken2-ncbi-refseq-complete-v205",
+        "region": "us-west-2",
+        "payer": "BucketOwner"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2 kraken2-ncbi-refseq-complete-v205",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-17T16:38:40Z"
+  },
+  "start": "2026-10-17T16:38:26+00:00",
+  "stop": "2026-10-17T17:51:12Z",
+  "billed_seconds": 4366,
+  "cost_usd": 0.108859,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-17T17:51:59Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-conductor-20261017-163812-91b5069",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-17T17:52:01Z"
+  }
+}
