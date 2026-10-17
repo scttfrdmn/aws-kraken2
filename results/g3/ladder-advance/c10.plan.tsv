@@ -49,23 +49,23 @@ cohort	stage	rung	arm	state	spec	type	nodes	ttl_min	cost_limit_usd	cost_limit_to
 10	5	O3-cost-n8	O	committed	runs/g3-l-o3-cost-n8-c10.json	x8g.4xlarge	8	40	1.05	8.40	752	the c1 runs of O3-n8 (O3-cost-n8 at c1 has the configuration of O3-n8): 20261012-033011-e16fec4-d443-n8,20261012-041152-e16fec4-3c7c-n8			
 10	5	O3-cost-n16	O	committed	runs/g3-l-o3-cost-n16-c10.json	x8g.4xlarge	16	40	1.05	16.80	770	the c1 runs of O3-n16 (O3-cost-n16 at c1 has the configuration of O3-n16): 20261012-033735-e16fec4-d7ab-n16,20261012-040348-e16fec4-9e1f-n16			
 10	5	O3-cost-n32	O	committed	runs/g3-l-o3-cost-n32-c10.json	x8g.2xlarge	32	40	0.53	16.96	926	the c1 runs of O3-n32 (O3-cost-n32 at c1 has the configuration of O3-n32): 20261012-034539-e16fec4-5ad1-n32,20261012-035504-e16fec4-cd89-n32			
-10	6	O4a	O	new	runs/g3-l-o4a-c10.json	r8g.16xlarge	4	40	2.52	10.08	887	its own c1 runs: 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
-10	6	O4b-if1	O	new	runs/g3-l-o4b-if1-c10.json	r8g.16xlarge	4	100	6.29	25.16	2189	the c1 runs of O4a (O4b-if1 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
-10	6	O4b-if2	O	new	runs/g3-l-o4b-if2-c10.json	r8g.16xlarge	4	60	3.78	15.12	1423	the c1 runs of O4a (O4b-if2 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
-10	6	O4b-if4	O	new	runs/g3-l-o4b-if4-c10.json	r8g.16xlarge	4	50	3.15	12.60	1037	the c1 runs of O4a (O4b-if4 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
-10	6	O4b-if8	O	new	runs/g3-l-o4b-if8-c10.json	r8g.16xlarge	4	40	2.52	10.08	887	the c1 runs of O4a (O4b-if8 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
+10	6	O4a	O	committed	runs/g3-l-o4a-c10.json	r8g.16xlarge	4	40	2.52	10.08	887	its own c1 runs: 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
+10	6	O4b-if1	O	committed	runs/g3-l-o4b-if1-c10.json	r8g.16xlarge	4	100	6.29	25.16	2189	the c1 runs of O4a (O4b-if1 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
+10	6	O4b-if2	O	committed	runs/g3-l-o4b-if2-c10.json	r8g.16xlarge	4	60	3.78	15.12	1423	the c1 runs of O4a (O4b-if2 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
+10	6	O4b-if4	O	committed	runs/g3-l-o4b-if4-c10.json	r8g.16xlarge	4	50	3.15	12.60	1037	the c1 runs of O4a (O4b-if4 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
+10	6	O4b-if8	O	committed	runs/g3-l-o4b-if8-c10.json	r8g.16xlarge	4	40	2.52	10.08	887	the c1 runs of O4a (O4b-if8 at c1 has the configuration of O4a): 20261012-050052-f63c288-7cf3-n32,20261012-052936-f63c288-232f-n32			
 10	6	O4b-if16	O	not-run											O4b-if16 is not-run at c10: INFLIGHT 16 > cohort 10: no spec is generated for it
 10	6	O4b-if32	O	not-run											O4b-if32 is not-run at c10: INFLIGHT 32 > cohort 10: no spec is generated for it
 10	6	O4b-if64	O	not-run											O4b-if64 is not-run at c10: INFLIGHT 64 > cohort 10: no spec is generated for it
 10	6	O4b-if128	O	not-run											O4b-if128 is not-run at c10: INFLIGHT 128 > cohort 10: no spec is generated for it
-10	6	O4a-cost	O	new	runs/g3-l-o4a-cost-c10.json	x8g.12xlarge	2	40	3.13	6.26	804	its own c1 runs: 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
-10	6	O4b-cost-if1	O	new	runs/g3-l-o4b-cost-if1-c10.json	x8g.12xlarge	2	70	5.48	10.96	1568	the c1 runs of O4a-cost (O4b-cost-if1 at c1 has the configuration of O4a-cost): 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
-10	6	O4b-cost-if2	O	new	runs/g3-l-o4b-cost-if2-c10.json	x8g.12xlarge	2	50	3.91	7.82	1100	the c1 runs of O4a-cost (O4b-cost-if2 at c1 has the configuration of O4a-cost): 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
-10	6	O4b-cost-if4	O	new	runs/g3-l-o4b-cost-if4-c10.json	x8g.12xlarge	2	40	3.13	6.26	865	the c1 runs of O4a-cost (O4b-cost-if4 at c1 has the configuration of O4a-cost): 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
+10	6	O4a-cost	O	committed	runs/g3-l-o4a-cost-c10.json	x8g.12xlarge	2	40	3.13	6.26	804	its own c1 runs: 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
+10	6	O4b-cost-if1	O	committed	runs/g3-l-o4b-cost-if1-c10.json	x8g.12xlarge	2	70	5.48	10.96	1568	the c1 runs of O4a-cost (O4b-cost-if1 at c1 has the configuration of O4a-cost): 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
+10	6	O4b-cost-if2	O	committed	runs/g3-l-o4b-cost-if2-c10.json	x8g.12xlarge	2	50	3.91	7.82	1100	the c1 runs of O4a-cost (O4b-cost-if2 at c1 has the configuration of O4a-cost): 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
+10	6	O4b-cost-if4	O	committed	runs/g3-l-o4b-cost-if4-c10.json	x8g.12xlarge	2	40	3.13	6.26	865	the c1 runs of O4a-cost (O4b-cost-if4 at c1 has the configuration of O4a-cost): 20261012-044413-f63c288-98fb-n16,20261012-054736-f63c288-8e8d-n16			
 10	6	O4b-cost-if8	O	out											O4b-cost-if8 at cohort 10 is outside O4b-cost's range (INFLIGHT 8 > vCPUs / THREADS = 48 // 8 = 6 on x8g.12xlarge; INFLIGHT 1 .. 6 (vCPUs / THREADS = 48 // 8 on x8g.12xlarge, O4a-cost's host); O4a-cost's own INFLIGHT is 6): not a candidate there
 10	6	O4b-cost-if16	O	not-run											O4b-cost-if16 is not-run at c10: INFLIGHT 16 > cohort 10: no spec is generated for it
 10	6	O4b-cost-if32	O	not-run											O4b-cost-if32 is not-run at c10: INFLIGHT 32 > cohort 10: no spec is generated for it
 10	6	O4b-cost-if64	O	not-run											O4b-cost-if64 is not-run at c10: INFLIGHT 64 > cohort 10: no spec is generated for it
 10	6	O4b-cost-if128	O	not-run											O4b-cost-if128 is not-run at c10: INFLIGHT 128 > cohort 10: no spec is generated for it
-10	7	O5	O	pending						25.16			max over 5 of 5 hypothetical selection(s)	O4b	O5 at cohort 10 has unresolved values: INFLIGHT=@select:O4b
-10	7	O5-cost	O	pending						10.96			max over 4 of 5 hypothetical selection(s); refused under 1: O5-cost at cohort 10 oversubscribes x8g.12xlarge: THREADS vcpus/6 (8) x 8 at once = 64 > 48 vCPUs (x1)	O4b,O4b-cost	O5-cost at c10: its conditional alias_cohorts entry (O5 (if same configuration)) is undecided (unresolved: O5-cost INFLIGHT=@select:O4b-cost, O5 INFLIGHT=@select:O4b): it is generated only once both resolve and differ
+10	7	O5	O	new	runs/g3-l-o5-c10.json	r8g.16xlarge	4	100	6.29	25.16	2205	its own c1 runs: 20261012-050957-f63c288-6a6c-n32,20261012-051942-f63c288-df0f-n32			
+10	7	O5-cost	O	new	runs/g3-l-o5-cost-c10.json	x8g.12xlarge	2	40	3.13	6.26	886	its own c1 runs: 20261012-045238-f63c288-232f-n16,20261012-053922-f63c288-17de-n16			
