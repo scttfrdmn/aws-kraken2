@@ -88,7 +88,9 @@ def sample(arm, rung, outputs=None, s5="n/a", fallback=None, classify=10.0, acc=
     if s5 != "n/a":
         s5o["gz_sha256"] = [GZ]
         s5o["rg_sha256"] = [GZ if s5 == "identical" else rg]
-        s5o["gz_exit"], s5o["rg_exit"] = [0], [0]
+        s5o["gz_exit"], s5o["rg_exit"] = [0], [139 if fallback == "gzip-crash" else 0]
+        if fallback == "gzip-crash":
+            s5o["fallback"] = "gzip"
     t0 = T0 + 1 if t0 is None else t0
     return {"v": 1, "arm": arm, "rung": rung, "cohort": cohort, "accession": acc, "idx": 0, "pairs": 1000, "rc": rc,
             "t_start": t0, "t_end": t0 + classify if t1 is None else t1,
@@ -213,6 +215,9 @@ def record(res, variant=""):
         o0 = [sample("O", "O0", s5="differs", fallback="gzip", rg=RG1)]
     elif variant == "o5none":
         o0 = [sample("O", "O0", s5="differs", fallback="gzip", rg=RG2)]
+    elif variant == "o5crash":
+        # rapidgzip segfaulted on the O arm (O4b-if4 at c10): its output is a crash's, matching no S entry.
+        o0 = [sample("O", "O0", s5="differs", fallback="gzip-crash", rg=RG2)]
     single(res, "20261010-000010-aaaaaaa", "O", "O0", 2, 302, samples=o0)
     # O1 rep 1: a 2-node cohort. Launches T0, T0+1; terminations T0+150, T0+200: wall 200; billed 0.1 + 0.1.
     cid = "20261010-000011-aaaaaaa-1234-n2"
@@ -659,6 +664,15 @@ def variants():
           (one(T["law1.tsv"], accession="SRR1").get("status"),
            one(T["runs.tsv"], run_id="20261010-000010-aaaaaaa").get("in_attribution")),
           ("DEFECT", "no: DEFECT (Law 1): SRR1: O-arm s5 differs and no S entry has the same rg_sha256"))
+    rc, T = run("o5crash")
+    check("O-arm rapidgzip crash with a gzip fallback: not a DEFECT (exit 0)", rc, 0)
+    d = one(T["s5-nonpreserving.tsv"], run_id="20261010-000010-aaaaaaa")
+    check("O-arm crash: labelled, not compared by rg_sha256; outputs compared normally", (d.get("s5_check"), d.get("law1_status")),
+          ("rapidgzip crashed (exit 139); fell back to gzip: not compared by rg_sha256", "identical"))
+    check("O-arm crash run stays in the attribution", one(T["runs.tsv"], run_id="20261010-000010-aaaaaaa").get("in_attribution"), "yes")
+    check("O-arm crash is a finding against the lever",
+          any(f.startswith("O0: rapidgzip crashed on 1 of ") and "SRR1 in 20261010-000010-aaaaaaa (exit 139)" in f
+              for f in T["manifest"]["findings"]), True)
     rc, T = run("s5none")
     check("s5 differs without a gzip fallback: contract DEFECT, exit 1", rc, 1)
     check("s5 differs without a fallback: excluded",
