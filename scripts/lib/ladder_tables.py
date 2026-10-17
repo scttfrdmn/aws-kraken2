@@ -939,6 +939,23 @@ def s5_of(s):
     return x.get("status"), x.get("fallback", "none")
 
 
+def s5_crashed(s):
+    """rapidgzip exited non-zero on a mate and the body fell back to gzip: its output is a crash's, not
+    a deterministic difference, so it is not compared by rg_sha256 (Scott, 2026-10-17: not a Law 1
+    DEFECT; the classifier outputs are still compared byte for byte). The exit codes, or None."""
+    x = s.get("s5") if isinstance(s.get("s5"), dict) else {}
+    ex, rg, gz = x.get("rg_exit") or [], x.get("rg_sha256") or [], x.get("gz_sha256") or []
+    codes = [c for c in ex if c not in (0, None)]
+    if not codes or s5_of(s) != ("differs", "gzip"):
+        return None
+    # Per mate: every mate rapidgzip did not crash on must equal gzip's, or a deterministic
+    # difference on it would ride on the crash (review of #87).
+    for i, c in enumerate(ex):
+        if c == 0 and (i >= len(rg) or i >= len(gz) or rg[i] != gz[i]):
+            return None
+    return codes
+
+
 RECORDED_CLASSES = ("contract", "incomplete")   # the checks a recorded defect's run does not re-raise
 
 
@@ -1433,7 +1450,7 @@ def law1(runs, levers, defects, notes):
                     r["exclude"].append(f"DEFECT (Law 1): {acc}: {e}")
         s_rg = {}
         for r, s in s_ent:
-            if s5_of(s)[0] == "differs":
+            if s5_of(s)[0] == "differs" and not s5_crashed(s):
                 s_rg.setdefault(tuple(s["s5"]["rg_sha256"]), []).append(r["run_id"])
         if len(s_rg) > 1:
             flags.append(f"{acc}: S-arm s5 differs entries disagree on rg_sha256 ({len(s_rg)} distinct: "
@@ -1457,7 +1474,10 @@ def law1(runs, levers, defects, notes):
                 r["exclude"].append(f"DEFECT (Law 1): {acc}: {st[8:]}")
             if s5_of(s)[0] == "differs":
                 rg = tuple(s["s5"]["rg_sha256"])
-                if arm == "O":
+                if s5_crashed(s):
+                    chk = (f"rapidgzip crashed (exit {','.join(str(c) for c in s5_crashed(s))}); fell back to gzip: "
+                           "not compared by rg_sha256")
+                elif arm == "O":
                     match = s_rg.get(rg)
                     if match:
                         chk = f"rg_sha256 matches the S entry {match[0]}"
@@ -1495,7 +1515,7 @@ def law1(runs, levers, defects, notes):
 
 def s5_findings(runs, levers):
     """Against the lever: per S rung with rapidgzip, inputs whose identity check failed and fell
-    back to gzip (N of M)."""
+    back to gzip (N of M); and per rung with rapidgzip on either arm, the samples it crashed on."""
     out = []
     by = {}
     for r in runs:
@@ -1504,12 +1524,26 @@ def s5_findings(runs, levers):
                 if "accession" in s:
                     x = by.setdefault(r["params"]["rung"], [set(), set()])
                     x[1].add(str(s["accession"]))
-                    if s5_of(s) == ("differs", "gzip") and not gzip_failed(s):
+                    if s5_of(s) == ("differs", "gzip") and not gzip_failed(s) and not s5_crashed(s):
                         x[0].add(str(s["accession"]))
     for rung, (fb, allacc) in sorted(by.items()):
         if fb:
             out.append(f"{rung}: S5 not output-preserving on {len(fb)} of {len(allacc)} inputs (fell back to gzip): "
                        f"{', '.join(sorted(fb))}")
+    # rapidgzip crashes, on either arm: N of M samples the identity check ran on (s5 identical or
+    # differs: rapidgzip decompressed them), with the runs.
+    cr = {}
+    for r in runs:
+        for s in r["samples"]:
+            if "accession" in s and s5_of(s)[0] in ("identical", "differs"):
+                x = cr.setdefault(r["params"]["rung"], [[], 0])
+                x[1] += 1
+                if s5_crashed(s):
+                    x[0].append(f"{s['accession']} in {r['run_id']} (exit {','.join(str(c) for c in s5_crashed(s))})")
+    for rung, (hit, n) in sorted(cr.items()):
+        if hit:
+            out.append(f"{rung}: rapidgzip crashed on {len(hit)} of {n} samples (fell back to gzip; outputs compared "
+                       f"byte for byte): {'; '.join(hit)}")
     return out
 
 
