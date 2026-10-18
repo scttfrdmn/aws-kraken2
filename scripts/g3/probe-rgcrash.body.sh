@@ -7,8 +7,11 @@
 # identity step's rapidgzip command, `rapidgzip -d -c -P K FILE | sha256sum`, on the c10 cohort's
 # 20 gz files on /dev/shm, 8 lanes at once, until 95 min after it starts (>= 25 min before the
 # 120 min TTL), with cores written to /dev/shm/cores (kernel.core_pattern, restored at the end).
-# Versions alternate job by job: 0.14.5 (lever.sh's pinned install) and 0.16.0 (pinned here the
-# same way); -P 16 on every fourth job of a lane, -P 8 otherwise; files round-robin. Every job
+# Lanes 0-5 are identity mode, lad_identity on this type exactly (IDL = 64/(8+2) = 6 lanes, each
+# job GNU gzip -dc FILE | sha256sum, then rapidgzip -d -c -P 8 FILE | sha256sum): only their count
+# compares with the ladder's rate. Lanes 6-7 are stress mode: rapidgzip only, -P 16 on every
+# fourth job, -P 8 otherwise. Versions alternate job by job: 0.14.5 (lever.sh's pinned install)
+# and 0.16.0 (pinned here the same way); files round-robin. Every job
 # streams one "probe-rgcrash {json}" line (also in out/rgcrash.jsonl). A non-zero exit or a sha256
 # other than GNU gzip's is streamed with its stderr; if a core exists, gdb -batch's bt, thread apply
 # all bt, info registers, x/16i $pc, $_siginfo and info sharedlibrary stream as "rgcrash-gdb N | ..."
@@ -23,7 +26,7 @@ T_START=$(date +%s)
 T_END=$(( T_START + ${AK2_REHEARSE_LOOP_S:-$((95 * 60))} ))
 SHA=${AK2_RUN_ID##*-}
 B=aws-kraken2-942542972736-us-west-2; CK=aws-kraken2/data/cohort
-LANES=8; MAXCORES=${AK2_REHEARSE_MAXCORES:-6}; PUSH_N=${AK2_REHEARSE_PUSH_N:-100}; JOB_TIMEOUT=300
+LANES=8; ID_LANES=6; MAXCORES=${AK2_REHEARSE_MAXCORES:-6}; PUSH_N=${AK2_REHEARSE_PUSH_N:-100}; JOB_TIMEOUT=300
 RG16_VERSION=0.16.0
 # sha256 of rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl (PyPI's
 # JSON API, checked on 2026-10-18 by hashing the downloaded wheel): pip --require-hashes accepts only it.
@@ -155,7 +158,7 @@ ak2_push "$J" rgcrash.jsonl > /dev/null
 # ---- the loop ----
 # on_fail N V FILE PID: stream the failure's evidence: stderr, dmesg, and gdb on its core if any.
 on_fail() {
-  local n=$1 v=$2 f=$3 pid=$4 core k slot="" zc="" frames=0 dm
+  local n=$1 v=$2 f=$3 pid=$4 mode=$5 core k slot="" zc="" frames=0 dm
   core=$(find "$CORE_DIR" -maxdepth 1 -name "core.$pid.*" 2> /dev/null | head -1)
   dm=$(sudo -n dmesg 2> /dev/null | grep -E "\[$pid\]|rapidgzip|python" | tail -5)
   if [ -n "$core" ]; then
@@ -173,21 +176,32 @@ on_fail() {
       rm -f "$core.zst"
     fi
   fi
-  emit "$(jq -nc --argjson n "$n" --arg v "${RGN[$v]}" --arg f "$f" --arg core "$core" --arg sz "$([ -n "$core" ] && stat -c%s "$core")" \
+  emit "$(jq -nc --argjson n "$n" --arg mode "$mode" --arg v "${RGN[$v]}" --arg f "$f" --arg core "$core" --arg sz "$([ -n "$core" ] && stat -c%s "$core")" \
     --arg zc "$zc" --argjson frames "$frames" --arg err "$(head -c 2000 "$W/err/$n" 2> /dev/null)" --arg dm "$dm" \
     --arg sig "$(grep -m1 -oE 'si_addr = 0x[0-9a-f]+' "$W/gdb/$n.txt" 2> /dev/null)" \
-    '{kind:"failure", n:$n, version:$v, file:$f, core:(if $core == "" then null else $core end), core_bytes:($sz|tonumber? // 0),
+    '{kind:"failure", n:$n, mode:$mode, version:$v, file:$f, core:(if $core == "" then null else $core end), core_bytes:($sz|tonumber? // 0),
       core_pushed:(if $zc == "" then null else $zc end), gdb_frames:$frames, fault:(if $sig == "" then null else $sig end),
       stderr:$err, dmesg:$dm}')"
   [ -n "$core" ] && rm -f "$core"
   return 0
 }
+# Lanes 0..ID_LANES-1 are identity mode: lad_identity on r8g.16xlarge exactly (IDL = nproc/(P+2) =
+# 6 lanes; per job GNU gzip -dc FILE | sha256sum, then rapidgzip -d -c -P 8 on the same FILE).
+# The other lanes are stress mode: rapidgzip only, -P 16 on every fourth job.
 lane() {
-  local l=$1 k=0 n v p f h rc t0 t1 pid ok sig
+  local l=$1 k=0 n v p f h rc t0 t1 pid ok sig mode g gr gt0 gt1 gok
+  mode=stress; [ "$l" -lt "$ID_LANES" ] && mode=identity
   while [ "$(date +%s)" -lt "$T_END" ]; do
     n=$((l + LANES * k)); v=a; (( (k + l) % 2 )) && v=b
-    p=8; [ $((k % 4)) = 3 ] && p=16
+    p=8; [ "$mode" = stress ] && [ $((k % 4)) = 3 ] && p=16
     f=${FILES[$((n % ${#FILES[@]}))]}
+    g=""; gr=null; gt0=0; gt1=0; gok=null
+    if [ "$mode" = identity ]; then
+      gt0=$(now)
+      g=$(gzip -dc "$IN/$f" | sha256sum | cut -d' ' -f1; exit "${PIPESTATUS[0]}"); gr=$?
+      gt1=$(now)
+      gok=false; [ "$g" = "${REF[$f]}" ] && gok=true
+    fi
     t0=$(now)
     h=$(timeout -s ABRT -k 30 "$JOB_TIMEOUT" sh -c 'echo $$ > "$0"; exec "$@"' "$W/pid/$n" "${RGV[$v]}" -d -c -P "$p" "$IN/$f" 2> "$W/err/$n" |
       sha256sum | cut -d' ' -f1; exit "${PIPESTATUS[0]}"); rc=$?
@@ -195,13 +209,16 @@ lane() {
     pid=$(cat "$W/pid/$n" 2> /dev/null); rm -f "$W/pid/$n"
     ok=false; [ "$h" = "${REF[$f]}" ] && ok=true
     sig=null; [ "$rc" -gt 128 ] && [ "$rc" -lt 160 ] && sig=$((rc - 128))
-    emit "$(jq -nc --argjson n "$n" --argjson lane "$l" --arg v "${RGN[$v]}" --arg f "$f" --argjson p "$p" --argjson rc "$rc" --argjson sig "$sig" \
-      --arg h "$h" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg pid "$pid" \
-      '{kind:"job", n:$n, lane:$lane, version:$v, file:$f, P:$p, exit:$rc, signal:$sig, timeout:($rc == 124), sha256:$h, match:$ok,
-        seconds:(($t1|tonumber)-($t0|tonumber)), t0:($t0|tonumber), pid:($pid|tonumber? // null)}')"
-    if [ "$rc" != 0 ] || [ "$ok" != true ]; then
-      ak2_say "FAILURE job $n: rapidgzip ${RGN[$v]} -P $p $f exit $rc, sha256 ${h:0:16} (match $ok)"
-      on_fail "$n" "$v" "$f" "$pid"
+    emit "$(jq -nc --argjson n "$n" --argjson lane "$l" --arg mode "$mode" --arg v "${RGN[$v]}" --arg f "$f" --argjson p "$p" --argjson rc "$rc" --argjson sig "$sig" \
+      --arg h "$h" --argjson ok "$ok" --arg t0 "$t0" --arg t1 "$t1" --arg pid "$pid" --arg g "$g" --argjson gr "$gr" --argjson gok "$gok" \
+      --arg gt0 "$gt0" --arg gt1 "$gt1" \
+      '{kind:"job", n:$n, lane:$lane, mode:$mode, version:$v, file:$f, P:$p, exit:$rc, signal:$sig, timeout:($rc == 124), sha256:$h, match:$ok,
+        seconds:(($t1|tonumber)-($t0|tonumber)), t0:($t0|tonumber), pid:($pid|tonumber? // null),
+        gzip_sha256:(if $g == "" then null else $g end), gzip_exit:$gr, gzip_match:$gok,
+        gzip_seconds:(if $mode == "identity" then (($gt1|tonumber)-($gt0|tonumber)) else null end)}')"
+    if [ "$rc" != 0 ] || [ "$ok" != true ] || [ "$gok" = false ]; then
+      ak2_say "FAILURE job $n ($mode): rapidgzip ${RGN[$v]} -P $p $f exit $rc, sha256 ${h:0:16} (match $ok; gzip match $gok)"
+      on_fail "$n" "$v" "$f" "$pid" "$mode"
       : > "$W/push-now"
     else
       rm -f "$W/err/$n"
@@ -210,15 +227,15 @@ lane() {
   done
 }
 tally() {
-  jq -r 'select(.kind == "job") | [.version, .P, .exit, .match] | @tsv' "$J" | awk -F'\t' '
-    {k = $1 "\t" $2; jobs[k]++; if ($3 != 0) nz[k]++; if ($3 > 128 && $3 < 160) cr[k]++; if ($3 == 124) to[k]++; if ($4 != "true") ws[k]++}
-    END {print "version\tP\tjobs\tnonzero_exit\tcrashes\ttimeouts\twrong_sha"; for (k in jobs) printf "%s\t%d\t%d\t%d\t%d\t%d\n", k, jobs[k], nz[k], cr[k], to[k], ws[k]}' |
+  jq -r 'select(.kind == "job") | [.mode, .version, .P, .exit, .match] | @tsv' "$J" | awk -F'\t' '
+    {k = $1 "\t" $2 "\t" $3; jobs[k]++; if ($4 != 0) nz[k]++; if ($4 > 128 && $4 < 160) cr[k]++; if ($4 == 124) to[k]++; if ($5 != "true") ws[k]++}
+    END {print "mode\tversion\tP\tjobs\tnonzero_exit\tcrashes\ttimeouts\twrong_sha"; for (k in jobs) printf "%s\t%d\t%d\t%d\t%d\t%d\n", k, jobs[k], nz[k], cr[k], to[k], ws[k]}' |
     { IFS= read -r h; echo "$h"; sort; } > "$W/rgcrash-tally.tsv"
 }
 ak2_phase loop
 meminfo loop-start
 mkdir -p "$W/pid" "$W/err"
-ak2_say "loop: $LANES lanes until $(date -u -d "@$T_END" +%FT%TZ 2> /dev/null || echo "$T_END"), rapidgzip $VA and $VB alternating, -P 8 (-P 16 every 4th job), cores to $CP"
+ak2_say "loop: $LANES lanes ($ID_LANES identity: gzip -dc then rapidgzip -P 8; $((LANES - ID_LANES)) stress: rapidgzip, -P 16 every 4th job) until $(date -u -d "@$T_END" +%FT%TZ 2> /dev/null || echo "$T_END"), rapidgzip $VA and $VB alternating, cores to $CP"
 LPIDS=()
 for ((l = 0; l < LANES; l++)); do lane "$l" & LPIDS+=($!); done
 last=0; lastp=$(date +%s)
@@ -241,14 +258,18 @@ for p in "${LPIDS[@]}"; do wait "$p"; done
 ak2_phase summary
 meminfo end
 tally
-jq -c -s --arg va "$VA" --arg vb "$VB" '[.[] | select(.kind == "job")] as $j
-  | ([$va, $vb][] as $v | ($j | map(select(.version == $v))) as $x
-     | {kind:"summary", version:$v, jobs:($x | length), P8:($x | map(select(.P == 8)) | length), P16:($x | map(select(.P == 16)) | length),
+# Per mode and version. p_no_crash_at_ladder_rate = exp(-RATE x jobs), RATE = 2/1553 (the c10
+# ladder's identity step): only the identity-mode rows compare with it (docs/probes.md).
+jq -c -s --arg va "$VA" --arg vb "$VB" '[.[] | select(.kind == "job")] as $j | (2 / 1553) as $rate
+  | (["identity", "stress"][] as $m | [$va, $vb][] as $v | ($j | map(select(.mode == $m and .version == $v))) as $x
+     | {kind:"summary", mode:$m, version:$v, jobs:($x | length), P8:($x | map(select(.P == 8)) | length), P16:($x | map(select(.P == 16)) | length),
         crashes:($x | map(select(.signal != null)) | length), sigsegv:($x | map(select(.signal == 11)) | length),
         timeouts:($x | map(select(.timeout)) | length), nonzero_exit:($x | map(select(.exit != 0)) | length),
         wrong_sha:($x | map(select(.match | not)) | length), wrong_sha_exit0:($x | map(select(.exit == 0 and (.match | not))) | length),
+        gzip_mismatch:($x | map(select(.gzip_match == false)) | length),
         crash_rate:(if ($x | length) > 0 then (($x | map(select(.signal != null)) | length) / ($x | length)) else null end),
-        seconds:($x | map(.seconds) | add // 0)})' "$J" > "$W/summary.jsonl"
+        ladder_rate:$rate, p_no_crash_at_ladder_rate:((-$rate * ($x | length)) | exp),
+        compares_with_ladder:($m == "identity"), seconds:($x | map(.seconds) | add // 0)})' "$J" > "$W/summary.jsonl"
 while IFS= read -r s; do emit "$s"; done < "$W/summary.jsonl"
 restore_cp
 ak2_phase push
@@ -256,5 +277,5 @@ ak2_push "$W/rgcrash-tally.tsv" rgcrash-tally.tsv > /dev/null
 ak2_push "$J" rgcrash.jsonl || exit 1
 nj=$(grep -c '"kind":"summary"' "$J")
 ak2_say "rgcrash probe done: $(grep -c '"kind":"job"' "$J") jobs, $(grep -c '"kind":"failure"' "$J") failures, $(find "$W" -maxdepth 1 -name 'coreslot.*' | wc -l) cores pushed"
-[ "$nj" = 2 ] || exit 1
+[ "$nj" = 4 ] || exit 1
 exit 0

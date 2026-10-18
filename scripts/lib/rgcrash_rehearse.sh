@@ -20,7 +20,9 @@
 #   signal 11; the sha256 is right if the kill came after the last write), every other job exit 0 with the reference sha256; a failure line per
 #   killed job with a core and gdb frames > 0, its gdb output streamed (rgcrash-gdb lines through
 #   "---- x/16i") and pushed (out/gdb/N.txt); min(K, MAXCORES) cores in out/cores/, each a valid
-#   zstd frame; 2 analysis bundles; the tally's jobs = the job lines; 2 summary lines whose crashes
+#   zstd frame; 2 analysis bundles; the tally's jobs = the job lines; lanes 0-5 identity mode (GNU
+#   gzip then rapidgzip -P 8, gzip's sha256 = the reference), lanes 6-7 stress (both -P 8 and 16,
+#   no gzip), both versions in each; 4 summary lines (mode x version) whose crashes
 #   sum to K; the restore line restored = true, and the VM's core_pattern after = before.
 # Usage: scripts/lib/rgcrash_rehearse.sh runs/g3-probe-rgcrash-<type>.json   (REHEARSE_KEEP=1 keeps the scratch dir)
 set +e
@@ -148,9 +150,14 @@ chk "20 reference lines, exit 0" '[ "$(pl '\''.kind == "reference" and .exit == 
 sj=$(sl '.kind == "job"' | sort); pj=$(pl '.kind == "job"' | sort)
 nj=$(printf '%s\n' "$pj" | cnt)
 chk "job lines streamed = pushed ($nj)" '[ -n "$pj" ] && [ "$sj" = "$pj" ]'
-for v in 0.14.5 0.16.0; do for p in 8 16; do
-  chk "jobs at $v -P $p" '[ "$(pl ".kind == \"job\" and .version == \"$v\" and .P == $p" | cnt)" -gt 0 ]'
-done; done
+for v in 0.14.5 0.16.0; do
+  chk "identity jobs at $v -P 8" '[ "$(pl ".kind == \"job\" and .mode == \"identity\" and .version == \"$v\" and .P == 8" | cnt)" -gt 0 ]'
+  for p in 8 16; do
+    chk "stress jobs at $v -P $p" '[ "$(pl ".kind == \"job\" and .mode == \"stress\" and .version == \"$v\" and .P == $p" | cnt)" -gt 0 ]'
+  done
+done
+chk "identity mode = lanes 0-5, -P 8 only, each with GNU gzip's sha256 = the reference; stress = lanes 6-7, no gzip" \
+  '[ "$(pl '\''.kind == "job" and ((.mode == "identity") != (.lane < 6) or (.mode == "identity" and (.P != 8 or .gzip_match != true or .gzip_exit != 0)) or (.mode == "stress" and .gzip_sha256 != null))'\'' | cnt)" = 0 ]'
 fj=$(pl '.kind == "job" and (.exit != 0 or (.match | not))')
 # (A kill that lands after the last write leaves the right sha256: the exit alone is checked.)
 chk "exactly the $K killed jobs failed, each exit 139 signal 11 ($(printf '%s\n' "$fj" | jq -c 'select(.match | not)' | cnt) with a wrong sha256)" \
@@ -164,8 +171,8 @@ nc=$(find "$T/out/cores" -name 'core.*.zst' 2> /dev/null | cnt)
 ztest() { local z; for z in "$T"/out/cores/*.zst; do zstd -q -t "$z" || return 1; done; }
 chk "$MAXC cores pushed (of $K), valid zstd" '[ "$nc" = "$MAXC" ] && ztest'
 chk "2 analysis bundles" '[ -s "$T/out/bundle-0.14.5.tar.zst" ] && [ -s "$T/out/bundle-0.16.0.tar.zst" ]'
-chk "tally jobs = job lines" '[ "$(awk -F"\t" "NR > 1 {s += \$3} END {print s + 0}" "$T/out/rgcrash-tally.tsv")" = "$nj" ]'
-chk "2 summary lines, crashes sum to $K" '[ "$(pl '\''.kind == "summary"'\'' | cnt)" = 2 ] && [ "$(pl '\''.kind == "summary"'\'' | jq -s "map(.crashes) | add")" = "$K" ]'
+chk "tally jobs = job lines" '[ "$(awk -F"\t" "NR > 1 {s += \$4} END {print s + 0}" "$T/out/rgcrash-tally.tsv")" = "$nj" ]'
+chk "4 summary lines (mode x version), crashes sum to $K" '[ "$(pl '\''.kind == "summary" and .p_no_crash_at_ladder_rate != null'\'' | cnt)" = 4 ] && [ "$(pl '\''.kind == "summary"'\'' | jq -s "map(.crashes) | add")" = "$K" ]'
 chk "restore line restored" '[ "$(pl '\''.kind == "restore"'\'' | jq -r .restored)" = true ]'
 chk "the VM's core_pattern restored ($CP1)" '[ "$CP1" = "$CP0" ]'
 grep -E '^probe-rgcrash \{"kind":"(tool|host|core-control|summary|restore)"' "$L" | cut -c1-400
