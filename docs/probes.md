@@ -167,14 +167,14 @@ Its pin is the cp39 manylinux aarch64 wheel's sha256, from PyPI's JSON API (chec
    - This is not a timing probe, so there is no drop_caches. Page-cache state is logged in
      `meminfo` lines.
 5. **When it stops.** It starts jobs until the latest time that still leaves at least 15 min
-   before the 120 min TTL, after:
+   before the 150 min TTL (Scott, 2026-10-18: TTL 150 min, raised from 120 so that a null
+   resolves), after:
    - a full 300 s timeout and its 30 s kill grace;
    - one gzip pass (the slowest reference pass);
    - 120 s for gdb and the pushes.
 
    The TTL is counted from launch at the earliest, and launch is taken as 120 s before boot.
-   That is about 95 min after boot. It is earlier than 95 min after the body starts, because
-   stopping there would leave about 12 min in the worst case.
+   That puts the last start about 125 min after boot.
 6. **On any failure** (a non-zero exit, or either tool's sha256 not the reference):
    - its stderr and the matching dmesg lines are recorded;
    - gdb runs on its core (`info sharedlibrary`, `p $_siginfo`, `bt`, `thread apply all bt`,
@@ -190,9 +190,12 @@ crash with probability exp(−(2/1553)·N). That is 0.05 at N ≈ 2,330.
 - **Every 5 min,** a `progress` line re-projects N from the probe's own measured mean step.
 - **At the end,** the `summary` line gives the verdict.
 
-At about 5,100 s of loop, the plan expects about 6 × 5,100 / 14.6 ≈ 2,100 jobs, so P(no crash)
-≈ 0.07. **A null from this run is expected not to resolve at 0.05.** It reaches 0.05 only if
-the measured step is under about 13 s. A crash resolves the question either way.
+With a 150 min TTL the loop runs for about 6,900 s, so the plan expects about
+6 × 6,900 / 14.6 ≈ 2,840 jobs and P(no crash) ≈ 0.026. **A null is then expected to resolve at
+0.05**, as long as the measured step stays under about 17.8 s (6 × 6,900 / 2,330). The 6,900 s
+comes from the stop rule, less about 10 min of boot, setup, fetch and reference. At 120 min the
+loop would have run about 5,100 s, giving about 2,100 jobs and P ≈ 0.07, which does not
+resolve. A crash answers the question either way.
 
 **Lines** (streamed as `probe-rgcrash {json}` and in `out/rgcrash.jsonl`):
 
@@ -233,8 +236,9 @@ Two more things to check:
 - **To open a core offline,** on AL2023 aarch64, unpack the bundle and run `gdb <python> <core>`,
   with `set solib-search-path` pointing at the unpacked `.so`.
 
-**Cost:** TTL 120 min, `cost_limit` = TTL × the on-demand price ($3.77024/h: $7.55, from
-`scripts/g3/mkspec-u.sh probe-rgcrash r8g.16xlarge 120 scripts/g3/probe-rgcrash.body.sh us-west-2b`).
+**Cost:** TTL 150 min (Scott, 2026-10-18), `cost_limit` = TTL × the on-demand price
+($3.77024/h: $9.43, from
+`scripts/g3/mkspec-u.sh probe-rgcrash r8g.16xlarge 150 scripts/g3/probe-rgcrash.body.sh us-west-2b`).
 
 **Rehearsal** (`scripts/lib/rgcrash_rehearse.sh`, through `probe_rehearse.sh`): the body runs
 unmodified in an AL2023 aarch64 container on the rootful podman VM. The container is privileged,

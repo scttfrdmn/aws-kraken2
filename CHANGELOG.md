@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`
   (`scripts/g3/probe-rgcrash.body.sh`) asks one question: does `lad_identity`'s own load
   reproduce it?
-  - **Where:** one r8g.16xlarge in us-west-2b, TTL 120 min, cost_limit $7.55.
+  - **Where:** one r8g.16xlarge in us-west-2b, TTL 150 min (Scott, 2026-10-18: TTL 150 min, raised from 120 so that a
+    null resolves), cost_limit $9.43.
   - **What it runs:** `lad_identity` exactly and nothing else: IDL = nproc/(P+2) = 6 lanes, jobs
     n = l + 6k, each job `gzip -dc` then rapidgzip 0.14.5 `-P 8` on the same c10 file
     (/dev/shm). 0.16.0 is a possible follow-up run.
@@ -22,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     the TTL after a timeout, a gzip pass and wrap-up.
   - **Resolution:** the plan, progress and summary lines give the expected and measured job
     counts and exp(−(2/1553)·jobs), and the verdict says whether a null resolves at 0.05. About
-    2,100 jobs are expected, giving about 0.07, so a null is expected not to resolve.
+    2,840 jobs are expected (6 × ~6,900 s / 14.6 s), giving P(no crash) ≈ 0.026, so a null is
+    expected to resolve.
   - **Core capture:** `kernel.core_pattern` points at tmpfs (restored at the end), after a
     positive control that must leave a core gdb can read.
   - **On every failure:** gdb's bt, all threads, registers, `x/16i $pc` and siginfo are

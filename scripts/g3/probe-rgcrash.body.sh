@@ -13,8 +13,8 @@
 # review's estimate of one identity step on a 64-vCPU host) and exp(-(2/1553) x jobs); progress
 # lines re-project it from the probe's own per-job seconds; the summary says whether the null
 # resolves (P(no crash at the ladder's rate) <= 0.05). The loop starts jobs until the latest time
-# that leaves >= 15 min before the 120 min TTL after a 300 s job timeout, one gzip pass and wrap-up
-# (TTL counted from launch, taken as boot - 120 s).
+# that leaves >= 15 min before the 150 min TTL (Scott, 2026-10-18: TTL 150 min) after a 300 s job
+# timeout, one gzip pass and wrap-up (TTL counted from launch, taken as boot - 120 s).
 # Cores go to /dev/shm/cores (kernel.core_pattern, restored at the end), after a positive control.
 # Every job streams one "probe-rgcrash {json}" line (also in out/rgcrash.jsonl). A non-zero exit or
 # a sha256 other than GNU gzip's is streamed with its stderr; if a core exists, gdb -batch's bt,
@@ -31,7 +31,7 @@ T_START=$(date +%s)
 SHA=${AK2_RUN_ID##*-}
 B=aws-kraken2-942542972736-us-west-2; CK=aws-kraken2/data/cohort
 P=8; JOB_TIMEOUT=300; KILL_GRACE=30
-TTL_S=7200; MARGIN_S=900; WRAP_S=120; LAUNCH_LEAD_S=120   # the spec's TTL (120m); >= 15 min left at the end
+TTL_S=9000; MARGIN_S=900; WRAP_S=120; LAUNCH_LEAD_S=120   # the spec's TTL (150m); >= 15 min left at the end
 PRIOR_JOB_S=14.6; RATE_N=2; RATE_D=1553                    # the review's per-step estimate; the ladder's rate
 MAXCORES=${AK2_REHEARSE_MAXCORES:-6}; PUSH_N=${AK2_REHEARSE_PUSH_N:-100}; PROGRESS_S=${AK2_REHEARSE_PROGRESS_S:-300}
 NPROC=$(nproc)
