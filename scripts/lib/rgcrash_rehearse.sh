@@ -5,25 +5,27 @@
 # unmodified) on an Amazon Linux 2023 aarch64 container (rootful podman, --privileged: the VM's
 # own kernel.core_pattern and core dumps), as ec2-user with sudo, under `bash -e -c` as spawn runs
 # it, after the probe rehearsal's helper stand-ins. Real on the node: dnf (gdb, zstd, the
-# debuginfo attempt), lever.sh's pip --require-hashes install of rapidgzip 0.14.5 and the body's
-# of 0.16.0 (from PyPI), sysctl, the cores, gdb. Stand-ins at the edges: S3 is one directory
+# debuginfo attempt), lever.sh's pip --require-hashes install of rapidgzip 0.14.5
+# (from PyPI), sysctl, the cores, gdb. Stand-ins at the edges: S3 is one directory
 # through the stub aws (scripts/lib/rehearse_aws.py, Metadata.sha256 computed), git clone is the
 # committed tree (git archive), and the c10 cohort's 20 files are small real public read sets
 # (the .cache/reads 200,000-pair gz files, cycled under the c10 names). The crash is induced: once
-# the loop runs, the host sends SIGSEGV to K = 3 running rapidgzip processes (0.14.5, 0.16.0,
-# 0.14.5), which dump real cores of the real binary; MAXCORES = 2, so the third is analysed but not
-# pushed.
+# the loop runs, the host sends SIGSEGV to K = 3 running rapidgzip processes, which dump real
+# cores of the real binary; MAXCORES = 2, so the third is analysed but not pushed.
 # What passes, on observed output:
-#   body exit 0, its shell flags without e; 2 tool lines (0.14.5 and 0.16.0, wheel sha256 = the
-#   pins); the core control ok; 20 reference lines, exit 0; the job lines streamed = the pushed
-#   rgcrash.jsonl's; both versions at -P 8 and -P 16; exactly the K killed jobs failed (exit 139,
-#   signal 11; the sha256 is right if the kill came after the last write), every other job exit 0 with the reference sha256; a failure line per
-#   killed job with a core and gdb frames > 0, its gdb output streamed (rgcrash-gdb lines through
-#   "---- x/16i") and pushed (out/gdb/N.txt); min(K, MAXCORES) cores in out/cores/, each a valid
-#   zstd frame; 2 analysis bundles; the tally's jobs = the job lines; lanes 0-5 identity mode (GNU
-#   gzip then rapidgzip -P 8, gzip's sha256 = the reference), lanes 6-7 stress (both -P 8 and 16,
-#   no gzip), both versions in each; 4 summary lines (mode x version) whose crashes
-#   sum to K; the restore line restored = true, and the VM's core_pattern after = before.
+#   body exit 0, its shell flags without e; 1 tool line (0.14.5, wheel sha256 = lever.sh's pin);
+#   the host line's lanes = 6 (AK2_REHEARSE_LANES: nproc/(P+2) on r8g.16xlarge; the VM has 8 CPUs);
+#   the core control ok; 20 reference lines, exit 0; a plan line with expected_jobs > 0 and its
+#   p_no_crash_expected = exp(-(2/1553) x expected_jobs); progress lines (every 30 s here) with
+#   a measured mean step; the job lines streamed = the pushed rgcrash.jsonl's; every job is
+#   lad_identity's: version 0.14.5, -P 8, lane = n mod 6, file = the c10 file n mod 20, GNU gzip's
+#   sha256 = the reference; exactly the K killed jobs failed (exit 139, signal 11; the sha256 is
+#   right if the kill came after the last write), every other job exit 0 with the reference
+#   sha256; a failure line per killed job with a core and gdb frames > 0, its gdb output streamed
+#   (rgcrash-gdb lines through "---- x/16i") and pushed (out/gdb/N.txt); min(K, MAXCORES) cores in
+#   out/cores/, each a valid zstd frame; the analysis bundle; the tally's jobs = the job lines; 1
+#   summary line with crashes = K, verdict "reproduced", and p_no_crash_at_ladder_rate =
+#   exp(-(2/1553) x jobs); the restore line restored = true, and the VM's core_pattern after = before.
 # Usage: scripts/lib/rgcrash_rehearse.sh runs/g3-probe-rgcrash-<type>.json   (REHEARSE_KEEP=1 keeps the scratch dir)
 set +e
 set -uo pipefail
@@ -43,7 +45,6 @@ say "record $LOGF; $SPEC at $SHA; shell flags $-"
 K=3; MAXC=2; LOOP_S=${RGREH_LOOP_S:-150}
 B=aws-kraken2-942542972736-us-west-2; CK=aws-kraken2/data/cohort
 PIN_A=499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee   # lever.sh's cp39 manylinux_2_17_aarch64
-PIN_B=$(jq -r '.command[2]' "$SPEC" | awk -F= '/^RG16_HASH=/ {print $2; exit}')
 
 command -v podman > /dev/null || { say "need podman"; exit 1; }
 CONN=$(podman system connection list --format '{{.Name}}' 2> /dev/null | grep -- '-root$' | head -1)
@@ -110,6 +111,7 @@ RID="$(date -u +%Y%m%d-%H%M%S)-$SHA"
   -e AK2T_ROLE=instance -e AK2T_OUT=/rh/out -e AK2_RUN_ID="$RID" -e AK2_REGION=us-west-2 \
   -e AK2_DATASETS="$(jq -r .env.AK2_DATASETS "$SPEC")" -e AK2_INSTANCE_TYPE="$(jq -r .resources.instance_type "$SPEC")" \
   -e AK2_REHEARSE_LOOP_S="$LOOP_S" -e AK2_REHEARSE_MAXCORES="$MAXC" -e AK2_REHEARSE_PUSH_N=40 \
+  -e AK2_REHEARSE_LANES=6 -e AK2_REHEARSE_PROGRESS_S=30 \
   "$IMG" bash -e -c "$(cat "$T/node.sh")" > /dev/null || { say "could not start the node"; exit 1; }
 "${PM[@]}" logs -f "$CTR" > "$T/body.log" 2>&1 &
 LOGP=$!
@@ -120,7 +122,7 @@ grep -q '^ak2-phase .* loop$' "$T/body.log" || { say "the body never reached the
 say "loop started; inducing $K crashes"
 KILLED=()
 for ((c = 1; c <= K; c++)); do
-  want=rg-venv; [ $((c % 2)) = 0 ] && want=rg16-venv
+  want=rg-venv
   sleep 10
   for _ in $(seq 200); do
     p=$("${PM[@]}" exec "$CTR" bash -c 'for p in $(pgrep -x rapidgzip); do tr "\0" " " < /proc/$p/cmdline | grep -q "/'"$want"'/bin/rapidgzip " && { kill -SEGV $p && echo $p; break; }; done' 2> /dev/null)
@@ -143,21 +145,19 @@ cnt() { grep -c . || true; }
 chk "body exit 0" '[ "$RC" = 0 ]'
 fl=$(grep -m1 'shell flags' "$L" | grep -oE 'flags [^ ]+' | cut -d' ' -f2)
 chk "the body's shell flags ($fl) lack e" '[ -n "$fl" ] && [[ $fl != *e* ]]'
-chk "tool lines: 0.14.5 wheel $PIN_A, 0.16.0 wheel $PIN_B" \
-  '[ "$(pl '\''.kind == "tool"'\'' | jq -r '\''"\(.version) \(.wheel_sha256)"'\'' | sort | tr "\n" " ")" = "0.14.5 $PIN_A 0.16.0 $PIN_B " ]'
+chk "1 tool line: 0.14.5, wheel $PIN_A" '[ "$(pl '\''.kind == "tool"'\'' | jq -r '\''"\(.version) \(.wheel_sha256)"'\'' | tr "\n" " ")" = "0.14.5 $PIN_A " ]'
+chk "host line: 6 lanes, P 8" '[ "$(pl '\''.kind == "host"'\'' | jq -r '\''"\(.lanes) \(.P)"'\'')" = "6 8" ]'
+chk "plan line: expected_jobs > 0, p_no_crash_expected = exp(-(2/1553) x expected_jobs)" \
+  '[ "$(pl '\''.kind == "plan" and .expected_jobs > 0 and ((.p_no_crash_expected - ((-2 / 1553 * .expected_jobs) | exp)) | fabs) < 1e-9 and .end_basis == "rehearsal"'\'' | cnt)" = 1 ]'
+chk "progress lines with a measured mean step" '[ "$(pl '\''.kind == "progress" and .mean_step_s != null and .projected_jobs != null'\'' | cnt)" -ge 2 ]'
 chk "core control ok" '[ "$(pl '\''.kind == "core-control"'\'' | jq -r .ok)" = true ]'
 chk "20 reference lines, exit 0" '[ "$(pl '\''.kind == "reference" and .exit == 0'\'' | cnt)" = 20 ]'
 sj=$(sl '.kind == "job"' | sort); pj=$(pl '.kind == "job"' | sort)
 nj=$(printf '%s\n' "$pj" | cnt)
 chk "job lines streamed = pushed ($nj)" '[ -n "$pj" ] && [ "$sj" = "$pj" ]'
-for v in 0.14.5 0.16.0; do
-  chk "identity jobs at $v -P 8" '[ "$(pl ".kind == \"job\" and .mode == \"identity\" and .version == \"$v\" and .P == 8" | cnt)" -gt 0 ]'
-  for p in 8 16; do
-    chk "stress jobs at $v -P $p" '[ "$(pl ".kind == \"job\" and .mode == \"stress\" and .version == \"$v\" and .P == $p" | cnt)" -gt 0 ]'
-  done
-done
-chk "identity mode = lanes 0-5, -P 8 only, each with GNU gzip's sha256 = the reference; stress = lanes 6-7, no gzip" \
-  '[ "$(pl '\''.kind == "job" and ((.mode == "identity") != (.lane < 6) or (.mode == "identity" and (.P != 8 or .gzip_match != true or .gzip_exit != 0)) or (.mode == "stress" and .gzip_sha256 != null))'\'' | cnt)" = 0 ]'
+NJS=$(printf '%s\n' "${NAMES[@]}" | jq -R . | jq -sc .)
+chk "every job lad_identity's: 0.14.5, -P 8, lane = n mod 6, file = c10 file n mod 20, gzip sha256 = the reference" \
+  '[ "$(jq -c --argjson names "$NJS" '\''select(.kind == "job" and (.version != "0.14.5" or .P != 8 or .mode != "identity" or .lane != (.n % 6) or .file != $names[.n % 20] or .gzip_match != true or .gzip_exit != 0))'\'' "$J" | cnt)" = 0 ]'
 fj=$(pl '.kind == "job" and (.exit != 0 or (.match | not))')
 # (A kill that lands after the last write leaves the right sha256: the exit alone is checked.)
 chk "exactly the $K killed jobs failed, each exit 139 signal 11 ($(printf '%s\n' "$fj" | jq -c 'select(.match | not)' | cnt) with a wrong sha256)" \
@@ -170,12 +170,13 @@ done
 nc=$(find "$T/out/cores" -name 'core.*.zst' 2> /dev/null | cnt)
 ztest() { local z; for z in "$T"/out/cores/*.zst; do zstd -q -t "$z" || return 1; done; }
 chk "$MAXC cores pushed (of $K), valid zstd" '[ "$nc" = "$MAXC" ] && ztest'
-chk "2 analysis bundles" '[ -s "$T/out/bundle-0.14.5.tar.zst" ] && [ -s "$T/out/bundle-0.16.0.tar.zst" ]'
-chk "tally jobs = job lines" '[ "$(awk -F"\t" "NR > 1 {s += \$4} END {print s + 0}" "$T/out/rgcrash-tally.tsv")" = "$nj" ]'
-chk "4 summary lines (mode x version), crashes sum to $K" '[ "$(pl '\''.kind == "summary" and .p_no_crash_at_ladder_rate != null'\'' | cnt)" = 4 ] && [ "$(pl '\''.kind == "summary"'\'' | jq -s "map(.crashes) | add")" = "$K" ]'
+chk "the analysis bundle" '[ -s "$T/out/bundle-0.14.5.tar.zst" ]'
+chk "tally jobs = job lines" '[ "$(awk -F"\t" "NR > 1 {s += \$3} END {print s + 0}" "$T/out/rgcrash-tally.tsv")" = "$nj" ]'
+chk "1 summary line: crashes $K, verdict reproduced, p_no_crash_at_ladder_rate = exp(-(2/1553) x jobs)" \
+  '[ "$(pl '\''.kind == "summary" and .verdict == "reproduced" and ((.p_no_crash_at_ladder_rate - ((-2 / 1553 * .jobs) | exp)) | fabs) < 1e-9'\'' | jq -r .crashes)" = "$K" ] && [ "$(pl '\''.kind == "summary"'\'' | cnt)" = 1 ]'
 chk "restore line restored" '[ "$(pl '\''.kind == "restore"'\'' | jq -r .restored)" = true ]'
 chk "the VM's core_pattern restored ($CP1)" '[ "$CP1" = "$CP0" ]'
-grep -E '^probe-rgcrash \{"kind":"(tool|host|core-control|summary|restore)"' "$L" | cut -c1-400
+grep -E '^probe-rgcrash \{"kind":"(tool|host|core-control|plan|progress|summary|restore)"' "$L" | cut -c1-400
 grep -E '^rgcrash-gdb [0-9]+ \| (#[0-4] |\$1 = |pc )' "$L" | head -24 | cut -c1-220
 column -t -s$'\t' "$T/out/rgcrash-tally.tsv"
 if [ "$OK" = 0 ]; then say "ok"; else say "FAILED (REHEARSE_KEEP=1 keeps the scratch dir)"; tail -30 "$L" | sed 's/^/  body | /'; fi
