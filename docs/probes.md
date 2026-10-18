@@ -306,7 +306,9 @@ make orphans
 - its CMake sets `WITH_ISAL OFF` on ARM ("ARM compilation not yet implemented").
 
 So the crashing PyPI aarch64 wheel has no ISA-L either (`nm -D`: 0 ISA-L symbols, 23 rpmalloc
-functions). That makes (a) a one-lever change from the crash: rpmalloc off.
+functions). Against that wheel, (a) differs by **rpmalloc off and a different toolchain (gcc 11.5,
+AL2023), not a single-lever change**. The wheel was built with the manylinux toolchain; (a) is
+built with AL2023's gcc 11.5 against the system python.
 
 (b) changes the release, the rpmalloc version and ISA-L together. A clean (b) shows that 0.16.0
 works, not why. 0.16.0's `setup.py` builds ISA-L on aarch64, and its wheel exports 64 ISA-L
@@ -348,10 +350,15 @@ it, and so will #90, so both run the same artefact.
 - **The plan line** adds `build_s`, `setup_s` and `per_variant` (expected jobs and
   P(no crash) = exp(−(9/3588)·n)). The expected total uses probe (g)'s measured mean step,
   12.3 s. Progress lines re-project per variant from this run's steps.
-- **The summary** has one line per variant: `ran`, `build`, `jobs`, `crashes`, …,
-  `p_no_crash_at_reference_rate`, `null_resolves` and a `verdict`. The verdict is one of: *crashed:
-  not a fix*; *no crash; the null resolves … the fix is supported*; *no crash; the null does NOT
-  resolve*; *not run: build failed*.
+- **The summary** has one line per variant: `ran`, `build`, `differs_from_crashing_wheel_by`,
+  `jobs`, `failures`, `crashes`, …, `p_no_crash_at_reference_rate`, `null_resolves` and a
+  `verdict`.
+  - A failure is any job with a non-zero exit, a wrong sha256 or a gzip mismatch. Wrong output
+    with exit 0 counts, as it does in the progress lines.
+  - `null_resolves` needs 0 failures, not just 0 crashes.
+  - The verdict is one of: *failed (… crashes, … failures incl. wrong output): not a fix*;
+    *no failure; the null resolves … the fix is supported (<what differs>)*; *no failure; the
+    null does NOT resolve*; *not run: build failed*.
 - **Stop rule and margins:** the same as probe (g), with TTL 150 min and cost_limit $9.43.
 
 **Resolution:** probe (g)'s loop ran 7,378 s. Probe (h) loses the build (about 3 min), so about
@@ -367,9 +374,11 @@ as `rgfix-gdb <n> | …` lines. Files: `rgfix.jsonl`, `rgfix-tally.tsv` (variant
 `rg-build.log`, the built wheel, `gdb/`, `cores/` and the 2 bundles.
 
 **How to read it:**
-- **(a) clean and resolving** supports rpmalloc as the cause, and turning it off as a fix for
-  0.14.5.
-- **(a) crashing** means rpmalloc is not the whole story. Read `frame0` in its failures.
+- **(a) clean and resolving** supports turning rpmalloc off as a fix for 0.14.5 on this host. It
+  does not isolate rpmalloc as the cause: (a) also changes the toolchain (gcc 11.5, AL2023), so it
+  is not a single-lever change. Together with the cores (6 of 9 in rpmalloc's free path), it is
+  consistent with rpmalloc.
+- **(a) failing** means rpmalloc is not the whole story. Read `frame0` in its failures.
 - **(b)** says whether 0.16.0 can replace 0.14.5 (S5, and #90's ISA-L arm), not why.
 
 **Rehearsal** (`scripts/lib/rgfix_rehearse.sh`, through `probe_rehearse.sh`): the body runs

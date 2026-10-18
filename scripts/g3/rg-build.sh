@@ -15,7 +15,9 @@
 #   - RAPIDGZIP_BUILD_RPMALLOC=disable, RAPIDGZIP_BUILD_ISAL=disable. ISA-L cannot be on: 0.14.5's
 #     setup.py builds it only on x86_64 (canBuildIsal = nasm and machine in x86_64/AMD64) and its
 #     CMake forces WITH_ISAL OFF on ARM ("ARM compilation not yet implemented"), so on aarch64 the
-#     PyPI wheel has no ISA-L either, and rpmalloc is the one lever this build changes.
+#     PyPI wheel has no ISA-L either. Against that wheel this build differs by rpmalloc off and a
+#     different toolchain (AL2023's gcc 11.5 and system python, not the manylinux one): not a
+#     single-lever change.
 # Verification, on the built .so: no rpmalloc functions (nm -D; the PyPI wheel exports 23), no ISA-L symbols
 # (isal_inflate), `rapidgzip --oss-attributions` lists neither, and the version is 0.14.5. A
 # build that fails verification is a failure.
@@ -43,9 +45,9 @@ REC() {  # status note: the record, to stdout and OUTDIR/build.json
   jq -nc --arg status "$1" --arg note "$2" --arg v "$RG_VERSION" --arg sdist "$RG_SDIST_SHA256" --arg flags "$FLAGS" \
     --arg deps "${DEPS[*]}" --arg recipe "${RECIPE:-}" --arg gcc "${GCCV:-}" --arg py "${PYV:-}" --arg whl "${WHL:+$(basename "$WHL")}" \
     --arg wsha "${WSHA:-}" --arg so "${SOSHA:-}" --argjson s "$(( $(date +%s) - T0 ))" --arg cache "${CACHE_STATE:-none}" \
-    --arg rpm "${N_RPM:-}" --arg isal "${N_ISAL:-}" --arg oss "${OSS:-}" --arg rv "${RV:-}" \
+    --arg puts "${CACHE_PUTS:-0}" --arg rpm "${N_RPM:-}" --arg isal "${N_ISAL:-}" --arg oss "${OSS:-}" --arg rv "${RV:-}" \
     '{kind:"rg-build", status:$status, note:$note, version:$v, sdist_sha256:$sdist, flags:$flags, build_deps:$deps, recipe_sha256:$recipe,
-      gcc:$gcc, python:$py, wheel:$whl, wheel_sha256:$wsha, extension_sha256:$so, seconds:$s, cache:$cache,
+      gcc:$gcc, python:$py, wheel:$whl, wheel_sha256:$wsha, extension_sha256:$so, seconds:$s, cache:$cache, cache_puts:($puts|tonumber),
       rpmalloc_symbols:($rpm|tonumber? // null), isal_symbols:($isal|tonumber? // null), oss_attributions:$oss, reports:$rv}' | tee "$OUT/build.json.tmp"
   mv -f "$OUT/build.json.tmp" "$OUT/build.json"
 }
@@ -97,7 +99,8 @@ WSHA=$(sha256sum "$WHL" | cut -d' ' -f1)
 VERIFY "$V" || die "verification failed: rpmalloc symbols $N_RPM, isal symbols $N_ISAL, oss '$OSS', '$RV'"
 REC ok "built" > /dev/null
 if [ -n "$CACHE" ]; then
-  aws s3 cp --only-show-errors "$WHL" "$CACHE/$RECIPE/$(basename "$WHL")" >> "$LOG" 2>&1 &&
+  CACHE_PUTS=1
+  aws s3 cp --only-show-errors "$WHL" "$CACHE/$RECIPE/$(basename "$WHL")" >> "$LOG" 2>&1 && CACHE_PUTS=2 &&
     aws s3 cp --only-show-errors "$OUT/build.json" "$CACHE/$RECIPE/build.json" >> "$LOG" 2>&1 && CACHE_STATE=stored || CACHE_STATE="store failed"
 fi
 REC ok "built" | sed 's/^/rg-build /'

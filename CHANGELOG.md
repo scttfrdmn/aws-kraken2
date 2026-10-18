@@ -16,10 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   conditions: lad_identity's 6 lanes, TTL 150 min, cost_limit $9.43.
   - **Variants,** alternating per job:
     - (a) 0.14.5 built from its sha256-pinned sdist with rpmalloc off. ISA-L stays off, because
-      0.14.5 cannot build it on aarch64 and the PyPI wheel has none, so rpmalloc is the one lever.
+      0.14.5 cannot build it on aarch64 and the PyPI wheel has none. Against that wheel, (a)
+      differs by rpmalloc off and a different toolchain (gcc 11.5, AL2023): not a single-lever
+      change.
     - (b) the pinned 0.16.0 wheel (rpmalloc and ISA-L on).
   - **Summary:** per variant, P(no crash) = exp(−(9/3588)·jobs) and whether it resolves; about
-    1,750 jobs and P ≈ 0.012 are expected per variant.
+    1,750 jobs and P ≈ 0.012 are expected per variant. The verdict and `null_resolves` count any
+    failure (a non-zero exit, a wrong sha256, or a gzip mismatch), not only crashes.
   - **If (a)'s build fails,** (b) still runs.
   - **`scripts/g3/rg-build.sh`** is the one build recipe, also for #90. It pins the build deps by
     hash, verifies the `.so` (0 rpmalloc functions, 0 ISA-L symbols, `--oss-attributions`) and

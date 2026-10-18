@@ -10,8 +10,9 @@
 # sha256sum on the same c10 file on /dev/shm), cores to /dev/shm, gdb on failure, pushed as it
 # goes, the same stop rule, TTL 150 min. The rapidgzip of a job alternates between two variants:
 #   a  0.14.5-norpmalloc: 0.14.5 built from its sdist with rpmalloc off (scripts/g3/rg-build.sh;
-#      ISA-L stays off as in the PyPI aarch64 wheel: 0.14.5 cannot build it on aarch64), so the
-#      one lever against the crashing wheel is rpmalloc. Cached by recipe sha256 in
+#      ISA-L stays off as in the PyPI aarch64 wheel: 0.14.5 cannot build it on aarch64). Against
+#      the crashing wheel it differs by rpmalloc off and a different toolchain (gcc 11.5, AL2023,
+#      the system python; the wheel: the manylinux toolchain), not a single-lever change. Cached by recipe sha256 in
 #      the results bucket's aws-kraken2/data/rg-build/ (the input-path sweep, #90, reuses the same wheel).
 #   b  0.16.0: the PyPI cp39 manylinux aarch64 wheel, --require-hashes (rpmalloc on, ISA-L on).
 # If a's build fails, every job runs b and a is reported build-failed (its build log streamed).
@@ -84,6 +85,7 @@ emit "$(jq -c --argjson rc "$BRC" --argjson s "$BUILD_S" '. + {exit:$rc, wall_se
 case $(jq -r '.cache // "none"' <<< "$BREC") in
   hit) ak2_req GetObject 2 "$B" ;;
   stored) ak2_req GetObject 1 "$B"; ak2_req PutObject 2 "$B" ;;
+  "store failed") ak2_req GetObject 1 "$B"; ak2_req PutObject "$(jq -r '.cache_puts // 1' <<< "$BREC")" "$B" ;;
   *) ak2_req GetObject 1 "$B" ;;
 esac
 [ -s "$W/rgbuild/build.log" ] && ak2_push "$W/rgbuild/build.log" rg-build.log > /dev/null
@@ -319,25 +321,29 @@ for p in "${LPIDS[@]}"; do wait "$p"; done
 ak2_phase summary
 meminfo end
 tally
-# Per variant: crashed, or a null that resolves (P(no crash at probe (g)'s 9/3588 over its jobs)
-# <= 0.05: the fix is supported at 5%), or a null that does not; a variant that did not run says why.
+# Per variant: failed (any job with a non-zero exit, a wrong sha256 or a gzip mismatch: a wrong
+# output with exit 0 is a failure too), or a null that resolves (no failure, and P(no crash at
+# probe (g)'s 9/3588 over its jobs) <= 0.05: the fix is supported at 5%), or a null that does not;
+# a variant that did not run says why. (a)'s verdict names both of its differences from the wheel.
 for v in a b; do
   jq -c -s --arg var "$v" --arg v "${RGN[$v]}" --arg ran "${OK[$v]:-0}" --argjson rn "$RATE_N" --argjson rd "$RATE_D" --argjson lanes "$LANES" \
     --arg bstatus "$(jq -r '.status // "failed"' <<< "$BREC")" \
     '[.[] | select(.kind == "job" and .variant == $var)] as $x | ($rn / $rd) as $rate | ($x | length) as $c
      | ((-$rate * $c) | exp) as $p0 | ($x | map(select(.signal != null)) | length) as $cr
+     | ($x | map(select(.exit != 0 or (.match | not) or (.gzip_match | not))) | length) as $nf
+     | (if $var == "a" then "rpmalloc off and a different toolchain (gcc 11.5, AL2023), not a single-lever change" else "0.16.0: release, rpmalloc version and ISA-L together" end) as $diff
      | {kind:"summary", variant:$var, version:$v, mode:"identity", lanes:$lanes, ran:($ran == "1"),
         build:(if $var == "a" then $bstatus else "pypi wheel" end), jobs:$c,
-        crashes:$cr, sigsegv:($x | map(select(.signal == 11)) | length),
+        differs_from_crashing_wheel_by:$diff, failures:$nf, crashes:$cr, sigsegv:($x | map(select(.signal == 11)) | length),
         timeouts:($x | map(select(.timeout)) | length), nonzero_exit:($x | map(select(.exit != 0)) | length),
         wrong_sha:($x | map(select(.match | not)) | length), wrong_sha_exit0:($x | map(select(.exit == 0 and (.match | not))) | length),
         gzip_mismatch:($x | map(select(.gzip_match | not)) | length),
         crash_rate:(if $c > 0 then $cr / $c else null end), mean_step_s:(if $c > 0 then ($x | map(.step_seconds) | add / $c) else null end),
-        reference_rate:$rate, p_no_crash_at_reference_rate:(if $c > 0 then $p0 else null end), null_resolves:($c > 0 and $cr == 0 and $p0 <= 0.05),
+        reference_rate:$rate, p_no_crash_at_reference_rate:(if $c > 0 then $p0 else null end), null_resolves:($c > 0 and $nf == 0 and $p0 <= 0.05),
         verdict:(if $ran != "1" then "not run: build failed (see the rg-build line and rg-build-log)"
-                 elif $cr > 0 then "crashed: not a fix"
-                 elif $p0 <= 0.05 then "no crash; the null resolves (P(no crash at 9/3588) <= 0.05): the fix is supported"
-                 else "no crash; the null does NOT resolve (P(no crash at 9/3588) > 0.05)" end)}' "$J" > "$W/summary-$v.json"
+                 elif $nf > 0 then "failed (\($cr) crashes, \($nf) failures incl. wrong output): not a fix"
+                 elif $p0 <= 0.05 then "no failure; the null resolves (P(no crash at 9/3588) <= 0.05): the fix is supported (\($diff))"
+                 else "no failure; the null does NOT resolve (P(no crash at 9/3588) > 0.05)" end)}' "$J" > "$W/summary-$v.json"
   emit "$(cat "$W/summary-$v.json")"
 done
 restore_cp

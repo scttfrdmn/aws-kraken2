@@ -29,7 +29,7 @@
 #   signal 11), each with a failure line, a core, gdb frames and gdb output streamed and pushed;
 #   min(K, MAXCORES) valid zstd cores; every other job matched; 2 analysis bundles; the tally's
 #   jobs = the job lines; 2 summary lines, both ran, crashes summing to K (a 2, b 1), each
-#   p_no_crash_at_reference_rate = exp(-(9/3588) x jobs) and verdict "crashed: not a fix"; the
+#   p_no_crash_at_reference_rate = exp(-(9/3588) x jobs) and a verdict "failed (...): not a fix"; the
 #   restore line, and the VM's core_pattern after = before; the cache object in the stand-in S3.
 #   run 2: body exit 0; the rg-build line status failed; rg-build-log lines streamed; host
 #   variants b only; every job variant b; summary a not run ("not run: build failed"), b with jobs.
@@ -203,8 +203,8 @@ chk "$MAXC cores pushed (of $K), valid zstd" '[ "$nc" = "$MAXC" ] && ztest'
 chk "2 analysis bundles, the built wheel and the build log pushed" \
   '[ -s "$T/out1/bundle-0.14.5-norpmalloc.tar.zst" ] && [ -s "$T/out1/bundle-0.16.0.tar.zst" ] && ls "$T"/out1/rapidgzip-0.14.5-*.whl > /dev/null && [ -s "$T/out1/rg-build.log" ]'
 chk "tally jobs = job lines" '[ "$(awk -F"\t" "NR > 1 {s += \$3} END {print s + 0}" "$T/out1/rgfix-tally.tsv")" = "$nj" ]'
-chk "2 summary lines, both ran, crashes a 2 b 1, p = exp(-(9/3588) x jobs), verdict crashed" \
-  '[ "$(pl ".kind == \"summary\" and .ran and .verdict == \"crashed: not a fix\" and ((.p_no_crash_at_reference_rate - ((-$R * .jobs) | exp)) | fabs) < 1e-9" | jq -r "\"\(.variant)\(.crashes)\"" | sort | tr -d "\n")" = "a2b1" ]'
+chk "2 summary lines, both ran, crashes a 2 b 1, p = exp(-(9/3588) x jobs), verdict failed" \
+  '[ "$(pl ".kind == \"summary\" and .ran and (.verdict | startswith(\"failed (\")) and (.verdict | endswith(\"not a fix\")) and ((.p_no_crash_at_reference_rate - ((-$R * .jobs) | exp)) | fabs) < 1e-9" | jq -r "\"\(.variant)\(.crashes)\"" | sort | tr -d "\n")" = "a2b1" ]'
 chk "restore line restored" '[ "$(pl '\''.kind == "restore"'\'' | jq -r .restored)" = true ]'
 chk "the VM's core_pattern restored ($CP1)" '[ "$CP1" = "$CP0" ]'
 RECIPE=$(pl '.kind == "rg-build"' | jq -r .recipe_sha256)
