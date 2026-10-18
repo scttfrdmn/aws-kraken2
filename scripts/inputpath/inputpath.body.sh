@@ -18,14 +18,19 @@
 # Pipe: every rapidgzip decode writes into a pipe raised to PIPE_BYTES by
 # scripts/inputpath/pipesz.py (F_SETPIPE_SZ; the size it got is recorded per mate).
 # Best p (the rule, recorded in each select line): per sample and threads, among rep 1's I2 points
-# at chunk 4096 and PIPE_BYTES with status ok, the smallest p whose wall_s is within 1% of the
-# minimum wall_s. Rep 2 reuses rep 1's choice and runs rep 1's points in reverse order.
-# Identity (Scott, 2026-10-18): before a rapidgzip configuration decodes a file in a point, that
-# exact configuration decodes it to sha256sum, which must equal gzip -dc's; a crash, timeout or
-# mismatch is an identity line with ok=false and every point needing it is skipped
-# (skipped-identity), never run. A decoder that exits non-zero inside a point makes it a
-# decode-crash point (excluded). Law 1: every point's --output and --report sha256 must equal the
-# sample's warm-up I0 point's; otherwise a defect line.
+# of the PyPI build at chunk 4096 and PIPE_BYTES with status ok and identity ok, the smallest p
+# whose wall_s is within 1% of the minimum wall_s. Rep 2 reuses rep 1's choice and runs rep 1's
+# points in reverse order.
+# Identity (Scott, 2026-10-18): before a rapidgzip build and configuration decodes a file in a
+# point, it decodes it to sha256sum, which must equal gzip -dc's. A failed attempt is retried once
+# (the rpmalloc race, #89: ~0.25% of decodes); each attempt is an identity line, and only two
+# failures make every point needing it skipped (skipped-identity), never run. A decoder that exits
+# non-zero inside a point makes it a decode-crash point (excluded).
+# Law 1: each sample's warm-up I0 must equal upstream at the pin (#95's g1_reference in G1_REF),
+# or the run stops (defect line, exit 1) before any other point; every later point's --output,
+# --report and sequence count must equal the warm-up's, otherwise a defect line.
+# RG2_SCRIPT (off by default): a second rapidgzip build (e.g. scripts/g3/rg-build.sh, 0.14.5 from
+# source with ISA-L, rpmalloc off) adds I2, I3 and I4 at the best p with it (decomp rapidgzip-src).
 # Streams one `inputpath {json}` line per event (also in out/points.jsonl, pushed after every
 # point with the point's pidstat CSV, stderr and time records as out/points/<id>.tgz), so a TTL
 # kill loses no finished point. A point not started by DEADLINE (launch + TTL - MARGIN_S) is
@@ -33,7 +38,8 @@
 # run (exit 95, the preamble's rule).
 # make rehearse seams (AK2_REHEARSE_*, refused by run.sh in a spec's env): INPUTS_TSV (another
 # inputs.tsv), DEADLINE_S (seconds from the measure phase's start; also lifts the 64-vCPU check), THP_ROOT (a fake sysfs root), GO (Go is on
-# PATH), RAPIDGZIP / WHEELS (lever.sh's), TMPFS (plain directories instead of tmpfs mounts).
+# PATH), RAPIDGZIP / WHEELS (lever.sh's), TMPFS (plain directories instead of tmpfs mounts), G1_REF
+# (another Law 1 reference file).
 @PARAMS@
 W=$HOME/ak2; mkdir -p "$W"
 T_START=$(date +%s)
@@ -76,6 +82,19 @@ ROWS=$(python3 "$IP/inputs.py" check "$ITSV" --accessions "$AK2_ACCESSIONS" 2>&1
 emit "$(jq -nc --arg f "$ITSV" --arg sha "$(sha256sum "$ITSV" | cut -d' ' -f1)" --argjson n "$(grep -c . <<< "$ROWS")" \
   '{kind:"inputs-tsv", file:$f, sha256:$sha, rows:$n}')"
 
+# Law 1 against upstream at the pin, before any point: the warm-up I0 of each sample must equal
+# #95's recorded reference (the I0 --output/--report sha256 of upstream at the pin on these inputs and
+# Standard-8: g1_reference in G1_REF's manifest). A mismatch is a defect line and ends the run, so for
+# ENGINE=ours nothing is measured unless ours equals upstream on these inputs.
+G1F=${AK2_REHEARSE_G1_REF:-$G1_REF}
+[ -s "$G1F" ] || fail "the Law 1 reference $G1F is missing"
+G1J=$(jq -c --arg f "$G1F" --arg sha "$(sha256sum "$G1F" | cut -d' ' -f1)" '[.g1_reference[] | select(.db == "standard8")]
+  | map({key:.role, value:{file:$f, sha256:$sha, output_sha256:.i0_output_sha256, report_sha256:.i0_report_sha256}}) | from_entries' "$G1F") ||
+  fail "cannot read g1_reference from $G1F"
+[ "$(jq -r '[.pe.output_sha256, .pe.report_sha256, .se.output_sha256, .se.report_sha256] | map(select(. != null and test("^[0-9a-f]{64}$"))) | length' <<< "$G1J")" = 4 ] ||
+  fail "$G1F has no standard8 pe and se reference with both sha256s"
+emit "$(jq -c '{kind:"g1-reference", rule:"each sample warm-up I0 output and report sha256 must equal these (upstream at the pin, #95), else defect and stop"} + {references:.}' <<< "$G1J")"
+
 NPROC=$(nproc)
 THP0=$(cur_thp)
 [ -n "$THP0" ] || fail "cannot read $THP_F"
@@ -114,25 +133,24 @@ RG=$LV_RG
 RGI=$W/rapidgzip-info.txt
 { echo "== $RG --version"; "$RG" --version 2>&1; echo "== $RG --help"; "$RG" --help 2>&1
   echo "== $RG --oss-attributions"; "$RG" --oss-attributions 2>&1
-  echo "== extension"; find "$LV_DIR/rg-venv" -name 'rapidgzip*.so' -exec sh -c 'echo "$1"; sha256sum "$1"; (ldd "$1" 2>&1 || true)
-    echo "== isal symbols in $1: $(grep -a -o -E "isal_[a-z0-9_]+" "$1" | sort -u | head -8 | tr "\n" " ")"' _ {} \; 2> /dev/null
+  echo "== extension"; find "$LV_DIR/rg-venv" -name 'rapidgzip*.so' -exec sh -c 'echo "$1"; sha256sum "$1"; (ldd "$1" 2>&1 || true)' _ {} \; 2> /dev/null
 } > "$RGI"
-# ISA-L (the plan: confirm the Graviton wheel has it). The wheel's extension is stripped, so the
-# evidence is its --oss-attributions (the libraries compiled in) and isal_ strings in the
-# extension: yes if the attributions name ISA-L; no if they list libraries, none ISA-L, and the
-# extension has no isal_ string; unknown otherwise (they disagree, or there is no extension).
-ATTR=$(awk '/^== .*--oss-attributions$/ {f = 1; next} /^== / {f = 0} f && /^# / {print substr($0, 3)}' "$RGI" | tr '\n' ',' | sed 's/,$//')
-SYMS=$(sed -n 's/^== isal symbols in [^:]*: //p' "$RGI" | tr -d ' ')
-ISAL=unknown
-if grep -q -i -E 'isa-?l' <<< "$ATTR"; then ISAL=yes
-elif [ -n "$ATTR" ] && [ -z "$SYMS" ] && grep -q '^== isal symbols in ' "$RGI"; then ISAL=no; fi
-ISAL_EV="oss-attributions: ${ATTR:-none}; isal_ strings in the extension: ${SYMS:-none}"
+# ISA-L (the plan: confirm the Graviton wheel has it), with #95's detector (scripts/inputpath/lib.sh):
+# static, ip_isal_static on the extension (an isal_inflate_init symbol or the isa-l attribution; the
+# literal isal_inflate is in an error string of every build, so it is not evidence); runtime,
+# ip_isal_runtime ("Time spent decoding with ISA-L" of rapidgzip -v on an input, after staging).
+# isal true if either says so, false if static none and runtime 0, else null. #95 found none in
+# every pinned aarch64 wheel (docs/inputpath.md, "Pre-flight and inputs").
+# shellcheck source=/dev/null
+. scripts/inputpath/lib.sh || fail "scripts/inputpath/lib.sh did not load"
+RG_SO=$(find "$LV_DIR/rg-venv" -name 'rapidgzip*.so' 2> /dev/null | head -1)
+ISAL_STATIC=unknown; [ -n "$RG_SO" ] && ISAL_STATIC=$(ip_isal_static "$RG_SO")
 emit "$(jq -nc --arg v "$LV_RG_VERSION" --arg rv "$("$RG" --version 2>&1 | head -1)" --arg path "$RG" \
   --arg whl "$(find "$LV_DIR/rg-wheels" -name 'rapidgzip-*.whl' 2> /dev/null | head -1 | xargs -r basename)" \
   --arg wsha "$(find "$LV_DIR/rg-wheels" -name 'rapidgzip-*.whl' 2> /dev/null | head -1 | xargs -r sha256sum | cut -d' ' -f1)" \
-  --arg isal "$ISAL" --arg ev "$ISAL_EV" --arg info "$(sha256sum "$RGI" | cut -d' ' -f1)" \
-  '{kind:"tool", name:"rapidgzip", version:$v, reports:$rv, path:$path, build:("PyPI wheel " + $whl), wheel_sha256:$wsha,
-    isal:$isal, isal_evidence:$ev, info_file:"rapidgzip-info.txt", info_sha256:$info}')"
+  --arg st "$ISAL_STATIC" --arg so "$RG_SO" --arg info "$(sha256sum "$RGI" | cut -d' ' -f1)" \
+  '{kind:"tool", name:"rapidgzip", build_label:"pypi", version:$v, reports:$rv, path:$path, build:("PyPI wheel " + $whl), wheel_sha256:$wsha,
+    extension:$so, isal_static:$st, info_file:"rapidgzip-info.txt", info_sha256:$info}')"
 ak2_push "$RGI" rapidgzip-info.txt > /dev/null
 
 # ---- RAM: the database, the inputs, the outputs (tmpfs) ----
@@ -221,32 +239,68 @@ TFMT='ak2time wall_s=%e maxrss_kb=%M exit=%x user_s=%U sys_s=%S'
 TIMEQ=$(printf '/usr/bin/time -f %q' "$TFMT")
 declare -A IDS=() IDJ=() BESTP=()
 POINTS_DONE=0; DEFECTS=0
-RGJ=$(jq -nc --arg v "$LV_RG_VERSION" --arg isal "$ISAL" '{version:$v, build:"pypi", isal:(if $isal == "yes" then true elif $isal == "no" then false else null end)}')
+# The rapidgzip builds of the matrix, by the points' decomp label: rapidgzip (the PyPI wheel, always)
+# and, with RG2_SCRIPT set, rapidgzip-src (a second build, e.g. 0.14.5 from source with ISA-L and
+# rpmalloc off: scripts/g3/rg-build.sh, from another PR). The script gets a work dir and prints the
+# binary's path as its last stdout line; it must report rapidgzip $LV_RG_VERSION. Off by default.
+declare -A RGBIN=() RGJS=()
+isal_of() {  # LABEL BIN STATIC: rapidgzip -v's ISA-L time on the se gz, then the isal verdict line
+  local rt v
+  rt=$(ip_isal_runtime "$2" "$IN/se_1.gz")
+  v=null
+  if [ "$3" = isal ] || awk -v r="${rt:-0}" 'BEGIN{exit !(r > 0)}'; then v=true
+  elif [ "$3" = none ] && [ -n "$rt" ] && awk -v r="$rt" 'BEGIN{exit !(r == 0)}'; then v=false; fi
+  emit "$(jq -nc --arg l "$1" --arg st "$3" --arg rt "$rt" --argjson v "$v" '{kind:"isal", build_label:$l, isal:$v, static:$st,
+    runtime_isal_s:($rt|tonumber? // null), rule:"true if the static check (#95: isal_inflate_init symbol or the isa-l attribution) or rapidgzip -v ISA-L time > 0; false if static none and 0 s; else null",
+    reference:"#95: the pinned 0.14.5 manylinux aarch64 wheels carry no ISA-L (docs/inputpath.md, Pre-flight and inputs)"}')"
+  ISAL_V=$v
+}
+RGBIN[rapidgzip]=$RG
+isal_of rapidgzip "$RG" "$ISAL_STATIC"; ISAL=$ISAL_V
+RGJS[rapidgzip]=$(jq -nc --arg v "$LV_RG_VERSION" --argjson isal "$ISAL" '{version:$v, build:"pypi", isal:$isal}')
+if [ -n "$RG2_SCRIPT" ]; then
+  [ -f "$RG2_SCRIPT" ] || fail "RG2_SCRIPT $RG2_SCRIPT is not in the tree"
+  RG2=$(bash "$RG2_SCRIPT" "$W/rg2" 2> "$W/rg2.err" | tail -1) || { tail -20 "$W/rg2.err"; fail "$RG2_SCRIPT failed"; }
+  [ -x "$RG2" ] && "$RG2" --version 2>&1 | grep -q "version $LV_RG_VERSION" || fail "$RG2_SCRIPT gave '$RG2', not rapidgzip $LV_RG_VERSION"
+  RGBIN[rapidgzip-src]=$RG2
+  isal_of rapidgzip-src "$RG2" "$(ip_isal_static "$RG2")"; ISAL2=$ISAL_V
+  RGJS[rapidgzip-src]=$(jq -nc --arg v "$LV_RG_VERSION" --argjson isal "$ISAL2" --arg b "source ($RG2_SCRIPT, sha256 $(sha256sum "$RG2_SCRIPT" | cut -d' ' -f1))" \
+    '{version:$v, build:"source", isal:$isal, build_detail:$b}')
+  emit "$(jq -nc --arg p "$RG2" --arg s "$RG2_SCRIPT" --arg sha "$(sha256sum "$RG2" | cut -d' ' -f1)" '{kind:"tool", name:"rapidgzip", build_label:"rapidgzip-src", path:$p, script:$s, sha256:$sha}')"
+fi
 set_thp() {
   [ "$(cur_thp)" = "$1" ] && return 0
   echo "$1" | sudo -n tee "$THP_F" > /dev/null 2>&1
   [ "$(cur_thp)" = "$1" ] || fail "THP enabled=$1 was not applied (reads $(cur_thp))"
 }
 time_exit() { awk '/terminated by signal/ {s = 128 + $NF} /ak2time/ {for (i = 1; i <= NF; i++) if ($i ~ /^exit=/) e = substr($i, 6)} END {print (s != "" ? s : (e != "" ? e : "missing"))}' "$1" 2> /dev/null || echo missing; }
-# identity FILE MATEKEY ARGS...: that rapidgzip configuration on FILE, to sha256sum, against gzip -dc's.
+# identity BIN FILE MATEKEY ARGS...: that rapidgzip build and configuration on FILE, to sha256sum,
+# against gzip -dc's. A failed attempt (crash, timeout, mismatch) is retried once: 0.14.5's rpmalloc
+# race crashes about 0.25% of decodes on Graviton (#89), so one crash is not the configuration's
+# verdict. Each attempt is its own identity line (attempt 1, 2); the configuration is excluded only
+# if both fail. The point's identity object is the deciding attempt's, with every attempt listed.
 identity() {
-  local f=$1 m=$2; shift 2
-  local key="$f|$*" tf=$W/identity.time t0 t1 got rc ex st=ok line
+  local bin=$1 f=$2 m=$3; shift 3
+  local key="$bin|$f|$*" tf=$W/identity.time t0 t1 got rc ex st line att atts="[]"
   case ${IDS[$key]:-} in ok) return 0 ;; ?*) return 1 ;; esac
-  rm -f "$tf"; t0=$(now)
-  got=$(timeout -k 30 "$ID_TIMEOUT" /usr/bin/time -f "$TFMT" -o "$tf" "$RG" -d -c "$@" "$f" 2> "$W/identity.err" | sha256sum | cut -d' ' -f1)
-  rc=${PIPESTATUS[0]}; t1=$(now)
-  ex=$(time_exit "$tf")
-  if [ "$rc" = 124 ] || [ "$rc" = 137 ]; then st=timeout; elif [ "$rc" != 0 ] || [ "$ex" != 0 ]; then st=crash; elif [ "$got" != "${REF[$m]}" ]; then st=mismatch; fi
+  for att in 1 2; do
+    rm -f "$tf"; t0=$(now); st=ok
+    got=$(timeout -k 30 "$ID_TIMEOUT" /usr/bin/time -f "$TFMT" -o "$tf" "$bin" -d -c "$@" "$f" 2> "$W/identity.err" | sha256sum | cut -d' ' -f1)
+    rc=${PIPESTATUS[0]}; t1=$(now)
+    ex=$(time_exit "$tf")
+    if [ "$rc" = 124 ] || [ "$rc" = 137 ]; then st=timeout; elif [ "$rc" != 0 ] || [ "$ex" != 0 ]; then st=crash; elif [ "$got" != "${REF[$m]}" ]; then st=mismatch; fi
+    line=$(jq -nc --arg bin "$bin" --arg f "$f" --arg m "$m" --arg args "$*" --arg st "$st" --arg rc "$rc" --arg ex "$ex" --arg got "$got" --arg want "${REF[$m]}" \
+      --arg t0 "$t0" --arg t1 "$t1" --arg fqb "${FQB[$m]}" --arg err "$(tail -c 400 "$W/identity.err")" --argjson att "$att" \
+      '{kind:"identity", attempt:$att, bin:$bin, file:$f, mate:$m, args:$args, status:$st, ok:($st == "ok"), exit:($rc|tonumber? // $rc),
+        decoder_exit:($ex|tonumber? // $ex), sha256:$got, want_sha256:$want, seconds:(($t1|tonumber) - ($t0|tonumber)),
+        mb_per_s:(($fqb|tonumber) / (($t1|tonumber) - ($t0|tonumber)) / 1e6), stderr_tail:(if $st == "ok" then null else $err end)}')
+    emit "$line"
+    atts=$(jq -c --argjson l "$line" '. + [$l | {attempt, status, decoder_exit, sha256}]' <<< "$atts")
+    [ "$st" = ok ] && break
+  done
   IDS[$key]=$st
-  line=$(jq -nc --arg f "$f" --arg m "$m" --arg args "$*" --arg st "$st" --arg rc "$rc" --arg ex "$ex" --arg got "$got" --arg want "${REF[$m]}" \
-    --arg t0 "$t0" --arg t1 "$t1" --arg fqb "${FQB[$m]}" --arg err "$(tail -c 400 "$W/identity.err")" \
-    '{kind:"identity", file:$f, mate:$m, args:$args, status:$st, ok:($st == "ok"), exit:($rc|tonumber? // $rc), decoder_exit:($ex|tonumber? // $ex),
-      sha256:$got, want_sha256:$want, seconds:(($t1|tonumber) - ($t0|tonumber)),
-      mb_per_s:(($fqb|tonumber) / (($t1|tonumber) - ($t0|tonumber)) / 1e6), stderr_tail:(if $st == "ok" then null else $err end)}')
-  emit "$line"
-  IDJ[$key]=$(jq -c '{mate:(.mate | split("_")[1] | tonumber), gz_sha256:.want_sha256, rg_sha256:.sha256,
-    rg_exit:(if (.decoder_exit|type) == "number" then .decoder_exit else 255 end), ok, status, args}' <<< "$line")
+  IDJ[$key]=$(jq -c --argjson a "$atts" '{mate:(.mate | split("_")[1] | tonumber), gz_sha256:.want_sha256, rg_sha256:.sha256,
+    rg_exit:(if (.decoder_exit|type) == "number" then .decoder_exit else 255 end), ok, status, args, attempts:$a}' <<< "$line")
   [ "$st" = ok ]
 }
 # point REP SAMPLE ARM T P CHUNK PIPE THP DECOMP [WARMUP]: one classifier run (- for n/a), recorded
@@ -255,7 +309,7 @@ point() {
   local rep=$1 s=$2 arm=$3 t=$4 p=$5 ck=$6 pipe=$7 thp=$8 dec=$9 warm=${10:-0}
   local id="r$rep-$s-$arm-t$t-p$p-c$ck-pipe$pipe-thp$thp-$dec"; [ "$warm" = 1 ] && id="warmup-$s"
   id=${id//[^A-Za-z0-9._-]/_}
-  local D=$W/pts/$id paired=0 fqb=$FQ_SE mates="1" db=$DBN files="" m rgargs="" envp="" sho="" shr="" rec st idl="[]" mj="[]" kind=gz
+  local D=$W/pts/$id paired=0 fqb=$FQ_SE mates="1" db=$DBN files="" m rgargs="" envp="" sho="" shr="" rec st idl="[]" mj="[]" kind=gz rgb="" rgj=null
   [ "$s" = pe ] && { paired=1; fqb=$FQ_PE; mates="1 2"; }
   [ "$ENGINE" = upstream ] && [ "$thp" = always ] && [ -s "$DBH/hash.k2d" ] && db=$DBH
   [ "$arm" = I4 ] && kind=bgzf
@@ -275,6 +329,8 @@ point() {
         [ "$dec" = pipe ] && envp="env AK2_DECOMPRESS=pipe "; [ "$dec" = inproc ] && envp="env -u AK2_DECOMPRESS " ;;
     I2|I3|I4)
       if [ -z "$skip" ] && [ "$p" = - ]; then skip="no-best-p: rep 1 gave no usable I2 point at these threads"; fi
+      rgb=${RGBIN[$dec]:-}; rgj=${RGJS[$dec]:-null}
+      [ -n "$rgb" ] || fail "point $id: no rapidgzip build '$dec'"
       for m in $mates; do
         [ -n "$skip" ] && break
         local src=$IN/${s}_$m.gz
@@ -284,19 +340,19 @@ point() {
           I4) rgargs="-P $p --chunk-size $ck"; src=$IN/${s}_$m.bgzf ;;
         esac
         # shellcheck disable=SC2086  # rgargs is a word list
-        identity "$src" "${s}_$m" $rgargs || skip="identity: rapidgzip $rgargs on $(basename "$src") was ${IDS[$src|$rgargs]} in its identity check"
-        idl=$(jq -c --argjson i "${IDJ[$src|$rgargs]:-null}" '. + [$i]' <<< "$idl")
-        files="$files <(python3 $IP/pipesz.py $pipe $D/pipe$m.txt $TIMEQ -o $D/rg$m.time $RG -d -c $rgargs $src)"
+        identity "$rgb" "$src" "${s}_$m" $rgargs || skip="identity: $dec $rgargs on $(basename "$src") was ${IDS[$rgb|$src|$rgargs]} in both identity attempts"
+        idl=$(jq -c --argjson i "${IDJ[$rgb|$src|$rgargs]:-null}" '. + [$i]' <<< "$idl")
+        files="$files <(python3 $IP/pipesz.py $pipe $D/pipe$m.txt $TIMEQ -o $D/rg$m.time $rgb -d -c $rgargs $src)"
       done ;;
   esac
   local cmd="$envp$TIMEQ -o $D/k2.time $BIN --db $db --threads $t$([ "$paired" = 1 ] && echo " --paired") --output $OUT/output --report $OUT/report$files"
   jq -n --arg id "$id" --argjson rep "$rep" --argjson warm "$warm" --arg fam "$FAMILY" --arg eng "$ENGINE" --arg it "${AK2_INSTANCE_TYPE:-}" \
     --arg dbn "$DBNAME" --arg db "$db" --arg s "$s" --arg acc "$([ "$s" = pe ] && echo "$ACC_PE" || echo "$ACC_SE")" --arg arm "$arm" \
     --argjson t "$t" --arg p "$p" --arg ck "$ck" --arg pipe "$pipe" --arg thp "$thp" --arg dec "$dec" --argjson fqb "$fqb" \
-    --argjson nproc "$NPROC" --argjson mates "$mj" --argjson ids "$idl" --argjson rg "$RGJ" --arg cmd "$cmd" '
+    --argjson nproc "$NPROC" --argjson mates "$mj" --argjson ids "$idl" --argjson rg "$rgj" --argjson g1 "$G1J" --arg cmd "$cmd" '
     {id:$id, rep:$rep, warmup:($warm == 1), family:$fam, engine:$eng, instance_type:$it, db:$dbn, db_dir:$db, role:$s, accession:$acc,
      arm:$arm, threads:$t, p:($p|tonumber? // null), chunk_kib:($ck|tonumber? // null), pipe_requested:$pipe, thp_requested:$thp,
-     decomp:$dec, fq_bytes:$fqb, nproc:$nproc, mates:$mates, identity:$ids, rapidgzip:$rg, cmd:$cmd}' > "$D/params.json"
+     decomp:$dec, fq_bytes:$fqb, nproc:$nproc, mates:$mates, identity:$ids, rapidgzip:$rg, g1_reference:($g1[$s] // null), cmd:$cmd}' > "$D/params.json"
   if [ -n "$skip" ]; then
     rec=$(python3 "$IP/record.py" --params "$D/params.json" --skip "$skip")
     emit_point "$rec"; return 0
@@ -317,6 +373,7 @@ point() {
     DEFECTS=$((DEFECTS + 1))
     emit "$(jq -c '{kind:"defect", point_id, arm, threads, p, status_detail:.harness.status_detail, note}' <<< "$rec")"
   fi
+  [ "$st" = law1-g1-mismatch ] && fail "Law 1: the $s warm-up I0 differs from upstream at the pin ($G1F): $(jq -r .note <<< "$rec")"
   [ -s "$D/pidstat.csv" ] && ak2_push "$D/pidstat.csv" "pidstat/$id.csv" > /dev/null
   rm -f "$D/pidstat.txt"
   tar -czf "$W/pt.tgz" -C "$D" . 2> /dev/null && ak2_push "$W/pt.tgz" "points/$id.tgz" > /dev/null
@@ -330,11 +387,12 @@ select_p() {
   [ "$s" = pe ] && role=paired
   bp=$(jq -s -r --arg r "$role" --argjson t "$t" --arg pipe "$PIPE_BYTES" --arg thp "$MAIN_THP" '
     [.[] | select(.rep == 1 and .input.role == $r and .arm == "I2" and .threads == $t and .chunk_mib == 4
-      and .harness.pipe_requested == $pipe and .harness.thp_requested == $thp and .status == "ok" and .wall_s != null)] as $c
+      and .harness.pipe_requested == $pipe and .harness.thp_requested == $thp and .harness.decomp == "rapidgzip"
+      and .status == "ok" and .identity.ok == true and .wall_s != null)] as $c
     | if ($c | length) == 0 then "-" else ($c | map(.wall_s) | min) as $m | [$c[] | select(.wall_s <= $m * 1.01) | .p] | min | tostring end' "$PJ")
   BESTP[$s:$t]=$bp
   emit "$(jq -nc --arg s "$s" --arg r "$role" --argjson t "$t" --arg bp "$bp" --slurpfile all "$PJ" '{kind:"select", sample:$s, threads:$t, best_p:($bp|tonumber? // null),
-    rule:"rep 1 I2 points at chunk 4 MiB, the main pipe size and THP, status ok: the smallest p with wall_s <= 1.01 x the minimum wall_s",
+    rule:"rep 1 I2 points of the PyPI build at chunk 4 MiB, the main pipe size and THP, status ok and identity ok: the smallest p with wall_s <= 1.01 x the minimum wall_s",
     candidates:[$all[] | select(.rep == 1 and .input.role == $r and .arm == "I2" and .threads == $t and .chunk_mib == 4) | {p, wall_s, status, point_id}]}')"
 }
 OTHER_THP=never; [ "$MAIN_THP" = never ] && OTHER_THP=always
@@ -358,6 +416,11 @@ for s in $SAMPLES; do
   for t in $THREADS; do run1 "$s" I4 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip; done
   for c in $CHUNKS; do for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" "$c" "$PIPE_BYTES" "$MAIN_THP" rapidgzip; done; done
   [ "$PIPE_CONTRAST" = 1 ] && for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" 4096 default "$MAIN_THP" rapidgzip; done
+  if [ -n "${RGBIN[rapidgzip-src]:-}" ]; then
+    for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip-src; done
+    for t in $THREADS; do run1 "$s" I3 "$t" "${BESTP[$s:$t]}" - "$PIPE_BYTES" "$MAIN_THP" rapidgzip-src; done
+    for t in $THREADS; do run1 "$s" I4 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip-src; done
+  fi
   if [ "$ENGINE" = ours ]; then
     for t in $THREADS; do run1 "$s" I1 "$t" - - - "$MAIN_THP" inproc; done
     for t in $THREADS; do run1 "$s" I1 "$t" - - - "$MAIN_THP" pipe; done

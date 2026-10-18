@@ -5,7 +5,7 @@ Usage:
   inputs.py check FILE [--accessions "ACC ..."]   validate; print the normalised rows (TSV, no
                                                     header: role accession mate bucket key sha256
                                                     kind source_sha256), exit 1 (saying why) if bad
-  inputs.py keys FILE                               the s3:// URIs of every row, one per line
+  inputs.py keys FILE                               the s3:// URIs of every row but fastq, one per line
   inputs.py accessions FILE                         the accessions, pe first, space-separated
   inputs.py --self-test
 
@@ -105,7 +105,8 @@ def main(argv):
     rows = load(argv[1])
     if argv[0] == "keys":
         for r in rows:
-            print(f"s3://{r['bucket']}/{r['key']}")
+            if r['kind'] != 'fastq':   # the plain FASTQ is derived on the node, never staged
+                print(f"s3://{r['bucket']}/{r['key']}")
     elif argv[0] == "accessions":
         print(accessions(rows))
     else:

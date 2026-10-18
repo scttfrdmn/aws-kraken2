@@ -267,13 +267,21 @@ the manifest and in the body's `host` line.
 | pipe contrast | threads | I2 at the best p with the pipe left at its default (`pipesz default`) |
 | I1 | threads (ours: 2 × threads) | `--gzip-compressed mate.gz`: upstream's wrapper `gzip -dc`; ours as `AK2_DECOMPRESS=pipe` and in process |
 
-The defaults are threads {48, 32, 16} (highest first), p {16, 8, 4, 2} and REPS 2. With them,
-upstream has 36 points per sample per rep and ours also has 36 (no THP contrast, two I1 sets).
+The defaults are threads {48, 32, 16} (highest first; {48, 16} on c8gn, whose TTL is 79 min),
+p {16, 8, 4, 2} and REPS 2. With them, upstream has 36 points per sample per rep (24 on c8gn) and
+ours also has 36 (no THP contrast, two I1 sets).
 Rep 1 of everything runs first. Rep 2 runs rep 1's list in reverse and reuses rep 1's best p.
 
-**Best p (the rule).** Take rep 1's I2 points at chunk 4 MiB, the main pipe size and the main
-THP, with status `ok`. The best p is the smallest p whose `wall_s` is within 1% of the minimum
+**Best p (the rule).** Take rep 1's I2 points of the PyPI build at chunk 4 MiB, the main pipe
+size and the main THP, with status `ok` and identity `ok`. The best p is the smallest p whose `wall_s` is within 1% of the minimum
 `wall_s`. If there is none, I3, I4, chunk and pipe at those threads are skipped (`no-best-p`).
+
+**A second rapidgzip build** (`ARGS="RG2_SCRIPT=scripts/g3/rg-build.sh"`, off by default; the
+script comes from another PR): the body runs the script with a work dir, takes the binary path
+from its last stdout line, checks it reports 0.14.5, records it (`tool` line, `build: source`), and
+adds I2, I3 and I4 at the best p with it per threads (`harness.decomp` `rapidgzip-src`). The
+intended build is 0.14.5 from source with ISA-L on and rpmalloc off (#95). Its decodes take the same
+identity checks.
 
 **Threads** count against the same 64 vCPUs. Each record carries `decoder_threads` (p × mates),
 `total_threads` and `oversubscribed` (more than nproc). Oversubscribed points are kept, not
@@ -300,19 +308,30 @@ stay at the default; changing them would need a code change.
 
 ### Identity and Law 1
 
-- **Identity** (Scott, 2026-10-18; the 0.14.5 crashes are #89). Before a rapidgzip configuration
-  (args and file) is used in any point, that exact configuration decodes the file to
-  `sha256sum`. The result must equal the file's `gzip -dc` sha256.
+- **Identity** (Scott, 2026-10-18; the 0.14.5 crashes are #89). Before a rapidgzip build and
+  configuration (binary, args and file) is used in any point, it decodes the file to `sha256sum`.
+  The result must equal the file's `gzip -dc` sha256.
   - A crash, a timeout (`ID_TIMEOUT`, 360 s) or a mismatch is an `identity` line with
-    `ok: false`.
-  - Every point that needs that configuration is then `skipped` (`skipped-identity`) and never
-    run.
+    `ok: false`. It is retried once: #89 measured 0.14.5's rpmalloc race at about 0.25% of
+    decodes on Graviton4, so one crash is not the configuration's verdict. Each attempt is its
+    own line (`attempt` 1, 2).
+  - Only when both attempts fail is every point that needs that configuration `skipped`
+    (`skipped-identity`) and never run.
   - Inside a point, a decoder exiting non-zero, read from its GNU time record, makes the point
     `skipped` (`decode-crash`). It is listed and never used.
-  - The point's `identity` object holds the check of every mate: the sha256s joined in mate
-    order, the worst exit, and `ok` for all of them.
-- **Law 1.** Every point's `--output` and `--report` sha256, and its sequence count, must equal
-  the sample's warm-up I0. Otherwise the point is `status: defect` (`law1-mismatch`), with a
+  - The point's `identity` object holds the check of every mate (the deciding attempt's sha256s
+    joined in mate order, the worst exit, `ok` for all of them) and `mates[].attempts`.
+- **Law 1 against upstream at the pin, before anything is measured.** Each sample's warm-up I0
+  must equal #95's recorded reference: `g1_reference` in
+  `results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json` (`G1_REF`), the I0
+  `--output` and `--report` sha256 of upstream at the pin on these inputs and Standard-8 (pe
+  SRR062634_8000000, se SRR4074269; the table above). The file and its sha256 are a `g1-reference`
+  line and `harness.g1_reference` in every record. A mismatch makes the warm-up `status: defect`
+  (`law1-g1-mismatch`), streams a `defect` line, and ends the run (exit 1) before any other point.
+  For ENGINE=ours this is the comparison with upstream; within the run the report only compares
+  points with each other.
+- **Law 1 within the run.** Every point's `--output` and `--report` sha256, and its sequence
+  count, must equal the sample's warm-up I0. Otherwise the point is `status: defect` (`law1-mismatch`), with a
   `defect` line. A classifier that fails is also a defect (`classifier-failed`).
   `make inputpath-report` re-checks Law 1 against the I0 points.
 
@@ -349,29 +368,23 @@ The instruments:
 - **`--timeout`** (`POINT_TIMEOUT`, 900 s) kills the session. The point is `skipped`
   (`timeout`, censored).
 
-### Inputs: `scripts/inputpath/inputs.tsv`
+### Inputs
 
-The input preparation (#90, part 2) writes this file; this harness only reads it. The committed
-file has the header only, so `make inputpath` prints NOT READY. Columns, tab-separated:
+The harness reads `scripts/inputpath/inputs.tsv`, written by `make inputpath-prep` ("Pre-flight
+and inputs" above). `scripts/inputpath/inputs.py check` validates it on the node before anything
+is built or staged:
+- exactly one accession per role (pe/paired, se/single);
+- one gz, one bgzf and one index row per role and mate;
+- objects only in `aws-kraken2-942542972736-us-west-2`;
+- 64-hex sha256s.
 
-```
-role	accession	mate	s3_key	sha256	kind	source_sha256
-```
+Every staged object must equal its row's sha256. The FASTQ is derived on the node with
+`gzip -dc`, and a `fastq` row's sha256 must equal it; fastq rows are not staged. `source_sha256`
+must be the FASTQ's sha256 (gz, fastq, bgzf) or the gz's (bgzf, index), or empty.
 
-- **role**: `pe` (or `paired`) or `se` (or `single`). Exactly one accession per role.
-- **mate**: 1 or 2 for pe; 1 for se (0, `-` or empty mean 1).
-- **s3_key**: a key in `aws-kraken2-942542972736-us-west-2`, or the full `s3://` URI. No other
-  bucket is accepted.
-- **sha256**: the object's own sha256.
-- **kind**: `gz`, `bgzf`, `index` or `fastq`. Each role and mate needs one gz, one bgzf and one
-  index row. A fastq row is optional and is not staged; its sha256 must equal the gz's
-  `gzip -dc`.
-- **source_sha256**: for gz and fastq, the decompressed FASTQ's sha256 (or empty, or `-`). For
-  bgzf and index, either the FASTQ's or the gz's. Anything else ends the run.
-
-`make inputpath` adds every row's object to the spec's `AK2_DATASETS`, so `run.sh` records its
-ETag in the manifest. It also sets `AK2_ACCESSIONS` from the accessions, and the body checks that
-they are the same set.
+`make inputpath` adds every staged row's object to the spec's `AK2_DATASETS`, so `run.sh` records
+its ETag in the manifest. It also sets `AK2_ACCESSIONS` from the accessions, and the body checks
+that they are the same set.
 
 ### Where each field lives
 
@@ -381,7 +394,8 @@ they are the same set.
 |---|---|
 | arm, rapidgzip p, kraken2 `--threads` | `out/points.jsonl`: `arm`, `p`, `threads`; `tables/inputpath.tsv` |
 | chunk size, pipe size, THP | `chunk_mib`, `pipe_bytes` (got; `harness.pipe_requested`), `thp` (read back; `harness.thp_requested`) |
-| rapidgzip version, build, ISA-L | `rapidgzip {version, build: pypi, isal}`; the `tool` line in `out/events.jsonl`; `out/rapidgzip-info.txt`; `out/lever.jsonl` (wheel and extension sha256) |
+| rapidgzip version, build, ISA-L | `rapidgzip {version, build: pypi\|source, isal}`; the `tool` and `isal` lines in `out/events.jsonl`; `out/rapidgzip-info.txt`; `out/lever.jsonl` (wheel and extension sha256) |
+| Law 1 reference (upstream at the pin) | `harness.g1_reference {file, sha256, output_sha256, report_sha256}`; the `g1-reference` line |
 | input object keys and sha256 | `input.mates[].s3_key`, `.sha256`, `.fastq_sha256`; the `input` lines; the manifest's `datasets` (ETag) |
 | index hash (I3), BGZF hash (I4) | `index_sha256`, `bgzf_sha256` (mates space-separated, mate order); `input.mates[].index_sha256` |
 | pidstat CSV path | `pidstat_csv` (`out/pidstat/<id>.csv`) |
@@ -392,7 +406,8 @@ they are the same set.
 
 Other files under `out/`:
 - `events.jsonl`: every streamed line, with field `kind`. The kinds are inputs-tsv, host, tool,
-  db, db-huge, input, engine, identity, select, drop-caches, point, defect, summary and fatal.
+  db, db-huge, input, g1-reference, isal, engine, identity, select, drop-caches, point, defect,
+  summary and fatal.
 - `points/<id>.tgz`: the point's command, stderr, time records, pipe records and the runner's
   JSON.
 - `inputpath.tsv`: the end-of-run table.
@@ -416,21 +431,23 @@ the docstring's cited rates:
 - `gzip -dc` at 200 MB/s (G2 logs);
 - rapidgzip at 170 MB/s per thread (probe (c)).
 
-The sample sizes are assumptions until `inputs.tsv` exists: SRR062634 in full as pe (2 × 6.4 GB
-FASTQ), and a 6.4 GB single-end sample.
+The sample sizes are `inputs.tsv`'s:
+- pe SRR062634_8000000: 2 × 2.09 GB FASTQ;
+- se SRR4074269: about 5.1 GB FASTQ, estimated from its BGZF at pe's compression ratio.
 
-| session | modelled | TTL | at 1.5× | at 2× |
-|---|---|---|---|---|
-| upstream, any family | 58 min | c8g 117, c9g 107, c8gn 79 | 80 min | 101 min |
-| ours, any family | 73 min | c8g 117, c9g 107, c8gn 79 | 102 min | 131 min |
+| session | threads | modelled | TTL | at 1.5× | at 2× |
+|---|---|---|---|---|---|
+| upstream, c8g / c9g | 48 32 16 | 45 min | 117 / 107 | 60 min | 75 min |
+| ours, c8g / c9g | 48 32 16 | 58 min | 117 / 107 | 79 min | 101 min |
+| upstream, c8gn | 48 16 | 36 min | 79 | 47 min | 57 min |
+| ours, c8gn | 48 16 | 45 min | 79 | 60 min | 74 min |
 
-All six fit at the model. At 1.5× the model, upstream on c8gn and ours on c8gn do not fit. Ours
-on c8g and c9g does not fit at 2×. A miss is not a lost run: the deadline skips the tail of
-rep 2 and records it as such.
+All six fit, even at 2× the model. A miss is not a lost run: the deadline skips the tail of rep 2
+and records it as such.
 
-**The cut, if c8gn's records show the model was low:** `ARGS='THREADS="48 16"'`, which models at
-46 min (upstream) and 56 min (ours). The chunk-size points at one threads value are a smaller
-cut.
+**The c8gn cut:** c8gn defaults to `THREADS="48 16"` (its TTL is 79 min). `ARGS='THREADS="48 32
+16"'` restores the full matrix there (modelled at 45 and 58 min). The chunk-size points at one
+threads value are a further cut.
 
 ### The rehearsal
 
@@ -454,10 +471,17 @@ lists every check. The spec's own body runs on AL2023 aarch64 containers (rootfu
 - THP: a fake sysfs file, so the VM's setting is never written.
 - The host: 8 CPUs for 64.
 
+**The Law 1 reference** for the rehearsal inputs: upstream at the pin (the shared oracle build)
+run on the host on the same inputs and the viral DB, written in #95's `g1_reference` format and
+passed as `AK2_REHEARSE_G1_REF`.
+
 **Cases:**
-- upstream: A, the full matrix; B, no inputs.tsv; D, drop_caches failing.
-- ours: C, the full matrix with induced rapidgzip SIGSEGVs, one in an identity check and one in a
-  timed decode; B; E, a deadline 60 s into the measure phase.
+- upstream: A, the full matrix; B, no inputs.tsv; D, drop_caches failing; F, a reference whose
+  report sha256s differ (the run must stop after the first warm-up, exit 1).
+- ours: C, the full matrix with induced rapidgzip SIGSEGVs: both identity attempts of one
+  configuration (excluded), the first attempt of another (a transient: the retry passes and its
+  points run), and one timed decode; B; E, a deadline 60 s into the measure phase; F (ours'
+  warm-up against a reference that differs).
 
 A and C also run `make inputpath-report`'s script on a mock run dir, which checks the record
 contract (`scripts/lib/inputpath_report.py`, from the tree or `origin/inputpath-report`). The
@@ -474,14 +498,15 @@ body, apart from the parameter lines, and the rehearsal checks that.
 - **Ours' I3/I4.** These still decode through rapidgzip pipes. In-process decode from index seek
   points or BGZF blocks is the plan's next step, not yet in ours.
 - **Pipe-size contrast.** Added (per-lever attribution): I2 at the best p with the default pipe.
-- **ISA-L on the Graviton wheel is unresolved.** The plan asks to confirm that ISA-L is
-  compiled into the Graviton wheel. In the rehearsal, the pinned cp39 aarch64 0.14.5 wheel
-  disagrees with itself:
-  - its `--oss-attributions` list only cxxopts, rpmalloc and zlib;
-  - its stripped extension still carries an `isal_inflate` error string.
+- **ISA-L: none in the pinned Graviton wheel** (#95). The body uses #95's detector
+  (`scripts/inputpath/lib.sh`):
+  - static: an `isal_inflate_init` symbol or the isa-l attribution in the extension (the
+    `isal_inflate` literal is an error string in every build, not evidence);
+  - runtime: `rapidgzip -v`'s "Time spent decoding with ISA-L" on the se gz.
 
-  So every point records `rapidgzip.isal: null` (unknown), with the evidence in the `tool` line.
-  Building from source with ISA-L is Scott's call.
+  `isal` is true if either finds ISA-L, false if static none and 0 s, else null; the `isal` line
+  records both. The rehearsal's real wheel gives false. The ISA-L build is the `RG2_SCRIPT` switch
+  above, not built here.
 - **I1 for ours** runs twice: through the same `gzip -dc` pipe as upstream (`AK2_DECOMPRESS=pipe`)
   and in process (ours' default).
 

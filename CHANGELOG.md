@@ -52,28 +52,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - chunk 8 and 16 MiB, and a default-pipe contrast;
     - I1, for ours both through the `gzip -dc` pipe and in process.
 
-    All of these run at threads {48, 32, 16}, for one paired and one single-end sample, REPS 2
-    (rep 2 reversed).
+    All of these run at threads {48, 32, 16} ({48, 16} on c8gn, its 79-min TTL), for the pe and se
+    samples of #95's inputs.tsv (SRR062634_8000000, SRR4074269), REPS 2 (rep 2 reversed).
+    `RG2_SCRIPT` (off) adds I2–I4 at the best p with a second rapidgzip build (the ISA-L build of
+    `scripts/g3/rg-build.sh`, another PR).
   - **The pipe:** every rapidgzip decode writes into a 1 MiB pipe (`scripts/inputpath/pipesz.py`,
     F_SETPIPE_SZ, the size it got recorded).
-  - **Identity:** before a rapidgzip configuration is used, its decode of each file must equal
-    `gzip -dc`'s sha256. A crash, timeout or mismatch skips every point needing it. A decoder
-    that dies inside a point makes it `skipped` (decode-crash).
-  - **Law 1:** every point's `--output` and `--report` sha256 and its sequence count must equal
-    the warm-up I0's. Otherwise it is a `defect`.
+  - **Identity:** before a rapidgzip build and configuration is used, its decode of each file
+    must equal `gzip -dc`'s sha256. A failed attempt is retried once (the rpmalloc race, #89),
+    each attempt its own line; two failures skip every point needing it. The best p uses only
+    identity-clean points. A decoder that dies inside a point makes it `skipped` (decode-crash).
+  - **Law 1:** each sample's warm-up I0 must equal upstream at the pin, #95's `g1_reference`
+    (`results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json`, recorded with its
+    sha256), or the run stops with a defect before any other point; for ENGINE=ours this is the
+    comparison with upstream. Every later point's `--output`, `--report` and sequence count must
+    equal the warm-up's. Otherwise it is a `defect`.
+  - **ISA-L:** #95's detector (static symbol/attribution, `rapidgzip -v` ISA-L time); the pinned
+    aarch64 wheel records `isal: false`.
   - **Per point:** wall, the classify window, reads/s, FASTQ MB/s, a pidstat -t CSV per run in
     the report's schema, peak RSS per process (GNU time, VmHWM), and smaps huge-page maxima.
     Records are `out/points.jsonl` (schema `inputpath-point/1`, for `make inputpath-report`) and
     `out/events.jsonl`, both streamed and pushed after every point. `tables/inputpath.tsv` is the
     per-point manifest table (post script).
-  - **Inputs** are read from `scripts/inputpath/inputs.tsv` (header only until #90 part 2 writes
-    it; the body fails loudly first).
+  - **Inputs** are read from #95's `scripts/inputpath/inputs.tsv` (the body checks it before any
+    build or stage and fails loudly).
   - **Rehearsal:** `make rehearse SPEC=runs/inputpath-*` runs `scripts/lib/inputpath_rehearse.sh`
     on AL2023 containers with the real builds, rapidgzip and pidstat. Cases: the full matrix for
-    each engine; induced rapidgzip SIGSEGVs; a missing input list; drop_caches failing; a
-    deadline. It also checks the record contract with the report's script.
-  - **Time model:** `scripts/inputpath/estimate.py`, about 58 min (upstream) and 73 min (ours)
-    against those TTLs. The proposed cut for c8gn is `THREADS="48 16"`.
+    each engine against upstream's reference (computed with the oracle build); induced rapidgzip
+    SIGSEGVs (excluded, transient-retried, in-point); a missing input list; drop_caches failing; a
+    deadline; a differing Law 1 reference (the run stops). It also checks the record contract
+    with the report's script.
+  - **Time model:** `scripts/inputpath/estimate.py` on the real sample sizes: 45 / 58 min
+    (upstream / ours) on c8g and c9g, 36 / 45 min on c8gn.
 
 - **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
   probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in

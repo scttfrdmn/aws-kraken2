@@ -3,12 +3,13 @@
 
 Usage: estimate.py --engine upstream|ours --ttl-min M [--reps 2] [--threads "48 32 16"] [--ps "16 8 4 2"]
                    [--chunks "8192 16384"] [--thp-contrast 0|1] [--pipe-contrast 0|1]
-                   [--pe-fq-gb 12.8] [--se-fq-gb 6.4] [--nproc 64]
+                   [--pe-fq-gb 4.19] [--se-fq-gb 5.1] [--nproc 64]
 
 A model, not a measurement: it sizes the TTL and says whether the matrix fits. Its rates come
-from committed records (each cited below); the sample sizes are assumptions until inputs.tsv names
-the samples (default: SRR062634 in full, 24.5 M pairs, 2 x 6.4 GB FASTQ, as the paired-end sample
-and one 6.4 GB mate as the single-end one). Per point: max(classification, decode) + overhead.
+from committed records (each cited below). The sample sizes are inputs.tsv's samples: pe
+SRR062634_8000000, 2 x 2.094 GB FASTQ (its .SOURCE); se SRR4074269, about 5.1 GB FASTQ, estimated
+from its 1.62 GB BGZF at pe's BGZF ratio of 3.16 (results/inputpath/prep-20261018T224345Z-89e0340).
+Per point: max(classification, decode) + overhead.
   classification  FASTQ bytes / (CLASSIFY_BPS x T x EFF): upstream on Standard-8, 200,000 pairs
                   (103.8 MB FASTQ) in 0.188 s at T = 8 on r8g.2xlarge
                   (results/g2/20261006-100409-16bc8b0, loadbench pe warm): 69 MB/s per thread; EFF
@@ -86,8 +87,8 @@ def main():
     ap.add_argument("--chunks", default="8192 16384")
     ap.add_argument("--thp-contrast", type=int, default=1)
     ap.add_argument("--pipe-contrast", type=int, default=1)
-    ap.add_argument("--pe-fq-gb", type=float, default=12.8)
-    ap.add_argument("--se-fq-gb", type=float, default=6.4)
+    ap.add_argument("--pe-fq-gb", type=float, default=4.19)
+    ap.add_argument("--se-fq-gb", type=float, default=5.1)
     ap.add_argument("--nproc", type=int, default=64)
     a = ap.parse_args()
     a.threads = [int(x) for x in a.threads.split()]

@@ -17,8 +17,9 @@ Prints the record (one line). Status:
            out (censored), a decoder exited non-zero (decode-crash), or the warm-up (the
            harness's Law 1 reference, run first after drop_caches)
   defect   the classifier failed, or --output / --report / the sequence count differ from the
-           warm-up I0's (Law 1)
-  ok       otherwise
+           warm-up I0's (Law 1), or the warm-up's differ from params.g1_reference, upstream at the
+           pin (law1-g1-mismatch: the body then stops the run)
+  ok      otherwise
 harness.status_detail carries the finer status; note says why for every non-ok record.
 """
 import argparse
@@ -59,7 +60,7 @@ def build(par, res, skip, thp, pidstat_csv, sho, shr, ref, d):
                                "ok": all(i["ok"] for i in ids), "mates": ids}
     if par["engine"] == "ours":
         rec["fanout"] = par["threads"]
-    harness = {k: par.get(k) for k in ("warmup", "db_dir", "pipe_requested", "thp_requested", "decomp", "nproc", "cmd")}
+    harness = {k: par.get(k) for k in ("warmup", "db_dir", "pipe_requested", "thp_requested", "decomp", "nproc", "cmd", "g1_reference")}
     dt = (par["p"] or 0) * len(par["mates"]) if rg else 0
     harness.update({"decoder_threads": dt, "total_threads": par["threads"] + dt,
                     "oversubscribed": par["threads"] + dt > par["nproc"]})
@@ -69,6 +70,7 @@ def build(par, res, skip, thp, pidstat_csv, sho, shr, ref, d):
         harness["status_detail"] = "skipped-" + skip.split(":")[0].split()[0]
         return rec
     res = res or {}
+    g1 = par.get("g1_reference")
     times = res.get("time") or {}
     pipes = []
     for m in par["mates"]:
@@ -118,8 +120,14 @@ def build(par, res, skip, thp, pidstat_csv, sho, shr, ref, d):
     elif res.get("exit") != 0 or not sho or not shr or seqs is None:
         st, det = "defect", "classifier-failed"
         note = f"the classifier failed: exit {res.get('exit')}, output {'present' if sho else 'missing'}, report {'present' if shr else 'missing'}"
+    elif par.get("warmup") and g1 and (sho != g1.get("output_sha256") or shr != g1.get("report_sha256")):
+        st, det = "defect", "law1-g1-mismatch"
+        note = (f"Law 1 against upstream at the pin: the warm-up I0's output {str(sho)[:12]} / report {str(shr)[:12]} vs the reference "
+                f"{str(g1.get('output_sha256'))[:12]} / {str(g1.get('report_sha256'))[:12]} ({g1.get('file')}, sha256 {str(g1.get('sha256'))[:12]})")
     elif par.get("warmup"):
-        st, det, note = "skipped", "reference", "warm-up: the harness's Law 1 reference for this sample (first run after drop_caches)"
+        st, det = "skipped", "reference"
+        note = "warm-up: the harness's Law 1 reference for this sample (first run after drop_caches)" + \
+            (f"; equal to upstream at the pin ({g1.get('file')})" if g1 else "")
     elif ref and sho == ref.get("output_sha256") and shr == ref.get("report_sha256") and seqs == ref.get("sequences"):
         st, det, note = "ok", "ok", None
     else:
@@ -188,6 +196,15 @@ def self_test():
             passed &= (r["identity"]["gz_sha256"] == r["identity"]["rg_sha256"] and r["identity"]["rg_exit"] == 0
                        and r["chunk_mib"] == 4 and r["peak_rss_kb"]["rapidgzip"] == 4 and r["classify_window"] == {"t0": 0.5, "t1": 2.5}
                        and r["input"]["role"] == "paired" and "note" not in r)
+        print(f"{'ok  ' if passed else 'FAIL'} record {name}: {r['status']} {r['harness']['status_detail']}")
+        good &= passed
+    # The warm-up against upstream at the pin (g1_reference): equal -> reference; different -> defect.
+    i0 = dict(par, arm="I0", p=None, identity=[], warmup=True, id="warmup-pe",
+              g1_reference={"file": "m.json", "sha256": h("f"), "output_sha256": h("o"), "report_sha256": h("r")})
+    i0res = dict(ok_res, time={"k2": {"exit": 0, "maxrss_kb": 9}})
+    for name, sho, want, det in (("g1-equal", h("o"), "skipped", "reference"), ("g1-differs", h("x"), "defect", "law1-g1-mismatch")):
+        r = build(i0, i0res, None, "always", None, sho, h("r"), None, None)
+        passed = r["status"] == want and r["harness"]["status_detail"] == det and r["harness"]["g1_reference"]["file"] == "m.json"
         print(f"{'ok  ' if passed else 'FAIL'} record {name}: {r['status']} {r['harness']['status_detail']}")
         good &= passed
     return 0 if good else 1

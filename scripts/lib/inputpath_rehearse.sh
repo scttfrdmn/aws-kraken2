@@ -16,14 +16,19 @@
 # inputs.tsv (AK2_REHEARSE_INPUTS_TSV); THP is a fake sysfs file (AK2_REHEARSE_THP_ROOT), so the
 # podman VM's setting is never written; the 64-vCPU host is the VM's 8 CPUs (the spec's threads
 # run oversubscribed); AK2_INSTANCE_TYPE is the spec's type.
+# The Law 1 reference (AK2_REHEARSE_G1_REF, #95's g1_reference format): upstream at the pin (the
+# shared oracle build, scripts/oracle-build.sh) on the rehearsal inputs and the viral DB, run on the
+# host before the cases.
 # Cases, by the spec's engine:
 #   upstream: A, the full matrix (REPS of the spec), rapidgzip installed as on the node;
 #             B, a missing inputs.tsv: exit 1 with a fatal line before any build or stage;
-#             D, ak2_drop_caches failing: exit 95, no point run.
+#             D, ak2_drop_caches failing: exit 95, no point run;
+#             F, a Law 1 reference whose report sha256s differ: the run stops after the first warm-up.
 #   ours:     C, the full matrix with induced rapidgzip crashes (a wrapper around the image's
-#             rapidgzip 0.14.5, AK2_REHEARSE_RAPIDGZIP): SIGSEGV in the identity check of
-#             -P 4 on pe_2.gz, and in the first timed -P 8 --chunk-size 4096 decode of se_1.gz;
-#             B as above; E, a deadline 60 s into the measure phase.
+#             rapidgzip 0.14.5, AK2_REHEARSE_RAPIDGZIP): SIGSEGV in both identity attempts of
+#             -P 4 on pe_2.gz, in the first identity attempt of -P 2 on pe_1.gz (a transient), and
+#             in the first timed -P 8 --chunk-size 4096 decode of se_1.gz; B and F as above
+#             (F: ours against upstream's reference); E, a deadline 60 s into the measure phase.
 # What passes, on observed output (each check printed ok/FAILED):
 #   A, C: body exit 0, shell flags without e; 1 tool line 0.14.5 (A: the wheel's sha256 is lever.sh's
 #   cp39 aarch64 pin); 9 input lines, each fastq_sha256 = the read set's SOURCE sha256; 3 db
@@ -34,14 +39,20 @@
 #   ok and gz = rg sha256; 6 select lines with a best p; every run point's pidstat CSV pushed with
 #   the report's header; THP: never points read from the huge=never DB and always points
 #   (upstream) from the huge=always one; pipe_bytes 1048576 (and 65536 on the default-pipe
-#   points); summary thp_restored; tables.py on the mock run dir: one row per point.
-#   A: every identity line ok; no point skipped except the 2 warm-ups; 0 defects.
-#   C: the identity crash line (pe_2.gz -P 4, status crash, decoder exit 139) and exactly the
-#   2 x REPS x 3 pe I2 p=4 points skipped-identity; exactly one decode-crash point (rep 1, se, I2,
-#   p 8, chunk 4096, threads 48) with rg1 exit 139, excluded (status skipped); 0 defects.
+#   points); summary thp_restored; tables.py on the mock run dir: one row per point. (Both
+#   warm-ups passed the Law 1 reference, or the run would have stopped.)
+#   A: the isal line false (static none, 0 s of ISA-L) and isal false on every rapidgzip point;
+#   the g1-reference line and every record cite the reference file; every identity line ok; no
+#   point skipped except the 2 warm-ups; 0 defects.
+#   C: two crash identity lines (attempts 1 and 2) for pe_2.gz -P 4 and exactly the REPS x threads
+#   pe I2 p=4 points skipped-identity; pe_1.gz -P 2's attempt 1 crash, attempt 2 ok, and its
+#   points ok; exactly one decode-crash point (rep 1, se, I2, p 8, chunk 4096, threads 48) with
+#   rg1 exit 139, excluded (status skipped); 0 defects.
 #   B: exit 1; a fatal line naming inputs.tsv; no engine line. D: exit 95; no point line.
 #   E: exit 0; at least one skipped-deadline point, every point after the first one too, and
 #   the record still complete (every listed point has a line).
+#   F: exit 1; one point record, the warm-up, status defect (law1-g1-mismatch) citing the
+#   reference file; a defect line and a fatal line.
 #   Every case: all six committed runs/inputpath-*.json carry this body (only the parameter
 #   lines differ).
 # Usage: scripts/lib/inputpath_rehearse.sh runs/inputpath-<family>-<engine>.json   (REHEARSE_KEEP=1 keeps the scratch dir;
@@ -64,7 +75,7 @@ BODY=$(jq -r '.command[2]' "$SPEC")
 ENGINE=$(sed -n 's/^FAMILY=[a-z0-9]*; ENGINE=\([a-z]*\);.*/\1/p' <<< "$BODY")
 REPS=$(sed -n 's/^FAMILY=.*; REPS=\([0-9]*\);.*/\1/p' <<< "$BODY")
 TYPE=$(jq -r .resources.instance_type "$SPEC")
-case "$ENGINE" in upstream) CASES=${IPREH_CASES:-A B D} ;; ours) CASES=${IPREH_CASES:-C B E} ;; *) say "cannot read ENGINE from $SPEC"; exit 2 ;; esac
+case "$ENGINE" in upstream) CASES=${IPREH_CASES:-A B D F} ;; ours) CASES=${IPREH_CASES:-C B E F} ;; *) say "cannot read ENGINE from $SPEC"; exit 2 ;; esac
 say "record $LOGF; $SPEC ($ENGINE, $TYPE, REPS $REPS) at $SHA; cases $CASES; shell flags $-"
 OK=0
 chk() { if eval "$2"; then say "ok: $1"; else say "FAILED: $1"; OK=1; fi; }
@@ -110,6 +121,7 @@ git bundle create -q "$T/repo.bundle" HEAD || exit 1
 cp scripts/lib/rehearse_aws.py "$T/rehearse_aws.py" || exit 1
 VDB=$K2_DB_ROOT/k2_viral_20260626
 for f in hash.k2d opts.k2d taxo.k2d; do cp "$VDB/$f" "$T/s3/$B/$DK/$f" || { say "need the viral DB at $VDB"; exit 1; }; done
+sh256f() { shasum -a 256 "$1" | cut -d' ' -f1; }
 # The paired sample: the first PE_N pairs of SRR062634 (a prefix of the real sample, as make g2
 # derives its subsets), long enough for pidstat's 1 s samples to see the classifier and decoders.
 PE_N=${IPREH_PE_N:-1000000}
@@ -119,7 +131,18 @@ for m in 1 2; do
 done
 cp "$K2_READS/ERR478965_200000_1.fq.gz" "$T/s3/$B/$IK/se_1.gz" || exit 1
 WANT_PE1=$(shasum -a 256 "$T/pe_1.fq" | cut -d' ' -f1); WANT_PE2=$(shasum -a 256 "$T/pe_2.fq" | cut -d' ' -f1)
-rm -f "$T/pe_1.fq" "$T/pe_2.fq"
+# The Law 1 reference the body checks its warm-ups against (#95's g1_reference format): upstream at
+# the pin (scripts/oracle-build.sh, the shared oracle build) on these inputs and the stand-in DB, run
+# here on the host; and a copy with both report sha256s altered (case F: the run must stop).
+K2DIR=$(scripts/oracle-build.sh) || { say "upstream build at the pin failed"; exit 1; }
+"$K2DIR/kraken2" --db "$VDB" --threads 8 --paired --output "$T/ref-pe.out" --report "$T/ref-pe.rep" "$T/pe_1.fq" "$T/pe_2.fq" 2> "$T/ref-pe.err" &&
+  "$K2DIR/kraken2" --db "$VDB" --threads 8 --output "$T/ref-se.out" --report "$T/ref-se.rep" "$K2_READS/ERR478965_200000_1.fq" 2> "$T/ref-se.err" ||
+  { say "the reference runs failed"; exit 1; }
+jq -n --arg po "$(sh256f "$T/ref-pe.out")" --arg pr "$(sh256f "$T/ref-pe.rep")" --arg so "$(sh256f "$T/ref-se.out")" --arg sr "$(sh256f "$T/ref-se.rep")" \
+  --arg b "$(tr '\n' ';' < "$K2DIR/BUILD")" '{note:"inputpath rehearsal: upstream at the pin on the rehearsal inputs, the viral DB under the standard8 label", build:$b,
+  g1_reference:[{role:"pe", db:"standard8", i0_output_sha256:$po, i0_report_sha256:$pr}, {role:"se", db:"standard8", i0_output_sha256:$so, i0_report_sha256:$sr}]}' > "$T/g1ref.json"
+jq '.g1_reference |= map(.i0_report_sha256 |= ("0" + .[1:]))' "$T/g1ref.json" > "$T/g1ref-bad.json"
+rm -f "$T/pe_1.fq" "$T/pe_2.fq" "$T"/ref-*.out
 WANT_SE1=$(awk '$1 == "sha256" && $3 ~ /_1.fq$/ {print $2}' "$K2_READS/ERR478965_200000.SOURCE")
 cat > "$T/bin/git" << 'EOF'
 #!/bin/bash
@@ -143,15 +166,17 @@ fi
 exec /usr/bin/sudo "$@"
 EOF
 printf '#!/usr/bin/env bash\nexec python3 /rh/rehearse_aws.py "$@"\n' > "$T/bin/aws"
-# Case C's decoder: the image's rapidgzip 0.14.5, with SIGSEGV induced (after some output) on
-# the 1st call of -P 4 on pe_2.gz (its identity check) and the 2nd call of -P 8 --chunk-size 4096
-# on se_1.gz (the identity check is the 1st; the 2nd is rep 1's first timed -P 8 point).
+# Case C's decoder: the image's rapidgzip 0.14.5, with SIGSEGV induced (after some output) on the
+# 1st and 2nd calls of -P 4 on pe_2.gz (both identity attempts: excluded), the 1st call of -P 2 on
+# pe_1.gz (a transient: the retry passes) and the 2nd call of -P 8 --chunk-size 4096 on se_1.gz (the
+# identity check is the 1st; the 2nd is rep 1's first timed -P 8 point).
 cat > "$T/bin/rapidgzip-crashy" << 'EOF'
 #!/bin/bash
 REAL=/opt/rgprep/bin/rapidgzip
 case " $* " in *" -d "*) ;; *) exec "$REAL" "$@" ;; esac
 k=$(printf '%s' "$*" | md5sum | cut -c1-12); n=$(( $(cat "/rh/crash/$k" 2> /dev/null || echo 0) + 1 )); echo "$n" > "/rh/crash/$k"
-if { [[ " $* " == *" -P 4 "* && "$*" == *"/pe_2.gz" && $n == 1 ]] || [[ " $* " == *" -P 8 --chunk-size 4096 "* && "$*" == *"/se_1.gz" && $n == 2 ]]; }; then
+if { [[ " $* " == *" -P 4 --chunk-size 4096 "* && "$*" == *"/pe_2.gz" && $n -le 2 ]] || [[ " $* " == *" -P 2 --chunk-size 4096 "* && "$*" == *"/pe_1.gz" && $n == 1 ]] ||
+     [[ " $* " == *" -P 8 --chunk-size 4096 "* && "$*" == *"/se_1.gz" && $n == 2 ]]; }; then
   echo "$(date +%s) crash $n: $*" >> /rh/crash/log
   "$REAL" "$@" | head -c 100000
   kill -SEGV $$
@@ -233,7 +258,7 @@ run_case() {
     -e AK2T_FAKE=/rh/s3 -e AK2T_LOG=/rh/aws-$name.log -e AK2T_ROLE=instance -e AK2T_OUT="/rh/out-$name" \
     -e AK2_RUN_ID="$(date -u +%Y%m%d-%H%M%S)-$SHA" -e AK2_REGION=us-west-2 -e AK2_ACCESSIONS="SRR062634 ERR478965" \
     -e AK2_DATASETS="$(jq -r .env.AK2_DATASETS "$SPEC")" -e AK2_INSTANCE_TYPE="$TYPE" -e AK2_ALLOWED_BUCKETS="$B" \
-    -e AK2_REHEARSE_THP_ROOT=/rh/thp -e AK2_REHEARSE_GO=1 -e AK2_REHEARSE_WHEELS=/opt/wheels "$@" \
+    -e AK2_REHEARSE_THP_ROOT=/rh/thp -e AK2_REHEARSE_G1_REF="${G1REF:-/rh/g1ref.json}" -e AK2_REHEARSE_GO=1 -e AK2_REHEARSE_WHEELS=/opt/wheels "$@" \
     "$IMG" bash -e -c "$(cat "$node")" > /dev/null || { say "case $name: could not start"; RC=99; return; }
   RC=$("${PM[@]}" wait "$ctr"); RC=${RC:-1}
   "${PM[@]}" logs "$ctr" > "$T/body-$name.log" 2>&1
@@ -319,6 +344,10 @@ for c in $CASES; do
     run_case A "$T/node.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=100000
     full_checks A
     chk "A: the tool line's wheel is lever.sh's cp39 aarch64 pin" '[ "$(pl '\''.kind == "tool"'\'' | jq -r .wheel_sha256)" = 499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee ]'
+    chk "A: ISA-L: the pinned wheel is isal false (static none, rapidgzip -v 0 s of ISA-L), as #95 found; every rapidgzip point records isal false" \
+      '[ "$(pl '\''.kind == "isal" and .build_label == "rapidgzip" and .isal == false and .static == "none" and .runtime_isal_s == 0'\'' | cnt)" = 1 ] && [ "$(pp '\''.p != null and .rapidgzip.isal != false'\'' | cnt)" = 0 ]'
+    chk "A: the g1-reference line cites the reference file with its sha256, and every point record carries it" \
+      '[ "$(pl '\''.kind == "g1-reference" and .references.pe.file == "/rh/g1ref.json" and (.references.se.sha256 | length) == 64'\'' | cnt)" = 1 ] && [ "$(pp '\''.harness.g1_reference.file != "/rh/g1ref.json"'\'' | cnt)" = 0 ]'
     chk "A: every identity line ok ($(pl '.kind == "identity"' | cnt))" '[ "$(pl '\''.kind == "identity" and .status != "ok"'\'' | cnt)" = 0 ] && [ "$(pl '\''.kind == "identity"'\'' | cnt)" -ge 24 ]'
     chk "A: no point skipped but the 2 warm-ups, 0 defects" '[ "$(pp '\''.status != "ok"'\'' | jq -r .harness.status_detail | sort | tr "\n" " ")" = "reference reference " ]'
     ;;
@@ -326,8 +355,10 @@ for c in $CASES; do
     run_case C "$T/node.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=100000 -e AK2_REHEARSE_RAPIDGZIP=/rh/bin/rapidgzip-crashy
     full_checks C
     cat "$T/crash/log" 2> /dev/null | sed 's/^/  induced | /'
-    chk "C: the identity crash line: pe_2.gz -P 4, status crash, decoder exit 139" \
-      '[ "$(pl '\''.kind == "identity" and .status == "crash" and (.file | endswith("/pe_2.gz")) and (.args | startswith("-P 4 ")) and .decoder_exit == 139'\'' | cnt)" = 1 ]'
+    chk "C: pe_2.gz -P 4: two identity lines (attempts 1, 2), both crash, decoder exit 139" \
+      '[ "$(pl '\''.kind == "identity" and .status == "crash" and (.file | endswith("/pe_2.gz")) and (.args | startswith("-P 4 ")) and .decoder_exit == 139'\'' | jq -r .attempt | tr "\n" " ")" = "1 2 " ]'
+    chk "C: pe_1.gz -P 2 (a transient): attempt 1 crash, attempt 2 ok, and its 2 x REPS x threads pe I2 p=2 points ok" \
+      '[ "$(pl '\''.kind == "identity" and (.file | endswith("/pe_1.gz")) and (.args | startswith("-P 2 --chunk-size 4096"))'\'' | jq -r '\''"\(.attempt):\(.status)"'\'' | tr "\n" " ")" = "1:crash 2:ok " ] && [ "$(pp '\''.input.role == "paired" and .arm == "I2" and .p == 2 and .chunk_mib == 4 and .status == "ok" and (.identity.mates[0].attempts | length) == 2'\'' | cnt)" = $((REPS * NT)) ]'
     chk "C: exactly the $((2 * REPS * NT / 2)) pe I2 p=4 chunk-4096 points skipped-identity" \
       '[ "$(pp '\''.harness.status_detail == "skipped-identity"'\'' | cnt)" = $((REPS * NT)) ] && [ "$(pp '\''.harness.status_detail == "skipped-identity" and (.input.role != "paired" or .arm != "I2" or .p != 4)'\'' | cnt)" = 0 ]'
     chk "C: exactly one decode-crash point: rep 1, se, I2, p 8, chunk 4, threads 48, rg1 exit 139, status skipped" \
@@ -344,6 +375,13 @@ for c in $CASES; do
     run_case D "$T/node-dcfail.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=100000
     chk "D: exit 95 (drop_caches failed)" '[ "$RC" = 95 ]'
     chk "D: no point and no drop-caches line" '[ "$(pl '\''.kind == "point" or .kind == "drop-caches"'\'' | cnt)" = 0 ] && ! grep -q "^inputpath .*\"kind\":\"point\"" "$L"'
+    ;;
+  F)
+    G1REF=/rh/g1ref-bad.json run_case F "$T/node.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=100000
+    chk "F: a reference that differs from upstream's output stops the run: exit 1" '[ "$RC" = 1 ]'
+    chk "F: one point record, the first warm-up, status defect (law1-g1-mismatch), citing the reference file" \
+      '[ "$(grep -c . "$PJ")" = 1 ] && [ "$(pp '\''.harness.warmup and .status == "defect" and .harness.status_detail == "law1-g1-mismatch" and .harness.g1_reference.file == "/rh/g1ref-bad.json"'\'' | cnt)" = 1 ]'
+    chk "F: a defect line and a fatal line naming Law 1" '[ "$(pl '\''.kind == "defect" and .status_detail == "law1-g1-mismatch"'\'' | cnt)" = 1 ] && [ "$(pl '\''.kind == "fatal" and (.message | test("Law 1"))'\'' | cnt)" = 1 ]'
     ;;
   E)
     run_case E "$T/node.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=60
