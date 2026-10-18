@@ -1,0 +1,77 @@
+rgcrash-rehearse: record results/rehearse/g3-probe-rgcrash-r8g.16xlarge-20261018T172735Z-113b9cf.log; runs/g3-probe-rgcrash-r8g.16xlarge.json at 113b9cf; shell flags huB
+rgcrash-rehearse: stand-in cohort: 20 files from 10 read sets, 242M
+rgcrash-rehearse: the VM's kernel.core_pattern before: |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+rgcrash-rehearse: loop started; inducing 3 crashes
+rgcrash-rehearse: crash 1: SIGSEGV to pid 5597 (rg-venv)
+rgcrash-rehearse: crash 2: SIGSEGV to pid 9827 (rg16-venv)
+rgcrash-rehearse: crash 3: SIGSEGV to pid 13977 (rg-venv)
+rgcrash-rehearse: body exit 0; the VM's kernel.core_pattern after: |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+rgcrash-rehearse: ok: body exit 0
+rgcrash-rehearse: ok: the body's shell flags (hBc) lack e
+rgcrash-rehearse: ok: tool lines: 0.14.5 wheel 499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee, 0.16.0 wheel 2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d
+rgcrash-rehearse: ok: core control ok
+rgcrash-rehearse: ok: 20 reference lines, exit 0
+rgcrash-rehearse: ok: job lines streamed = pushed (2018)
+rgcrash-rehearse: ok: identity jobs at 0.14.5 -P 8
+rgcrash-rehearse: ok: stress jobs at 0.14.5 -P 8
+rgcrash-rehearse: ok: stress jobs at 0.14.5 -P 16
+rgcrash-rehearse: ok: identity jobs at 0.16.0 -P 8
+rgcrash-rehearse: ok: stress jobs at 0.16.0 -P 8
+rgcrash-rehearse: ok: stress jobs at 0.16.0 -P 16
+rgcrash-rehearse: ok: identity mode = lanes 0-5, -P 8 only, each with GNU gzip's sha256 = the reference; stress = lanes 6-7, no gzip
+rgcrash-rehearse: ok: exactly the 3 killed jobs failed, each exit 139 signal 11 (3 with a wrong sha256)
+rgcrash-rehearse: ok: every other job exit 0 with the reference sha256
+rgcrash-rehearse: ok: job 139: failure line with a core and gdb frames
+rgcrash-rehearse: ok: job 139: gdb output streamed through x/16i, and pushed
+rgcrash-rehearse: ok: job 264: failure line with a core and gdb frames
+rgcrash-rehearse: ok: job 264: gdb output streamed through x/16i, and pushed
+rgcrash-rehearse: ok: job 404: failure line with a core and gdb frames
+rgcrash-rehearse: ok: job 404: gdb output streamed through x/16i, and pushed
+rgcrash-rehearse: ok: 2 cores pushed (of 3), valid zstd
+rgcrash-rehearse: ok: 2 analysis bundles
+rgcrash-rehearse: ok: tally jobs = job lines
+rgcrash-rehearse: ok: 4 summary lines (mode x version), crashes sum to 3
+rgcrash-rehearse: ok: restore line restored
+rgcrash-rehearse: ok: the VM's core_pattern restored (|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h)
+probe-rgcrash {"kind":"tool","version":"0.14.5","reports":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5","path":"/home/ec2-user/ak2/lever/rg-venv/bin/rapidgzip","wheel":"rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl","wheel_sha256":"499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee","extension"
+probe-rgcrash {"kind":"tool","version":"0.16.0","reports":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.16.0","path":"/home/ec2-user/ak2/rg16-venv/bin/rapidgzip","wheel":"rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl","wheel_sha256":"2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d","extension":"/
+probe-rgcrash {"kind":"host","gdb":"GNU gdb (Amazon Linux) 16.3-1.amzn2023.0.2","debuginfo_install":"ok","debuginfo_tail":"  python3.9-debuginfo-3.9.25-1.amzn2023.0.9.aarch64                                python3.9-debugsource-3.9.25-1.amzn2023.0.9.aarch64                             ","kernel":"6.12.13-200.fc41.aarch64","cpu":"","nproc":8,"glibc":"ldd (GNU libc) 2.34","instance_type":"r8g.16xlar
+probe-rgcrash {"kind":"core-control","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern":"/dev/shm/cores/core.%p.%e.%t","ulimit_c":"unlimited","ulimit_hc":"unlimited","systemd_coredump_socket":"","core_pipe_limit":"16","control_exit":139,"control_core":"/dev/shm/cores/core.245.python3.9.1792344484","control_core_bytes":2969600,"gdb_frames":25,"ok":true}
+probe-rgcrash {"kind":"summary","mode":"identity","version":"0.14.5","jobs":522,"P8":522,"P16":0,"crashes":2,"sigsegv":2,"timeouts":0,"nonzero_exit":2,"wrong_sha":2,"wrong_sha_exit0":0,"gzip_mismatch":0,"crash_rate":0.0038314176245210726,"ladder_rate":0.00128783000643915,"p_no_crash_at_ladder_rate":0.5105599249941298,"compares_with_ladder":true,"seconds":128.01800084114075}
+probe-rgcrash {"kind":"summary","mode":"identity","version":"0.16.0","jobs":521,"P8":521,"P16":0,"crashes":1,"sigsegv":1,"timeouts":0,"nonzero_exit":1,"wrong_sha":1,"wrong_sha_exit0":0,"gzip_mismatch":0,"crash_rate":0.0019193857965451055,"ladder_rate":0.00128783000643915,"p_no_crash_at_ladder_rate":0.5112178629508113,"compares_with_ladder":true,"seconds":121.29500007629395}
+probe-rgcrash {"kind":"summary","mode":"stress","version":"0.14.5","jobs":488,"P8":366,"P16":122,"crashes":0,"sigsegv":0,"timeouts":0,"nonzero_exit":0,"wrong_sha":0,"wrong_sha_exit0":0,"gzip_mismatch":0,"crash_rate":0,"ladder_rate":0.00128783000643915,"p_no_crash_at_ladder_rate":0.5334120678271403,"compares_with_ladder":false,"seconds":114.71200037002563}
+probe-rgcrash {"kind":"summary","mode":"stress","version":"0.16.0","jobs":487,"P8":366,"P16":121,"crashes":0,"sigsegv":0,"timeouts":0,"nonzero_exit":0,"wrong_sha":0,"wrong_sha_exit0":0,"gzip_mismatch":0,"crash_rate":0,"ladder_rate":0.00128783000643915,"p_no_crash_at_ladder_rate":0.5340994544174205,"compares_with_ladder":false,"seconds":109.07599663734436}
+probe-rgcrash {"kind":"restore","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern_now":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","restored":true}
+rgcrash-gdb 139 | #0  __GI___libc_write (nbytes=65536, buf=0xffff55420080, fd=1) at ../sysdeps/unix/sysv/linux/write.c:26
+rgcrash-gdb 139 | $1 = {si_signo = 11, si_errno = 0, si_code = 0, _sifields = {_pad = {5634, 1000, 0 <repeats 26 times>}, _kill = {si_pid = 5634, si_uid = 1000}, _timer = {si_tid = 5634, si_overrun = 1000, si_sigval = {s
+rgcrash-gdb 139 | #0  __GI___libc_write (nbytes=65536, buf=0xffff55420080, fd=1) at ../sysdeps/unix/sysv/linux/write.c:26
+rgcrash-gdb 139 | #1  __GI___libc_write (fd=1, buf=0xffff55420080, nbytes=65536) at ../sysdeps/unix/sysv/linux/write.c:24
+rgcrash-gdb 139 | #2  0x0000ffff7f755e70 [PAC] in rapidgzipCLI(int, char const* const*)::{lambda(std::shared_ptr<rapidgzip::ChunkData> const&, unsigned long, unsigned long)#2}::operator()(std::shared_ptr<rapidgzip::Chunk
+rgcrash-gdb 139 | #3  0x0000ffff7f795b48 in std::function<void(std::shared_ptr<rapidgzip::ChunkData> const&, unsigned long, unsigned long)>::operator() (__args#2=<optimized out>, __args#1=0, __args#0=std::shared_ptr<rapi
+rgcrash-gdb 139 | #4  rapidgzip::ParallelGzipReader<rapidgzip::ChunkData>::read (this=0xaaaadcfc2d50, writeFunctor=..., nBytesToRead=18446744073709551615) at rapidgzip/ParallelGzipReader.hpp:605
+rgcrash-gdb 139 | #0  0x0000ffff802ef794 in __futex_abstimed_wait_common64 (private=-587450716, cancel=true, abstime=0x0, op=393, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:57
+rgcrash-gdb 139 | #1  __futex_abstimed_wait_common (cancel=true, private=-587450716, abstime=0x0, clockid=0, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:87
+rgcrash-gdb 139 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaadcfc36a4, expected=expected@entry=15, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at futex
+rgcrash-gdb 139 | #3  0x0000ffff802f20c8 [PAC] in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xaaaadcfc3648, cond=0xaaaadcfc3678) at pthread_cond_wait.c:427
+rgcrash-gdb 139 | #4  ___pthread_cond_wait (cond=0xaaaadcfc3678, mutex=0xaaaadcfc3648) at pthread_cond_wait.c:459
+rgcrash-gdb 139 | #0  0x0000ffff802ef794 in __futex_abstimed_wait_common64 (private=-587450716, cancel=true, abstime=0x0, op=393, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:57
+rgcrash-gdb 139 | #1  __futex_abstimed_wait_common (cancel=true, private=-587450716, abstime=0x0, clockid=0, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:87
+rgcrash-gdb 139 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaadcfc36a4, expected=expected@entry=15, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at futex
+rgcrash-gdb 139 | #3  0x0000ffff802f20c8 [PAC] in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xaaaadcfc3648, cond=0xaaaadcfc3678) at pthread_cond_wait.c:427
+rgcrash-gdb 139 | #4  ___pthread_cond_wait (cond=0xaaaadcfc3678, mutex=0xaaaadcfc3648) at pthread_cond_wait.c:459
+rgcrash-gdb 139 | #0  0x0000ffff802ef794 in __futex_abstimed_wait_common64 (private=-587450716, cancel=true, abstime=0x0, op=393, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:57
+rgcrash-gdb 139 | #1  __futex_abstimed_wait_common (cancel=true, private=-587450716, abstime=0x0, clockid=0, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:87
+rgcrash-gdb 139 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaadcfc36a4, expected=expected@entry=15, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at futex
+rgcrash-gdb 139 | #3  0x0000ffff802f20c8 [PAC] in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xaaaadcfc3648, cond=0xaaaadcfc3678) at pthread_cond_wait.c:427
+rgcrash-gdb 139 | #4  ___pthread_cond_wait (cond=0xaaaadcfc3678, mutex=0xaaaadcfc3648) at pthread_cond_wait.c:459
+rgcrash-gdb 139 | #0  0x0000ffff802ef794 in __futex_abstimed_wait_common64 (private=-587450716, cancel=true, abstime=0x0, op=393, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:57
+rgcrash-gdb 139 | #1  __futex_abstimed_wait_common (cancel=true, private=-587450716, abstime=0x0, clockid=0, expected=15, futex_word=0xaaaadcfc36a4) at futex-internal.c:87
+mode      version  P   jobs  nonzero_exit  crashes  timeouts  wrong_sha
+identity  0.14.5   8   522   2             2        0         2
+identity  0.16.0   8   521   1             1        0         1
+stress    0.14.5   16  122   0             0        0         0
+stress    0.14.5   8   366   0             0        0         0
+stress    0.16.0   16  121   0             0        0         0
+stress    0.16.0   8   366   0             0        0         0
+rgcrash-rehearse: ok
+rgcrash-rehearse: kept /Users/scttfrdmn/.ak2-rgreh.yxt55s

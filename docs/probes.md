@@ -148,12 +148,15 @@ make orphans
    file, 8 at a time, to give the reference.
 5. **The loop.** It starts once page-cache state is logged (`meminfo` lines; this is not a
    timing probe, so there is no drop_caches) and runs until 95 min after the body starts, which
-   is at least 25 min before the 120 min TTL. It runs 8 lanes, mirroring the identity step's
-   command: `rapidgzip -d -c -P K FILE | sha256sum`.
-   - Versions alternate job by job within a lane, so about half the jobs run each version at any
-     time.
-   - Every fourth job of a lane runs at `-P 16`; the rest run at `-P 8`.
-   - Files go round-robin.
+   is at least 25 min before the 120 min TTL. It runs 8 lanes in two modes:
+   - **identity** (lanes 0-5): `lad_identity` on this type exactly. On r8g.16xlarge the ladder
+     runs IDL = nproc/(P+2) = 64/10 = 6 lanes, and each job runs `gzip -dc FILE | sha256sum`,
+     then `rapidgzip -d -c -P 8 FILE | sha256sum` on the same file. That gives about 48
+     rapidgzip threads mixed with single-thread gzip, as on the ladder.
+   - **stress** (lanes 6-7): rapidgzip only. Every fourth job runs at `-P 16`; the rest run at
+     `-P 8`.
+   - In both modes, versions alternate job by job within a lane, so about half the jobs run each
+     version at any time. Files go round-robin.
    - Each job has a 300 s timeout that sends SIGABRT, so a hang also leaves a core.
 6. **On any failure** (a non-zero exit or a wrong sha256):
    - its stderr and the matching dmesg lines are recorded;
@@ -172,9 +175,9 @@ make orphans
 | `core-control` | the previous and new core_pattern, ulimits, the control's core and gdb frame count, `ok` |
 | `reference` | 20 lines: the GNU gzip sha256, exit and seconds per file |
 | `meminfo` | after-fetch, loop-start, every 5 min, end |
-| `job` | one per job: `n`, `lane`, `version`, `file`, `P`, `exit`, `signal`, `timeout`, `sha256`, `match` (against the reference), `seconds`, `pid` |
-| `failure` | one per failed job: `core`, `core_bytes`, `core_pushed` (its out/ key, or null after the first 6), `gdb_frames`, `fault` (si_addr), `stderr`, `dmesg` |
-| `summary` | one per version: `jobs`, `P8`, `P16`, `crashes` (any signal), `sigsegv`, `timeouts`, `nonzero_exit`, `wrong_sha`, `wrong_sha_exit0`, `crash_rate`, `seconds` |
+| `job` | one per job: `n`, `lane`, `mode` (identity or stress), `version`, `file`, `P`, `exit`, `signal`, `timeout`, `sha256`, `match` (against the reference), `seconds`, `pid`; identity mode adds `gzip_sha256`, `gzip_exit`, `gzip_match`, `gzip_seconds` |
+| `failure` | one per failed job: `mode`, `core`, `core_bytes`, `core_pushed` (its out/ key, or null after the first 6), `gdb_frames`, `fault` (si_addr), `stderr`, `dmesg` |
+| `summary` | one per mode and version (4 lines): `jobs`, `P8`, `P16`, `crashes` (any signal), `sigsegv`, `timeouts`, `nonzero_exit`, `wrong_sha`, `wrong_sha_exit0`, `gzip_mismatch`, `crash_rate`, `ladder_rate` (2/1553), `p_no_crash_at_ladder_rate` (exp(−ladder_rate × jobs)), `compares_with_ladder` (true for identity only), `seconds` |
 | `restore` | core_pattern back to its previous value (`restored`) |
 
 gdb's output also streams as `rgcrash-gdb <n> | ...` lines in the run log, and is pushed as
@@ -182,7 +185,7 @@ gdb's output also streams as `rgcrash-gdb <n> | ...` lines in the run log, and i
 
 **Files** (in the run's `out/`):
 - `rgcrash.jsonl`;
-- `rgcrash-tally.tsv`: version × P, with jobs, nonzero_exit, crashes, timeouts and wrong_sha;
+- `rgcrash-tally.tsv`: mode × version × P, with jobs, nonzero_exit, crashes, timeouts and wrong_sha;
 - `gdb/`, `cores/`;
 - `bundle-0.14.5.tar.zst`, `bundle-0.16.0.tar.zst`.
 
@@ -194,10 +197,11 @@ gdb's output also streams as `rgcrash-gdb <n> | ...` lines in the run log, and i
 - **A `wrong_sha_exit0` above 0** means wrong output with a clean exit. That is worse than a
   crash, because the identity step catches it only through the sha256.
 - **No crash is not evidence of no defect.** At the c10 rate (2 in about 1,553, about 1.3e-3 per
-  decompression), N jobs of one version see no crash with probability exp(−1.3e-3 × N): about
-  0.05 at N = 2,300. Check each version's `jobs` against that before calling a version clean.
-  The ladder's identity lanes also ran GNU gzip beside rapidgzip, and that load is not reproduced
-  here.
+  decompression), N jobs see no crash with probability exp(−1.3e-3 × N): about 0.05 at
+  N = 2,300. **Only the identity-mode count compares with the ladder's rate**, because only
+  identity mode reproduces the ladder's load. Use the identity summary lines'
+  `p_no_crash_at_ladder_rate`, per version. Stress mode is extra exposure under a different load:
+  a crash there is a finding, but its count says nothing about the ladder's rate.
 
 **Cost:** TTL 120 min, `cost_limit` = TTL × the on-demand price ($3.77024/h: $7.55, from
 `scripts/g3/mkspec-u.sh probe-rgcrash r8g.16xlarge 120 scripts/g3/probe-rgcrash.body.sh us-west-2b`).
@@ -221,7 +225,9 @@ It passes on observed output:
   streamed and pushed;
 - 2 valid zstd cores are pushed;
 - every other job matches the reference;
-- the tally and the summaries add up;
+- lanes 0-5 run identity mode (GNU gzip, then rapidgzip -P 8, with gzip's sha256 equal to the
+  reference), and lanes 6-7 run stress (both -P 8 and -P 16);
+- the tally and the 4 summaries add up;
 - the VM's core_pattern after the run equals its value before.
 
 A kill that lands after the last write leaves a correct sha256, so the check uses the exit status

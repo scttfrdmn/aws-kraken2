@@ -15,8 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`scripts/g3/probe-rgcrash.body.sh`) repeats that step's `rapidgzip -d -c -P K FILE | sha256sum`.
   - **Where:** one r8g.16xlarge in us-west-2b, TTL 120 min, cost_limit $7.55.
   - **What it runs:** the c10 cohort's 20 files on /dev/shm, against GNU gzip's sha256, for
-    95 min in 8 lanes. Versions alternate between 0.14.5 (lever.sh's pinned install) and 0.16.0
-    (pinned by wheel sha256). Every fourth job runs at -P 16, the rest at -P 8.
+    95 min in 8 lanes. Lanes 0-5 mirror `lad_identity` exactly (gzip -dc, then rapidgzip -P 8 on
+    the same file); only their count compares with the ladder's rate. Lanes 6-7 are rapidgzip-only
+    stress, with every fourth job at -P 16. Versions alternate between 0.14.5 (lever.sh's pinned
+    install) and 0.16.0 (pinned by wheel sha256). The summary is split by mode and version.
   - **Core capture:** `kernel.core_pattern` points at tmpfs (restored at the end), after a
     positive control that must leave a core gdb can read.
   - **On every failure:** gdb's bt, all threads, registers, `x/16i $pc` and siginfo are
