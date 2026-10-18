@@ -219,86 +219,101 @@ O	O4a	1	wall_s	gross		measured	2	298.000000	266.000000	330.000000	64.000000	2.00
 O	O4a	1	billed_net_usd	net (prorated; headline)		measured	2	1.438096	1.433532	1.442660	0.009127	0.013895
 O	O4a	1	billed_usd	gross		measured	2	1.438140	1.433581	1.442699	0.009118	0.013895
 O	O4a	1	lever_phase_s	phase	run:classify	measured	2	17.000000	17.000000	17.000000	0.000000	1.000000
-O	O4a	10	wall_net_s	net (headline)		measured	1	291.380000	291.380000	291.380000	n<2	2.001000
-O	O4a	10	wall_s	gross		measured	1	308.000000	308.000000	308.000000	n<2	2.000000
-O	O4a	10	billed_net_usd	net (prorated; headline)		measured	1	1.146327	1.146327	1.146327	n<2	0.008378
-O	O4a	10	billed_usd	gross		measured	1	1.211712	1.211712	1.211712	n<2	0.008378
-O	O4a	10	lever_phase_s	phase	run:classify	measured	1	30.000000	30.000000	30.000000	n<2	1.000000
+O	O4a	10	wall_net_s	net (headline)		measured	2	285.366500	279.353000	291.380000	12.027000	2.001000
+O	O4a	10	wall_s	gross		measured	2	302.000000	296.000000	308.000000	12.000000	2.000000
+O	O4a	10	billed_net_usd	net (prorated; headline)		measured	2	1.143463	1.140600	1.146327	0.005727	0.008378
+O	O4a	10	billed_usd	gross		measured	2	1.210141	1.208570	1.211712	0.003142	0.008378
+O	O4a	10	lever_phase_s	phase	run:classify	measured	2	30.000000	30.000000	30.000000	0.000000	1.000000
 O	O4a-cost	1	wall_net_s	net (headline)		measured	2	319.492000	317.992000	320.992000	3.000000	2.001000
 O	O4a-cost	1	wall_s	gross		measured	2	319.500000	318.000000	321.000000	3.000000	2.000000
 O	O4a-cost	1	billed_net_usd	net (prorated; headline)		measured	2	0.799923	0.799381	0.800466	0.001085	0.006948
 O	O4a-cost	1	billed_usd	gross		measured	2	0.799944	0.799401	0.800486	0.001085	0.006948
 O	O4a-cost	1	lever_phase_s	phase	run:classify	measured	2	16.500000	16.000000	17.000000	1.000000	1.000000
-O	O4a-cost	10	wall_net_s	net (headline)		measured	1	388.115000	388.115000	388.115000	n<2	2.001000
-O	O4a-cost	10	wall_s	gross		measured	1	412.000000	412.000000	412.000000	n<2	2.000000
-O	O4a-cost	10	billed_net_usd	net (prorated; headline)		measured	1	1.008715	1.008715	1.008715	n<2	0.005211
-O	O4a-cost	10	billed_usd	gross		measured	1	1.070792	1.070792	1.070792	n<2	0.005211
-O	O4a-cost	10	lever_phase_s	phase	run:classify	measured	1	24.000000	24.000000	24.000000	n<2	1.000000
+O	O4a-cost	10	wall_net_s	net (headline)		measured	2	388.100000	388.085000	388.115000	0.030000	2.001000
+O	O4a-cost	10	wall_s	gross		measured	2	412.000000	412.000000	412.000000	0.000000	2.000000
+O	O4a-cost	10	billed_net_usd	net (prorated; headline)		measured	2	1.008062	1.007409	1.008715	0.001305	0.005211
+O	O4a-cost	10	billed_usd	gross		measured	2	1.070140	1.069489	1.070792	0.001303	0.005211
+O	O4a-cost	10	lever_phase_s	phase	run:classify	measured	2	23.500000	23.000000	24.000000	1.000000	1.000000
 O	O4b	1	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b	1	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b	1	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b	1	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b	1	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b	10	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
+O	O4b	10	wall_net_s	net (headline)		alias of O4b-if1 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	268.735500	268.342000	269.129000	0.787000	2.001000
+O	O4b	10	wall_s	gross		alias of O4b-if1 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	295.500000	295.000000	296.000000	1.000000	2.000000
+O	O4b	10	billed_net_usd	net (prorated; headline)		alias of O4b-if1 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	1.100058	1.098856	1.101261	0.002405	0.008378
+O	O4b	10	billed_usd	gross		alias of O4b-if1 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	1.209617	1.208570	1.210664	0.002094	0.008378
+O	O4b	10	lever_phase_s	phase	run:classify	alias of O4b-if1 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	43.500000	43.000000	44.000000	1.000000	1.000000
 O	O4b-cost	1	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b-cost	1	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b-cost	1	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b-cost	1	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
 O	O4b-cost	1	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b-cost	10	wall_net_s	net (headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b-cost	10	wall_s	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b-cost	10	billed_usd	gross		alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b-cost	10	lever_phase_s	phase	run:classify	alias unresolved: no ladder.resolved.tsv row (key alias)	0				n<2	
-O	O4b-cost-if1	10	wall_net_s	net (headline)		measured	1	411.688000	411.688000	411.688000	n<2	2.001000
-O	O4b-cost-if1	10	wall_s	gross		measured	1	473.000000	473.000000	473.000000	n<2	2.000000
-O	O4b-cost-if1	10	billed_net_usd	net (prorated; headline)		measured	1	1.069183	1.069183	1.069183	n<2	0.005211
-O	O4b-cost-if1	10	billed_usd	gross		measured	1	1.228415	1.228415	1.228415	n<2	0.005211
-O	O4b-cost-if1	10	lever_phase_s	phase	run:classify	measured	1	55.000000	55.000000	55.000000	n<2	1.000000
-O	O4b-cost-if2	10	wall_net_s	net (headline)		measured	1	425.364000	425.364000	425.364000	n<2	2.001000
-O	O4b-cost-if2	10	wall_s	gross		measured	1	472.000000	472.000000	472.000000	n<2	2.000000
-O	O4b-cost-if2	10	billed_net_usd	net (prorated; headline)		measured	1	1.105867	1.105867	1.105867	n<2	0.005211
-O	O4b-cost-if2	10	billed_usd	gross		measured	1	1.227112	1.227112	1.227112	n<2	0.005211
-O	O4b-cost-if2	10	lever_phase_s	phase	run:classify	measured	1	33.000000	33.000000	33.000000	n<2	1.000000
-O	O4b-cost-if4	10	wall_net_s	net (headline)		measured	1	380.701000	380.701000	380.701000	n<2	2.001000
-O	O4b-cost-if4	10	wall_s	gross		measured	1	411.000000	411.000000	411.000000	n<2	2.000000
-O	O4b-cost-if4	10	billed_net_usd	net (prorated; headline)		measured	1	0.988233	0.988233	0.988233	n<2	0.005211
-O	O4b-cost-if4	10	billed_usd	gross		measured	1	1.066884	1.066884	1.066884	n<2	0.005211
-O	O4b-cost-if4	10	lever_phase_s	phase	run:classify	measured	1	23.000000	23.000000	23.000000	n<2	1.000000
+O	O4b-cost	10	wall_net_s	net (headline)		alias of O4b-cost-if4 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	381.129000	380.701000	381.557000	0.856000	2.001000
+O	O4b-cost	10	wall_s	gross		alias of O4b-cost-if4 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	411.500000	411.000000	412.000000	1.000000	2.000000
+O	O4b-cost	10	billed_net_usd	net (prorated; headline)		alias of O4b-cost-if4 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	0.988745	0.988233	0.989257	0.001024	0.005211
+O	O4b-cost	10	billed_usd	gross		alias of O4b-cost-if4 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	1.067535	1.066884	1.068186	0.001302	0.005211
+O	O4b-cost	10	lever_phase_s	phase	run:classify	alias of O4b-cost-if4 (ladder.resolved.tsv; source results/g3/ladder-select/c10-e451bf793fb4/manifest.json)	2	24.000000	23.000000	25.000000	2.000000	1.000000
+O	O4b-cost-if1	10	wall_net_s	net (headline)		measured	2	411.594500	411.501000	411.688000	0.187000	2.001000
+O	O4b-cost-if1	10	wall_s	gross		measured	2	474.000000	473.000000	475.000000	2.000000	2.000000
+O	O4b-cost-if1	10	billed_net_usd	net (prorated; headline)		measured	2	1.066691	1.064198	1.069183	0.004985	0.005211
+O	O4b-cost-if1	10	billed_usd	gross		measured	2	1.228415	1.228415	1.228415	0.000000	0.005211
+O	O4b-cost-if1	10	lever_phase_s	phase	run:classify	measured	2	54.500000	54.000000	55.000000	1.000000	1.000000
+O	O4b-cost-if2	10	wall_net_s	net (headline)		measured	2	424.241000	423.118000	425.364000	2.246000	2.001000
+O	O4b-cost-if2	10	wall_s	gross		measured	2	472.500000	472.000000	473.000000	1.000000	2.000000
+O	O4b-cost-if2	10	billed_net_usd	net (prorated; headline)		measured	2	1.101202	1.096537	1.105867	0.009330	0.005211
+O	O4b-cost-if2	10	billed_usd	gross		measured	2	1.226460	1.225809	1.227112	0.001303	0.005211
+O	O4b-cost-if2	10	lever_phase_s	phase	run:classify	measured	2	32.500000	32.000000	33.000000	1.000000	1.000000
+O	O4b-cost-if4	10	wall_net_s	net (headline)		measured	2	381.129000	380.701000	381.557000	0.856000	2.001000
+O	O4b-cost-if4	10	wall_s	gross		measured	2	411.500000	411.000000	412.000000	1.000000	2.000000
+O	O4b-cost-if4	10	billed_net_usd	net (prorated; headline)		measured	2	0.988745	0.988233	0.989257	0.001024	0.005211
+O	O4b-cost-if4	10	billed_usd	gross		measured	2	1.067535	1.066884	1.068186	0.001302	0.005211
+O	O4b-cost-if4	10	lever_phase_s	phase	run:classify	measured	2	24.000000	23.000000	25.000000	2.000000	1.000000
 O	O4b-cost-if8	10	wall_net_s	net (headline)		measured	0				n<2	
 O	O4b-cost-if8	10	wall_s	gross		measured	0				n<2	
 O	O4b-cost-if8	10	billed_net_usd	net (prorated; headline)		measured	0				n<2	
 O	O4b-cost-if8	10	billed_usd	gross		measured	0				n<2	
 O	O4b-cost-if8	10	lever_phase_s	phase	run:classify	measured	0				n<2	
-O	O4b-if4	10	wall_net_s	net (headline)		measured	1	522.475000	522.475000	522.475000	n<2	2.001000
-O	O4b-if4	10	wall_s	gross		measured	1	536.000000	536.000000	536.000000	n<2	2.000000
-O	O4b-if4	10	billed_net_usd	net (prorated; headline)		measured	1	2.161166	2.161166	2.161166	n<2	0.008378
-O	O4b-if4	10	billed_usd	gross		measured	1	2.217111	2.217111	2.217111	n<2	0.008378
-O	O4b-if4	10	lever_phase_s	phase	run:classify	measured	1	31.000000	31.000000	31.000000	n<2	1.000000
-O	O4b-if8	10	wall_net_s	net (headline)		measured	1	282.393000	282.393000	282.393000	n<2	2.001000
-O	O4b-if8	10	wall_s	gross		measured	1	297.000000	297.000000	297.000000	n<2	2.000000
-O	O4b-if8	10	billed_net_usd	net (prorated; headline)		measured	1	1.151122	1.151122	1.151122	n<2	0.008378
-O	O4b-if8	10	billed_usd	gross		measured	1	1.210665	1.210665	1.210665	n<2	0.008378
-O	O4b-if8	10	lever_phase_s	phase	run:classify	measured	1	31.000000	31.000000	31.000000	n<2	1.000000
+O	O4b-if1	10	wall_net_s	net (headline)		measured	2	268.735500	268.342000	269.129000	0.787000	2.001000
+O	O4b-if1	10	wall_s	gross		measured	2	295.500000	295.000000	296.000000	1.000000	2.000000
+O	O4b-if1	10	billed_net_usd	net (prorated; headline)		measured	2	1.100058	1.098856	1.101261	0.002405	0.008378
+O	O4b-if1	10	billed_usd	gross		measured	2	1.209617	1.208570	1.210664	0.002094	0.008378
+O	O4b-if1	10	lever_phase_s	phase	run:classify	measured	2	43.500000	43.000000	44.000000	1.000000	1.000000
+O	O4b-if2	10	wall_net_s	net (headline)		measured	2	269.760500	267.294000	272.227000	4.933000	2.001000
+O	O4b-if2	10	wall_s	gross		measured	2	296.500000	294.000000	299.000000	5.000000	2.000000
+O	O4b-if2	10	billed_net_usd	net (prorated; headline)		measured	2	1.099569	1.099399	1.099739	0.000340	0.008378
+O	O4b-if2	10	billed_usd	gross		measured	2	1.208570	1.207523	1.209617	0.002094	0.008378
+O	O4b-if2	10	lever_phase_s	phase	run:classify	measured	2	30.500000	30.000000	31.000000	1.000000	1.000000
+O	O4b-if4	10	wall_net_s	net (headline)		measured	2	402.461000	282.447000	522.475000	240.028000	2.001000
+O	O4b-if4	10	wall_s	gross		measured	2	416.000000	296.000000	536.000000	240.000000	2.000000
+O	O4b-if4	10	billed_net_usd	net (prorated; headline)		measured	2	1.656700	1.152234	2.161166	1.008932	0.008378
+O	O4b-if4	10	billed_usd	gross		measured	2	1.712317	1.207523	2.217111	1.009588	0.008378
+O	O4b-if4	10	lever_phase_s	phase	run:classify	measured	2	30.500000	30.000000	31.000000	1.000000	1.000000
+O	O4b-if8	10	wall_net_s	net (headline)		measured	2	281.892500	281.392000	282.393000	1.001000	2.001000
+O	O4b-if8	10	wall_s	gross		measured	2	296.500000	296.000000	297.000000	1.000000	2.000000
+O	O4b-if8	10	billed_net_usd	net (prorated; headline)		measured	2	1.150024	1.148925	1.151122	0.002197	0.008378
+O	O4b-if8	10	billed_usd	gross		measured	2	1.209618	1.208570	1.210665	0.002095	0.008378
+O	O4b-if8	10	lever_phase_s	phase	run:classify	measured	2	31.000000	31.000000	31.000000	0.000000	1.000000
 O	O5	1	wall_net_s	net (headline)		measured	2	327.985000	326.983000	328.987000	2.004000	2.001000
 O	O5	1	wall_s	gross		measured	2	328.000000	327.000000	329.000000	2.000000	2.000000
 O	O5	1	billed_net_usd	net (prorated; headline)		measured	2	1.442634	1.430467	1.454801	0.024334	0.013895
 O	O5	1	billed_usd	gross		measured	2	1.442700	1.430541	1.454858	0.024317	0.013895
 O	O5	1	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	17.000000	17.000000	17.000000	0.000000	2.000000
+O	O5	10	wall_net_s	net (headline)		measured	2	258.244000	258.076000	258.412000	0.336000	2.001000
+O	O5	10	wall_s	gross		measured	2	296.000000	296.000000	296.000000	0.000000	2.000000
+O	O5	10	billed_net_usd	net (prorated; headline)		measured	2	1.057152	1.056012	1.058291	0.002279	0.008378
+O	O5	10	billed_usd	gross		measured	2	1.211711	1.209617	1.213806	0.004189	0.008378
+O	O5	10	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	43.500000	43.000000	44.000000	1.000000	2.000000
 O	O5-cost	1	wall_net_s	net (headline)		measured	2	316.486000	315.987000	316.985000	0.998000	2.001000
 O	O5-cost	1	wall_s	gross		measured	2	316.500000	316.000000	317.000000	1.000000	2.000000
 O	O5-cost	1	billed_net_usd	net (prorated; headline)		measured	2	0.799366	0.799151	0.799580	0.000429	0.006948
 O	O5-cost	1	billed_usd	gross		measured	2	0.799401	0.799184	0.799618	0.000434	0.006948
 O	O5-cost	1	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	17.500000	17.000000	18.000000	1.000000	2.000000
-O	O5-cost	10	wall_net_s	net (headline)		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost INFLIGHT=@select:O4b-cost, O5 INFLIGHT=@select:O4b	0				n<2	
-O	O5-cost	10	wall_s	gross		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost INFLIGHT=@select:O4b-cost, O5 INFLIGHT=@select:O4b	0				n<2	
-O	O5-cost	10	billed_net_usd	net (prorated; headline)		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost INFLIGHT=@select:O4b-cost, O5 INFLIGHT=@select:O4b	0				n<2	
-O	O5-cost	10	billed_usd	gross		alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost INFLIGHT=@select:O4b-cost, O5 INFLIGHT=@select:O4b	0				n<2	
-O	O5-cost	10	lever_phase_s	phase	run:classify+run:upload-drain	alias unresolved: O5-cost's alias_cohorts pair with O5 at c10 does not verify: not verified (conditional): unresolved: O5-cost INFLIGHT=@select:O4b-cost, O5 INFLIGHT=@select:O4b	0				n<2	
+O	O5-cost	10	wall_net_s	net (headline)		measured	2	392.317000	363.976000	420.658000	56.682000	2.001000
+O	O5-cost	10	wall_s	gross		measured	2	442.000000	413.000000	471.000000	58.000000	2.000000
+O	O5-cost	10	billed_net_usd	net (prorated; headline)		measured	2	1.018664	0.942538	1.094791	0.152252	0.005211
+O	O5-cost	10	billed_usd	gross		measured	2	1.147649	1.069489	1.225809	0.156320	0.005211
+O	O5-cost	10	lever_phase_s	phase	run:classify+run:upload-drain	measured	2	23.000000	23.000000	23.000000	0.000000	2.000000
 S	S0-T1	1	wall_net_s	net (headline)		measured	2	3477.337500	3477.337000	3477.338000	0.001000	2.001000
 S	S0-T1	1	wall_s	gross		measured	2	3478.000000	3478.000000	3478.000000	0.000000	2.000000
 S	S0-T1	1	billed_net_usd	net (prorated; headline)		measured	2	13.627454	13.627452	13.627456	0.000004	0.007838
