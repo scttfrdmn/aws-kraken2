@@ -1,0 +1,205 @@
+check	subject	expected	observed	pass
+source	SRR062634_200000_1.fq sha256 = its SOURCE	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	mate 1 rapidgzip --export-index pass	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+bgzf	mate 1 is BGZF (BC extra field)	yes	yes	yes
+identity	S1 mate 1 .gz gzip -dc (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 1 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 2 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 4 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 8 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 16 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 BGZF gzip -dc (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 BGZF rapidgzip -P 1 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 BGZF rapidgzip -P 2 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 BGZF rapidgzip -P 4 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 BGZF rapidgzip -P 8 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 BGZF rapidgzip -P 16 (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 1 --import-index (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 2 --import-index (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 4 --import-index (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 8 --import-index (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+identity	S1 mate 1 .gz rapidgzip -P 16 --import-index (exit 0)	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5	yes
+source	SRR062634_200000_2.fq sha256 = its SOURCE	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	mate 2 rapidgzip --export-index pass	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+bgzf	mate 2 is BGZF (BC extra field)	yes	yes	yes
+identity	S1 mate 2 .gz gzip -dc (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 1 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 2 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 4 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 8 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 16 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 BGZF gzip -dc (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 BGZF rapidgzip -P 1 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 BGZF rapidgzip -P 2 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 BGZF rapidgzip -P 4 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 BGZF rapidgzip -P 8 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 BGZF rapidgzip -P 16 (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 1 --import-index (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 2 --import-index (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 4 --import-index (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 8 --import-index (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+identity	S1 mate 2 .gz rapidgzip -P 16 --import-index (exit 0)	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1	yes
+isal	this host's rapidgzip (rapidgzip-0.14.5-cp313-cp313-macosx_11_0_arm64.whl)	-	static: none; rapidgzip -v 'Time spent decoding with ISA-L': 0 s	info
+isal	pinned wheel rapidgzip-0.14.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl	-	none	info
+isal	pinned wheel rapidgzip-0.14.5-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl	-	none	info
+isal	pinned wheel rapidgzip-0.14.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl	-	none	info
+isal	pinned wheel rapidgzip-0.14.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl	-	none	info
+isal	pinned wheel rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl	-	none	info
+isal	positive control: the pinned cp39 x86_64 wheel is detected as carrying ISA-L	isal	isal	yes
+gzflag	sweep files scanned: 2 (none yet means: the rule is documented in docs/inputpath.md and asserted on every command built here)	0	0	yes
+exit	S1-pe-I0	0	0	yes
+nonempty	S1-pe-I0 output	yes	yes	yes
+exit	S1-pe-I1	0	0	yes
+decoders	S1-pe-I1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I1 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I1 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I1f	0	0	yes
+decoders	S1-pe-I1f decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I1f --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I1f --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-devfd	0	0	yes
+decoders	S1-pe-devfd decoder exit statuses all 0	yes	yes	yes
+devfd	S1-pe-devfd --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+devfd	S1-pe-devfd --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I2-P1	0	0	yes
+decoders	S1-pe-I2-P1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I2-P1 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I2-P1 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I2-P2	0	0	yes
+decoders	S1-pe-I2-P2 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I2-P2 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I2-P2 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I2-P4	0	0	yes
+decoders	S1-pe-I2-P4 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I2-P4 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I2-P4 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I2-P8	0	0	yes
+decoders	S1-pe-I2-P8 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I2-P8 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I2-P8 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I2-P16	0	0	yes
+decoders	S1-pe-I2-P16 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I2-P16 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I2-P16 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I3-P1	0	0	yes
+decoders	S1-pe-I3-P1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I3-P1 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I3-P1 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I3-P2	0	0	yes
+decoders	S1-pe-I3-P2 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I3-P2 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I3-P2 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I3-P4	0	0	yes
+decoders	S1-pe-I3-P4 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I3-P4 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I3-P4 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I3-P8	0	0	yes
+decoders	S1-pe-I3-P8 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I3-P8 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I3-P8 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I3-P16	0	0	yes
+decoders	S1-pe-I3-P16 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I3-P16 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I3-P16 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I4-P1	0	0	yes
+decoders	S1-pe-I4-P1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I4-P1 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I4-P1 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I4-P2	0	0	yes
+decoders	S1-pe-I4-P2 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I4-P2 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I4-P2 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I4-P4	0	0	yes
+decoders	S1-pe-I4-P4 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I4-P4 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I4-P4 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I4-P8	0	0	yes
+decoders	S1-pe-I4-P8 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I4-P8 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I4-P8 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+exit	S1-pe-I4-P16	0	0	yes
+decoders	S1-pe-I4-P16 decoder exit statuses all 0	yes	yes	yes
+arms	S1-pe-I4-P16 --output = I0	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+arms	S1-pe-I4-P16 --report = I0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+neg-control	S1-pe-neg output differs from I0 (--gzip-compressed on /dev/fd paths)	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	absent	yes
+neg-control	S1-pe-neg	-	exit 0, output absent, stderr: gzip: /dev/fd/63 is not a regular file	info
+exit	S1-se-I0	0	0	yes
+nonempty	S1-se-I0 output	yes	yes	yes
+exit	S1-se-I1	0	0	yes
+decoders	S1-se-I1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I1 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I1 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I1f	0	0	yes
+decoders	S1-se-I1f decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I1f --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I1f --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-devfd	0	0	yes
+decoders	S1-se-devfd decoder exit statuses all 0	yes	yes	yes
+devfd	S1-se-devfd --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+devfd	S1-se-devfd --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I2-P1	0	0	yes
+decoders	S1-se-I2-P1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I2-P1 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I2-P1 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I2-P2	0	0	yes
+decoders	S1-se-I2-P2 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I2-P2 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I2-P2 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I2-P4	0	0	yes
+decoders	S1-se-I2-P4 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I2-P4 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I2-P4 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I2-P8	0	0	yes
+decoders	S1-se-I2-P8 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I2-P8 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I2-P8 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I2-P16	0	0	yes
+decoders	S1-se-I2-P16 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I2-P16 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I2-P16 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I3-P1	0	0	yes
+decoders	S1-se-I3-P1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I3-P1 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I3-P1 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I3-P2	0	0	yes
+decoders	S1-se-I3-P2 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I3-P2 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I3-P2 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I3-P4	0	0	yes
+decoders	S1-se-I3-P4 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I3-P4 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I3-P4 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I3-P8	0	0	yes
+decoders	S1-se-I3-P8 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I3-P8 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I3-P8 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I3-P16	0	0	yes
+decoders	S1-se-I3-P16 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I3-P16 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I3-P16 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I4-P1	0	0	yes
+decoders	S1-se-I4-P1 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I4-P1 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I4-P1 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I4-P2	0	0	yes
+decoders	S1-se-I4-P2 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I4-P2 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I4-P2 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I4-P4	0	0	yes
+decoders	S1-se-I4-P4 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I4-P4 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I4-P4 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I4-P8	0	0	yes
+decoders	S1-se-I4-P8 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I4-P8 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I4-P8 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+exit	S1-se-I4-P16	0	0	yes
+decoders	S1-se-I4-P16 decoder exit statuses all 0	yes	yes	yes
+arms	S1-se-I4-P16 --output = I0	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+arms	S1-se-I4-P16 --report = I0	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes
+neg-control	S1-se-neg output differs from I0 (--gzip-compressed on /dev/fd paths)	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	absent	yes
+neg-control	S1-se-neg	-	exit 0, output absent, stderr: gzip: /dev/fd/63 is not a regular file	info
+g1	S1-pe I0 --output = results/g1/oracle-standard8-20261012T002913Z (pe-default-gz-S1)	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	527068d2bc8e30eeb7f0cee9152649dc7cb370fbb65d538a322491ff6b6eb074	yes
+g1	S1-pe I0 --report = results/g1/oracle-standard8-20261012T002913Z (pe-default-gz-S1)	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	cfee47733e08cf1eb37175342ca7278e6c76ab48ad63ed4a962aa682dc69eae0	yes
+g1	S1-se I0 --output = results/g1/oracle-standard8-20261012T002913Z (se-default-S1)	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	3a8c83c07902033a7c4edd6a0feee535a57b123347df9174664b432d2e2ce28b	yes
+g1	S1-se I0 --report = results/g1/oracle-standard8-20261012T002913Z (se-default-S1)	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	678502bf55b78ab0a76f605ac30fa33634d667453f5e40f64f42509fd5c88d6d	yes

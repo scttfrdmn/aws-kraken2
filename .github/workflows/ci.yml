@@ -140,6 +140,14 @@ jobs:
       - name: make oracle-cohort DB=viral
         run: make oracle-cohort DB=viral
 
+      # #90: the input-path sweep's pre-flight (docs/inputpath.md, "Pre-flight and inputs"):
+      # /dev/fd input, the rapidgzip identity, I1-I4 equal to I0, I0 equal to the G1 oracle.
+      - name: make inputpath-preflight
+        run: |
+          set +e; echo "shell flags $-"
+          sudo apt-get install -y -q python3-venv
+          make inputpath-preflight
+
       # Only the result directories this run created (untracked), not the committed ones.
       - name: List this run's results
         if: always()
@@ -147,7 +155,7 @@ jobs:
         run: |
           {
             echo 'dirs<<EOF'
-            git ls-files --others --exclude-standard -- results/g1 | xargs -r -n1 dirname | sort -u
+            git ls-files --others --exclude-standard -- results/g1 results/inputpath | xargs -r -n1 dirname | sort -u
             echo EOF
           } >> "$GITHUB_OUTPUT"
 

@@ -1,0 +1,8 @@
+gzip -dc SRR062634_8000000_1.fq.gz | bgzip -l 6 -@ 8 -c > SRR062634_8000000_1.fq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR062634_8000000_1.fq.gz.rgidx SRR062634_8000000_1.fq.gz | sha256
+gzip -dc SRR062634_8000000_2.fq.gz | bgzip -l 6 -@ 8 -c > SRR062634_8000000_2.fq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR062634_8000000_2.fq.gz.rgidx SRR062634_8000000_2.fq.gz | sha256
+aws s3 cp --metadata sha256=552bd64c9055dbcf2a8e6b0677fab14920f92f5b99c85e1e42d5d1344e6558cd,source-sha256=4adae422162ed57988a5b808ee761e54307d31c81e21f0988c1835cb722b598b SRR062634_8000000_1.fq.bgz s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz
+aws s3 cp --metadata sha256=ab6afdf8b907d9c5ad2de4d2086c8a4bde9f64ac0144d52689ef42a922af8980,source-sha256=4a47908c4f5fae545818d62a62f99f8a832b206999dec8c9da284360765ec408 SRR062634_8000000_1.fq.gz.rgidx s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx
+aws s3 cp --metadata sha256=a6b0ebe30eee24db22b4c984d49bd5593106cc3fc8e11fdcf411dd41969002fa,source-sha256=ad320f634269e530a1f5c683bee8d212137e28da897aa40926d6b0420bc38728 SRR062634_8000000_2.fq.bgz s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz
+aws s3 cp --metadata sha256=d3fcda0bd3988bb37a53c8760ad4bc946859556775c917a9a27a9025e97bac19,source-sha256=e7a5da6f92af9b6d3687684f31f2d52adff1283c7b9f27651645a0639a3f5b9c SRR062634_8000000_2.fq.gz.rgidx s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx

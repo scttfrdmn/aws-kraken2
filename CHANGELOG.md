@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **G2 input-path sweep (#90): pre-flight checks and inputs** (docs/inputpath.md, "Pre-flight
+  and inputs"). `make inputpath-preflight` (`scripts/inputpath/preflight.sh`; also in CI) and
+  `make inputpath-prep` (`scripts/inputpath/prep.sh`), with tool pins in `scripts/inputpath/lib.sh`:
+  bgzip from htslib 1.24, and lever.sh's rapidgzip 0.14.5.
+  - **Inputs:**
+    - pe: SRR062634's first 8M pairs, already staged in the project bucket (#6 host-dominated
+      class, G2's input).
+    - se: mate 1 of the same sample, as a stand-in, because no #6 sample is single-end.
+      SRR4074269 (PRJNA340216, human gut, SE 151 bp, 1.58 GB) is proposed and not staged.
+  - **Uploaded** (sha256 metadata, tagged `project=aws-kraken2`, `kind=data`), recorded in
+    `scripts/inputpath/inputs.tsv`:
+    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.bgz` (BGZF);
+    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.gz.rgidx` (rapidgzip indexes, -P 16).
+  - **Findings:**
+    - the wrapper reads `/dev/fd` paths for both mates, with outputs identical to I0;
+    - `--gzip-compressed` on `/dev/fd` paths fails silently (exit 0, no output);
+    - rapidgzip equals `gzip -dc` at -P 1–16 on every input;
+    - I1–I4 equal I0, and I0 equals the G1 oracle;
+    - the pinned manylinux aarch64 rapidgzip wheels have no ISA-L. The x86_64 wheel has it.
+
 - **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
   probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in
   about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`

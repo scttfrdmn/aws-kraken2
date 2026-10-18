@@ -1,0 +1,213 @@
+inputpath-preflight: PART=local DB=standard8 shell flags huB (results results/inputpath/preflight-local-20261018T191314Z-cc920a8)
+19:13:14Z upstream 2.17.2-20-g2731b35 at /Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2; rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5; bgzip (htslib) 1.24; gzip: /usr/bin/gzip (Apple gzip 487.0.1)
+  ok   source SRR062634_200000_1.fq sha256 = its SOURCE
+  ok   identity mate 1 rapidgzip --export-index pass
+  ok   bgzf mate 1 is BGZF (BC extra field)
+  ok   identity S1 mate 1 .gz gzip -dc (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 1 (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 2 (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 4 (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 8 (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 16 (exit 0)
+  ok   identity S1 mate 1 BGZF gzip -dc (exit 0)
+  ok   identity S1 mate 1 BGZF rapidgzip -P 1 (exit 0)
+  ok   identity S1 mate 1 BGZF rapidgzip -P 2 (exit 0)
+  ok   identity S1 mate 1 BGZF rapidgzip -P 4 (exit 0)
+  ok   identity S1 mate 1 BGZF rapidgzip -P 8 (exit 0)
+  ok   identity S1 mate 1 BGZF rapidgzip -P 16 (exit 0)
+[Warning] The index only has an effect for parallel decoding and index exporting.
+  ok   identity S1 mate 1 .gz rapidgzip -P 1 --import-index (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 2 --import-index (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 4 --import-index (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 8 --import-index (exit 0)
+  ok   identity S1 mate 1 .gz rapidgzip -P 16 --import-index (exit 0)
+  ok   source SRR062634_200000_2.fq sha256 = its SOURCE
+  ok   identity mate 2 rapidgzip --export-index pass
+  ok   bgzf mate 2 is BGZF (BC extra field)
+  ok   identity S1 mate 2 .gz gzip -dc (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 1 (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 2 (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 4 (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 8 (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 16 (exit 0)
+  ok   identity S1 mate 2 BGZF gzip -dc (exit 0)
+  ok   identity S1 mate 2 BGZF rapidgzip -P 1 (exit 0)
+  ok   identity S1 mate 2 BGZF rapidgzip -P 2 (exit 0)
+  ok   identity S1 mate 2 BGZF rapidgzip -P 4 (exit 0)
+  ok   identity S1 mate 2 BGZF rapidgzip -P 8 (exit 0)
+  ok   identity S1 mate 2 BGZF rapidgzip -P 16 (exit 0)
+[Warning] The index only has an effect for parallel decoding and index exporting.
+  ok   identity S1 mate 2 .gz rapidgzip -P 1 --import-index (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 2 --import-index (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 4 --import-index (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 8 --import-index (exit 0)
+  ok   identity S1 mate 2 .gz rapidgzip -P 16 --import-index (exit 0)
+  info isal this host's rapidgzip (rapidgzip-0.14.5-cp313-cp313-macosx_11_0_arm64.whl): static: none; rapidgzip -v 'Time spent decoding with ISA-L': 0 s
+  info isal pinned wheel rapidgzip-0.14.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  ok   isal positive control: the pinned cp39 x86_64 wheel is detected as carrying ISA-L
+  ok   gzflag sweep files scanned: 2 (none yet means: the rule is documented in docs/inputpath.md and asserted on every command built here)
+19:13:22Z kraken2 arms on standard8 (threads 8; -P 1 2 4 8 16)
+  ok   exit S1-pe-I0
+  ok   nonempty S1-pe-I0 output
+  ok   exit S1-pe-I1
+  ok   decoders S1-pe-I1 decoder exit statuses all 0
+  ok   arms S1-pe-I1 --output = I0
+  ok   arms S1-pe-I1 --report = I0
+  ok   exit S1-pe-I1f
+  ok   decoders S1-pe-I1f decoder exit statuses all 0
+  ok   arms S1-pe-I1f --output = I0
+  ok   arms S1-pe-I1f --report = I0
+  ok   exit S1-pe-devfd
+  ok   decoders S1-pe-devfd decoder exit statuses all 0
+  ok   devfd S1-pe-devfd --output = I0
+  ok   devfd S1-pe-devfd --report = I0
+  ok   exit S1-pe-I2-P1
+  ok   decoders S1-pe-I2-P1 decoder exit statuses all 0
+  ok   arms S1-pe-I2-P1 --output = I0
+  ok   arms S1-pe-I2-P1 --report = I0
+  ok   exit S1-pe-I2-P2
+  ok   decoders S1-pe-I2-P2 decoder exit statuses all 0
+  ok   arms S1-pe-I2-P2 --output = I0
+  ok   arms S1-pe-I2-P2 --report = I0
+  ok   exit S1-pe-I2-P4
+  ok   decoders S1-pe-I2-P4 decoder exit statuses all 0
+  ok   arms S1-pe-I2-P4 --output = I0
+  ok   arms S1-pe-I2-P4 --report = I0
+  ok   exit S1-pe-I2-P8
+  ok   decoders S1-pe-I2-P8 decoder exit statuses all 0
+  ok   arms S1-pe-I2-P8 --output = I0
+  ok   arms S1-pe-I2-P8 --report = I0
+  ok   exit S1-pe-I2-P16
+  ok   decoders S1-pe-I2-P16 decoder exit statuses all 0
+  ok   arms S1-pe-I2-P16 --output = I0
+  ok   arms S1-pe-I2-P16 --report = I0
+[Warning] The index only has an effect for parallel decoding and index exporting.
+[Warning] The index only has an effect for parallel decoding and index exporting.
+  ok   exit S1-pe-I3-P1
+  ok   decoders S1-pe-I3-P1 decoder exit statuses all 0
+  ok   arms S1-pe-I3-P1 --output = I0
+  ok   arms S1-pe-I3-P1 --report = I0
+  ok   exit S1-pe-I3-P2
+  ok   decoders S1-pe-I3-P2 decoder exit statuses all 0
+  ok   arms S1-pe-I3-P2 --output = I0
+  ok   arms S1-pe-I3-P2 --report = I0
+  ok   exit S1-pe-I3-P4
+  ok   decoders S1-pe-I3-P4 decoder exit statuses all 0
+  ok   arms S1-pe-I3-P4 --output = I0
+  ok   arms S1-pe-I3-P4 --report = I0
+  ok   exit S1-pe-I3-P8
+  ok   decoders S1-pe-I3-P8 decoder exit statuses all 0
+  ok   arms S1-pe-I3-P8 --output = I0
+  ok   arms S1-pe-I3-P8 --report = I0
+  ok   exit S1-pe-I3-P16
+  ok   decoders S1-pe-I3-P16 decoder exit statuses all 0
+  ok   arms S1-pe-I3-P16 --output = I0
+  ok   arms S1-pe-I3-P16 --report = I0
+  ok   exit S1-pe-I4-P1
+  ok   decoders S1-pe-I4-P1 decoder exit statuses all 0
+  ok   arms S1-pe-I4-P1 --output = I0
+  ok   arms S1-pe-I4-P1 --report = I0
+  ok   exit S1-pe-I4-P2
+  ok   decoders S1-pe-I4-P2 decoder exit statuses all 0
+  ok   arms S1-pe-I4-P2 --output = I0
+  ok   arms S1-pe-I4-P2 --report = I0
+  ok   exit S1-pe-I4-P4
+  ok   decoders S1-pe-I4-P4 decoder exit statuses all 0
+  ok   arms S1-pe-I4-P4 --output = I0
+  ok   arms S1-pe-I4-P4 --report = I0
+  ok   exit S1-pe-I4-P8
+  ok   decoders S1-pe-I4-P8 decoder exit statuses all 0
+  ok   arms S1-pe-I4-P8 --output = I0
+  ok   arms S1-pe-I4-P8 --report = I0
+  ok   exit S1-pe-I4-P16
+  ok   decoders S1-pe-I4-P16 decoder exit statuses all 0
+  ok   arms S1-pe-I4-P16 --output = I0
+  ok   arms S1-pe-I4-P16 --report = I0
+  ok   neg-control S1-pe-neg output differs from I0 (--gzip-compressed on /dev/fd paths)
+  info neg-control S1-pe-neg: exit 0, output absent, stderr: gzip: /dev/fd/63 is not a regular file
+  ok   exit S1-se-I0
+  ok   nonempty S1-se-I0 output
+  ok   exit S1-se-I1
+  ok   decoders S1-se-I1 decoder exit statuses all 0
+  ok   arms S1-se-I1 --output = I0
+  ok   arms S1-se-I1 --report = I0
+  ok   exit S1-se-I1f
+  ok   decoders S1-se-I1f decoder exit statuses all 0
+  ok   arms S1-se-I1f --output = I0
+  ok   arms S1-se-I1f --report = I0
+  ok   exit S1-se-devfd
+  ok   decoders S1-se-devfd decoder exit statuses all 0
+  ok   devfd S1-se-devfd --output = I0
+  ok   devfd S1-se-devfd --report = I0
+  ok   exit S1-se-I2-P1
+  ok   decoders S1-se-I2-P1 decoder exit statuses all 0
+  ok   arms S1-se-I2-P1 --output = I0
+  ok   arms S1-se-I2-P1 --report = I0
+  ok   exit S1-se-I2-P2
+  ok   decoders S1-se-I2-P2 decoder exit statuses all 0
+  ok   arms S1-se-I2-P2 --output = I0
+  ok   arms S1-se-I2-P2 --report = I0
+  ok   exit S1-se-I2-P4
+  ok   decoders S1-se-I2-P4 decoder exit statuses all 0
+  ok   arms S1-se-I2-P4 --output = I0
+  ok   arms S1-se-I2-P4 --report = I0
+  ok   exit S1-se-I2-P8
+  ok   decoders S1-se-I2-P8 decoder exit statuses all 0
+  ok   arms S1-se-I2-P8 --output = I0
+  ok   arms S1-se-I2-P8 --report = I0
+  ok   exit S1-se-I2-P16
+  ok   decoders S1-se-I2-P16 decoder exit statuses all 0
+  ok   arms S1-se-I2-P16 --output = I0
+  ok   arms S1-se-I2-P16 --report = I0
+[Warning] The index only has an effect for parallel decoding and index exporting.
+  ok   exit S1-se-I3-P1
+  ok   decoders S1-se-I3-P1 decoder exit statuses all 0
+  ok   arms S1-se-I3-P1 --output = I0
+  ok   arms S1-se-I3-P1 --report = I0
+  ok   exit S1-se-I3-P2
+  ok   decoders S1-se-I3-P2 decoder exit statuses all 0
+  ok   arms S1-se-I3-P2 --output = I0
+  ok   arms S1-se-I3-P2 --report = I0
+  ok   exit S1-se-I3-P4
+  ok   decoders S1-se-I3-P4 decoder exit statuses all 0
+  ok   arms S1-se-I3-P4 --output = I0
+  ok   arms S1-se-I3-P4 --report = I0
+  ok   exit S1-se-I3-P8
+  ok   decoders S1-se-I3-P8 decoder exit statuses all 0
+  ok   arms S1-se-I3-P8 --output = I0
+  ok   arms S1-se-I3-P8 --report = I0
+  ok   exit S1-se-I3-P16
+  ok   decoders S1-se-I3-P16 decoder exit statuses all 0
+  ok   arms S1-se-I3-P16 --output = I0
+  ok   arms S1-se-I3-P16 --report = I0
+  ok   exit S1-se-I4-P1
+  ok   decoders S1-se-I4-P1 decoder exit statuses all 0
+  ok   arms S1-se-I4-P1 --output = I0
+  ok   arms S1-se-I4-P1 --report = I0
+  ok   exit S1-se-I4-P2
+  ok   decoders S1-se-I4-P2 decoder exit statuses all 0
+  ok   arms S1-se-I4-P2 --output = I0
+  ok   arms S1-se-I4-P2 --report = I0
+  ok   exit S1-se-I4-P4
+  ok   decoders S1-se-I4-P4 decoder exit statuses all 0
+  ok   arms S1-se-I4-P4 --output = I0
+  ok   arms S1-se-I4-P4 --report = I0
+  ok   exit S1-se-I4-P8
+  ok   decoders S1-se-I4-P8 decoder exit statuses all 0
+  ok   arms S1-se-I4-P8 --output = I0
+  ok   arms S1-se-I4-P8 --report = I0
+  ok   exit S1-se-I4-P16
+  ok   decoders S1-se-I4-P16 decoder exit statuses all 0
+  ok   arms S1-se-I4-P16 --output = I0
+  ok   arms S1-se-I4-P16 --report = I0
+  ok   neg-control S1-se-neg output differs from I0 (--gzip-compressed on /dev/fd paths)
+  info neg-control S1-se-neg: exit 0, output absent, stderr: gzip: /dev/fd/63 is not a regular file
+  ok   g1 S1-pe I0 --output = results/g1/oracle-standard8-20261012T002913Z (pe-default-gz-S1)
+  ok   g1 S1-pe I0 --report = results/g1/oracle-standard8-20261012T002913Z (pe-default-gz-S1)
+  ok   g1 S1-se I0 --output = results/g1/oracle-standard8-20261012T002913Z (se-default-S1)
+  ok   g1 S1-se I0 --report = results/g1/oracle-standard8-20261012T002913Z (se-default-S1)
+19:13:40Z inputpath-preflight: 204 checks, 0 failed (results/inputpath/preflight-local-20261018T191314Z-cc920a8)
