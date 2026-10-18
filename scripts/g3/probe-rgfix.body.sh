@@ -12,7 +12,7 @@
 #   a  0.14.5-norpmalloc: 0.14.5 built from its sdist with rpmalloc off (scripts/g3/rg-build.sh;
 #      ISA-L stays off as in the PyPI aarch64 wheel: 0.14.5 cannot build it on aarch64), so the
 #      one lever against the crashing wheel is rpmalloc. Cached by recipe sha256 in
-#      s3://.../aws-kraken2/data/rg-build/ (the input-path sweep, #90, reuses the same wheel).
+#      the results bucket's aws-kraken2/data/rg-build/ (the input-path sweep, #90, reuses the same wheel).
 #   b  0.16.0: the PyPI cp39 manylinux aarch64 wheel, --require-hashes (rpmalloc on, ISA-L on).
 # If a's build fails, every job runs b and a is reported build-failed (its build log streamed).
 # Resolution: at probe (g)'s rate, 9/3588, n jobs of a variant see no crash with probability
