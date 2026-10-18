@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
+  probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in
+  about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`
+  (`scripts/g3/probe-rgcrash.body.sh`) repeats that step's `rapidgzip -d -c -P K FILE | sha256sum`.
+  - **Where:** one r8g.16xlarge in us-west-2b, TTL 120 min, cost_limit $7.55.
+  - **What it runs:** the c10 cohort's 20 files on /dev/shm, against GNU gzip's sha256, for
+    95 min in 8 lanes. Versions alternate between 0.14.5 (lever.sh's pinned install) and 0.16.0
+    (pinned by wheel sha256). Every fourth job runs at -P 16, the rest at -P 8.
+  - **Core capture:** `kernel.core_pattern` points at tmpfs (restored at the end), after a
+    positive control that must leave a core gdb can read.
+  - **On every failure:** gdb's bt, all threads, registers, `x/16i $pc` and siginfo are
+    streamed, and the first 6 cores (zstd) and each version's `.so` bundle are pushed.
+  - **Rehearsal:** `make rehearse` runs the body unmodified on an AL2023 aarch64 container
+    (`scripts/lib/rgcrash_rehearse.sh`), with 3 induced SIGSEGVs and every check on observed
+    output.
 - **Pinned spawn and truffle: `make tools`** (docs/run.md, "Pinned tools"). spawn 0.123.0 and
   truffle 0.57.1 come from their release artefacts, sha256-checked per OS and architecture
   (`scripts/conductor.tools.tsv`), into `bin/`. run.sh, run-multi.sh and mkspec-conductor use only

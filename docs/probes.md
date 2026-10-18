@@ -11,6 +11,7 @@ validation run.
 | (b) contention | `runs/g3-probe-cont-c8gn.4xlarge.json` (`scripts/g3/probe-cont.body.sh`) | 64 × c8gn.4xlarge, one cohort | concurrent ranged GETs of hash.k2d to /dev/null at N = 1, 16, 32, 64, 60 s each |
 | (d) #44 fix speed | `scripts/g3/hitbench.sh [PRE] [POST]` | local | our classifier before the fix (3201a75) and after, SRR062634 8M pairs against Standard-8, warm, alternating |
 | (f) classic `aws s3 cp` rate | `runs/g3-probe-awscp-r8gd.48xlarge.json` (`scripts/g3/probe-awscp.body.sh`) | 1 × r8gd.48xlarge | S0's staging of hash.k2d with the AMI's aws CLI as shipped onto one NVMe device, for 20 min or 300 GiB; sizes S0-T1 and S0-Tv's TTL ("The classic aws s3 cp rate" below) |
+| (g) rapidgzip crash | `runs/g3-probe-rgcrash-r8g.16xlarge.json` (`scripts/g3/probe-rgcrash.body.sh`) | 1 × r8g.16xlarge | the identity step's `rapidgzip -d -c -P K FILE \| sha256sum`, 0.14.5 and 0.16.0, on the c10 files for 95 min, with core capture and gdb ("The rapidgzip crash probe" below) |
 | (e) host tunes (#41) | `runs/g3-probe-tune-x8g.24xlarge.json` (`scripts/g3/probe-tune.body.sh`, `scripts/g3/hosttune.sh`) | 1 × x8g.24xlarge | load and classify time under each candidate host-tune set, upstream `-M` on tmpfs and ours' engine N = 1, with fragmentation counters; fixes S3's set ("Host tunes" below) |
 
 ## Running them
@@ -106,6 +107,125 @@ aws's `AK2T_COPY_BPS`. Each run must:
 **Not covered locally:** the real CLI's rate and its client resolution on r8gd.48xlarge (the
 stub resolves to `unknown`), and the NIC counter (the host has no /proc; `bytes_basis` is then
 `allocated`).
+
+## The rapidgzip crash probe (probe g)
+
+**Why:** in about 1,553 identity-step decompressions on the c10 ladder (`lad_identity` in
+`scripts/g3/ladder.body.sh`), rapidgzip 0.14.5 exited 139 (SIGSEGV) twice:
+- O4b-if4 (r8g.16xlarge, nproc 64), `SRR5935745_1.fastq.gz`, `-P 8`;
+- S6 c10 rep 2 (nproc 96), `SRR5935748_2.fastq.gz`.
+
+Both runs stalled about 300 s before the exit. In util.tsv, one vCPU sat at 100% nice outside
+the job cgroup. That fits systemd-coredump (Nice=9, RuntimeMaxSec=5min) being killed, so the core
+was probably lost. The crashed outputs are not a prefix of the right stream, so this looks like
+memory corruption or a race, not a truncation. 2,700 runs on an Apple-silicon podman VM did not
+reproduce it. This probe tries to reproduce it on the crashing type, with a core and a backtrace.
+Scott approved it on 2026-10-18 ("Graviton4 repro probe").
+
+```bash
+make rehearse SPEC=runs/g3-probe-rgcrash-r8g.16xlarge.json
+make run GATE=g3 SPEC=runs/g3-probe-rgcrash-r8g.16xlarge.json      # Scott's call
+make orphans
+```
+
+**What it does:**
+1. **Setup.** dnf installs gdb and zstd. `dnf debuginfo-install` fetches python3, glibc and
+   libstdc++ debuginfo; this is best effort and recorded. The wheels' `.so` carry only the symbols
+   they ship with.
+2. **Two rapidgzip versions.** 0.14.5 comes from lever.sh's `lv__rg_ensure` (pip
+   `--require-hashes`). 0.16.0, the latest, is installed the same way in its own venv, pinned to
+   the sha256 of its cp39 manylinux aarch64 wheel (`RG16_HASH` in the body, from PyPI's JSON API).
+   Each version's `tool` line records the wheel, the wheel sha256, the `.so` and its sha256.
+   Each version's `.so`, its python and libpython go to `out/bundle-<version>.tar.zst`, so a core
+   can be opened offline.
+3. **Core capture.** `ulimit -c unlimited` is set, and `kernel.core_pattern` is set to
+   `/dev/shm/cores/core.%p.%e.%t`; the previous value is recorded and restored at the end. A
+   positive control follows: the same python SIGSEGVs itself, and the run continues only if a
+   core appears and gdb reads frames from it (the `core-control` line). Without that control,
+   "no core" would not be evidence of anything.
+4. **Inputs.** The c10 cohort's 20 gz files (`runs.tsv` ranks 1 to 10, 10.6 GB) go to
+   `/dev/shm`, each checked against its sha256 metadata. GNU `gzip -dc | sha256sum` runs once per
+   file, 8 at a time, to give the reference.
+5. **The loop.** It starts once page-cache state is logged (`meminfo` lines; this is not a
+   timing probe, so there is no drop_caches) and runs until 95 min after the body starts, which
+   is at least 25 min before the 120 min TTL. It runs 8 lanes, mirroring the identity step's
+   command: `rapidgzip -d -c -P K FILE | sha256sum`.
+   - Versions alternate job by job within a lane, so about half the jobs run each version at any
+     time.
+   - Every fourth job of a lane runs at `-P 16`; the rest run at `-P 8`.
+   - Files go round-robin.
+   - Each job has a 300 s timeout that sends SIGABRT, so a hang also leaves a core.
+6. **On any failure** (a non-zero exit or a wrong sha256):
+   - its stderr and the matching dmesg lines are recorded;
+   - gdb runs on its core (`info sharedlibrary`, `p $_siginfo`, `bt`, `thread apply all bt`,
+     `info registers`, `x/16i $pc`);
+   - the first 6 cores are zstd-compressed and pushed;
+   - the loop carries on.
+7. **Tally.** The tally and the jsonl are pushed every 100 jobs and after every failure.
+
+**Lines** (streamed as `probe-rgcrash {json}` and in `out/rgcrash.jsonl`):
+
+| kind | what it records |
+|---|---|
+| `tool` | one per version: wheel, sha256s, `.so`, python |
+| `host` | gdb, debuginfo result, kernel, CPU, nproc, glibc |
+| `core-control` | the previous and new core_pattern, ulimits, the control's core and gdb frame count, `ok` |
+| `reference` | 20 lines: the GNU gzip sha256, exit and seconds per file |
+| `meminfo` | after-fetch, loop-start, every 5 min, end |
+| `job` | one per job: `n`, `lane`, `version`, `file`, `P`, `exit`, `signal`, `timeout`, `sha256`, `match` (against the reference), `seconds`, `pid` |
+| `failure` | one per failed job: `core`, `core_bytes`, `core_pushed` (its out/ key, or null after the first 6), `gdb_frames`, `fault` (si_addr), `stderr`, `dmesg` |
+| `summary` | one per version: `jobs`, `P8`, `P16`, `crashes` (any signal), `sigsegv`, `timeouts`, `nonzero_exit`, `wrong_sha`, `wrong_sha_exit0`, `crash_rate`, `seconds` |
+| `restore` | core_pattern back to its previous value (`restored`) |
+
+gdb's output also streams as `rgcrash-gdb <n> | ...` lines in the run log, and is pushed as
+`out/gdb/<n>.txt`. Cores are pushed as `out/cores/core.<pid>.<comm>.<t>-job<n>-<version>.zst`.
+
+**Files** (in the run's `out/`):
+- `rgcrash.jsonl`;
+- `rgcrash-tally.tsv`: version × P, with jobs, nonzero_exit, crashes, timeouts and wrong_sha;
+- `gdb/`, `cores/`;
+- `bundle-0.14.5.tar.zst`, `bundle-0.16.0.tar.zst`.
+
+**How to read it:**
+- **Reproduced:** a `summary` line with `crashes` > 0. The `failure` lines and `gdb/<n>.txt` hold
+  the backtrace. The faulting thread is the one gdb shows first, in `bt`.
+- **Opening a core offline:** on AL2023 aarch64, unpack the version's bundle and run
+  `gdb <python> <core>` with `set solib-search-path` pointing at the unpacked `.so`.
+- **A `wrong_sha_exit0` above 0** means wrong output with a clean exit. That is worse than a
+  crash, because the identity step catches it only through the sha256.
+- **No crash is not evidence of no defect.** At the c10 rate (2 in about 1,553, about 1.3e-3 per
+  decompression), N jobs of one version see no crash with probability exp(−1.3e-3 × N): about
+  0.05 at N = 2,300. Check each version's `jobs` against that before calling a version clean.
+  The ladder's identity lanes also ran GNU gzip beside rapidgzip, and that load is not reproduced
+  here.
+
+**Cost:** TTL 120 min, `cost_limit` = TTL × the on-demand price ($3.77024/h: $7.55, from
+`scripts/g3/mkspec-u.sh probe-rgcrash r8g.16xlarge 120 scripts/g3/probe-rgcrash.body.sh us-west-2b`).
+
+**Rehearsal** (`scripts/lib/rgcrash_rehearse.sh`, through `probe_rehearse.sh`): the body runs
+unmodified in an AL2023 aarch64 container on the rootful podman VM. The container is privileged,
+because core_pattern is the VM kernel's. It runs as ec2-user under `bash -e -c`, after the probe
+helpers' stand-ins.
+- **Real:** dnf, gdb, the debuginfo install, both pip `--require-hashes` installs from PyPI, sysctl
+  and the cores.
+- **Stand-ins:** the stub aws over a directory is S3. The c10 names hold the small real read sets
+  from `.cache/reads`.
+- **The induced crashes:** with a 150 s loop (`AK2_REHEARSE_LOOP_S`), the host sends SIGSEGV to
+  3 running rapidgzip processes (0.14.5, 0.16.0, 0.14.5), with `AK2_REHEARSE_MAXCORES=2`.
+
+It passes on observed output:
+- the tool lines carry the pinned wheel sha256s;
+- the core control is ok;
+- the job lines streamed equal the pushed ones;
+- exactly the killed jobs fail with exit 139, and each has a core, gdb frames, and gdb output
+  streamed and pushed;
+- 2 valid zstd cores are pushed;
+- every other job matches the reference;
+- the tally and the summaries add up;
+- the VM's core_pattern after the run equals its value before.
+
+A kill that lands after the last write leaves a correct sha256, so the check uses the exit status
+only.
 
 ## How the frontier uses them
 

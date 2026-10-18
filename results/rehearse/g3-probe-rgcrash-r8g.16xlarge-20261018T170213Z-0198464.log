@@ -1,0 +1,100 @@
+rgcrash-rehearse: record results/rehearse/g3-probe-rgcrash-r8g.16xlarge-20261018T170213Z-0198464.log; runs/g3-probe-rgcrash-r8g.16xlarge.json at 0198464; shell flags huB
+rgcrash-rehearse: building localhost/ak2-rgcrash-rehearse:72747618ca25
+rgcrash-rehearse: stand-in cohort: 20 files from 10 read sets, 242M
+rgcrash-rehearse: the VM's kernel.core_pattern before: |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+rgcrash-rehearse: loop started; inducing 3 crashes
+rgcrash-rehearse: crash 1: SIGSEGV to pid 7500 (rg-venv)
+rgcrash-rehearse: crash 2: SIGSEGV to pid 13369 (rg16-venv)
+rgcrash-rehearse: crash 3: SIGSEGV to pid 19004 (rg-venv)
+rgcrash-rehearse: body exit 0; the VM's kernel.core_pattern after: |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+rgcrash-rehearse: ok: body exit 0
+rgcrash-rehearse: ok: the body's shell flags (hBc) lack e
+rgcrash-rehearse: ok: tool lines: 0.14.5 wheel 499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee, 0.16.0 wheel 2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d
+rgcrash-rehearse: ok: core control ok
+rgcrash-rehearse: ok: 20 reference lines, exit 0
+rgcrash-rehearse: ok: job lines streamed = pushed (3072)
+rgcrash-rehearse: ok: jobs at 0.14.5 -P 8
+rgcrash-rehearse: ok: jobs at 0.14.5 -P 16
+rgcrash-rehearse: ok: jobs at 0.16.0 -P 8
+rgcrash-rehearse: ok: jobs at 0.16.0 -P 16
+rgcrash-rehearse: FAILED: exactly the 3 killed jobs failed, each exit 139 signal 11 wrong sha256
+rgcrash-rehearse: ok: every other job exit 0 with the reference sha256
+rgcrash-rehearse: ok: job 308: failure line with a core and gdb frames
+rgcrash-rehearse: ok: job 308: gdb output streamed through x/16i, and pushed
+rgcrash-rehearse: ok: job 606: failure line with a core and gdb frames
+rgcrash-rehearse: ok: job 606: gdb output streamed through x/16i, and pushed
+rgcrash-rehearse: ok: job 875: failure line with a core and gdb frames
+rgcrash-rehearse: ok: job 875: gdb output streamed through x/16i, and pushed
+rgcrash-rehearse: ok: 2 cores pushed (of 3), valid zstd
+rgcrash-rehearse: ok: 2 analysis bundles
+rgcrash-rehearse: ok: tally jobs = job lines
+rgcrash-rehearse: ok: 2 summary lines, crashes sum to 3
+rgcrash-rehearse: ok: restore line restored
+rgcrash-rehearse: ok: the VM's core_pattern restored (|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h)
+probe-rgcrash {"kind":"tool","version":"0.14.5","reports":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5","path":"/home/ec2-user/ak2/lever/rg-venv/bin/rapidgzip","wheel":"rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl","wheel_sha256":"499dfb8e24bf86607e87e8ec4f1c1797ea258078ddd550ce010b2fb1c17eafee","extension"
+probe-rgcrash {"kind":"tool","version":"0.16.0","reports":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.16.0","path":"/home/ec2-user/ak2/rg16-venv/bin/rapidgzip","wheel":"rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl","wheel_sha256":"2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d","extension":"/
+probe-rgcrash {"kind":"host","gdb":"GNU gdb (Amazon Linux) 16.3-1.amzn2023.0.2","debuginfo_install":"ok","debuginfo_tail":"  python3.9-debuginfo-3.9.25-1.amzn2023.0.9.aarch64                                python3.9-debugsource-3.9.25-1.amzn2023.0.9.aarch64                             ","kernel":"6.12.13-200.fc41.aarch64","cpu":"","nproc":8,"glibc":"ldd (GNU libc) 2.34","instance_type":"r8g.16xlar
+probe-rgcrash {"kind":"core-control","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern":"/dev/shm/cores/core.%p.%e.%t","ulimit_c":"unlimited","ulimit_hc":"unlimited","systemd_coredump_socket":"","core_pipe_limit":"16","control_exit":139,"control_core":"/dev/shm/cores/core.245.python3.9.1792342982","control_core_bytes":2969600,"gdb_frames":25,"ok":true}
+probe-rgcrash {"kind":"summary","version":"0.14.5","jobs":1536,"P8":1145,"P16":391,"crashes":2,"sigsegv":2,"timeouts":0,"nonzero_exit":2,"wrong_sha":1,"wrong_sha_exit0":0,"crash_rate":0.0013020833333333333,"seconds":441.15999579429626}
+probe-rgcrash {"kind":"summary","version":"0.16.0","jobs":1536,"P8":1162,"P16":374,"crashes":1,"sigsegv":1,"timeouts":0,"nonzero_exit":1,"wrong_sha":0,"wrong_sha_exit0":0,"crash_rate":0.0006510416666666666,"seconds":417.714004278183}
+probe-rgcrash {"kind":"restore","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern_now":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","restored":true}
+rgcrash-gdb 308 | #0  0x0000ffff8d640794 in __futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=7521, futex_word=0xffff88db41f0) at futex-internal.c:57
+rgcrash-gdb 308 | $1 = {si_signo = 11, si_errno = 0, si_code = 0, _sifields = {_pad = {7606, 1000, 0 <repeats 26 times>}, _kill = {si_pid = 7606, si_uid = 1000}, _timer = {si_tid = 7606, si_overrun = 1000, si_sigval = {s
+rgcrash-gdb 308 | #0  0x0000ffff8d640794 in __futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=7521, futex_word=0xffff88db41f0) at futex-internal.c:57
+rgcrash-gdb 308 | #1  __futex_abstimed_wait_common (cancel=true, private=128, abstime=0x0, clockid=0, expected=7521, futex_word=0xffff88db41f0) at futex-internal.c:87
+rgcrash-gdb 308 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xffff88db41f0, expected=7521, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=128) at futex-internal.c
+rgcrash-gdb 308 | #3  0x0000ffff8d645524 [PAC] in __pthread_clockjoin_ex (threadid=281472977813792, thread_return=0x0, clockid=0, abstime=0x0, block=<optimized out>) at pthread_join_common.c:108
+rgcrash-gdb 308 | #4  0x0000ffff8c8871c4 [PAC] in __gthread_join (__threadid=<optimized out>, __value_ptr=0x0) at /usr/src/debug/gcc14-14.2.1-7.amzn2023.0.2.aarch64/obj-aarch64-amazon-linux/aarch64-amazon-linux/libstdc++
+rgcrash-gdb 308 | #0  __futex_abstimed_wait_common64 (private=-64117084, cancel=true, abstime=0x0, op=393, expected=4, futex_word=0xaaaafc2da6a4) at futex-internal.c:57
+rgcrash-gdb 308 | #1  __futex_abstimed_wait_common (cancel=true, private=-64117084, abstime=0x0, clockid=0, expected=4, futex_word=0xaaaafc2da6a4) at futex-internal.c:87
+rgcrash-gdb 308 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xaaaafc2da6a4, expected=expected@entry=4, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at futex-
+rgcrash-gdb 308 | #3  0x0000ffff8d6430c8 [PAC] in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0xaaaafc2da648, cond=0xaaaafc2da678) at pthread_cond_wait.c:427
+rgcrash-gdb 308 | #4  ___pthread_cond_wait (cond=0xaaaafc2da678, mutex=0xaaaafc2da648) at pthread_cond_wait.c:459
+rgcrash-gdb 308 | #0  0x0000ffff8d640794 in __futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=7521, futex_word=0xffff88db41f0) at futex-internal.c:57
+rgcrash-gdb 308 | #1  __futex_abstimed_wait_common (cancel=true, private=128, abstime=0x0, clockid=0, expected=7521, futex_word=0xffff88db41f0) at futex-internal.c:87
+rgcrash-gdb 308 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xffff88db41f0, expected=7521, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=128) at futex-internal.c
+rgcrash-gdb 308 | #3  0x0000ffff8d645524 [PAC] in __pthread_clockjoin_ex (threadid=281472977813792, thread_return=0x0, clockid=0, abstime=0x0, block=<optimized out>) at pthread_join_common.c:108
+rgcrash-gdb 308 | #4  0x0000ffff8c8871c4 [PAC] in __gthread_join (__threadid=<optimized out>, __value_ptr=0x0) at /usr/src/debug/gcc14-14.2.1-7.amzn2023.0.2.aarch64/obj-aarch64-amazon-linux/aarch64-amazon-linux/libstdc++
+rgcrash-gdb 308 | pc             0xffff8d640794      0xffff8d640794 <__GI___futex_abstimed_wait_cancelable64+204>
+rgcrash-gdb 606 | #0  __futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=13370, futex_word=0xffff819931f0) at futex-internal.c:57
+rgcrash-gdb 606 | $1 = {si_signo = 11, si_errno = 0, si_code = 0, _sifields = {_pad = {13520, 1000, 0 <repeats 26 times>}, _kill = {si_pid = 13520, si_uid = 1000}, _timer = {si_tid = 13520, si_overrun = 1000, si_sigval =
+rgcrash-gdb 606 | #0  __futex_abstimed_wait_common64 (private=128, cancel=true, abstime=0x0, op=265, expected=13370, futex_word=0xffff819931f0) at futex-internal.c:57
+rgcrash-gdb 606 | #1  __futex_abstimed_wait_common (cancel=true, private=128, abstime=0x0, clockid=0, expected=13370, futex_word=0xffff819931f0) at futex-internal.c:87
+rgcrash-gdb 606 | #2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0xffff819931f0, expected=13370, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=128) at futex-internal.
+rgcrash-gdb 606 | #3  0x0000ffff82427524 [PAC] in __pthread_clockjoin_ex (threadid=281472856043808, thread_return=0x0, clockid=0, abstime=0x0, block=<optimized out>) at pthread_join_common.c:108
+version  P   jobs  nonzero_exit  crashes  timeouts  wrong_sha
+0.14.5   16  391   0             0        0         0
+0.14.5   8   1145  2             2        0         1
+0.16.0   16  374   1             1        0         0
+0.16.0   8   1162  0             0        0         0
+rgcrash-rehearse: FAILED (REHEARSE_KEEP=1 keeps the scratch dir)
+  body | probe-rgcrash {"kind":"job","n":3209,"lane":1,"version":"0.14.5","file":"SRR5935744_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"42a3147922e9a57bcc9aef4a1e0ad403065004379507944eabc7fd67167aa54a","match":true,"seconds":0.36100006103515625,"t0":1792343106.096,"pid":71166}
+  body | probe-rgcrash {"kind":"job","n":3234,"lane":2,"version":"0.14.5","file":"SRR5935747_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","match":true,"seconds":0.2990000247955322,"t0":1792343106.192,"pid":71195}
+  body | probe-rgcrash {"kind":"job","n":2835,"lane":3,"version":"0.16.0","file":"SRR5935747_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1","match":true,"seconds":0.21600008010864258,"t0":1792343106.320,"pid":71250}
+  body | probe-rgcrash {"kind":"job","n":3176,"lane":0,"version":"0.16.0","file":"SRR5935748_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"ad584456e75ca74f07b02dbf23a48df85d547be65b4f4d02714c42f2cb69d946","match":true,"seconds":0.3919999599456787,"t0":1792343106.226,"pid":71229}
+  body | probe-rgcrash {"kind":"job","n":2812,"lane":4,"version":"0.16.0","file":"SRR5935746_1.fastq.gz","P":16,"exit":0,"signal":null,"timeout":false,"sha256":"b0f23f494d2d7689d3b86806dc9d97f43a605235d27152f33d940a31e0adab79","match":true,"seconds":0.2630000114440918,"t0":1792343106.358,"pid":71275}
+  body | probe-rgcrash {"kind":"job","n":3231,"lane":7,"version":"0.14.5","file":"SRR5935745_2.fastq.gz","P":16,"exit":0,"signal":null,"timeout":false,"sha256":"71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7","match":true,"seconds":0.27899980545043945,"t0":1792343106.364,"pid":71284}
+  body | probe-rgcrash {"kind":"job","n":2734,"lane":6,"version":"0.16.0","file":"SRR5935747_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","match":true,"seconds":0.3359999656677246,"t0":1792343106.394,"pid":71329}
+  body | probe-rgcrash {"kind":"job","n":2843,"lane":3,"version":"0.14.5","file":"SRR5935741_2.fastq.gz","P":16,"exit":0,"signal":null,"timeout":false,"sha256":"4ee0cfc006d43ca7ce8adfab6c829c5aa38f1cedca2a4bac777436c1fb75ca60","match":true,"seconds":0.1959998607635498,"t0":1792343106.549,"pid":71421}
+  body | probe-rgcrash {"kind":"job","n":3197,"lane":5,"version":"0.14.5","file":"SRR5935748_2.fastq.gz","P":16,"exit":0,"signal":null,"timeout":false,"sha256":"d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a","match":true,"seconds":0.3450000286102295,"t0":1792343106.460,"pid":71355}
+  body | probe-rgcrash {"kind":"job","n":3242,"lane":2,"version":"0.16.0","file":"SRR5935741_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"b0f23f494d2d7689d3b86806dc9d97f43a605235d27152f33d940a31e0adab79","match":true,"seconds":0.33499979972839355,"t0":1792343106.505,"pid":71400}
+  body | probe-rgcrash {"kind":"job","n":2820,"lane":4,"version":"0.14.5","file":"SRR5935740_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","match":true,"seconds":0.2070000171661377,"t0":1792343106.631,"pid":71463}
+  body | probe-rgcrash {"kind":"job","n":3217,"lane":1,"version":"0.16.0","file":"SRR5935748_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a","match":true,"seconds":0.375,"t0":1792343106.467,"pid":71363}
+  body | probe-rgcrash {"kind":"job","n":3239,"lane":7,"version":"0.16.0","file":"SRR5935749_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"42a3147922e9a57bcc9aef4a1e0ad403065004379507944eabc7fd67167aa54a","match":true,"seconds":0.1830000877380371,"t0":1792343106.656,"pid":71492}
+  body | probe-rgcrash {"kind":"job","n":3184,"lane":0,"version":"0.14.5","file":"SRR5935742_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"7a4a504d49771af64cefe8842bfffdedea13e07129111d4fcf4e52b4fe77c6b5","match":true,"seconds":0.2389998435974121,"t0":1792343106.630,"pid":71456}
+  body | probe-rgcrash {"kind":"job","n":2851,"lane":3,"version":"0.16.0","file":"SRR5935745_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"71e9a1e49147d0e26462615215f01748751d15e07101435fb99832e1ce217af7","match":true,"seconds":0.28299999237060547,"t0":1792343106.763,"pid":71534}
+  body | probe-rgcrash {"kind":"job","n":2742,"lane":6,"version":"0.14.5","file":"SRR5935741_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"b0f23f494d2d7689d3b86806dc9d97f43a605235d27152f33d940a31e0adab79","match":true,"seconds":0.3229999542236328,"t0":1792343106.737,"pid":71513}
+  body | probe-rgcrash {"kind":"job","n":2828,"lane":4,"version":"0.16.0","file":"SRR5935744_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"e9b9c0b59bccd654427e709ffd219121410f7b1f52be7368ba49e8d8724787f7","match":true,"seconds":0.20099997520446777,"t0":1792343106.861,"pid":71603}
+  body | probe-rgcrash {"kind":"job","n":3205,"lane":5,"version":"0.16.0","file":"SRR5935742_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1","match":true,"seconds":0.24499988555908203,"t0":1792343106.819,"pid":71553}
+  body | probe-rgcrash {"kind":"job","n":3192,"lane":0,"version":"0.16.0","file":"SRR5935746_1.fastq.gz","P":16,"exit":0,"signal":null,"timeout":false,"sha256":"b0f23f494d2d7689d3b86806dc9d97f43a605235d27152f33d940a31e0adab79","match":true,"seconds":0.2090001106262207,"t0":1792343106.902,"pid":71668}
+  body | probe-rgcrash {"kind":"job","n":3225,"lane":1,"version":"0.14.5","file":"SRR5935742_2.fastq.gz","P":16,"exit":0,"signal":null,"timeout":false,"sha256":"e2665fb52aa4600891a93e86bd9cf7ff3f779b766017e261c106429b2ae854a1","match":true,"seconds":0.26400017738342285,"t0":1792343106.860,"pid":71602}
+  body | probe-rgcrash {"kind":"job","n":3250,"lane":2,"version":"0.14.5","file":"SRR5935745_1.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","match":true,"seconds":0.2590000629425049,"t0":1792343106.865,"pid":71611}
+  body | probe-rgcrash {"kind":"job","n":3247,"lane":7,"version":"0.14.5","file":"SRR5935743_2.fastq.gz","P":8,"exit":0,"signal":null,"timeout":false,"sha256":"d44fd1b8d7abbbe6f2d22490646e5daa20ee16ef36802ee619040cb080716b9a","match":true,"seconds":0.2760000228881836,"t0":1792343106.866,"pid":71617}
+  body | ak2-phase 2026-10-18T17:05:09Z summary
+  body | probe-rgcrash {"kind":"meminfo","at":"end","MemTotal_kb":49221620,"MemFree_kb":41058604,"MemAvailable_kb":44980792,"Cached_kb":5551572,"Dirty_kb":4548,"Writeback_kb":0,"Shmem_kb":1316740}
+  body | probe-rgcrash {"kind":"summary","version":"0.14.5","jobs":1536,"P8":1145,"P16":391,"crashes":2,"sigsegv":2,"timeouts":0,"nonzero_exit":2,"wrong_sha":1,"wrong_sha_exit0":0,"crash_rate":0.0013020833333333333,"seconds":441.15999579429626}
+  body | probe-rgcrash {"kind":"summary","version":"0.16.0","jobs":1536,"P8":1162,"P16":374,"crashes":1,"sigsegv":1,"timeouts":0,"nonzero_exit":1,"wrong_sha":0,"wrong_sha_exit0":0,"crash_rate":0.0006510416666666666,"seconds":417.714004278183}
+  body | probe-rgcrash {"kind":"restore","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern_now":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","restored":true}
+  body | ak2-phase 2026-10-18T17:05:09Z push
+  body | ak2: [2026-10-18T17:05:09Z] pushed out/rgcrash.jsonl
+  body | ak2: [2026-10-18T17:05:09Z] rgcrash probe done: 3072 jobs, 3 failures, 2 cores pushed
