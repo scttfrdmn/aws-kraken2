@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **G2 input-path sweep (#90): pre-flight checks and inputs** (docs/inputpath.md, "Pre-flight
+  and inputs"). `make inputpath-preflight` (`scripts/inputpath/preflight.sh`; also in CI) and
+  `make inputpath-prep` (`scripts/inputpath/prep.sh`), with tool pins in `scripts/inputpath/lib.sh`:
+  bgzip from htslib 1.24, and lever.sh's rapidgzip 0.14.5.
+  - **Inputs:**
+    - pe: SRR062634's first 8M pairs, already staged in the project bucket (#6 host-dominated
+      class, G2's input).
+    - se: SRR4074269 (Scott, 2026-10-18; PRJNA340216, human gut, HiSeq 1500, SE 151 bp,
+      14.6M reads), because no #6 sample is single-end.
+    - `make inputpath-stage-se` (`scripts/inputpath/stage-se.sh`) staged it from ENA, md5 equal
+      to ENA's, into `aws-kraken2/data/reads/SRR4074269.fastq{.gz,}`. The record is in
+      `results/inputpath/se/SRR4074269/`.
+  - **Uploaded** (sha256 metadata, tagged `project=aws-kraken2`, `kind=data`), recorded in
+    `scripts/inputpath/inputs.tsv`:
+    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.bgz` and `SRR4074269.fastq.bgz` (BGZF);
+    - `…_{1,2}.fq.gz.rgidx` and `SRR4074269.fastq.gz.rgidx` (rapidgzip indexes, -P 16).
+  - **ISA-L arm:** it will use the shared `scripts/g3/rg-build.sh` (0.14.5 from source with ISA-L
+    and rpmalloc off; separate PR).
+  - **Findings:**
+    - the wrapper reads `/dev/fd` paths for both mates, with outputs identical to I0;
+    - `--gzip-compressed` on `/dev/fd` paths fails silently (exit 0, no output);
+    - rapidgzip equals `gzip -dc` at -P 1–16 on every input;
+    - I1–I4 equal I0, and I0 equals the G1 oracle;
+    - the pinned manylinux aarch64 rapidgzip wheels have no ISA-L. The x86_64 wheel has it.
+
 - **The input-path sweep's report: `make inputpath-report`** (#90; docs/inputpath.md, "Records
   and report"). `scripts/lib/inputpath_report.py` (stdlib only) reads only the run dir:
   `manifest.json`, `out/points.jsonl` and the points' pidstat CSVs. It fixes the point record
