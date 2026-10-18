@@ -133,6 +133,7 @@ targets; ad hoc commands only during exploration.
 | `make cost-backfill DIRS=… [WRITE=1]` (a member's null cost_usd from its own cost_limit_check price) | [docs/run.md](docs/run.md) ("Cost") |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
 | `make report GATE=… RUN=…` | [docs/report.md](docs/report.md) |
+| `make inputpath-report RUN=results/inputpath/<run-id> [OUT=…]` / `make inputpath-report-test` (the I0–I4 sweep's tables, CPU attribution, Law 1 DEFECT lines and readings, from `out/points.jsonl` and the manifest only; exit 1 on a DEFECT) | [docs/inputpath.md](docs/inputpath.md) ("Records and report") |
 | spore.host usage notes | [docs/spore-host.md](docs/spore-host.md) |
 
 Every run writes `results/<gate>/<run-id>/` with `manifest.json` (commit SHA, upstream pin, AMI

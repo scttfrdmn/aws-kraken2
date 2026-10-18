@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The input-path sweep's report: `make inputpath-report`** (#90; docs/inputpath.md, "Records
+  and report"). `scripts/lib/inputpath_report.py` (stdlib only) reads only the run dir:
+  `manifest.json`, `out/points.jsonl` and the points' pidstat CSVs. It fixes the point record
+  schema (`inputpath-point/1`) and the pidstat CSV schema for the harness.
+  - **Tables:** per family, engine and input, wall, FASTQ MB/s and $/run (launch price × wall)
+    for each arm × p × threads × chunk × thp setting, with the source lines on each row.
+  - **CPU attribution:** per arm at its best setting, with ASCII bars.
+  - **Law 1:** every point's output and report sha256 against I0's. A mismatch, a used point
+    whose rapidgzip identity failed, or an incomplete record is a DEFECT line and exits 1.
+  - **Readings:** the four, by documented thresholds (5%, the noise of repeated points, reader
+    ≥ 90% with workers < 50%), or "undecided" with the reason.
+  - **Test:** `make inputpath-report-test`, in `make test`, on a synthetic run dir under
+    `scripts/tests/fixtures/inputpath/`.
 - **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
   probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in
   about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`
