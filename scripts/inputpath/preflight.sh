@@ -287,7 +287,7 @@ if [ "$PART" = inputs ]; then
   locate() {  # locate KEY SHA -> a local path holding the object
     local k=$1 s=$2 b c
     b=$(basename "$k")
-    for c in ${INPUTPATH_DIR:+"$INPUTPATH_DIR/$b"} "$K2_READS/$b" "$W/obj/$b"; do
+    for c in ${INPUTPATH_DIR:+"$INPUTPATH_DIR/$b"} ${INPUTPATH_SRC_DIR:+"$INPUTPATH_SRC_DIR/$b"} "$K2_READS/$b" "$W/obj/$b"; do
       [ -s "$c" ] && [ "$(ip_sha "$c")" = "$s" ] && { echo "$c"; return 0; }
     done
     if [ -z "$AWSOK" ]; then ip_bucket_check || return 1; AWSOK=1; fi

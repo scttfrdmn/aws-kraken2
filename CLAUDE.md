@@ -116,7 +116,7 @@ targets; ad hoc commands only during exploration.
 | `make lever-test` (the ladder lever library, `scripts/g3/lever.sh`) | [docs/ladder.md](docs/ladder.md) |
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
 | `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
-| `make inputpath-preflight [PART=local\|inputs] [DB=viral\|standard8]` (#90's no-spend checks: /dev/fd input, no `--gzip-compressed` in I2–I4, rapidgzip = `gzip -dc` at every -P, I1–I4 = I0 = G1, ISA-L) / `make inputpath-prep` (I4 BGZF re-encodes and I3 rapidgzip indexes, uploaded to `aws-kraken2/data/inputpath/` and tagged; writes `scripts/inputpath/inputs.tsv`) | [docs/inputpath.md](docs/inputpath.md) ("Pre-flight and inputs") |
+| `make inputpath-preflight [PART=local\|inputs] [DB=viral\|standard8]` (#90's no-spend checks: /dev/fd input, no `--gzip-compressed` in I2–I4, rapidgzip = `gzip -dc` at every -P, I1–I4 = I0 = G1, ISA-L) / `make inputpath-prep` (I4 BGZF re-encodes and I3 rapidgzip indexes, uploaded to `aws-kraken2/data/inputpath/` and tagged; writes `scripts/inputpath/inputs.tsv`) / `make inputpath-stage-se [RUN=SRR4074269]` (the single-end sample from ENA, md5-checked, into `aws-kraken2/data/reads/`) | [docs/inputpath.md](docs/inputpath.md) ("Pre-flight and inputs") |
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make rehearse SPEC=…` (local rehearsal of a spec under the nodes' environment; runs `make util-stream-test` first) | [docs/cohort.md](docs/cohort.md) |
 | `make rehearse-ladder` / `make rehearse SPEC=runs/g3-l-…` (the ladder body end to end on AL2023 nodes, before any rung launches) | [docs/ladder.md](docs/ladder.md) ("The rehearsal") |

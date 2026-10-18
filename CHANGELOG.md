@@ -16,12 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Inputs:**
     - pe: SRR062634's first 8M pairs, already staged in the project bucket (#6 host-dominated
       class, G2's input).
-    - se: mate 1 of the same sample, as a stand-in, because no #6 sample is single-end.
-      SRR4074269 (PRJNA340216, human gut, SE 151 bp, 1.58 GB) is proposed and not staged.
+    - se: SRR4074269 (Scott, 2026-10-18; PRJNA340216, human gut, HiSeq 1500, SE 151 bp,
+      14.6M reads), because no #6 sample is single-end.
+    - `make inputpath-stage-se` (`scripts/inputpath/stage-se.sh`) staged it from ENA, md5 equal
+      to ENA's, into `aws-kraken2/data/reads/SRR4074269.fastq{.gz,}`. The record is in
+      `results/inputpath/se/SRR4074269/`.
   - **Uploaded** (sha256 metadata, tagged `project=aws-kraken2`, `kind=data`), recorded in
     `scripts/inputpath/inputs.tsv`:
-    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.bgz` (BGZF);
-    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.gz.rgidx` (rapidgzip indexes, -P 16).
+    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.bgz` and `SRR4074269.fastq.bgz` (BGZF);
+    - `…_{1,2}.fq.gz.rgidx` and `SRR4074269.fastq.gz.rgidx` (rapidgzip indexes, -P 16).
+  - **ISA-L arm:** it will use the shared `scripts/g3/rg-build.sh` (0.14.5 from source with ISA-L
+    and rpmalloc off; separate PR).
   - **Findings:**
     - the wrapper reads `/dev/fd` paths for both mates, with outputs identical to I0;
     - `--gzip-compressed` on `/dev/fd` paths fails silently (exit 0, no output);

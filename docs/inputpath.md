@@ -20,17 +20,20 @@ helpers. Inputs: `scripts/inputpath/samples.tsv`, the chosen samples. Output:
 | role | sample | why |
 |---|---|---|
 | pe | SRR062634, the first 8,000,000 pairs (`aws-kraken2/data/reads/SRR062634_8000000_{1,2}.fq[.gz]`) | the #6 host-dominated human WGS class. Already staged in the project bucket (no new egress), and it is G2's #21/#22 input. 630 MB / 626 MB gz, 2.09 GB FASTQ per mate. |
-| se | SRR062634 mate 1, run single-end (a **stand-in**) | none of the four #6 samples is single-end. The G1 oracle's `se-*` cases do the same thing. |
+| se | **SRR4074269** (Scott, 2026-10-18), the whole run (`aws-kraken2/data/reads/SRR4074269.fastq[.gz]`) | none of the four #6 samples is single-end. PRJNA340216 (De Filippis et al., omnivore/vegetarian/vegan human gut), Illumina HiSeq 1500, SINGLE, WGS, 14,649,848 reads of 151 bp. 1.58 GB gz, 4.93 GB FASTQ. |
 
-Proposed real single-end sample (**not staged**; staging it is Scott's call): **SRR4074269**.
-- Source: PRJNA340216, De Filippis et al., omnivore/vegetarian/vegan human gut.
-- Run: Illumina HiSeq 1500, SINGLE, WGS, 14,649,848 reads of 151 bp.
-- File: `ftp.sra.ebi.ac.uk/vol1/fastq/SRR407/009/SRR4074269/SRR4074269.fastq.gz`, 1,578,815,219 B,
-  md5 `da9981e47ee7137d3c6e4f2f1716a492` (ENA filereport, 2026-10-18). It is also in
-  `s3://sra-pub-run-odp/sra/SRR4074269/`.
-- Larger runs in the same study: SRR4074260, 37.5M reads, 3.73 GB.
+`make inputpath-stage-se [RUN=SRR4074269]` (`scripts/inputpath/stage-se.sh`) staged the
+single-end sample from ENA:
+- It records ENA's filereport in `results/inputpath/se/<RUN>/run.tsv` and `query.json`.
+- It downloads the `.fastq.gz` over HTTPS into a fresh `/tmp` directory, in 8 ranged streams.
+  Bytes and md5 must equal ENA's (`da9981e47ee7137d3c6e4f2f1716a492`, 1,578,815,219 B; 305 s on
+  the laptop).
+- It `gzip -dc`s the file to the plain FASTQ, which is I0's input.
+- It uploads both under `aws-kraken2/data/reads/` with `sha256` metadata (and `md5` on the
+  `.gz`), checks them with head-object, tags them, and appends to `staged.tsv`.
 
-To switch to it, stage it, then replace the `se` row of `samples.tsv` and re-run `make inputpath-prep`.
+`STAGE_KEEP=1` keeps the download, and `INPUTPATH_SRC_DIR=<it>` points `make inputpath-prep`
+and `PART=inputs` at it, so nothing is downloaded twice.
 
 ### `inputs.tsv`
 
@@ -45,7 +48,7 @@ The header is fixed: `role accession mate s3_key sha256 kind source_sha256`.
     `fastq`, its own sha256);
   - for `index`, it is the sha256 of the `.gz` it indexes.
 - The identity check compares every decode against it.
-- `se` rows reuse the `pe` mate 1 objects.
+- A single-end sample's rows have mate `1`.
 
 ### The rules the harness must keep
 
@@ -76,8 +79,13 @@ The header is fixed: `role accession mate s3_key sha256 kind source_sha256`.
     - no `isal_inflate_init` symbol and no `github.com/intel/isa-l` attribution in the extension;
     - `rapidgzip -v` reports 0 s "decoding with ISA-L";
     - the pinned cp39 x86_64 wheel does contain it, which is the detector's positive control.
-  - So on Graviton the sweep's rapidgzip decodes with its own inflate and zlib. The plan's
-    "build from source with ISA-L if absent" applies. That build is not part of this target.
+  - So on Graviton the pinned wheel decodes with its own inflate and zlib.
+  - **The ISA-L arm** (Scott, 2026-10-18) is rapidgzip 0.14.5 built from source with ISA-L and
+    with rpmalloc off. The Graviton crash (#89) is in 0.14.5's bundled rpmalloc on aarch64. The
+    arm will use the shared build script `scripts/g3/rg-build.sh`, which comes in a separate PR.
+    These targets do not build it.
+  - Every decode of that build goes through the same identity check, and its manifest records
+    the build.
 
 ### `make inputpath-preflight` (PART=local)
 
@@ -139,15 +147,16 @@ Options:
 The prep is reproducible. A second run on 2026-10-18 rebuilt byte-identical BGZF and index
 files, found them present and uploaded nothing (`results/inputpath/prep-20261018T191743Z-*`).
 
-The chosen inputs are small (1.26 GB gz in all), and the laptop already holds them. So the prep
-ran on the laptop and needed no download. On a node it runs as is: it needs a C compiler, make,
+The inputs are small: 2.84 GB gz in all. The laptop already held the pe sample, and the se
+sample came from ENA through `make inputpath-stage-se`. So the prep ran on the laptop with no S3
+download. On a node it runs as is: it needs a C compiler, make,
 zlib headers and python 3.9–3.13.
 
 ### `make inputpath-preflight PART=inputs [DB=viral|standard8]`
 
 This is the node's first step of the session, and it can also run on the laptop.
-1. Every `inputs.tsv` object is located (`INPUTPATH_DIR`, `.cache/reads`, else downloaded) and its
-   sha256 is checked.
+1. Every `inputs.tsv` object is located (`INPUTPATH_DIR`, `INPUTPATH_SRC_DIR`, `.cache/reads`,
+   else downloaded) and its sha256 is checked.
 2. Every `gz` and `bgzf` gets the identity check, and every `index` gets it with its `.gz`.
 3. With `DB`, I0–I4 run (at `PREFLIGHT_PS`, default 4) for the pe and se roles.
 
@@ -155,6 +164,16 @@ No G1 or G2 Standard-8 oracle exists for these inputs. G2's SRR062634_8000000 ru
 v205. So PART=inputs records I0's hashes as the reference (`g1_reference` in the manifest), and the
 node's I0 must equal them. For S1, the Standard-8 G1 record (`results/g1/oracle-standard8-*`) is
 checked the same way as in PART=local.
+
+The laptop's Standard-8 I0 references (upstream at the pin, `--threads 8`), from
+`results/inputpath/preflight-inputs-20261018T224922Z-89e0340/`:
+
+| role | `--output` sha256 | `--report` sha256 |
+|---|---|---|
+| pe SRR062634_8000000 | `3c4d7d2157f4a4ea79dc51378fb0c7434769801ae95e5d0d5f6e65aa87a659bb` | `13ae4bd4ecb24c27309b6199be2afaeec0375a1e1bb62b36e217ae7cefb33bed` |
+| se SRR4074269 | `6020d09e5a1548ea82f5d4bf84f44bfcf2f40a7c93dd8f42652a8d20c693d9cb` | `49c275ff3b9a5486ae42adcb2f8199c462dd0a4533957b4de99855af02124995` |
+
+In that run, I1–I4 (at -P 4) equalled I0 for both roles.
 
 ### Pins
 

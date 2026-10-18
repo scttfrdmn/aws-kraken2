@@ -87,13 +87,16 @@ while IFS=$'\t' read -r role acc mate gzk fqk note; do
   [ "$role" = role ] && continue
   [ -n "${SEEN[$gzk]:-}" ] && continue
   SEEN[$gzk]=1
-  b=$(basename "$gzk"); stem=${b%.fq.gz}
+  b=$(basename "$gzk"); stem=${b%.gz}
   hgz=$(head_meta "$gzk") || { ck object "$gzk exists" yes no; continue; }
   hfq=$(head_meta "$fqk") || { ck object "$fqk exists" yes no; continue; }
   gzsha=$(jq -r '.Metadata.sha256 // empty' <<< "$hgz"); fqsha=$(jq -r '.Metadata.sha256 // empty' <<< "$hfq")
   [ -n "$gzsha" ] && [ -n "$fqsha" ] || { ck object "$gzk / $fqk carry sha256 metadata" yes no; continue; }
-  gz=$K2_READS/$b
-  if [ -s "$gz" ] && [ "$(ip_sha "$gz")" = "$gzsha" ]; then
+  gz=""
+  for c in ${INPUTPATH_SRC_DIR:+"$INPUTPATH_SRC_DIR/$b"} "$K2_READS/$b"; do
+    [ -s "$c" ] && [ "$(ip_sha "$c")" = "$gzsha" ] && { gz=$c; break; }
+  done
+  if [ -n "$gz" ]; then
     echo "inputpath-prep: $b from $gz (sha256 equal to the object's metadata; no download)"
   else
     gz=$W/$b
@@ -103,28 +106,28 @@ while IFS=$'\t' read -r role acc mate gzk fqk note; do
   fi
   got=$(gzip -dc "$gz" | ip_sha_in); ck identity "$b gzip -dc = $fqk's sha256" "$fqsha" "$got"
   # I4: BGZF.
-  bg=$W/$stem.fq.bgz
+  bg=$W/$stem.bgz
   ip_say "bgzip $b"
-  run "gzip -dc $b | bgzip -l $IP_BGZIP_LEVEL -@ $TH -c > $stem.fq.bgz"
+  run "gzip -dc $b | bgzip -l $IP_BGZIP_LEVEL -@ $TH -c > $stem.bgz"
   gzip -dc "$gz" | "$IP_BGZIP" -l "$IP_BGZIP_LEVEL" -@ "$TH" -c > "$bg"; rcs=("${PIPESTATUS[@]}")
-  ck build "$stem.fq.bgz (gzip -dc | bgzip exit statuses)" "0 0" "${rcs[*]}"
-  ck bgzf "$stem.fq.bgz is BGZF (BC extra field, BGZF EOF block)" yes "$(python3 -I - "$bg" <<'PY'
+  ck build "$stem.bgz (gzip -dc | bgzip exit statuses)" "0 0" "${rcs[*]}"
+  ck bgzf "$stem.bgz is BGZF (BC extra field, BGZF EOF block)" yes "$(python3 -I - "$bg" <<'PY'
 import sys
 f = open(sys.argv[1], "rb"); h = f.read(18); f.seek(-28, 2); t = f.read(28)
 eof = bytes.fromhex("1f8b08040000000000ff0600424302001b0003000000000000000000")
 print("yes" if h[:2] == b"\x1f\x8b" and h[3] & 4 and h[12:14] == b"BC" and t == eof else "no")
 PY
 )"
-  ck identity "$stem.fq.bgz gzip -dc" "$fqsha" "$(gzip -dc "$bg" | ip_sha_in)"
-  ck identity "$stem.fq.bgz bgzip -dc" "$fqsha" "$("$IP_BGZIP" -dc "$bg" | ip_sha_in)"
+  ck identity "$stem.bgz gzip -dc" "$fqsha" "$(gzip -dc "$bg" | ip_sha_in)"
+  ck identity "$stem.bgz bgzip -dc" "$fqsha" "$("$IP_BGZIP" -dc "$bg" | ip_sha_in)"
   for p in "${IP_RG_PS[@]}"; do
     got=$("$IP_RG" -d -c -P "$p" "$bg" | ip_sha_in); rc=${PIPESTATUS[0]}
-    ck identity "$stem.fq.bgz rapidgzip -P $p (exit $rc)" "$fqsha" "$got"; [ "$rc" = 0 ] || ck identity "$stem.fq.bgz rapidgzip -P $p exit" 0 "$rc"
+    ck identity "$stem.bgz rapidgzip -P $p (exit $rc)" "$fqsha" "$got"; [ "$rc" = 0 ] || ck identity "$stem.bgz rapidgzip -P $p exit" 0 "$rc"
   done
   # I3: the rapidgzip index of the .gz.
-  ix=$W/$stem.fq.gz.rgidx
+  ix=$W/$stem.gz.rgidx
   ip_say "rapidgzip --export-index $b"
-  run "rapidgzip -d -c -P $IP_RG_EXPORT_P --chunk-size $IP_RG_CHUNK_KIB --index-format $IP_RG_INDEX_FORMAT --export-index $stem.fq.gz.rgidx $b | sha256"
+  run "rapidgzip -d -c -P $IP_RG_EXPORT_P --chunk-size $IP_RG_CHUNK_KIB --index-format $IP_RG_INDEX_FORMAT --export-index $stem.gz.rgidx $b | sha256"
   got=$("$IP_RG" -d -c -P "$IP_RG_EXPORT_P" --chunk-size "$IP_RG_CHUNK_KIB" --index-format "$IP_RG_INDEX_FORMAT" --export-index "$ix" "$gz" | ip_sha_in); rc=${PIPESTATUS[0]}
   ck identity "$b rapidgzip --export-index pass (exit $rc)" "$fqsha" "$got"
   for p in "${IP_RG_PS[@]}"; do

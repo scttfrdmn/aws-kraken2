@@ -35,7 +35,8 @@ IP_RG_CHUNK_KIB=4096
 IP_RG_INDEX_FORMAT=indexed_gzip
 IP_BUCKET=${AK2_RESULTS_BUCKET_us_west_2:-aws-kraken2-942542972736-us-west-2}
 IP_REGION=us-west-2
-IP_PREFIX=aws-kraken2/data/inputpath
+IP_ROOT_DATA=aws-kraken2/data
+IP_PREFIX=$IP_ROOT_DATA/inputpath
 
 ip_rg_version() { sed -n 's/^LV_RG_VERSION=\([0-9.]*\).*/\1/p' scripts/g3/lever.sh | head -1; }
 ip_rg_linux_hashes() { sed -n '/^LV_RG_HASHES=(/,/^)/p' scripts/g3/lever.sh | grep -oE '^ *[0-9a-f]{64}' | tr -d ' '; }
