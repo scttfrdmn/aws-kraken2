@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **G3 probe (h): two candidate fixes for the rapidgzip crash** (docs/probes.md, "The rapidgzip
+  fix probe"; Scott approved 2026-10-18). Probe (g) reproduced the crash (results/g3/20261018-184334-cc920a8:
+  9 SIGSEGV in 3,588 jobs, in 0.14.5's bundled rpmalloc on aarch64).
+  `runs/g3-probe-rgfix-r8g.16xlarge.json` (`scripts/g3/probe-rgfix.body.sh`) keeps probe (g)'s
+  conditions: lad_identity's 6 lanes, TTL 150 min, cost_limit $9.43.
+  - **Variants,** alternating per job:
+    - (a) 0.14.5 built from its sha256-pinned sdist with rpmalloc off. ISA-L stays off, because
+      0.14.5 cannot build it on aarch64 and the PyPI wheel has none, so rpmalloc is the one lever.
+    - (b) the pinned 0.16.0 wheel (rpmalloc and ISA-L on).
+  - **Summary:** per variant, P(no crash) = exp(−(9/3588)·jobs) and whether it resolves; about
+    1,750 jobs and P ≈ 0.012 are expected per variant.
+  - **If (a)'s build fails,** (b) still runs.
+  - **`scripts/g3/rg-build.sh`** is the one build recipe, also for #90. It pins the build deps by
+    hash, verifies the `.so` (0 rpmalloc functions, 0 ISA-L symbols, `--oss-attributions`) and
+    caches the wheel in S3 by recipe sha256.
+  - **Rehearsal:** `make rehearse` runs the body on AL2023 containers with a real source build:
+    the probe with 3 induced crashes, a failed build, and a cache hit.
 - **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
   probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in
   about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`
