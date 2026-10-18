@@ -78,7 +78,10 @@ Its numbers *and* its process failures apply here.
 
 ## Planning lives on GitHub, not here
 
-Project, milestones G0–G3 and issues on `github.com/scttfrdmn/aws-kraken2`. Allowed local files:
+Project, milestones G0–G3 and issues on `github.com/scttfrdmn/aws-kraken2`.
+G2 includes the input-path sweep (issue #90); the upstream arm does not wait for #35/#36. The sweep
+is the test for H-knee's single-stream gzip candidate (H-knee and H-width live in the project
+notebook, not here). Allowed local files:
 README, LICENSE, CHANGELOG, CLAUDE.md, code, tests, scripts, `docs/` (process runbooks only),
 `runs/` (checked-in TaskSpecs) and `results/`. **No plan, status or TODO files.**
 
