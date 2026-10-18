@@ -1477,6 +1477,11 @@ def law1(runs, levers, defects, notes):
                 if s5_crashed(s):
                     chk = (f"rapidgzip crashed (exit {','.join(str(c) for c in s5_crashed(s))}); fell back to gzip: "
                            "not compared by rg_sha256")
+                    # Outputs are still compared (above), but the sample was classified from GNU gzip, so
+                    # the run does not time the configuration it names: out of the attribution, no
+                    # DEFECT, so make ladder-campaign re-runs it (Scott, 2026-10-17; O4b-if4 at c10 was
+                    # +240 s net with one crashed sample).
+                    r["exclude"].append(f"rapidgzip crash on {acc}: timing not representative (outputs compared)")
                 elif arm == "O":
                     match = s_rg.get(rg)
                     if match:

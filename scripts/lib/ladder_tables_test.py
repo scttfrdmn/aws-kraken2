@@ -677,7 +677,9 @@ def variants():
     d = one(T["s5-nonpreserving.tsv"], run_id="20261010-000010-aaaaaaa")
     check("O-arm crash: labelled, not compared by rg_sha256; outputs compared normally", (d.get("s5_check"), d.get("law1_status")),
           ("rapidgzip crashed (exit 139); fell back to gzip: not compared by rg_sha256", "identical"))
-    check("O-arm crash run stays in the attribution", one(T["runs.tsv"], run_id="20261010-000010-aaaaaaa").get("in_attribution"), "yes")
+    check("O-arm crash run leaves the attribution (timing not representative), with no DEFECT",
+          (rc, one(T["runs.tsv"], run_id="20261010-000010-aaaaaaa").get("in_attribution")),
+          (0, "no: rapidgzip crash on SRR1: timing not representative (outputs compared)"))
     check("O-arm crash is a finding against the lever",
           any(f.startswith("O0: rapidgzip crashed on 1 of ") and "SRR1 in 20261010-000010-aaaaaaa (exit 139)" in f
               for f in T["manifest"]["findings"]), True)

@@ -1624,7 +1624,9 @@ value is worked by hand. It covers:
   - S entries that disagree on `rg_sha256`, flagged;
   - O-arm `differs` entries matched, or not, to an S entry by `rg_sha256`;
   - a rapidgzip crash (`rg_exit` != 0) with the gzip fallback, on either arm: labelled, not
-    compared by `rg_sha256`, kept, and a per-rung finding (`rapidgzip crashed on N of M samples`);
+    compared by `rg_sha256`, a per-rung finding (`rapidgzip crashed on N of M samples`), and out of
+    the attribution with no DEFECT ("timing not representative": the sample was classified from GNU
+    gzip; Scott, 2026-10-17), so `make ladder-campaign` re-runs it;
 - a rung marked `not-run`, whose successor's delta is taken against the nearest run ancestor;
 - a cold endpoint run on an undeclared rung, which gets a note;
 - a missing util row and a node-only util row, both reported as missing;
@@ -1886,6 +1888,7 @@ never generates it.
     `differs` with no matching S `rg_sha256`, unless rapidgzip crashed and the body fell back to
     gzip: Scott, 2026-10-17, after O4b-if4 at c10 stopped its campaign on a SIGSEGV whose outputs
     were byte-identical to the stock reference; the outputs are still compared byte for byte);
+  - a run with a rapidgzip crash (its timing is not the configuration's; no DEFECT);
   - non-cold ladder runs.
 
   Endpoint runs feed the pair totals (cold) and endpoints.tsv (every state).
