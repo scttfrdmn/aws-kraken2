@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
+  probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in
+  about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`
+  (`scripts/g3/probe-rgcrash.body.sh`) asks one question: does `lad_identity`'s own load
+  reproduce it?
+  - **Where:** one r8g.16xlarge in us-west-2b, TTL 150 min (Scott, 2026-10-18: TTL 150 min, raised from 120 so that a
+    null resolves), cost_limit $9.43.
+  - **What it runs:** `lad_identity` exactly and nothing else: IDL = nproc/(P+2) = 6 lanes, jobs
+    n = l + 6k, each job `gzip -dc` then rapidgzip 0.14.5 `-P 8` on the same c10 file
+    (/dev/shm). 0.16.0 is a possible follow-up run.
+  - **When it stops:** it starts jobs until the latest time that leaves at least 15 min before
+    the TTL after a timeout, a gzip pass and wrap-up.
+  - **Resolution:** the plan, progress and summary lines give the expected and measured job
+    counts and exp(−(2/1553)·jobs), and the verdict says whether a null resolves at 0.05. About
+    2,840 jobs are expected (6 × ~6,900 s / 14.6 s), giving P(no crash) ≈ 0.026, so a null is
+    expected to resolve.
+  - **Core capture:** `kernel.core_pattern` points at tmpfs (restored at the end), after a
+    positive control that must leave a core gdb can read.
+  - **On every failure:** gdb's bt, all threads, registers, `x/16i $pc` and siginfo are
+    streamed, and the first 6 cores (zstd) and the `.so` bundle are pushed.
+  - **Rehearsal:** `make rehearse` runs the body unmodified on an AL2023 aarch64 container
+    (`scripts/lib/rgcrash_rehearse.sh`), with 3 induced SIGSEGVs and every check on observed
+    output.
 - **Pinned spawn and truffle: `make tools`** (docs/run.md, "Pinned tools"). spawn 0.123.0 and
   truffle 0.57.1 come from their release artefacts, sha256-checked per OS and architecture
   (`scripts/conductor.tools.tsv`), into `bin/`. run.sh, run-multi.sh and mkspec-conductor use only
