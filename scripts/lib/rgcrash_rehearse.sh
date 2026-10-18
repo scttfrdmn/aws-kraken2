@@ -17,7 +17,7 @@
 #   body exit 0, its shell flags without e; 2 tool lines (0.14.5 and 0.16.0, wheel sha256 = the
 #   pins); the core control ok; 20 reference lines, exit 0; the job lines streamed = the pushed
 #   rgcrash.jsonl's; both versions at -P 8 and -P 16; exactly the K killed jobs failed (exit 139,
-#   signal 11, sha256 wrong), every other job exit 0 with the reference sha256; a failure line per
+#   signal 11; the sha256 is right if the kill came after the last write), every other job exit 0 with the reference sha256; a failure line per
 #   killed job with a core and gdb frames > 0, its gdb output streamed (rgcrash-gdb lines through
 #   "---- x/16i") and pushed (out/gdb/N.txt); min(K, MAXCORES) cores in out/cores/, each a valid
 #   zstd frame; 2 analysis bundles; the tally's jobs = the job lines; 2 summary lines whose crashes
@@ -152,8 +152,9 @@ for v in 0.14.5 0.16.0; do for p in 8 16; do
   chk "jobs at $v -P $p" '[ "$(pl ".kind == \"job\" and .version == \"$v\" and .P == $p" | cnt)" -gt 0 ]'
 done; done
 fj=$(pl '.kind == "job" and (.exit != 0 or (.match | not))')
-chk "exactly the $K killed jobs failed, each exit 139 signal 11 wrong sha256" \
-  '[ "$(printf "%s\n" "$fj" | jq -r .pid | sort | tr "\n" " ")" = "$(printf "%s\n" "${KILLED[@]}" | sort | tr "\n" " ")" ] && [ "$(printf "%s\n" "$fj" | jq -c "select(.exit == 139 and .signal == 11 and (.match | not))" | cnt)" = "$K" ]'
+# (A kill that lands after the last write leaves the right sha256: the exit alone is checked.)
+chk "exactly the $K killed jobs failed, each exit 139 signal 11 ($(printf '%s\n' "$fj" | jq -c 'select(.match | not)' | cnt) with a wrong sha256)" \
+  '[ "$(printf "%s\n" "$fj" | jq -r .pid | sort | tr "\n" " ")" = "$(printf "%s\n" "${KILLED[@]}" | sort | tr "\n" " ")" ] && [ "$(printf "%s\n" "$fj" | jq -c "select(.exit == 139 and .signal == 11)" | cnt)" = "$K" ]'
 chk "every other job exit 0 with the reference sha256" '[ "$(pl '\''.kind == "job" and .exit == 0 and .match'\'' | cnt)" = $((nj - K)) ]'
 for n in $(printf '%s\n' "$fj" | jq -r .n); do
   chk "job $n: failure line with a core and gdb frames" '[ "$(pl ".kind == \"failure\" and .n == $n and .core != null and .gdb_frames > 0" | cnt)" = 1 ]'
