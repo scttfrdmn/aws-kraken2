@@ -1,0 +1,117 @@
+inputpath-preflight: PART=inputs DB=standard8 shell flags huB (results results/inputpath/preflight-inputs-20261018T191347Z-cc920a8)
+19:13:48Z upstream 2.17.2-20-g2731b35 at /Users/scttfrdmn/src/aws-kraken2/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2; rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5; bgzip (htslib) 1.24; gzip: /usr/bin/gzip (Apple gzip 487.0.1)
+  ok   header scripts/inputpath/inputs.tsv
+  ok   object aws-kraken2/data/reads/SRR062634_8000000_1.fq sha256 (from /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_8000000_1.fq)
+  ok   object aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz sha256 (from /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_8000000_1.fq.gz)
+  ok   object aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz sha256 (from /tmp/ak2-inputpath-prep.8iwYRX/SRR062634_8000000_1.fq.bgz)
+  ok   object aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx sha256 (from /tmp/ak2-inputpath-prep.8iwYRX/SRR062634_8000000_1.fq.gz.rgidx)
+  ok   object aws-kraken2/data/reads/SRR062634_8000000_2.fq sha256 (from /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_8000000_2.fq)
+  ok   object aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz sha256 (from /Users/scttfrdmn/src/aws-kraken2/.cache/reads/SRR062634_8000000_2.fq.gz)
+  ok   object aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz sha256 (from /tmp/ak2-inputpath-prep.8iwYRX/SRR062634_8000000_2.fq.bgz)
+  ok   object aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx sha256 (from /tmp/ak2-inputpath-prep.8iwYRX/SRR062634_8000000_2.fq.gz.rgidx)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz gzip -dc (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz rapidgzip -P 1 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz rapidgzip -P 2 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz rapidgzip -P 4 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz rapidgzip -P 8 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz rapidgzip -P 16 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz gzip -dc (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz rapidgzip -P 1 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz rapidgzip -P 2 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz rapidgzip -P 4 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz rapidgzip -P 8 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz rapidgzip -P 16 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz gzip -dc (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz rapidgzip -P 1 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz rapidgzip -P 2 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz rapidgzip -P 4 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz rapidgzip -P 8 (exit 0)
+  ok   identity aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz rapidgzip -P 16 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz gzip -dc (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz rapidgzip -P 1 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz rapidgzip -P 2 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz rapidgzip -P 4 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz rapidgzip -P 8 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz rapidgzip -P 16 (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq is its own source
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq is its own source
+[Warning] The index only has an effect for parallel decoding and index exporting.
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx rapidgzip -P 1 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx rapidgzip -P 2 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx rapidgzip -P 4 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx rapidgzip -P 8 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx rapidgzip -P 16 --import-index (exit 0)
+[Warning] The index only has an effect for parallel decoding and index exporting.
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx rapidgzip -P 1 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx rapidgzip -P 2 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx rapidgzip -P 4 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx rapidgzip -P 8 --import-index (exit 0)
+  ok   identity aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz with aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx rapidgzip -P 16 --import-index (exit 0)
+  info isal this host's rapidgzip (rapidgzip-0.14.5-cp313-cp313-macosx_11_0_arm64.whl): static: none; rapidgzip -v 'Time spent decoding with ISA-L': 0 s
+  info isal pinned wheel rapidgzip-0.14.5-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  info isal pinned wheel rapidgzip-0.14.5-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl: none
+  ok   isal positive control: the pinned cp39 x86_64 wheel is detected as carrying ISA-L
+  ok   gzflag sweep files scanned: 2 (none yet means: the rule is documented in docs/inputpath.md and asserted on every command built here)
+19:15:25Z kraken2 arms on standard8 (threads 8; -P 4)
+  ok   exit pe-pe-I0
+  ok   nonempty pe-pe-I0 output
+  ok   exit pe-pe-I1
+  ok   decoders pe-pe-I1 decoder exit statuses all 0
+  ok   arms pe-pe-I1 --output = I0
+  ok   arms pe-pe-I1 --report = I0
+  ok   exit pe-pe-I1f
+  ok   decoders pe-pe-I1f decoder exit statuses all 0
+  ok   arms pe-pe-I1f --output = I0
+  ok   arms pe-pe-I1f --report = I0
+  ok   exit pe-pe-devfd
+  ok   decoders pe-pe-devfd decoder exit statuses all 0
+  ok   devfd pe-pe-devfd --output = I0
+  ok   devfd pe-pe-devfd --report = I0
+  ok   exit pe-pe-I2-P4
+  ok   decoders pe-pe-I2-P4 decoder exit statuses all 0
+  ok   arms pe-pe-I2-P4 --output = I0
+  ok   arms pe-pe-I2-P4 --report = I0
+  ok   exit pe-pe-I3-P4
+  ok   decoders pe-pe-I3-P4 decoder exit statuses all 0
+  ok   arms pe-pe-I3-P4 --output = I0
+  ok   arms pe-pe-I3-P4 --report = I0
+  ok   exit pe-pe-I4-P4
+  ok   decoders pe-pe-I4-P4 decoder exit statuses all 0
+  ok   arms pe-pe-I4-P4 --output = I0
+  ok   arms pe-pe-I4-P4 --report = I0
+  ok   neg-control pe-pe-neg output differs from I0 (--gzip-compressed on /dev/fd paths)
+  info neg-control pe-pe-neg: exit 0, output absent, stderr: gzip: /dev/fd/63 is not a regular file
+  info g1 pe I0 on standard8: no G1/G2 oracle record for these inputs at this DB; I0 here is the reference: --output 3c4d7d2157f4a4ea79dc51378fb0c7434769801ae95e5d0d5f6e65aa87a659bb, --report 13ae4bd4ecb24c27309b6199be2afaeec0375a1e1bb62b36e217ae7cefb33bed (the node's I0 must equal it)
+  ok   exit se-se-I0
+  ok   nonempty se-se-I0 output
+  ok   exit se-se-I1
+  ok   decoders se-se-I1 decoder exit statuses all 0
+  ok   arms se-se-I1 --output = I0
+  ok   arms se-se-I1 --report = I0
+  ok   exit se-se-I1f
+  ok   decoders se-se-I1f decoder exit statuses all 0
+  ok   arms se-se-I1f --output = I0
+  ok   arms se-se-I1f --report = I0
+  ok   exit se-se-devfd
+  ok   decoders se-se-devfd decoder exit statuses all 0
+  ok   devfd se-se-devfd --output = I0
+  ok   devfd se-se-devfd --report = I0
+  ok   exit se-se-I2-P4
+  ok   decoders se-se-I2-P4 decoder exit statuses all 0
+  ok   arms se-se-I2-P4 --output = I0
+  ok   arms se-se-I2-P4 --report = I0
+  ok   exit se-se-I3-P4
+  ok   decoders se-se-I3-P4 decoder exit statuses all 0
+  ok   arms se-se-I3-P4 --output = I0
+  ok   arms se-se-I3-P4 --report = I0
+  ok   exit se-se-I4-P4
+  ok   decoders se-se-I4-P4 decoder exit statuses all 0
+  ok   arms se-se-I4-P4 --output = I0
+  ok   arms se-se-I4-P4 --report = I0
+  ok   neg-control se-se-neg output differs from I0 (--gzip-compressed on /dev/fd paths)
+  info neg-control se-se-neg: exit 0, output absent, stderr: gzip: /dev/fd/63 is not a regular file
+  info g1 se I0 on standard8: no G1/G2 oracle record for these inputs at this DB; I0 here is the reference: --output a14eaed25243f03aa0534bdb5b31237d9e4f8f308a3c703b4afce2e678155cd7, --report d8f5a018ea8bf15d89aec7e5a4dbc2cf834f9796a09812c551d3e0bb1dcdb0c3 (the node's I0 must equal it)
+19:16:24Z inputpath-preflight: 111 checks, 0 failed (results/inputpath/preflight-inputs-20261018T191347Z-cc920a8)

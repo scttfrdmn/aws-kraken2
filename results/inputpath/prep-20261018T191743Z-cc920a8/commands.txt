@@ -1,0 +1,4 @@
+gzip -dc SRR062634_8000000_1.fq.gz | bgzip -l 6 -@ 8 -c > SRR062634_8000000_1.fq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR062634_8000000_1.fq.gz.rgidx SRR062634_8000000_1.fq.gz | sha256
+gzip -dc SRR062634_8000000_2.fq.gz | bgzip -l 6 -@ 8 -c > SRR062634_8000000_2.fq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR062634_8000000_2.fq.gz.rgidx SRR062634_8000000_2.fq.gz | sha256

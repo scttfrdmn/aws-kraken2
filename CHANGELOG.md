@@ -29,6 +29,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     caches the wheel in S3 by recipe sha256.
   - **Rehearsal:** `make rehearse` runs the body on AL2023 containers with a real source build:
     the probe with 3 induced crashes, a failed build, and a cache hit.
+- **G2 input-path sweep (#90): pre-flight checks and inputs** (docs/inputpath.md, "Pre-flight
+  and inputs"). `make inputpath-preflight` (`scripts/inputpath/preflight.sh`; also in CI) and
+  `make inputpath-prep` (`scripts/inputpath/prep.sh`), with tool pins in `scripts/inputpath/lib.sh`:
+  bgzip from htslib 1.24, and lever.sh's rapidgzip 0.14.5.
+  - **Inputs:**
+    - pe: SRR062634's first 8M pairs, already staged in the project bucket (#6 host-dominated
+      class, G2's input).
+    - se: SRR4074269 (Scott, 2026-10-18; PRJNA340216, human gut, HiSeq 1500, SE 151 bp,
+      14.6M reads), because no #6 sample is single-end.
+    - `make inputpath-stage-se` (`scripts/inputpath/stage-se.sh`) staged it from ENA, md5 equal
+      to ENA's, into `aws-kraken2/data/reads/SRR4074269.fastq{.gz,}`. The record is in
+      `results/inputpath/se/SRR4074269/`.
+  - **Uploaded** (sha256 metadata, tagged `project=aws-kraken2`, `kind=data`), recorded in
+    `scripts/inputpath/inputs.tsv`:
+    - `aws-kraken2/data/inputpath/SRR062634_8000000_{1,2}.fq.bgz` and `SRR4074269.fastq.bgz` (BGZF);
+    - `…_{1,2}.fq.gz.rgidx` and `SRR4074269.fastq.gz.rgidx` (rapidgzip indexes, -P 16).
+  - **ISA-L arm:** it will use the shared `scripts/g3/rg-build.sh` (0.14.5 from source with ISA-L
+    and rpmalloc off; separate PR).
+  - **Findings:**
+    - the wrapper reads `/dev/fd` paths for both mates, with outputs identical to I0;
+    - `--gzip-compressed` on `/dev/fd` paths fails silently (exit 0, no output);
+    - rapidgzip equals `gzip -dc` at -P 1–16 on every input;
+    - I1–I4 equal I0, and I0 equals the G1 oracle;
+    - the pinned manylinux aarch64 rapidgzip wheels have no ISA-L. The x86_64 wheel has it.
+
+- **The input-path sweep's report: `make inputpath-report`** (#90; docs/inputpath.md, "Records
+  and report"). `scripts/lib/inputpath_report.py` (stdlib only) reads only the run dir:
+  `manifest.json`, `out/points.jsonl` and the points' pidstat CSVs. It fixes the point record
+  schema (`inputpath-point/1`) and the pidstat CSV schema for the harness.
+  - **Tables:** per family, engine and input, wall, FASTQ MB/s and $/run (launch price × wall)
+    for each arm × p × threads × chunk × thp setting, with the source lines on each row.
+  - **CPU attribution:** per arm at its best setting, with ASCII bars.
+  - **Law 1:** every point's output and report sha256 against I0's. A mismatch, a used point
+    whose rapidgzip identity failed, or an incomplete record is a DEFECT line and exits 1.
+  - **Readings:** the four, by documented thresholds (5%, the noise of repeated points, reader
+    ≥ 90% with workers < 50%), or "undecided" with the reason.
+  - **Test:** `make inputpath-report-test`, in `make test`, on a synthetic run dir under
+    `scripts/tests/fixtures/inputpath/`.
 - **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
   probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in
   about 1,553 identity-step decompressions. `runs/g3-probe-rgcrash-r8g.16xlarge.json`

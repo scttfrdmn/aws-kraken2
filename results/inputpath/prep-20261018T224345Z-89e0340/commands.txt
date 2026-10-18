@@ -1,0 +1,8 @@
+gzip -dc SRR062634_8000000_1.fq.gz | bgzip -l 6 -@ 8 -c > SRR062634_8000000_1.fq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR062634_8000000_1.fq.gz.rgidx SRR062634_8000000_1.fq.gz | sha256
+gzip -dc SRR062634_8000000_2.fq.gz | bgzip -l 6 -@ 8 -c > SRR062634_8000000_2.fq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR062634_8000000_2.fq.gz.rgidx SRR062634_8000000_2.fq.gz | sha256
+gzip -dc SRR4074269.fastq.gz | bgzip -l 6 -@ 8 -c > SRR4074269.fastq.bgz
+rapidgzip -d -c -P 16 --chunk-size 4096 --index-format indexed_gzip --export-index SRR4074269.fastq.gz.rgidx SRR4074269.fastq.gz | sha256
+aws s3 cp --metadata sha256=c69a7eaba261a13dd579cd230d6c1dbabaa19d76a460bbb23da2c642a64e8b63,source-sha256=8e6a773c3ec48cecd6eba3d3ed3facdaf0e181127a23423fc6e7ae4a680236fa SRR4074269.fastq.bgz s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR4074269.fastq.bgz
+aws s3 cp --metadata sha256=b40bec32286ba41624108b5fde23cf05e0096c54eba257f098732c30de50daea,source-sha256=2685697735eee0c7687b7311ea207c94ba57ffa510b12b873449081ae155aced SRR4074269.fastq.gz.rgidx s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR4074269.fastq.gz.rgidx
