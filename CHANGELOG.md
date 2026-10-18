@@ -33,6 +33,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - rapidgzip equals `gzip -dc` at -P 1–16 on every input;
     - I1–I4 equal I0, and I0 equals the G1 oracle;
     - the pinned manylinux aarch64 rapidgzip wheels have no ISA-L. The x86_64 wheel has it.
+- **`make inputpath FAMILY=c8g|c9g|c8gn ENGINE=upstream|ours`: the G2 input-path sweep harness
+  (#90, part 1; docs/inputpath.md, "The harness")**. It writes
+  `runs/inputpath-<family>-<engine>.json` (all six committed), prints the time estimate, the cost
+  bound and the `make run GATE=inputpath` command, and launches nothing without `LAUNCH=1`.
+  - **Sessions:** one 64-vCPU <family>.16xlarge per session, us-west-2b. The TTL is the longest
+    whole minute with cost_limit ≤ $5: c8g 117 min ($4.98), c9g 107 min ($4.97), c8gn 79 min
+    ($5.00).
+  - **Setup:** Standard-8 resident on tmpfs, with upstream also on a `huge=always` copy. The
+    families have no instance store, so I0's FASTQ is on tmpfs too. Every point after the
+    warm-up is warm. drop_caches runs once, and its failure ends the run (95).
+  - **Arms:**
+    - I0 at THP always, plus never for upstream (the THP pair);
+    - I2 at p ∈ {16, 8, 4, 2}, chunk 4 MiB;
+    - the best p (rule: the smallest p within 1% of the minimum wall, per sample and threads,
+      from rep 1);
+    - I3 (`--import-index`) and I4 (BGZF) at the best p;
+    - chunk 8 and 16 MiB, and a default-pipe contrast;
+    - I1, for ours both through the `gzip -dc` pipe and in process.
+
+    All of these run at threads {48, 32, 16}, for one paired and one single-end sample, REPS 2
+    (rep 2 reversed).
+  - **The pipe:** every rapidgzip decode writes into a 1 MiB pipe (`scripts/inputpath/pipesz.py`,
+    F_SETPIPE_SZ, the size it got recorded).
+  - **Identity:** before a rapidgzip configuration is used, its decode of each file must equal
+    `gzip -dc`'s sha256. A crash, timeout or mismatch skips every point needing it. A decoder
+    that dies inside a point makes it `skipped` (decode-crash).
+  - **Law 1:** every point's `--output` and `--report` sha256 and its sequence count must equal
+    the warm-up I0's. Otherwise it is a `defect`.
+  - **Per point:** wall, the classify window, reads/s, FASTQ MB/s, a pidstat -t CSV per run in
+    the report's schema, peak RSS per process (GNU time, VmHWM), and smaps huge-page maxima.
+    Records are `out/points.jsonl` (schema `inputpath-point/1`, for `make inputpath-report`) and
+    `out/events.jsonl`, both streamed and pushed after every point. `tables/inputpath.tsv` is the
+    per-point manifest table (post script).
+  - **Inputs** are read from `scripts/inputpath/inputs.tsv` (header only until #90 part 2 writes
+    it; the body fails loudly first).
+  - **Rehearsal:** `make rehearse SPEC=runs/inputpath-*` runs `scripts/lib/inputpath_rehearse.sh`
+    on AL2023 containers with the real builds, rapidgzip and pidstat. Cases: the full matrix for
+    each engine; induced rapidgzip SIGSEGVs; a missing input list; drop_caches failing; a
+    deadline. It also checks the record contract with the report's script.
+  - **Time model:** `scripts/inputpath/estimate.py`, about 58 min (upstream) and 73 min (ours)
+    against those TTLs. The proposed cut for c8gn is `THREADS="48 16"`.
 
 - **G3 probe (g): the rapidgzip crash on Graviton4** (docs/probes.md, "The rapidgzip crash
   probe"; Scott approved 2026-10-18). On the c10 ladder, rapidgzip 0.14.5 exited 139 twice in

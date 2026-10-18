@@ -117,6 +117,7 @@ targets; ad hoc commands only during exploration.
 | `make loadbench [DB=…] [THREADS=…]` | [docs/loadbench.md](docs/loadbench.md) |
 | `make g2 [PART=…]` (and `runs/g2-*.json`) | [docs/g2.md](docs/g2.md) |
 | `make inputpath-preflight [PART=local\|inputs] [DB=viral\|standard8]` (#90's no-spend checks: /dev/fd input, no `--gzip-compressed` in I2–I4, rapidgzip = `gzip -dc` at every -P, I1–I4 = I0 = G1, ISA-L) / `make inputpath-prep` (I4 BGZF re-encodes and I3 rapidgzip indexes, uploaded to `aws-kraken2/data/inputpath/` and tagged; writes `scripts/inputpath/inputs.tsv`) / `make inputpath-stage-se [RUN=SRR4074269]` (the single-end sample from ENA, md5-checked, into `aws-kraken2/data/reads/`) | [docs/inputpath.md](docs/inputpath.md) ("Pre-flight and inputs") |
+| `make inputpath FAMILY=c8g\|c9g\|c8gn ENGINE=upstream\|ours [ARGS=…]` (writes `runs/inputpath-<family>-<engine>.json`, TTL sized to cost_limit ≤ $5; prints the estimate and the `make run GATE=inputpath` command; launches nothing without `LAUNCH=1`) / `make inputpath-test` / `make rehearse SPEC=runs/inputpath-…` (inputs from `scripts/inputpath/inputs.tsv`) | [docs/inputpath.md](docs/inputpath.md) ("The harness") |
 | `make ami` | [docs/ami.md](docs/ami.md) |
 | `make rehearse SPEC=…` (local rehearsal of a spec under the nodes' environment; runs `make util-stream-test` first) | [docs/cohort.md](docs/cohort.md) |
 | `make rehearse-ladder` / `make rehearse SPEC=runs/g3-l-…` (the ladder body end to end on AL2023 nodes, before any rung launches) | [docs/ladder.md](docs/ladder.md) ("The rehearsal") |

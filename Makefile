@@ -6,7 +6,7 @@ GO      ?= go
 BIN     := bin
 PKGS    := ./...
 
-.PHONY: inputpath-preflight inputpath-prep inputpath-stage-se cost-backfill tools util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify conductor-spec harvest rehearse-conductor ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test
+.PHONY: inputpath-preflight inputpath-prep inputpath-stage-se cost-backfill tools util-stream-test util util-backfill instance-types g2 build test lint oracle oracle-engine oracle-cohort rehearse g3-spec g3-tables g3-frontier g3-fit g3-ladder g3-ladder-model g3-law1-u2 bash-jobs-test hitorder-golden hitorderfuzz stage-cohort stage-db stage-reads ami run orphans report harness g0b g0c equiv-seqout oracle-classify bracken-check tag-objects sortfuzz loadbench decomp-shim lever-test hosttune-test dryrun-userdata ladder-spec ladder-check ladder-respec ladder-compat-check ladder-stream-test rehearse-ladder ladder-campaign ladder-campaign-test ladder-campaign-drain ladder-campaign-undrain conductor-iam conductor-iam-verify conductor-spec harvest rehearse-conductor ladder-select ladder-select-test ladder-types ladder-advance ladder-advance-test inputpath inputpath-test
 
 build:
 	$(GO) build -trimpath -ldflags "-X main.upstreamPin=$(UPSTREAM_PIN)" -o $(BIN)/ ./cmd/...
@@ -41,6 +41,8 @@ test:
 	python3 scripts/lib/ladder_types.py validate
 	python3 scripts/lib/ladder_ttl.py --self-test
 	python3 scripts/tests/ladder_advance_test.py
+	python3 scripts/inputpath/inputs.py --self-test
+	python3 scripts/inputpath/record.py --self-test
 
 lint:
 	$(GO) vet $(PKGS)
@@ -81,6 +83,18 @@ loadbench:
 # make run GATE=g2 SPEC=runs/g2-nvme.json | runs/g2-ram.json | runs/g2-c8gd.json | runs/g2-c9gd.json.
 g2:
 	scripts/g2.sh $(or $(PART),local) $(DIR)
+
+# #90, the G2 input-path sweep I0-I4 (docs/inputpath.md): FAMILY=c8g|c9g|c8gn ENGINE=upstream|ours
+# writes runs/inputpath-<family>-<engine>.json (TTL sized so cost_limit <= $5), prints the time
+# estimate, the cost bound and the make run command; it launches nothing unless LAUNCH=1.
+# ARGS="KEY=VALUE ..." overrides the matrix (scripts/inputpath/mkspec.sh). inputpath-test: the
+# record and inputs self-tests (also in make test).
+inputpath:
+	scripts/inputpath/mkspec.sh "$(FAMILY)" "$(ENGINE)" $(ARGS) LAUNCH=$(or $(LAUNCH),0)
+
+inputpath-test:
+	python3 scripts/inputpath/inputs.py --self-test
+	python3 scripts/inputpath/record.py --self-test
 
 # G0c run lengths and probe lengths (docs/g0c.md). PART = local|probes|runs; DRY_RUN passes through.
 g0c:
@@ -165,6 +179,7 @@ rehearse: util-stream-test
 	  runs/g3-u2-*) scripts/lib/u2_rehearse.sh $(SPEC) ;; \
 	  runs/g3-diag44-*) scripts/lib/diag44_rehearse.sh $(SPEC) ;; \
 	  runs/g3-probe-*) scripts/lib/probe_rehearse.sh $(SPEC) ;; \
+	  runs/inputpath-*) scripts/lib/inputpath_rehearse.sh $(SPEC) ;; \
 	  runs/g3-l-*) scripts/lib/ladder_rehearse.sh spec $(SPEC) ;; \
 	  *) scripts/lib/cohort_rehearse.sh $(SPEC) $(or $(N),3) ;; esac
 
