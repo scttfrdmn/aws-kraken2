@@ -1,0 +1,17 @@
+make run: accessions: @PRJNA398089:1-10 -> 10 runs from results/cohort/PRJNA398089/runs.tsv (blob 8f52155b14c83c0ee6e6fe197abb8c2af42de5f4)
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261018-001640-72007ca-dc12-n2-r0  task ak2-g3-20261018-001640-72007ca-dc12-n2-r0  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261018-001640-72007ca-dc12-n2-r0
+make run: payload: GET by role
+make run: user data: 13763 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: x8g.12xlarge (0 vCPU, 0 GiB)
+cost_check: ok: 1 x cost_limit $3.13 = $3.13; TTL 40m x $4.6896/h x8g.12xlarge = $3.1264 per node, max $3.449 per node (epsilon 0.10 + $0.01) = $3.449
+quota_check: ok: 1 x x8g.12xlarge = 48 vCPU, plus 0 vCPU already running in 0 on-demand X instance(s) = 48 of the X on-demand quota L-7295265B (256 vCPU) in us-west-2
+make run: launched i-07ee448829f848b77 (x8g.12xlarge) in us-west-2
+make run: instance is shutting-down
+make run: tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261018-001640-72007ca-dc12-n2-r0/: 1 objects, 0 tagged now, 1 already tagged, 0 failed
+make run: WARNING: the spec recorded no request counts (ak2_req)
+make run: run dir: results/g3/20261018-001640-72007ca-dc12-n2-r0  (task exit 99, state terminated, cost $0.07816)
+orphans: other live ak2 instances (concurrent runs; informational, not this run's):
+  us-west-2	i-0266e4831382fe6ed	running	m8g.large	2026-10-17T23:47:44+00:00	ak2-conductor-20261017-234731-72007ca	ttl=1440m	CONDUCTOR (gate conductor, within TTL; not an orphan, not counted)
+orphans: this run's instance(s) and task ak2-g3-20261018-001640-72007ca-dc12-n2-r0 are gone (18 regions checked)
