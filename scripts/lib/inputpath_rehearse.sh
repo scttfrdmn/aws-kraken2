@@ -357,8 +357,10 @@ for c in $CASES; do
     cat "$T/crash/log" 2> /dev/null | sed 's/^/  induced | /'
     chk "C: pe_2.gz -P 4: two identity lines (attempts 1, 2), both crash, decoder exit 139" \
       '[ "$(pl '\''.kind == "identity" and .status == "crash" and (.file | endswith("/pe_2.gz")) and (.args | startswith("-P 4 ")) and .decoder_exit == 139'\'' | jq -r .attempt | tr "\n" " ")" = "1 2 " ]'
-    chk "C: pe_1.gz -P 2 (a transient): attempt 1 crash, attempt 2 ok, and its 2 x REPS x threads pe I2 p=2 points ok" \
-      '[ "$(pl '\''.kind == "identity" and (.file | endswith("/pe_1.gz")) and (.args | startswith("-P 2 --chunk-size 4096"))'\'' | jq -r '\''"\(.attempt):\(.status)"'\'' | tr "\n" " ")" = "1:crash 2:ok " ] && [ "$(pp '\''.input.role == "paired" and .arm == "I2" and .p == 2 and .chunk_mib == 4 and .status == "ok" and (.identity.mates[0].attempts | length) == 2'\'' | cnt)" = $((REPS * NT)) ]'
+    TA=$(pl '.kind == "identity" and (.file | endswith("/pe_1.gz")) and (.args | startswith("-P 2 --chunk-size 4096"))' | jq -r '"\(.attempt):\(.status)"' | tr "\n" " ")
+    TP=$(pp '.input.role == "paired" and .arm == "I2" and .p == 2 and .chunk_mib == 4 and .harness.pipe_requested == "1048576" and .harness.decomp == "rapidgzip" and .status == "ok" and (.identity.mates[0].attempts | length) == 2' | cnt)
+    chk "C: pe_1.gz -P 2 (a transient): identity attempts '$TA' (want 1:crash 2:ok), and its REPS x threads pe I2 p=2 points ok ($TP)" \
+      '[ "$TA" = "1:crash 2:ok " ] && [ "$TP" = $((REPS * NT)) ]'
     chk "C: exactly the $((2 * REPS * NT / 2)) pe I2 p=4 chunk-4096 points skipped-identity" \
       '[ "$(pp '\''.harness.status_detail == "skipped-identity"'\'' | cnt)" = $((REPS * NT)) ] && [ "$(pp '\''.harness.status_detail == "skipped-identity" and (.input.role != "paired" or .arm != "I2" or .p != 4)'\'' | cnt)" = 0 ]'
     chk "C: exactly one decode-crash point: rep 1, se, I2, p 8, chunk 4, threads 48, rg1 exit 139, status skipped" \
