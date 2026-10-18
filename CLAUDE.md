@@ -78,7 +78,10 @@ Its numbers *and* its process failures apply here.
 
 ## Planning lives on GitHub, not here
 
-Project, milestones G0–G3 and issues on `github.com/scttfrdmn/aws-kraken2`. Allowed local files:
+Project, milestones G0–G3 and issues on `github.com/scttfrdmn/aws-kraken2`.
+G2 includes the input-path sweep (issue #90; a G2 work item, not a gate); the upstream arm does not
+wait for #35/#36 (the ours arm runs once #36 is green; both are closed). The sweep is the test for
+H-knee's single-stream gzip candidate (H-knee and H-width live in the project notebook, not here). Allowed local files:
 README, LICENSE, CHANGELOG, CLAUDE.md, code, tests, scripts, `docs/` (process runbooks only),
 `runs/` (checked-in TaskSpecs) and `results/`. **No plan, status or TODO files.**
 
@@ -131,6 +134,7 @@ targets; ad hoc commands only during exploration.
 | `make cost-backfill DIRS=… [WRITE=1]` (a member's null cost_usd from its own cost_limit_check price) | [docs/run.md](docs/run.md) ("Cost") |
 | `make orphans` | [docs/orphans.md](docs/orphans.md) |
 | `make report GATE=… RUN=…` | [docs/report.md](docs/report.md) |
+| `make inputpath-report RUN=results/inputpath/<run-id> [OUT=…]` / `make inputpath-report-test` (the I0–I4 sweep's tables, CPU attribution, Law 1 DEFECT lines and readings, from `out/points.jsonl` and the manifest only; exit 1 on a DEFECT) | [docs/inputpath.md](docs/inputpath.md) ("Records and report") |
 | spore.host usage notes | [docs/spore-host.md](docs/spore-host.md) |
 
 Every run writes `results/<gate>/<run-id>/` with `manifest.json` (commit SHA, upstream pin, AMI

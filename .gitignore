@@ -9,3 +9,7 @@ __pycache__/
 /k2probe
 # The campaign drain flag (make ladder-campaign-drain): never committed, never a dirty tree.
 /results/g3/ladder-campaign/DRAIN
+
+# rapidgzip crash probe: cores and the analysis bundle stay in S3 (out/s3-only.txt lists them by sha256)
+results/**/out/cores/
+results/**/out/bundle-*.tar.zst
