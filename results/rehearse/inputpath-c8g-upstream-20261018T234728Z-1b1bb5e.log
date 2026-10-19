@@ -1,0 +1,102 @@
+inputpath-rehearse: record results/rehearse/inputpath-c8g-upstream-20261018T234728Z-1b1bb5e.log; runs/inputpath-c8g-upstream.json (upstream, c8g.16xlarge, REPS 2) at 1b1bb5e; cases A B D F; shell flags huB
+inputpath-rehearse: ok: every runs/inputpath-*.json carries this body (6 specs; only the parameter lines differ)
+inputpath-rehearse: stand-ins: viral DB under aws-kraken2/data/k2_standard_08_GB_20260626; inputs pe_1.bgzf pe_1.gz pe_1.index pe_2.bgzf pe_2.gz pe_2.index se_1.bgzf se_1.gz se_1.index 
+inputpath-rehearse: expected: 36 points per sample in rep 1, 146 point records per full run
+inputpath-rehearse: case A: starting
+inputpath-rehearse: case A: body exit 0; 201 streamed lines; 146 point records
+inputpath-rehearse: ok: A: body exit 0
+inputpath-rehearse: ok: A: the body's shell flags (hBc) lack e
+inputpath-rehearse: ok: A: 1 tool line, rapidgzip 0.14.5 (isal: null)
+inputpath-rehearse: ok: A: 9 input lines, each fastq_sha256 = the read set's SOURCE
+inputpath-rehearse: ok: A: 3 db lines
+inputpath-rehearse: ok: A: the point lines streamed = the pushed points.jsonl
+inputpath-rehearse: ok: A: 146 point records (146)
+inputpath-rehearse: ok: A: every point has schema inputpath-point/1 and a unique point_id
+inputpath-rehearse: ok: A: every ok I2-I4 point has identity ok, rg_exit 0, gz = rg sha256
+inputpath-rehearse: ok: A: 6 select lines, each with a best p
+inputpath-rehearse: ok: A: every run point's pidstat CSV pushed (146 points; 0 missing, 0 without the report's header)
+inputpath-rehearse: ok: A: some pidstat CSV has kraken2: engine rows
+inputpath-rehearse: ok: A: the pe I1 points' CSVs have gzip-role rows (upstream's wrapper gzip -dc, or ours' pipe)
+inputpath-rehearse: ok: A: THP: never points from ip-db; always points from ip-db-huge
+inputpath-rehearse: ok: A: THP contrast: 12 I0 points at thp never
+inputpath-rehearse: ok: A: pipe_bytes 1048576 on the rapidgzip points, 65536 on the default-pipe ones
+inputpath-rehearse: ok: A: summary: THP restored
+inputpath-rehearse: ok: A: tables.py: one row per point (146)
+inputpath-rehearse: ok: A: the report's contract: /Users/scttfrdmn/.ak2-ipreh.lf9YJr/inputpath_report.py on the mock run dir exits 0, 0 DEFECT lines (want 0, 0)
+No DEFECT: every used point's output and report sha256 match I0's.
+| I0 | n/a | 16 | n/a | always | n/a | n/a | 2 | 0.2 [0.2-0.2] | 343.6 | 1455026 | 0.0001 | 710348 | n/a | L4,L144 |
+| I0 | n/a | 16 | n/a | never | n/a | n/a | 2 | 0.2 [0.2-0.2] | 352.5 | 1492620 | 0.0001 | 710360 | n/a | L7,L141 |
+| I0 | n/a | 32 | n/a | always | n/a | n/a | 2 | 0.2 [0.2-0.2] | 348.6 | 1476035 | 0.0001 | 710644 | n/a | L3,L145 |
+| I0 | n/a | 32 | n/a | never | n/a | n/a | 2 | 0.2 [0.2-0.2] | 340.2 | 1440713 | 0.0001 | 710664 | n/a | L6,L142 |
+| I0 | n/a | 48 | n/a | always | n/a | n/a | 2 | 0.2 [0.2-0.2] | 347.3 | 1470588 | 0.0001 | 710804 | n/a | L2,L146 |
+| I0 | n/a | 48 | n/a | never | n/a | n/a | 2 | 0.2 [0.2-0.2] | 347.4 | 1470668 | 0.0001 | 710720 | n/a | L5,L143 |
+| I1 | n/a | 16 | n/a | always | missing | n/a | 2 | 0.3 [0.3-0.3] | 164.3 | 695654 | 0.0002 | 708128 | n/a | L37,L111 |
+| I1 | n/a | 32 | n/a | always | missing | n/a | 2 | 0.3 [0.3-0.3] | 163.5 | 692042 | 0.0002 | 709456 | n/a | L36,L112 |
+| I1 | n/a | 48 | n/a | always | missing | n/a | 2 | 0.3 [0.3-0.3] | 162.9 | 689655 | 0.0002 | 710308 | n/a | L35,L113 |
+| I2 | 2 | 16 | 4 | always | 1048576 | n/a | 2 | 0.2 [0.2-0.3] | 231.6 | 980604 | 0.0002 | 709220 | 71040 | L19,L129 |
+| I2 | 2 | 32 | 4 | always | 1048576 | n/a | 2 | 0.3 [0.3-0.3] | 232.7 | 985222 | 0.0002 | 709620 | 72304 | L18,L130 |
+| I2 | 2 | 48 | 4 | always | 1048576 | n/a | 2 | 0.3 [0.3-0.3] | 228.8 | 968529 | 0.0002 | 709892 | 73232 | L17,L131 |
+point_id                                                 rep  status   status_detail  family  engine    instance_type  arm  role    accession  threads  p   chunk_mib  pipe_bytes  thp     decomp        wall_s  load_s  classify_s  classify_reads_per_s  fastq_mb_
+warmup-se                                                1    skipped  reference      c8g     upstream  c8g.16xlarge   I0   single  ERR478965  48       -   -          -           always  -             0.174   0.018   0.142       1408450.7             332.7    
+r1-se-I0-t48-p--c--pipe--thpalways--                     1    ok       ok             c8g     upstream  c8g.16xlarge   I0   single  ERR478965  48       -   -          -           always  -             0.167   0.018   0.136       1470588.2             347.3    
+r1-se-I0-t32-p--c--pipe--thpalways--                     1    ok       ok             c8g     upstream  c8g.16xlarge   I0   single  ERR478965  32       -   -          -           always  -             0.167   0.018   0.136       1470588.2             347.3    
+r1-se-I0-t16-p--c--pipe--thpalways--                     1    ok       ok             c8g     upstream  c8g.16xlarge   I0   single  ERR478965  16       -   -          -           always  -             0.174   0.018   0.135       1481481.5             349.9    
+r1-se-I0-t48-p--c--pipe--thpnever--                      1    ok       ok             c8g     upstream  c8g.16xlarge   I0   single  ERR478965  48       -   -          -           never   -             0.178   0.021   0.135       1481481.5             349.9    
+r1-se-I0-t32-p--c--pipe--thpnever--                      1    ok       ok             c8g     upstream  c8g.16xlarge   I0   single  ERR478965  32       -   -          -           never   -             0.168   0.021   0.134       1492537.3             352.5    
+r1-se-I0-t16-p--c--pipe--thpnever--                      1    ok       ok             c8g     upstream  c8g.16xlarge   I0   single  ERR478965  16       -   -          -           never   -             0.17    0.021   0.133       1503759.4             355.2    
+r1-se-I2-t48-p16-c4096-pipe1048576-thpalways-rapidgzip   1    ok       ok             c8g     upstream  c8g.16xlarge   I2   single  ERR478965  48       16  4          1048576     always  rapidgzip     0.221   0.024   0.152       1315789.5             310.8    
+r1-se-I2-t32-p16-c4096-pipe1048576-thpalways-rapidgzip   1    ok       ok             c8g     upstream  c8g.16xlarge   I2   single  ERR478965  32       16  4          1048576     always  rapidgzip     0.232   0.021   0.168       1190476.2             281.2    
+r1-se-I2-t16-p16-c4096-pipe1048576-thpalways-rapidgzip   1    ok       ok             c8g     upstream  c8g.16xlarge   I2   single  ERR478965  16       16  4          1048576     always  rapidgzip     0.223   0.022   0.157       1273885.4             300.9    
+r1-se-I2-t48-p8-c4096-pipe1048576-thpalways-rapidgzip    1    ok       ok             c8g     upstream  c8g.16xlarge   I2   single  ERR478965  48       8   4          1048576     always  rapidgzip     0.229   0.023   0.152       1315789.5             310.8    
+r1-se-I2-t32-p8-c4096-pipe1048576-thpalways-rapidgzip    1    ok       ok             c8g     upstream  c8g.16xlarge   I2   single  ERR478965  32       8   4          1048576     always  rapidgzip     0.229   0.026   0.154       1298701.3             306.7    
+r1-se-I2-t16-p8-c4096-pipe1048576-thpalways-rapidgzip    1    ok       ok             c8g     upstream  c8g.16xlarge   I2   single  ERR478965  16       8   4          1048576     always  rapidgzip     0.231   0.023   0.158       1265822.8             299.0    
+inputpath-rehearse: ok: A: the tool line's wheel is lever.sh's cp39 aarch64 pin
+inputpath-rehearse: ok: A: ISA-L: the pinned wheel is isal false (static none, rapidgzip -v 0 s of ISA-L), as #95 found; every rapidgzip point records isal false
+inputpath-rehearse: ok: A: the g1-reference line cites the reference file with its sha256, and every point record carries it
+inputpath-rehearse: ok: A: every identity line ok (28)
+inputpath-rehearse: ok: A: no point skipped but the 2 warm-ups, 0 defects
+inputpath-rehearse: case B: starting
+inputpath-rehearse: case B: body exit 1; 1 streamed lines; 0 point records
+inputpath-rehearse: ok: B: exit 1
+inputpath-rehearse: ok: B: a fatal line naming the inputs file
+inputpath-rehearse: ok: B: no engine, db or point line (it failed before any build or stage)
+inputpath-rehearse: case D: starting
+inputpath-rehearse: case D: body exit 95; 19 streamed lines; 0 point records
+inputpath-rehearse: ok: D: exit 95 (drop_caches failed)
+inputpath-rehearse: ok: D: no point and no drop-caches line
+inputpath-rehearse: case F: starting
+inputpath-rehearse: case F: body exit 1; 23 streamed lines; 1 point records
+inputpath-rehearse: ok: F: a reference that differs from upstream's output stops the run: exit 1
+inputpath-rehearse: ok: F: one point record, the first warm-up, status defect (law1-g1-mismatch), citing the reference file
+inputpath-rehearse: ok: F: a defect line and a fatal line naming Law 1
+  body F | ak2: [2026-10-18T23:51:42Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d -> /mnt/ip-db/hash.k2d
+  body F | inputpath {"kind":"db","file":"hash.k2d","sha256":"1bd239b207e1d0f679f910cf323c9b6894fdb85c80f0358fa144aca25a7bdfa7","bytes":648733288,"dir":"/mnt/ip-db"}
+  body F | inputpath {"kind":"db-huge","dir":"/mnt/ip-db-huge","huge":"always","shmem_huge_pages_kb":641024}
+  body F | ak2: [2026-10-18T23:51:45Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_1.gz -> /mnt/ip-in/pe_1.gz
+  body F | ak2: [2026-10-18T23:51:45Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_1.bgzf -> /mnt/ip-in/pe_1.bgzf
+  body F | ak2: [2026-10-18T23:51:45Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_1.index -> /mnt/ip-in/pe_1.index
+  body F | ak2: [2026-10-18T23:51:45Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_2.gz -> /mnt/ip-in/pe_2.gz
+  body F | ak2: [2026-10-18T23:51:46Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_2.bgzf -> /mnt/ip-in/pe_2.bgzf
+  body F | ak2: [2026-10-18T23:51:46Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_2.index -> /mnt/ip-in/pe_2.index
+  body F | ak2: [2026-10-18T23:51:46Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/se_1.gz -> /mnt/ip-in/se_1.gz
+  body F | ak2: [2026-10-18T23:51:46Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/se_1.bgzf -> /mnt/ip-in/se_1.bgzf
+  body F | ak2: [2026-10-18T23:51:46Z] staged s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/se_1.index -> /mnt/ip-in/se_1.index
+  body F | inputpath {"kind":"input","role":"pe","accession":"SRR062634","mate":1,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_1.gz","sha256":"422c3210b31d0bb0f88a37fc46a1748f250ce78eaa4951e518499e6388a1cf65","input_kind":"gz","source_sha256":"b69ac1aff65a1392c1d4c589355924d5f439cbf899c87666abc41b6cdf7fc6af","fastq_sha256":"b69ac1aff65a1392c1d4c589355924d5f439cbf899c87666abc41b6cdf7fc6af","file":"/mnt/ip-in/pe_1.gz","bytes":82018875,"fastq_bytes":259935067}
+  body F | inputpath {"kind":"input","role":"pe","accession":"SRR062634","mate":1,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_1.bgzf","sha256":"a14a9430de22434a9aab675475399b90dbd21d6a81f314ad1720270afbed835b","input_kind":"bgzf","source_sha256":"b69ac1aff65a1392c1d4c589355924d5f439cbf899c87666abc41b6cdf7fc6af","fastq_sha256":"b69ac1aff65a1392c1d4c589355924d5f439cbf899c87666abc41b6cdf7fc6af","file":"/mnt/ip-in/pe_1.bgzf","bytes":83852023,"fastq_bytes":259935067}
+  body F | inputpath {"kind":"input","role":"pe","accession":"SRR062634","mate":1,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_1.index","sha256":"8062043c8e9a3f85a0d72c811de6eb00686db615c383b92dd59b090faca8123d","input_kind":"index","source_sha256":"422c3210b31d0bb0f88a37fc46a1748f250ce78eaa4951e518499e6388a1cf65","fastq_sha256":"b69ac1aff65a1392c1d4c589355924d5f439cbf899c87666abc41b6cdf7fc6af","file":"/mnt/ip-in/pe_1.index","bytes":1901659,"fastq_bytes":259935067}
+  body F | inputpath {"kind":"input","role":"pe","accession":"SRR062634","mate":2,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_2.gz","sha256":"445d9939501febefecc9db9b09d719892ca5a5ddae1b7c2d8be5ed1b1f766457","input_kind":"gz","source_sha256":"63e1f9e758436a8a0d9cf49adad02d03de63a6f4741650b7b0bc1fa28de56714","fastq_sha256":"63e1f9e758436a8a0d9cf49adad02d03de63a6f4741650b7b0bc1fa28de56714","file":"/mnt/ip-in/pe_2.gz","bytes":81728731,"fastq_bytes":259935067}
+  body F | inputpath {"kind":"input","role":"pe","accession":"SRR062634","mate":2,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_2.bgzf","sha256":"13daa3e3834c67d793e2af2608e25e93d0d985d01be5cf53a52c968226c5b92b","input_kind":"bgzf","source_sha256":"63e1f9e758436a8a0d9cf49adad02d03de63a6f4741650b7b0bc1fa28de56714","fastq_sha256":"63e1f9e758436a8a0d9cf49adad02d03de63a6f4741650b7b0bc1fa28de56714","file":"/mnt/ip-in/pe_2.bgzf","bytes":83514286,"fastq_bytes":259935067}
+  body F | inputpath {"kind":"input","role":"pe","accession":"SRR062634","mate":2,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/pe_2.index","sha256":"9db971b42a3e7b105a12ecb56a849689e5e67ecf218705e441d104e8bc35f5fd","input_kind":"index","source_sha256":"445d9939501febefecc9db9b09d719892ca5a5ddae1b7c2d8be5ed1b1f766457","fastq_sha256":"63e1f9e758436a8a0d9cf49adad02d03de63a6f4741650b7b0bc1fa28de56714","file":"/mnt/ip-in/pe_2.index","bytes":1901659,"fastq_bytes":259935067}
+  body F | inputpath {"kind":"input","role":"se","accession":"ERR478965","mate":1,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/se_1.gz","sha256":"12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9","input_kind":"gz","source_sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","fastq_sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","file":"/mnt/ip-in/se_1.gz","bytes":13868909,"fastq_bytes":47238491}
+  body F | inputpath {"kind":"input","role":"se","accession":"ERR478965","mate":1,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/se_1.bgzf","sha256":"8ec0b0d7a789ded097f725aee5ee6b5f1139ade1d4be6cb072f4496cc822844a","input_kind":"bgzf","source_sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","fastq_sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","file":"/mnt/ip-in/se_1.bgzf","bytes":14600018,"fastq_bytes":47238491}
+  body F | inputpath {"kind":"input","role":"se","accession":"ERR478965","mate":1,"uri":"s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath-rehearse/se_1.index","sha256":"88a849ca3ab74e349db551a8e1fcb51f29919f9f297163703bfd1a5ecf3bd292","input_kind":"index","source_sha256":"12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9","fastq_sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be","file":"/mnt/ip-in/se_1.index","bytes":1508227,"fastq_bytes":47238491}
+  body F | inputpath {"kind":"engine","engine":"upstream","bin":"/home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2","build":"pin 2731b35f7abb26ec926517274f3d87e78d42fd76;describe 2.17.2-20-g2731b35;cxx g++ (g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5));version Kraken version 2.17.1;built 2026-10-18T23:51:51Z Linux aarch64;"}
+  body F | inputpath {"kind":"isal","build_label":"rapidgzip","isal":false,"static":"none","runtime_isal_s":0,"rule":"true if the static check (#95: isal_inflate_init symbol or the isa-l attribution) or rapidgzip -v ISA-L time > 0; false if static none and 0 s; else null","reference":"#95: the pinned 0.14.5 manylinux aarch64 wheels carry no ISA-L (docs/inputpath.md, Pre-flight and inputs)"}
+  body F | ak2: [2026-10-18T23:51:51Z] drop_caches (rehearsal: nothing)
+  body F | inputpath {"kind":"drop-caches","ok":true,"meminfo":"MemAvailable:=43504532 Shmem:=3227568 "}
+  body F | ak2-phase 2026-10-18T23:51:51Z measure
+  body F | inputpath {"kind":"point","schema":"inputpath-point/1","point_id":"warmup-se","rep":1,"arm":"I0","engine":"upstream","family":"c8g","instance_type":"c8g.16xlarge","db":"k2_standard_08_GB_20260626","threads":48,"thp":"always","fastq_bytes":47238491,"input":{"role":"single","accession":"ERR478965","mates":[{"mate":1,"s3_key":"aws-kraken2/data/inputpath-rehearse/se_1.gz","sha256":"12909ad81dcec618f9129cba37b63bbe5d83ded76ffc251afb462de5794a22c9","fastq_sha256":"385a3f6e4e9ee725dafb3b041d112a456b5cad2aacba709aa857e1a7cfdd91be"}]},"harness":{"warmup":true,"db_dir":"/mnt/ip-db-huge","pipe_requested":"-","thp_requested":"always","decomp":"-","nproc":8,"cmd":"/usr/bin/time -f ak2time\\ wall_s=%e\\ maxrss_kb=%M\\ exit=%x\\ user_s=%U\\ sys_s=%S -o /home/ec2-user/ak2/pts/warmup-se/k2.time /home/ec2-user/ak2/repo/.oracle/2731b35f7abb26ec926517274f3d87e78d42fd76/kraken2 --db /mnt/ip-db-huge --threads 48 --output /mnt/ip-out/output --report /mnt/ip-out/report /mnt/ip-in/se_1.fq","g1_reference":{"file":"/rh/g1ref-bad.json","sha256":"4c9cde52db9897f8bf52ebb1714ab4d9aa447be07b312fe0ee363167d4fab399","output_sha256":"4453c272c2a88d03f845e0ad9b10b240a89505ade11a2c31360226078597dc19","report_sha256":"03c42d13542ec2cd22ccdb598f00e6366ed23f26009eee544c77bdf38e83ebae"},"decoder_threads":0,"total_threads":48,"oversubscribed":true,"exit":0,"timed_out":false,"load_s":0.018,"classify_s":0.141,"tail_s":0.007,"sequences":200000,"mbp":18.13,"classified":396,"seq_per_s":1418439.7,"fq_mb_per_s_wall":283.8,"smaps_max":null,"procs":{"629":{"comm":"bash","ppid":627,"first_s":0.0,"hwm_kb":3056,"threads_max":1,"last_s":0.0}},"procs_left_after_15s":0,"time":{"k2":{"file":"k2.time","wall_s":0.16,"maxrss_kb":710992,"exit":0,"user_s":0.68,"sys_s":0.1,"signal":null}},"stderr_tail":null,"runner_error":null,"pidstat_summary":{"groups":{},"proc_rss_kb_max":{},"rows":0,"seconds":0},"reference":null,"status_detail":"law1-g1-mismatch"},"wall_s":0.166,"classify_reads_per_s":1418439.7,"fastq_mb_per_s":335.0,"classify_window":{"t0":0.018,"t1":0.16},"pidstat_csv":"out/pidstat/warmup-se.csv","peak_rss_kb":{"kraken2":710992},"output_sha256":"4453c272c2a88d03f845e0ad9b10b240a89505ade11a2c31360226078597dc19","report_sha256":"73c42d13542ec2cd22ccdb598f00e6366ed23f26009eee544c77bdf38e83ebae","status":"defect","note":"Law 1 against upstream at the pin: the warm-up I0's output 4453c272c2a8 / report 73c42d13542e vs the reference 4453c272c2a8 / 03c42d13542e (/rh/g1ref-bad.json, sha256 4c9cde52db98)"}
+  body F | inputpath {"kind":"defect","point_id":"warmup-se","arm":"I0","threads":48,"p":null,"status_detail":"law1-g1-mismatch","note":"Law 1 against upstream at the pin: the warm-up I0's output 4453c272c2a8 / report 73c42d13542e vs the reference 4453c272c2a8 / 03c42d13542e (/rh/g1ref-bad.json, sha256 4c9cde52db98)"}
+  body F | ak2: [2026-10-18T23:51:51Z] ERROR: Law 1: the se warm-up I0 differs from upstream at the pin (/rh/g1ref-bad.json): Law 1 against upstream at the pin: the warm-up I0's output 4453c272c2a8 / report 73c42d13542e vs the reference 4453c272c2a8 / 03c42d13542e (/rh/g1ref-bad.json, sha256 4c9cde52db98)
+  body F | inputpath {"kind":"fatal","message":"Law 1: the se warm-up I0 differs from upstream at the pin (/rh/g1ref-bad.json): Law 1 against upstream at the pin: the warm-up I0's output 4453c272c2a8 / report 73c42d13542e vs the reference 4453c272c2a8 / 03c42d13542e (/rh/g1ref-bad.json, sha256 4c9cde52db98)"}
+inputpath-rehearse: ok

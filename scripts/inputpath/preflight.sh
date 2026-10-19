@@ -196,12 +196,21 @@ identity() {
 # Every sweep file other than this pre-flight and its library: a line that passes --gzip-compressed
 # and mentions an I2-I4 input path (rapidgzip, /dev/fd, a process substitution, I2/I3/I4) fails.
 gzflag_scan() {
-  local f n=0 bad=0 hits
+  local f n=0 bad=0 hits body
   while IFS= read -r f; do
     [ -f "$f" ] || continue
     case "$f" in scripts/inputpath/preflight.sh|scripts/inputpath/lib.sh|scripts/inputpath/prep.sh) continue ;; esac
     n=$((n + 1))
-    hits=$(grep -nE -- '--gzip-compressed' "$f" | grep -E 'rapidgzip|/dev/fd|<\(|\bI[234]\b' || true)
+    # A spec holds its body as one JSON string (one physical line): scan the decoded body's own lines,
+    # or I1's legitimate --gzip-compressed and I2's /dev/fd paths would share a "line".
+    case "$f" in
+      *.json)
+        # A spec whose body cannot be read (not JSON, no command[2], empty) fails: unscanned is not clean.
+        body=$(jq -er '.command[2] | select(type == "string" and length > 0)' "$f" 2>/dev/null) ||
+          { bad=$((bad + 1)); echo "$f: no readable command[2] body to scan"; continue; }
+        hits=$(printf '%s\n' "$body" | grep -nE -- '--gzip-compressed' | grep -E 'rapidgzip|/dev/fd|<\(|\bI[234]\b' || true) ;;
+      *) hits=$(grep -nE -- '--gzip-compressed' "$f" | grep -E 'rapidgzip|/dev/fd|<\(|\bI[234]\b' || true) ;;
+    esac
     if [ -n "$hits" ]; then bad=$((bad + 1)); echo "$f: $hits"; fi
   done < <(git ls-files -co --exclude-standard -- 'scripts/inputpath/*' 'scripts/g2/*inputpath*' 'runs/*inputpath*' 'scripts/lib/*inputpath*' | sort -u)
   ck gzflag "sweep files scanned: $n (none yet means: the rule is documented in docs/inputpath.md and asserted on every command built here)" 0 "$bad"

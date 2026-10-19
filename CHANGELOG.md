@@ -53,6 +53,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - rapidgzip equals `gzip -dc` at -P 1–16 on every input;
     - I1–I4 equal I0, and I0 equals the G1 oracle;
     - the pinned manylinux aarch64 rapidgzip wheels have no ISA-L. The x86_64 wheel has it.
+- **`make inputpath FAMILY=c8g|c9g|c8gn ENGINE=upstream|ours`: the G2 input-path sweep harness
+  (#90, part 1; docs/inputpath.md, "The harness")**. It writes
+  `runs/inputpath-<family>-<engine>.json` (all six committed), prints the time estimate, the cost
+  bound and the `make run GATE=inputpath` command, and launches nothing without `LAUNCH=1`.
+  - **Sessions:** one 64-vCPU <family>.16xlarge per session, us-west-2b. The TTL is the longest
+    whole minute with cost_limit ≤ $5: c8g 117 min ($4.98), c9g 107 min ($4.97), c8gn 79 min
+    ($5.00).
+  - **Setup:** Standard-8 resident on tmpfs, with upstream also on a `huge=always` copy. The
+    families have no instance store, so I0's FASTQ is on tmpfs too. Every point after the
+    warm-up is warm. drop_caches runs once, and its failure ends the run (95).
+  - **Arms:**
+    - I0 at THP always, plus never for upstream (the THP pair);
+    - I2 at p ∈ {16, 8, 4, 2}, chunk 4 MiB;
+    - the best p (rule: the smallest p within 1% of the minimum wall, per sample and threads,
+      from rep 1);
+    - I3 (`--import-index`) and I4 (BGZF) at the best p;
+    - chunk 8 and 16 MiB, and a default-pipe contrast;
+    - I1, for ours both through the `gzip -dc` pipe and in process.
+
+    All of these run at threads {48, 32, 16} ({48, 16} on c8gn, its 79-min TTL), for the pe and se
+    samples of #95's inputs.tsv (SRR062634_8000000, SRR4074269), REPS 2 (rep 2 reversed).
+    `RG2_WHEEL=<url>@<sha256>` (a pinned wheel, `--require-hashes`, its own venv) or `RG2_SCRIPT`
+    (a source build), off by default, adds I2–I4 at the best p with a second rapidgzip build,
+    recording its version, build and ISA-L per point. The ISA-L arm is the 0.16.0 aarch64 wheel
+    (#97: 0.14.5 cannot build ISA-L on aarch64), pending #97's crash verdict.
+  - **The pipe:** every rapidgzip decode writes into a 1 MiB pipe (`scripts/inputpath/pipesz.py`,
+    F_SETPIPE_SZ, the size it got recorded).
+  - **Identity:** before a rapidgzip build and configuration is used, its decode of each file
+    must equal `gzip -dc`'s sha256. A failed attempt is retried once (the rpmalloc race, #89),
+    each attempt its own line; two failures skip every point needing it. The best p uses only
+    identity-clean points. A decoder that dies inside a point makes it `skipped` (decode-crash).
+  - **Law 1:** each sample's warm-up I0 must equal upstream at the pin, #95's `g1_reference`
+    (`results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json`, recorded with its
+    sha256), or the run stops with a defect before any other point; for ENGINE=ours this is the
+    comparison with upstream. Every later point's `--output`, `--report` and sequence count must
+    equal the warm-up's. Otherwise it is a `defect`.
+  - **ISA-L:** #95's detector (static symbol/attribution, `rapidgzip -v` ISA-L time); the pinned
+    aarch64 wheel records `isal: false`.
+  - **Per point:** wall, the classify window, reads/s, FASTQ MB/s, a pidstat -t CSV per run in
+    the report's schema, peak RSS per process (GNU time, VmHWM), and smaps huge-page maxima.
+    Records are `out/points.jsonl` (schema `inputpath-point/1`, for `make inputpath-report`) and
+    `out/events.jsonl`, both streamed and pushed after every point. `tables/inputpath.tsv` is the
+    per-point manifest table (post script).
+  - **Inputs** are read from #95's `scripts/inputpath/inputs.tsv` (the body checks it before any
+    build or stage and fails loudly).
+  - **Rehearsal:** `make rehearse SPEC=runs/inputpath-*` runs `scripts/lib/inputpath_rehearse.sh`
+    on AL2023 containers with the real builds, rapidgzip and pidstat. Cases: the full matrix for
+    each engine against upstream's reference (computed with the oracle build); induced rapidgzip
+    SIGSEGVs (excluded, transient-retried, in-point); a missing input list; drop_caches failing; a
+    deadline; a differing Law 1 reference (the run stops). It also checks the record contract
+    with the report's script.
+  - **Time model:** `scripts/inputpath/estimate.py` on the real sample sizes: 45 / 58 min
+    (upstream / ours) on c8g and c9g, 36 / 45 min on c8gn.
 
 - **The input-path sweep's report: `make inputpath-report`** (#90; docs/inputpath.md, "Records
   and report"). `scripts/lib/inputpath_report.py` (stdlib only) reads only the run dir:

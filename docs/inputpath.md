@@ -186,6 +186,354 @@ In that run, I1–I4 (at -P 4) equalled I0 for both roles.
 Tools go to `INPUTPATH_TOOLS` (default `/tmp/ak2-inputpath-tools`) and are reused when they match
 the pins.
 
+## The harness: `make inputpath`
+
+**What:** one spawn session per instance family runs the whole I0–I4 matrix for one engine, on
+one 64-vCPU instance, with Standard-8 resident. It measures how much of the classifier's wall
+time is input decompression and parsing, and whether rapidgzip removes it (plan and decisions:
+issue #90). Backed by `scripts/inputpath/` (`mkspec.sh` the generator, `inputpath.body.sh` the
+body, `run_point.py` one instrumented point, `record.py` the point record, `pipesz.py` the pipe
+wrapper, `inputs.py` the input list, `estimate.py` the time model, `tables.py` the table) and
+`scripts/post/inputpath.sh`.
+
+```bash
+make inputpath FAMILY=c8g ENGINE=upstream          # writes runs/inputpath-c8g-upstream.json; prints the
+                                                   # estimate, the cost bound and the make run command
+make inputpath FAMILY=c8gn ENGINE=ours ARGS='THREADS="48 16"'   # a cut matrix (any KEY=VALUE of mkspec.sh)
+make rehearse SPEC=runs/inputpath-c8g-upstream.json   # local, AL2023 containers (below)
+make run GATE=inputpath SPEC=runs/inputpath-c8g-upstream.json   # Scott's call: commit and push first
+make orphans
+```
+
+`make inputpath` launches nothing. With `LAUNCH=1` it runs `scripts/run.sh inputpath SPEC`, which
+is the same as `make run`. It does this only when the spec is committed and unchanged, and
+`inputs.tsv` is valid. The spec is generated, never edited by hand. Regenerate it after any
+change to the body or to `inputs.tsv`.
+
+`make inputpath-test` runs the self-tests of `record.py` (the status rules) and `inputs.py` (the
+input list's rules). Both are also part of `make test`.
+
+### Sessions
+
+| family | type | on-demand $/h (truffle 0.57.1) | TTL | cost_limit |
+|---|---|---|---|---|
+| c8g | c8g.16xlarge | 2.55232 | 117 min | $4.98 |
+| c9g | c9g.16xlarge | 2.78208 | 107 min | $4.97 |
+| c8gn | c8gn.16xlarge | 3.792 | 79 min | $5.00 |
+
+Each type is 64 vCPU, 128 GiB, arm64, with no instance store. The TTL is the longest whole
+minute, at most 240 (Scott: up to 4 h), whose cost_limit is at most $5 (Scott: per run). Here
+cost_limit is TTL × price + $0.005, to the cent, which is cost_check's rule. Both engines use the
+same TTL. The AZ is us-west-2b.
+
+Both arms use the AMI that `make run` uses today: spawn's auto-selection, recorded as `.ami` in
+the manifest and in the body's `host` line.
+
+### The body
+
+1. **Setup.** dnf (including sysstat and GNU time), then the clone at the launch commit.
+   `inputs.tsv` is checked first, so a missing or incomplete list fails before any build or stage.
+   Then the host line, and the engine build in the background:
+   - upstream: `scripts/oracle-build.sh` at the pin;
+   - ours: `make build`.
+
+   rapidgzip comes from lever.sh's `lv__rg_ensure`: 0.14.5, pip `--require-hashes`. Its
+   `--version`, `--help` and `--oss-attributions` go to `out/rapidgzip-info.txt`, with ISA-L
+   evidence grepped from them.
+2. **Stage, into tmpfs.**
+   - Our Standard-8 copy, `aws-kraken2/data/k2_standard_08_GB_20260626`, goes to `/mnt/ip-db`
+     (`huge=never`), with each file checked against its sha256 metadata.
+   - For upstream, a copy also goes to `/mnt/ip-db-huge` (`huge=always`), checked with `cmp`.
+   - Every `inputs.tsv` object goes to `/mnt/ip-in`, checked against its row's sha256.
+   - The FASTQ is derived with `gzip -dc`. That sha256 is the reference every decode must equal.
+   - The BGZF's `gzip -dc` must equal it too. The `source_sha256` rules are under "Inputs".
+3. **`ak2_drop_caches`** runs once. If it fails, the run ends with exit 95 (the preamble's rule).
+   Then come the points. The DB is resident in RAM. Each classifier run maps it from tmpfs.
+   Upstream's default load is `mmap` plus `LoadFile`. Ours reads the table into its heap. Every
+   point after the warm-up is warm.
+
+### The matrix (per sample; the smaller FASTQ first)
+
+| set | points | arm, parameters |
+|---|---|---|
+| warm-up | 1 | I0 at the highest threads: the sample's Law 1 reference, `status: skipped` |
+| I0 | threads | the FASTQ on tmpfs |
+| THP contrast (upstream) | threads | I0 at `never` (the main points run at `always`) |
+| I2 | p × threads | `<(pipesz 1 MiB rapidgzip -d -c -P p --chunk-size 4096 mate.gz)` per mate, no `--gzip-compressed` |
+| best p | — | per sample and threads, from rep 1's I2 points (rule below), one `select` line each |
+| I3 | threads | I2 at the best p, `--import-index mate.index` |
+| I4 | threads | I2 at the best p on `mate.bgzf` |
+| chunk | 2 × threads | I2 at the best p, `--chunk-size` 8192 and 16384 KiB. The 4 MiB point is I2's own |
+| pipe contrast | threads | I2 at the best p with the pipe left at its default (`pipesz default`) |
+| I1 | threads (ours: 2 × threads) | `--gzip-compressed mate.gz`: upstream's wrapper `gzip -dc`; ours as `AK2_DECOMPRESS=pipe` and in process |
+
+The defaults are threads {48, 32, 16} (highest first; {48, 16} on c8gn, whose TTL is 79 min),
+p {16, 8, 4, 2} and REPS 2. With them, upstream has 36 points per sample per rep (24 on c8gn) and
+ours also has 36 (no THP contrast, two I1 sets).
+Rep 1 of everything runs first. Rep 2 runs rep 1's list in reverse and reuses rep 1's best p.
+
+**Best p (the rule).** Take rep 1's I2 points of the PyPI build at chunk 4 MiB, the main pipe
+size and the main THP, with status `ok` and identity `ok`. The best p is the smallest p whose `wall_s` is within 1% of the minimum
+`wall_s`. If there is none, I3, I4, chunk and pipe at those threads are skipped (`no-best-p`).
+
+**A second rapidgzip build** (off by default; its use waits for #97). It adds I2, I3 and I4 at the
+best p with that build, per threads (`harness.decomp` `rapidgzip-2`). Its decodes take the same
+identity checks, and every one of its points records its `rapidgzip {version, build, isal,
+build_detail}`. Exactly one of:
+- `ARGS="RG2_WHEEL=<https url of a .whl>@<sha256>"`: a pinned wheel. It is downloaded, checked
+  against the sha256, and installed with `pip --require-hashes` into its own venv, as lever.sh
+  installs the first. The candidate is the rapidgzip 0.16.0 cp39 manylinux aarch64 wheel, which
+  carries ISA-L (#97: 0.14.5 cannot build ISA-L on aarch64; its setup.py builds ISA-L only on
+  x86_64). Its use waits for #97's verdict on whether 0.16.0 is crash-free on Graviton:
+
+  ```
+  RG2_WHEEL=https://files.pythonhosted.org/packages/46/5e/bfd0ba68015806de0959c6514a61b162548014c550a30e83be81943878c7/rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl@2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d
+  ```
+- `ARGS="RG2_SCRIPT=<script in the tree>"`: a source build. The body runs the script with a work
+  dir and takes the binary path from its last stdout line.
+
+Its version is read from `--version`, and its ISA-L verdict comes from the same detector (an
+`isal` line). Rehearsal case W installs the 0.16.0 wheel this way and runs it on a small matrix.
+
+**Threads** count against the same 64 vCPUs. Each record carries `decoder_threads` (p × mates),
+`total_threads` and `oversubscribed` (more than nproc). Oversubscribed points are kept, not
+pruned. For ours, `fanout` = threads.
+
+**THP.** `transparent_hugepage/enabled` is set before each point and read back (`thp`). A write
+that does not take ends the run. The boot value is restored at the end (`summary.thp_restored`).
+At the pin, upstream's table is never anonymous memory, even without `--memory-mapping`. It is
+`mmap(MAP_PRIVATE)` of hash.k2d, pre-faulted by `LoadFile`. So the `enabled` knob alone cannot put
+the table on 2 MiB pages. THP is applied in two places:
+- `always` reads the table from a `huge=always` tmpfs and sets `enabled=always`;
+- `never` reads it from a `huge=never` tmpfs and sets `enabled=never`.
+
+Each point records the classifier's `smaps_rollup` maxima (AnonHugePages, ShmemPmdMapped,
+FilePmdMapped), so whether the pages really were huge is a measurement. Ours keeps its table on
+the heap, so for ours `enabled` is the knob and the DB comes from `/mnt/ip-db`.
+
+**The pipe.** `scripts/inputpath/pipesz.py` raises the process substitution's pipe, rapidgzip's
+stdout, to 1 MiB with `F_SETPIPE_SZ`. It reads the size back with `F_GETPIPE_SZ`, writes it to the
+point dir, and execs `/usr/bin/time … rapidgzip`. A size it cannot get fails the decode, so the
+point is never measured at the wrong size. The record's `pipe_bytes` is the size actually got.
+`/proc/sys/fs/pipe-max-size` is in the host line. Upstream's I1 pipes, its wrapper's `gzip -dc`,
+stay at the default; changing them would need a code change.
+
+### Identity and Law 1
+
+- **Identity** (Scott, 2026-10-18; the 0.14.5 crashes are #89). Before a rapidgzip build and
+  configuration (binary, args and file) is used in any point, it decodes the file to `sha256sum`.
+  The result must equal the file's `gzip -dc` sha256.
+  - A crash, a timeout (`ID_TIMEOUT`, 360 s) or a mismatch is an `identity` line with
+    `ok: false`. It is retried once: #89 measured 0.14.5's rpmalloc race at about 0.25% of
+    decodes on Graviton4, so one crash is not the configuration's verdict. Each attempt is its
+    own line (`attempt` 1, 2).
+  - Only when both attempts fail is every point that needs that configuration `skipped`
+    (`skipped-identity`) and never run.
+  - Inside a point, a decoder exiting non-zero, read from its GNU time record, makes the point
+    `skipped` (`decode-crash`). It is listed and never used.
+  - The point's `identity` object holds the check of every mate (the deciding attempt's sha256s
+    joined in mate order, the worst exit, `ok` for all of them) and `mates[].attempts`.
+- **Law 1 against upstream at the pin, before anything is measured.** Each sample's warm-up I0
+  must equal #95's recorded reference: `g1_reference` in
+  `results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json` (`G1_REF`), the I0
+  `--output` and `--report` sha256 of upstream at the pin on these inputs and Standard-8 (pe
+  SRR062634_8000000, se SRR4074269; the table above). The file and its sha256 are a `g1-reference`
+  line and `harness.g1_reference` in every record. A mismatch makes the warm-up `status: defect`
+  (`law1-g1-mismatch`), streams a `defect` line, and ends the run (exit 1) before any other point.
+  For ENGINE=ours this is the comparison with upstream; within the run the report only compares
+  points with each other.
+- **Law 1 within the run.** Every point's `--output` and `--report` sha256, and its sequence
+  count, must equal the sample's warm-up I0. Otherwise the point is `status: defect` (`law1-mismatch`), with a
+  `defect` line. A classifier that fails is also a defect (`classifier-failed`).
+  `make inputpath-report` re-checks Law 1 against the I0 points.
+
+### What one point measures (`run_point.py`)
+
+`bash -c CMD`, in its own session, with:
+- the classifier under `/usr/bin/time -f 'ak2time …' -o k2.time`;
+- each decoder under its own `rg<mate>.time`.
+
+The instruments:
+- **`wall_s`**: exec to exit. It includes starting the decoders and the classifier's DB map.
+- **`load_s`**: exec to `Loading database information... done.`.
+- **`classify_s`**: the classifier's own `processed in`, the classification phase.
+- **`classify_window`**: the same span in the pidstat CSV's time base.
+- **`classify_reads_per_s`**: sequences × mates / classify_s.
+- **`fastq_mb_per_s`**: the FASTQ bytes of all mates / classify_s. `harness.fq_mb_per_s_wall` is
+  the same over wall.
+- **`pidstat -t -u -r -h 1`** over the run. It is filtered to the session's processes and
+  written as `out/pidstat/<id>.csv`, in the report's schema:
+  `t_s,tgid,tid,command,role,cpu_pct` plus `proc_comm,comm,usr_pct,sys_pct,wait_pct,core,
+  minflt_s,majflt_s,vsz_kb,rss_kb`.
+  - rapidgzip and gzip threads carry their role.
+  - The classifier's threads are `command kraken2:<comm>` with no role. Upstream has no dedicated
+    reader thread: each OpenMP worker reads its 3 MB block under `omp critical(seqread)`. Ours'
+    goroutines are not threads. So the report infers the reader as the busiest classifier thread
+    and says so.
+  - `harness.pidstat_summary` gives CPU seconds, threads and the busiest thread's mean %CPU per
+    group: engine_main, engine_workers, rapidgzip, gzip, other.
+- **Peak RSS**:
+  - `peak_rss_kb.kraken2` from GNU time (the wrapper execs classify in the same pid);
+  - `rapidgzip`, `rapidgzip_mate<n>` from theirs;
+  - `gzip` from `/proc/<pid>/status` VmHWM, sampled at 2 Hz;
+  - `harness.procs`: every process of the session, with VmHWM.
+- **`--timeout`** (`POINT_TIMEOUT`, 900 s) kills the session. The point is `skipped`
+  (`timeout`, censored).
+
+### Inputs
+
+The harness reads `scripts/inputpath/inputs.tsv`, written by `make inputpath-prep` ("Pre-flight
+and inputs" above). `scripts/inputpath/inputs.py check` validates it on the node before anything
+is built or staged:
+- exactly one accession per role (pe/paired, se/single);
+- one gz, one bgzf and one index row per role and mate;
+- objects only in `aws-kraken2-942542972736-us-west-2`;
+- 64-hex sha256s.
+
+Every staged object must equal its row's sha256. The FASTQ is derived on the node with
+`gzip -dc`, and a `fastq` row's sha256 must equal it; fastq rows are not staged. `source_sha256`
+must be the FASTQ's sha256 (gz, fastq, bgzf) or the gz's (bgzf, index), or empty.
+
+`make inputpath` adds every staged row's object to the spec's `AK2_DATASETS`, so `run.sh` records
+its ETag in the manifest. It also sets `AK2_ACCESSIONS` from the accessions, and the body checks
+that they are the same set.
+
+### Where each field lives
+
+`run.sh` writes `manifest.json`. The sweep's added fields are per point:
+
+| plan field | where |
+|---|---|
+| arm, rapidgzip p, kraken2 `--threads` | `out/points.jsonl`: `arm`, `p`, `threads`; `tables/inputpath.tsv` |
+| chunk size, pipe size, THP | `chunk_mib`, `pipe_bytes` (got; `harness.pipe_requested`), `thp` (read back; `harness.thp_requested`) |
+| rapidgzip version, build, ISA-L | `rapidgzip {version, build: pypi\|source, isal}`; the `tool` and `isal` lines in `out/events.jsonl`; `out/rapidgzip-info.txt`; `out/lever.jsonl` (wheel and extension sha256) |
+| Law 1 reference (upstream at the pin) | `harness.g1_reference {file, sha256, output_sha256, report_sha256}`; the `g1-reference` line |
+| input object keys and sha256 | `input.mates[].s3_key`, `.sha256`, `.fastq_sha256`; the `input` lines; the manifest's `datasets` (ETag) |
+| index hash (I3), BGZF hash (I4) | `index_sha256`, `bgzf_sha256` (mates space-separated, mate order); `input.mates[].index_sha256` |
+| pidstat CSV path | `pidstat_csv` (`out/pidstat/<id>.csv`) |
+| peak RSS per process | `peak_rss_kb`; `harness.procs` |
+| output and report sha256 | `output_sha256`, `report_sha256`; `harness.reference` (the warm-up's) |
+| identity check | `identity`; the `identity` lines |
+| AMI, instance, price, AZ | `manifest.json` (run.sh); the `host` line |
+
+Other files under `out/`:
+- `events.jsonl`: every streamed line, with field `kind`. The kinds are inputs-tsv, host, tool,
+  db, db-huge, input, g1-reference, isal, engine, identity, select, drop-caches, point, defect,
+  summary and fatal.
+- `points/<id>.tgz`: the point's command, stderr, time records, pipe records and the runner's
+  JSON.
+- `inputpath.tsv`: the end-of-run table.
+
+`scripts/post/inputpath.sh` (run by `run.sh`) writes `tables/inputpath.tsv` and
+`tables/inputpath-defects.tsv` from `out/points.jsonl`.
+
+### Streaming and the deadline (hygiene)
+
+- Every event is one `inputpath {json}` line in the log, which the preamble pushes every 5 s.
+- `out/points.jsonl` and the point's CSV and tgz are pushed after every point. A TTL kill
+  therefore loses no finished point.
+- A point not started by the deadline is still recorded, as `skipped` (`skipped-deadline`). The
+  deadline is launch + TTL − `MARGIN_S` (600 s), with launch taken as boot − 120 s.
+
+### Time budget
+
+`scripts/inputpath/estimate.py` is a model, not a measurement. `make inputpath` prints it with
+the docstring's cited rates:
+- upstream Standard-8 classification at 69 MB/s of FASTQ per thread (G2 loadbench, r8g.2xlarge);
+- `gzip -dc` at 200 MB/s (G2 logs);
+- rapidgzip at 170 MB/s per thread (probe (c)).
+
+The sample sizes are `inputs.tsv`'s:
+- pe SRR062634_8000000: 2 × 2.09 GB FASTQ;
+- se SRR4074269: about 5.1 GB FASTQ, estimated from its BGZF at pe's compression ratio.
+
+| session | threads | modelled | TTL | at 1.5× | at 2× |
+|---|---|---|---|---|---|
+| upstream, c8g / c9g | 48 32 16 | 45 min | 117 / 107 | 60 min | 75 min |
+| ours, c8g / c9g | 48 32 16 | 58 min | 117 / 107 | 79 min | 101 min |
+| upstream, c8gn | 48 16 | 36 min | 79 | 47 min | 57 min |
+| ours, c8gn | 48 16 | 45 min | 79 | 60 min | 74 min |
+
+All six fit, even at 2× the model. A miss is not a lost run: the deadline skips the tail of rep 2
+and records it as such.
+
+**The c8gn cut:** c8gn defaults to `THREADS="48 16"` (its TTL is 79 min). `ARGS='THREADS="48 32
+16"'` restores the full matrix there (modelled at 45 and 58 min). The chunk-size points at one
+threads value are a further cut.
+
+### The rehearsal
+
+`make rehearse SPEC=runs/inputpath-*.json` runs `scripts/lib/inputpath_rehearse.sh`; its header
+lists every check. The spec's own body runs on AL2023 aarch64 containers (rootful podman,
+`--privileged`) under `bash -e -c`, as ec2-user.
+
+**Real on the node:**
+- the bundle clone;
+- the upstream build at the pin, and ours' `make build`;
+- lever.sh's rapidgzip install;
+- pidstat, GNU time and `F_SETPIPE_SZ`;
+- tmpfs `huge=always`;
+- process substitution into the classifier.
+
+**Stand-ins:**
+- S3: the stub aws on a directory.
+- The Standard-8 key holds the viral DB.
+- The inputs are real public read sets: SRR062634 (its first 1,000,000 pairs) as pe, and ERR478965 mate 1 as
+  se. The prep container re-encodes them as BGZF and builds their rapidgzip indexes.
+- THP: a fake sysfs file, so the VM's setting is never written.
+- The host: 8 CPUs for 64.
+
+**The Law 1 reference** for the rehearsal inputs: upstream at the pin (the shared oracle build)
+run on the host on the same inputs and the viral DB, written in #95's `g1_reference` format and
+passed as `AK2_REHEARSE_G1_REF`.
+
+**Cases:**
+- upstream: A, the full matrix; B, no inputs.tsv; D, drop_caches failing; F, a reference whose
+  report sha256s differ (the run must stop after the first warm-up, exit 1).
+- ours: C, the full matrix with induced rapidgzip SIGSEGVs: both identity attempts of one
+  configuration (excluded), the first attempt of another (a transient: the retry passes and its
+  points run), and one timed decode; B; E, a deadline 60 s into the measure phase; F (ours'
+  warm-up against a reference that differs).
+
+A and C also run `make inputpath-report`'s script on a mock run dir, which checks the record
+contract (`scripts/lib/inputpath_report.py`, from the tree or `origin/inputpath-report`). The
+record is `results/rehearse/inputpath-<family>-<engine>-<ts>-<sha>.log`. All six specs share one
+body, apart from the parameter lines, and the rehearsal checks that.
+
+### Deviations from the plan (#90), for Scott
+
+- **No instance store.** c8g, c9g and c8gn (no `d`) have none, so I0's "local NVMe" is tmpfs.
+  tmpfs is the page cache, so I0 is warm by construction.
+- **THP.** "THP always with `--memory-mapping` off puts the table in anonymous memory" does not
+  hold at the pin; see "THP" above. The contrast also switches the DB's tmpfs `huge=` setting.
+- **No reader thread** to attribute in upstream; see the pidstat bullet above.
+- **Ours' I3/I4.** These still decode through rapidgzip pipes. In-process decode from index seek
+  points or BGZF blocks is the plan's next step, not yet in ours.
+- **Pipe-size contrast.** Added (per-lever attribution): I2 at the best p with the default pipe.
+- **ISA-L: none in the pinned Graviton wheel** (#95). The body uses #95's detector
+  (`scripts/inputpath/lib.sh`):
+  - static: an `isal_inflate_init` symbol or the isa-l attribution in the extension (the
+    `isal_inflate` literal is an error string in every build, not evidence);
+  - runtime: `rapidgzip -v`'s "Time spent decoding with ISA-L" on the se gz.
+
+  `isal` is true if either finds ISA-L, false if static none and 0 s, else null; the `isal` line
+  records both. The rehearsal's real wheel gives false. The ISA-L arm is the second-build switch
+  above (`RG2_WHEEL`, the 0.16.0 wheel), off until #97's verdict.
+- **I1 for ours** runs twice: through the same `gzip -dc` pipe as upstream (`AK2_DECOMPRESS=pipe`)
+  and in process (ours' default).
+
+### Failure looks like
+
+- `inputs: scripts/inputpath/inputs.tsv: …` (fatal line, exit 1): the input list is missing or
+  incomplete. Nothing was built or staged.
+- `… sha256 … != inputs.tsv …` or `… source_sha256 … is neither …`: a staged object is not the
+  one recorded.
+- Exit 95: drop_caches failed before the first point.
+- `THP enabled=… was not applied`: the sysfs write did not take, so the run ends.
+- Status `defect` / a `defect` line: Law 1. This is a finding, so file an issue.
+- Status `skipped` with `harness.status_detail` `skipped-identity` or `decode-crash`: a rapidgzip
+  crash or mismatch, recorded and never used.
+
 ## Records and report
 
 **What:** `make inputpath-report RUN=results/inputpath/<run-id> [OUT=…]` renders the sweep's
