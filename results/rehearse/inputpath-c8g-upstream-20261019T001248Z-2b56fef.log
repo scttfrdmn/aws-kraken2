@@ -1,0 +1,14 @@
+inputpath-rehearse: record results/rehearse/inputpath-c8g-upstream-20261019T001248Z-2b56fef.log; runs/inputpath-c8g-upstream.json (upstream, c8g.16xlarge, REPS 2) at 2b56fef; cases W; shell flags huB
+inputpath-rehearse: ok: every runs/inputpath-*.json carries this body (6 specs; only the parameter lines differ)
+inputpath-rehearse: stand-ins: viral DB under aws-kraken2/data/k2_standard_08_GB_20260626; inputs pe_1.bgzf pe_1.gz pe_1.index pe_2.bgzf pe_2.gz pe_2.index se_1.bgzf se_1.gz se_1.index 
+inputpath-rehearse: expected: 36 points per sample in rep 1, 146 point records per full run
+inputpath-rehearse: case W: starting
+inputpath-rehearse: case W: body exit 0; 66 streamed lines; 20 point records
+inputpath-rehearse: ok: W: body exit 0
+inputpath-rehearse: ok: W: a tool line for rapidgzip-2: 0.16.0, build pypi, its wheel's sha256 in build_detail
+inputpath-rehearse: ok: W: the isal line for rapidgzip-2 is true (static isal, 0.0175696 s of ISA-L), the pinned 0.14.5's false
+inputpath-rehearse: ok: W: 6 rapidgzip-2 points (I2, I3, I4 x pe, se at the best p), all ok, identity ok, recording 0.16.0 pypi isal true
+inputpath-rehearse: ok: W: the PyPI 0.14.5 points still record 0.14.5, isal false
+inputpath-rehearse: ok: W: 0 defects; the warm-ups are the only skips
+inputpath-rehearse: ok: W: the report's contract on its records: exit 0, 0 DEFECT lines (want 0, 0)
+inputpath-rehearse: ok
