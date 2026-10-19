@@ -67,5 +67,5 @@ cohort	stage	rung	arm	state	spec	type	nodes	ttl_min	cost_limit_usd	cost_limit_to
 10	6	O4b-cost-if32	O	not-run											O4b-cost-if32 is not-run at c10: INFLIGHT 32 > cohort 10: no spec is generated for it
 10	6	O4b-cost-if64	O	not-run											O4b-cost-if64 is not-run at c10: INFLIGHT 64 > cohort 10: no spec is generated for it
 10	6	O4b-cost-if128	O	not-run											O4b-cost-if128 is not-run at c10: INFLIGHT 128 > cohort 10: no spec is generated for it
-10	7	O5	O	new	runs/g3-l-o5-c10.json	r8g.16xlarge	4	100	6.29	25.16	2205	its own c1 runs: 20261012-050957-f63c288-6a6c-n32,20261012-051942-f63c288-df0f-n32			
-10	7	O5-cost	O	new	runs/g3-l-o5-cost-c10.json	x8g.12xlarge	2	40	3.13	6.26	886	its own c1 runs: 20261012-045238-f63c288-232f-n16,20261012-053922-f63c288-17de-n16			
+10	7	O5	O	committed	runs/g3-l-o5-c10.json	r8g.16xlarge	4	100	6.29	25.16	2205	its own c1 runs: 20261012-050957-f63c288-6a6c-n32,20261012-051942-f63c288-df0f-n32			STALE: the committed spec's parameters are not the resolution's now (make ladder-respec COHORT=10)
+10	7	O5-cost	O	committed	runs/g3-l-o5-cost-c10.json	x8g.12xlarge	2	40	3.13	6.26	886	its own c1 runs: 20261012-045238-f63c288-232f-n16,20261012-053922-f63c288-17de-n16			
