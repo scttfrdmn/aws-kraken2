@@ -201,7 +201,12 @@ gzflag_scan() {
     [ -f "$f" ] || continue
     case "$f" in scripts/inputpath/preflight.sh|scripts/inputpath/lib.sh|scripts/inputpath/prep.sh) continue ;; esac
     n=$((n + 1))
-    hits=$(grep -nE -- '--gzip-compressed' "$f" | grep -E 'rapidgzip|/dev/fd|<\(|\bI[234]\b' || true)
+    # A spec holds its body as one JSON string (one physical line): scan the decoded body's own lines,
+    # or I1's legitimate --gzip-compressed and I2's /dev/fd paths would share a "line".
+    case "$f" in
+      *.json) hits=$(jq -r '.command[2] // empty' "$f" 2>/dev/null | grep -nE -- '--gzip-compressed' | grep -E 'rapidgzip|/dev/fd|<\(|\bI[234]\b' || true) ;;
+      *) hits=$(grep -nE -- '--gzip-compressed' "$f" | grep -E 'rapidgzip|/dev/fd|<\(|\bI[234]\b' || true) ;;
+    esac
     if [ -n "$hits" ]; then bad=$((bad + 1)); echo "$f: $hits"; fi
   done < <(git ls-files -co --exclude-standard -- 'scripts/inputpath/*' 'scripts/g2/*inputpath*' 'runs/*inputpath*' 'scripts/lib/*inputpath*' | sort -u)
   ck gzflag "sweep files scanned: $n (none yet means: the rule is documented in docs/inputpath.md and asserted on every command built here)" 0 "$bad"
