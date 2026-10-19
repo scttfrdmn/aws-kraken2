@@ -1,0 +1,35 @@
+Loading database information...ak2-timing	opts	0.003249	0.000547	3	0	0.000024	0.000024
+ak2-timing	taxo	0.003805	0.521094	87917	2	0.019381	0.081253
+ak2-engine	mem	t_s	15.0	rss_kib	51642532	hwm_kib	51642532	heap_inuse	407879680	sys	450214248	avail_kib	460074936
+ak2-engine	mem	t_s	30.0	rss_kib	106027428	hwm_kib	106027428	heap_inuse	410509312	sys	450476392	avail_kib	406047268
+ak2-engine	mem	t_s	45.0	rss_kib	160436412	hwm_kib	160436412	heap_inuse	414810112	sys	455264632	avail_kib	351796076
+ak2-engine	mem	t_s	60.0	rss_kib	214782380	hwm_kib	214782384	heap_inuse	419127296	sys	459458936	avail_kib	297428080
+ak2-engine	mem	t_s	75.0	rss_kib	269116280	hwm_kib	269116284	heap_inuse	423665664	sys	463915384	avail_kib	242992256
+ak2-timing	shard-load-1	0.708938	80.628375	154277	0	124.305844	101.420504
+ak2-engine	mem	t_s	90.2	rss_kib	290765416	hwm_kib	290765420	heap_inuse	471130112	sys	519522680	avail_kib	221486444
+ak2-timing	etag	81.856646	8.843233	10097	0	508.459820	0.000000
+ak2-timing	rendezvous	90.700126	12.015928	16392	7	0.322681	0.000000
+ak2-timing	connect	102.716766	0.004990	0	0	0.000934	0.000000
+ak2-timing	hash	0.524947	102.196827	182871	18	633.095142	101.435636
+ done.
+ak2-engine	mem	t_s	105.2	rss_kib	294461988	hwm_kib	294461988	heap_inuse	2524372992	sys	4391427608	avail_kib	212904072
+10532910 sequences (1945.09 Mbp) processed in 13.205s (47858.8 Kseq/m, 8837.99 Mbp/m).
+  9366399 sequences classified (88.93%)
+  1166511 sequences unclassified (11.07%)
+ak2-sample	batch	0	name	SRR5935740	mode	parallel	s3client	-	rank	1	role	home	inflight	4	threads	5	start_s	102.721797	wall_s	13.311716	setup_s	0.000036	classify_s	13.204990	close_s	0.000023	report_s	0.094031	status	0	sequences	10532910	bases	1945093294	classified	9366399	place	lpt	weight	10532910
+ak2-engine	mem	t_s	120.2	rss_kib	293117320	hwm_kib	294712140	heap_inuse	1704787968	sys	4614131272	avail_kib	210010612
+16518263 sequences (3051.28 Mbp) processed in 21.012s (47168.1 Kseq/m, 8712.98 Mbp/m).
+  16141470 sequences classified (97.72%)
+  376793 sequences unclassified (2.28%)
+ak2-sample	batch	0	name	SRR5935741	mode	parallel	s3client	-	rank	1	role	home	inflight	4	threads	5	start_s	102.721809	wall_s	21.089002	setup_s	0.000050	classify_s	21.011992	close_s	0.000015	report_s	0.068970	status	0	sequences	16518263	bases	3051284850	classified	16141470	place	lpt	weight	16518263
+ak2-timing	batch-barrier-0	123.810842	3.763245	4	0	0.546957	0.070905
+ak2-engine	shard	0	n	4	lo	74318229485	hi	148636458971	tail	302	full	false	empty_at	74318229498	keys	1098672980	batches	2908	probe_s	24.847925	tail_probes	0	wrap_probes	0
+ak2-engine	mem	t_s	127.6	rss_kib	293123416	hwm_kib	294712140	heap_inuse	1948762112	sys	4614139464	avail_kib	211959584
+ak2-engine	rendezvous	puts	2	gets	30
+ak2-engine	s3	client	sdk	put	2	get	30	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	s3	client	cli	put	0	get	0	create_multipart	0	upload_part	0	complete_multipart	0	abort_multipart	0	part_bytes	0
+ak2-engine	etag	etag	f80959f9556b50d76b3e744afdd3b22a-8860	computed	f80959f9556b50d76b3e744afdd3b22a-8860	part_bytes	134217728	parts	8860	hashed	2215	requests	1	retries	0	bytes	38697916	cross_bytes	58048672	hash_s	8.843225	combine_s	0.000688
+ak2-engine	load	seconds	80.628370	requests	4448	retries	0	bytes	297272984752
+ak2-engine	route	transport	nodes	calls	709	keys	1068980970	batches	2836	route_s	8.654208	wait_s	11.176872	gather_s	1.793649
+ak2-engine	worker	scan_s	61.373540	lookup_s	21.625183	classify_s	82.652488
+ak2-timing	total	0.000002	128.083419	1319645	22	822.128867	108.912342
