@@ -1,0 +1,426 @@
+{
+  "gate": "inputpath",
+  "run_id": "20261019-180237-6782867",
+  "task_id": "ak2-inputpath-20261019-180237-6782867",
+  "spec": "runs/inputpath-c9g-upstream.json",
+  "spec_sha256": "6f0246f429bafc79b20cbaa32ebca28b9d55d4feba87c17282deff158f4f5fe6",
+  "params": null,
+  "commit": "6782867f453bccbd61be72bc2e0fe2f240a35d93",
+  "tree_dirty": false,
+  "upstream": {
+    "repo": "https://github.com/DerrickWood/kraken2.git",
+    "pin": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "sha": "2731b35f7abb26ec926517274f3d87e78d42fd76",
+    "describe": "2.17.2-20-g2731b35"
+  },
+  "tools": {
+    "spawn": "0.123.0",
+    "spawn_path": "/Users/scttfrdmn/src/aws-kraken2/bin/spawn",
+    "spawn_sha256": "9b42b4efd8980d28405c7f3359fe7e95a82712a6df5bd0ff6b4afcfec8fcc5d4",
+    "truffle": "0.57.1",
+    "truffle_path": "/Users/scttfrdmn/src/aws-kraken2/bin/truffle",
+    "truffle_sha256": "e33d85e108e084fd6c2662943c305756f9b3497e0f895dc8df67f330625d3046"
+  },
+  "region": "us-west-2",
+  "ttl": "107m",
+  "cost_limit_usd": 4.97,
+  "s3_prefix": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/inputpath/20261019-180237-6782867",
+  "sample_accessions": [
+    "SRR062634",
+    "SRR4074269"
+  ],
+  "sample_accessions_ref": null,
+  "allowed_buckets": [
+    "aws-kraken2-942542972736-us-west-2"
+  ],
+  "payload": {
+    "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/inputpath/20261019-180237-6782867/payload.sh",
+    "sha256": "eba3ff386bb5a3cb4a4e99685e2b8fb3cd3c464ebc25ca83fb9a33a741ac410c",
+    "bytes": 51495,
+    "get": "url"
+  },
+  "user_data": {
+    "base64_bytes": 18576,
+    "bootstrap_bytes": 42634,
+    "gzip_bytes": 13930
+  },
+  "datasets": [
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/hash.k2d",
+      "kind": "object",
+      "etag": "9c11c6b05d131f2639992379c7041b93-954",
+      "version_id": "EViAygjN5LguoFC2zB.PlY0Kb1lvlQ7n",
+      "size": 8000000032,
+      "last_modified": "2026-10-07T18:43:06+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/opts.k2d",
+      "kind": "object",
+      "etag": "eebfd340c759d54c82c7769b40f7a50b",
+      "version_id": "PoawRz2tdOfWAfVj6xViFZm72Pl5cBhj",
+      "size": 64,
+      "last_modified": "2026-10-07T18:43:06+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/k2_standard_08_GB_20260626/taxo.k2d",
+      "kind": "object",
+      "etag": "f5697f04a6e072bde8504ebc6c142a22",
+      "version_id": "qx0Mcr1smdoPX4q6nzDheXsftDWHcMJR",
+      "size": 4818575,
+      "last_modified": "2026-10-07T18:43:06+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_1.fq.gz",
+      "kind": "object",
+      "etag": "3dbeac374f6c08a46a84e7bc21f55ca5-76",
+      "version_id": "Wpl17L2RtgM9SMBQ5kZXvYoZFx.orOUf",
+      "size": 630707754,
+      "last_modified": "2026-10-07T18:44:04+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.bgz",
+      "kind": "object",
+      "etag": "6be9afdf1671aff69e96af583e7ef637-80",
+      "version_id": "BjvSAWaiOjqNxF9qppXAs2xhbpju8oti",
+      "size": 663461576,
+      "last_modified": "2026-10-18T19:05:57+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_1.fq.gz.rgidx",
+      "kind": "object",
+      "etag": "49b191899a830d73d074d690fb14d805-3",
+      "version_id": "GpXyGUuy3ytLbeUgYJhTYguVs1qJdqv7",
+      "size": 17770083,
+      "last_modified": "2026-10-18T19:06:06+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR062634_8000000_2.fq.gz",
+      "kind": "object",
+      "etag": "3dc6c4c25d649b892e8270ca51ea75c3-75",
+      "version_id": "j0PmQMeWt_m1t.1CMmt4fqhUYdPn5Arq",
+      "size": 626133309,
+      "last_modified": "2026-10-07T18:44:06+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.bgz",
+      "kind": "object",
+      "etag": "5910deffb63c1074b683ec940746a84e-79",
+      "version_id": "4pdMYq7_PY73gffLQiyFgxkbqP.EIWfk",
+      "size": 658735871,
+      "last_modified": "2026-10-18T19:06:10+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR062634_8000000_2.fq.gz.rgidx",
+      "kind": "object",
+      "etag": "a5c3ea5295684804a61ea4f8903bd56a-3",
+      "version_id": "Gnq13rtA5R8VR9ZSf1oFhMsLwiOTTnuw",
+      "size": 18163515,
+      "last_modified": "2026-10-18T19:06:19+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/reads/SRR4074269.fastq.gz",
+      "kind": "object",
+      "etag": "4919c50e2877be2d631a3d9a7454e8db-189",
+      "version_id": "DtxBQbSxED_aIJlchwQJ.yvXh3rocYgf",
+      "size": 1578815219,
+      "last_modified": "2026-10-18T22:41:52+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR4074269.fastq.bgz",
+      "kind": "object",
+      "etag": "37c8db9996150ae8e3f3863ab2b79586-194",
+      "version_id": "pIOyWW5q29DQt2hJxmbHVTFn3Cvpvx.h",
+      "size": 1619356616,
+      "last_modified": "2026-10-18T22:48:50+00:00"
+    },
+    {
+      "uri": "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/inputpath/SRR4074269.fastq.gz.rgidx",
+      "kind": "object",
+      "etag": "1d0345b03a79f1f206291abf9e1705eb-5",
+      "version_id": "niXjx7vsQNxEIKRn54d0Q_ANgBFf1Ikc",
+      "size": 37015465,
+      "last_modified": "2026-10-18T22:49:06+00:00"
+    }
+  ],
+  "bucket_payer": [
+    {
+      "bucket": "aws-kraken2-942542972736-us-west-2",
+      "payer": "BucketOwner"
+    }
+  ],
+  "manifest_created_at": "2026-10-19T18:02:39Z",
+  "cost_limit_check": {
+    "region": "us-west-2",
+    "instance_type": "c9g.16xlarge",
+    "ttl": "107m",
+    "ttl_s": 6420,
+    "nodes": 1,
+    "price_usd_per_hour": 2.78208,
+    "epsilon": 0.10,
+    "cent_allowance_usd": 0.01,
+    "cost_limit_usd": 4.97,
+    "expected_usd": 4.9614,
+    "max_cost_limit_usd": 5.4675,
+    "total_cost_limit_usd": 4.97,
+    "total_max_usd": 5.4675,
+    "max_cost_usd_override": null,
+    "within_price": true,
+    "within_override": true,
+    "ok": true
+  },
+  "quota_check": {
+    "region": "us-west-2",
+    "instance_type": "c9g.16xlarge",
+    "count": 1,
+    "quota_code": "L-1216C47A",
+    "family": "Standard(A,C,D,H,I,M,R,T,Z)",
+    "quota_vcpus": 1989,
+    "vcpus_per_instance": 64,
+    "requested_vcpus": 64,
+    "running_vcpus": 72,
+    "running_instances": 5,
+    "total_vcpus": 136,
+    "within_quota": true,
+    "checked_at": "2026-10-19T18:02:41Z"
+  },
+  "launch": {
+    "requested_at": "2026-10-19T18:02:43Z",
+    "instance_id": "i-0bfbfa80c25b808b6",
+    "region": "us-west-2"
+  },
+  "instance": {
+    "type": "c9g.16xlarge",
+    "count": 1,
+    "ami": "ami-0957e38de3db270cc",
+    "az": "us-west-2b",
+    "launch_time": "2026-10-19T18:02:47+00:00",
+    "architecture": "arm64",
+    "lifecycle": "on-demand",
+    "type_info": {
+      "vcpus": 64,
+      "memory_mib": 131072,
+      "network_performance": "34 Gigabit",
+      "baseline_gbps": 34.0,
+      "peak_gbps": 34.0,
+      "source": "ec2 describe-instance-types",
+      "queried_at": "2026-10-19T18:02:49Z"
+    },
+    "final_state": "terminated",
+    "final_state_basis": "observed",
+    "terminated_at": "2026-10-19T18:24:33Z"
+  },
+  "truffle_price_usd_per_hour": 2.78208,
+  "truffle_price_note": "\nA newer version of truffle is available: 0.57.1 → 0.61.0\n  https://github.com/spore-host/truffle/releases/tag/v0.61.0",
+  "truffle_price_source": "truffle at launch",
+  "object_tags": {
+    "ok": true,
+    "line": "tag-objects: s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/inputpath/20261019-180237-6782867/: 377 objects, 376 tagged now, 1 already tagged, 0 failed"
+  },
+  "phases": [
+    {
+      "phase": "preamble",
+      "start": "2026-10-19T18:03:03Z",
+      "seconds": 1,
+      "cold": false
+    },
+    {
+      "phase": "body",
+      "start": "2026-10-19T18:03:04Z",
+      "seconds": 0,
+      "cold": false
+    },
+    {
+      "phase": "setup",
+      "start": "2026-10-19T18:03:04Z",
+      "seconds": 36,
+      "cold": false
+    },
+    {
+      "phase": "stage",
+      "start": "2026-10-19T18:03:40Z",
+      "seconds": 96,
+      "cold": false
+    },
+    {
+      "phase": "measure",
+      "start": "2026-10-19T18:05:16Z",
+      "seconds": 1137,
+      "cold": true
+    },
+    {
+      "phase": "wrapup",
+      "start": "2026-10-19T18:24:13Z",
+      "seconds": 2,
+      "cold": false
+    }
+  ],
+  "requests": {
+    "total": 1666,
+    "unparsed_rows": 0,
+    "by_op": {
+      "GetBucketRequestPayment": 2,
+      "GetObject": 1660,
+      "HeadBucket-anon": 1,
+      "HeadObject": 3
+    },
+    "rows": [
+      {
+        "phase": "preamble",
+        "op": "HeadBucket-anon",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "preamble",
+        "op": "GetBucketRequestPayment",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 954,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "HeadObject",
+        "count": 1,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 76,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 80,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 3,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 75,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 79,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 3,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 189,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 194,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      },
+      {
+        "phase": "stage",
+        "op": "GetObject",
+        "count": 5,
+        "bucket": "aws-kraken2-942542972736-us-west-2"
+      }
+    ]
+  },
+  "task": {
+    "task_id": "ak2-inputpath-20261019-180237-6782867",
+    "run_id": "3d53db26-e4b0-4065-992a-3aa7645ca231",
+    "exit_code": 0,
+    "state": "completed",
+    "started_at": "2026-10-19T18:03:03Z",
+    "ended_at": "2026-10-19T18:24:16Z",
+    "logs": [
+      "s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/inputpath/20261019-180237-6782867/spawn/ak2-inputpath-20261019-180237-6782867/command.log"
+    ],
+    "retry_class": ""
+  },
+  "preflight": {
+    "inherited_flags": "hBc",
+    "payload_inherited_flags": "hBc",
+    "flags_after_set": "hBc",
+    "region": "us-west-2",
+    "az": "us-west-2b",
+    "instance_id": "i-0bfbfa80c25b808b6",
+    "instance_type": "c9g.16xlarge",
+    "ami": "ami-0957e38de3db270cc",
+    "drop_caches_ok": true,
+    "buckets": [
+      {
+        "bucket": "aws-kraken2-942542972736-us-west-2",
+        "region": "us-west-2",
+        "payer": "UNKNOWN"
+      }
+    ],
+    "allowed_buckets": "aws-kraken2-942542972736-us-west-2",
+    "aws_guard": "/tmp/ak2-bin/aws",
+    "preflight_at": "2026-10-19T18:03:04Z"
+  },
+  "start": "2026-10-19T18:02:47+00:00",
+  "stop": "2026-10-19T18:24:33Z",
+  "billed_seconds": 1306,
+  "cost_usd": 1.009277,
+  "cost_basis": "on-demand truffle price x (terminated_at - launch_time), 60 s minimum; compute only, excludes EBS and S3 requests",
+  "manifest_finalised_at": "2026-10-19T18:30:21Z",
+  "orphan_check": {
+    "mode": "own",
+    "task_id": "ak2-inputpath-20261019-180237-6782867",
+    "rc": 0,
+    "own_gone": true,
+    "others": [],
+    "checked_regions": 18,
+    "failed_regions": [],
+    "at": "2026-10-19T18:30:23Z"
+  }
+}
