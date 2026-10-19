@@ -1,0 +1,327 @@
+spawn: shell options for --command: $-=ehB
+spawn: errexit is ON. set -uo pipefail does NOT clear it; use set +e to opt out.
+spawn: [2026-10-19T16:56:38Z] wrapper start
+spawn: [2026-10-19T16:56:38Z] stage-in start
+spawn: [2026-10-19T16:56:38Z] stage-in done rc=0
+spawn: [2026-10-19T16:56:38Z] command start
+ak2-stub: inherited $-=hBc
+ak2-stub: imds region=us-west-2 expected=us-west-2 payload bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2-stub: payload verified (sha256 76c0e88abacda747e4fd8e33ff12bb233bb042bd7bf22367d5dc28947d53405a); exec
+ak2: log tee up
+ak2-phase	2026-10-19T16:56:38Z	1792428998	preamble	no
+ak2: [2026-10-19T16:56:38Z] util sampler running (pid 2826, 2 ticks so far) -> log/util.tsv
+ak2: [2026-10-19T16:56:38Z] inherited $-=hBc (stub, as spawn started it: $-=hBc)
+ak2: [2026-10-19T16:56:38Z] after set +e $-=hBc
+ak2: [2026-10-19T16:56:38Z] gate=conductor run=20261019-165614-fa98c8d
+ak2: [2026-10-19T16:56:38Z] aws shim installed and self-tested (/tmp/ak2-bin/aws -> /usr/bin/aws)
+ak2: [2026-10-19T16:56:38Z] imds region=us-west-2 az=us-west-2b instance=i-0e67cf07e2dfab6f6 type=m8g.large ami=ami-0957e38de3db270cc
+ak2: [2026-10-19T16:56:38Z] bucket aws-kraken2-942542972736-us-west-2 region=us-west-2
+ak2: [2026-10-19T16:56:39Z] bucket aws-kraken2-942542972736-us-west-2 payer=BucketOwner
+ak2: [2026-10-19T16:56:39Z] bucket kraken2-ncbi-refseq-complete-v205 region=us-west-2
+ak2: [2026-10-19T16:56:39Z] bucket kraken2-ncbi-refseq-complete-v205 payer=BucketOwner
+ak2: [2026-10-19T16:56:39Z] region assert passed
+ak2: [2026-10-19T16:56:39Z] drop_caches_ok=true
+ak2: [2026-10-19T16:56:39Z] preamble done; spec body starts
+ak2-phase	2026-10-19T16:56:39Z	1792428999	body	no
+ak2-phase	2026-10-19T16:56:39Z	1792428999	setup	no
+ak2: [2026-10-19T16:56:39Z] conductor 20261019-165614-fa98c8d: commit fa98c8d, cohort 10, rungs 'all', reps 2, concurrency 1, DRY_RUN=0, DRY_MAKE_RUN=1; staging s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261019-165614-fa98c8d/
+ak2: [2026-10-19T16:56:40Z] role: arn:aws:sts::942542972736:assumed-role/ak2-conductor/i-0e67cf07e2dfab6f6 (profile arn:aws:iam::942542972736:instance-profile/ak2-conductor)
+ak2: [2026-10-19T16:57:13Z] upstream: default https://github.com/DerrickWood/kraken2.git at 2731b35f7abb26ec926517274f3d87e78d42fd76
+make tools: spawn 0.123.0 installed: /home/ec2-user/ak2c/repo/bin/spawn (artefact sha256 5bff96dbc171 ok; binary sha256 25970ea67529)
+make tools: truffle 0.57.1 installed: /home/ec2-user/ak2c/repo/bin/truffle (artefact sha256 7f83bd4fb247 ok; binary sha256 40842fd6374b)
+make tools: go 1.27.1 installed: /home/ec2-user/ak2c/repo/.cache/tools/go-1.27.1/go/bin/go (artefact sha256 3450b45a3f9e ok; binary sha256 1675694ef690)
+ak2: [2026-10-19T16:57:18Z] tools: {"spawn":"0.123.0","truffle":"0.57.1","go":"go version go1.27.1 linux/arm64","aws":"aws-cli/2.36.47 Python/3.9.25 Linux/6.18.54-121.166.amzn2023.aarch64 source/aarch64.amzn.2023","git":"git version 2.50.1","jq":"jq-1.8.1","python":"Python 3.9.25","make":"GNU Make 4.3","kernel":"6.18.54-121.166.amzn2023.aarch64"}
+go: downloading github.com/spore-host/spawn v0.123.0
+go: downloading github.com/Microsoft/hcsshim v0.14.1
+go: downloading github.com/aws/aws-sdk-go-v2 v1.47.1
+go: downloading github.com/aws/aws-sdk-go-v2/config v1.32.36
+go: downloading github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.36
+go: downloading github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.22.18
+go: downloading github.com/aws/aws-sdk-go-v2/service/account v1.32.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs v1.73.0
+go: downloading github.com/aws/aws-sdk-go-v2/service/dynamodb v1.57.3
+go: downloading github.com/aws/aws-sdk-go-v2/service/ebs v1.34.7
+go: downloading github.com/aws/aws-sdk-go-v2/service/ec2 v1.321.1
+go: downloading github.com/aws/aws-sdk-go-v2/service/efs v1.41.16
+go: downloading github.com/aws/aws-sdk-go-v2/service/fsx v1.65.10
+go: downloading github.com/aws/aws-sdk-go-v2/service/iam v1.53.10
+go: downloading github.com/aws/aws-sdk-go-v2/service/imagebuilder v1.55.6
+go: downloading github.com/aws/aws-sdk-go-v2/service/lambda v1.90.1
+go: downloading github.com/aws/aws-sdk-go-v2/service/resourcegroupstaggingapi v1.33.3
+go: downloading github.com/aws/aws-sdk-go-v2/service/s3 v1.102.2
+go: downloading github.com/aws/aws-sdk-go-v2/service/ssm v1.68.6
+go: downloading github.com/aws/aws-sdk-go-v2/service/sts v1.45.5
+go: downloading github.com/aws/smithy-go v1.28.1
+go: downloading github.com/spore-host/truffle v0.53.0
+go: downloading github.com/sigstore/sigstore-go v1.2.2
+go: downloading gopkg.in/yaml.v3 v3.0.1
+go: downloading github.com/aws/aws-sdk-go-v2/service/kms v1.52.0
+go: downloading github.com/aws/aws-sdk-go-v2/credentials v1.19.35
+go: downloading github.com/aws/aws-sdk-go-v2/service/signin v1.5.5
+go: downloading github.com/aws/aws-sdk-go-v2/service/sso v1.33.5
+go: downloading github.com/aws/aws-sdk-go-v2/service/ssooidc v1.38.5
+go: downloading github.com/pkg/errors v0.9.1
+go: downloading github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.11
+go: downloading github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.16
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/endpoint-discovery v1.11.23
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.36
+go: downloading github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.9.18
+go: downloading github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.19.25
+go: downloading github.com/spore-host/libs v0.50.0
+go: downloading go.opentelemetry.io/contrib/instrumentation/github.com/aws/aws-sdk-go-v2/otelaws v0.68.0
+go: downloading go.opentelemetry.io/otel v1.45.0
+go: downloading go.opentelemetry.io/otel/sdk v1.45.0
+go: downloading go.opentelemetry.io/otel/trace v1.45.0
+go: downloading github.com/in-toto/attestation v1.2.0
+go: downloading github.com/secure-systems-lab/go-securesystemslib v0.11.0
+go: downloading github.com/sigstore/protobuf-specs v0.5.1
+go: downloading golang.org/x/mod v0.40.0
+go: downloading google.golang.org/protobuf v1.36.11
+go: downloading github.com/sigstore/sigstore v1.10.8
+go: downloading github.com/sigstore/timestamp-authority/v2 v2.1.2
+go: downloading github.com/google/certificate-transparency-go v1.3.3
+go: downloading github.com/sigstore/rekor-tiles/v2 v2.3.0
+go: downloading github.com/aws/aws-sdk-go-v2/service/pricing v1.44.5
+go: downloading github.com/sirupsen/logrus v1.9.4
+go: downloading go.opencensus.io v0.24.0
+go: downloading github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.4
+go: downloading github.com/aws/aws-sdk-go-v2/service/xray v1.36.23
+go: downloading github.com/aws/aws-sdk-go-v2/service/sns v1.39.17
+go: downloading github.com/aws/aws-sdk-go-v2/service/sqs v1.42.27
+go: downloading github.com/go-logr/logr v1.4.4
+go: downloading go.opentelemetry.io/otel/metric v1.45.0
+go: downloading github.com/google/uuid v1.6.0
+go: downloading golang.org/x/sys v0.47.0
+go: downloading golang.org/x/crypto v0.55.0
+go: downloading google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d
+go: downloading github.com/cyberphone/json-canonicalization v0.0.0-20241213102144-19d51d7fe467
+go: downloading github.com/go-openapi/runtime v0.32.4
+go: downloading github.com/go-openapi/strfmt v0.26.4
+go: downloading github.com/go-openapi/swag/conv v0.27.0
+go: downloading github.com/sigstore/rekor v1.5.3
+go: downloading github.com/go-openapi/swag v0.26.1
+go: downloading github.com/BurntSushi/toml v1.4.0
+go: downloading github.com/theupdateframework/go-tuf/v2 v2.4.2
+go: downloading github.com/google/go-containerregistry v0.21.7
+go: downloading github.com/digitorus/pkcs7 v0.0.0-20230818184609-3a137a874352
+go: downloading github.com/digitorus/timestamp v0.0.0-20231217203849-220c5c2851b7
+go: downloading github.com/transparency-dev/merkle v0.0.2
+go: downloading github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
+go: downloading google.golang.org/grpc v1.83.2
+go: downloading github.com/transparency-dev/formats v0.1.1
+go: downloading github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78
+go: downloading golang.org/x/term v0.45.0
+go: downloading github.com/aws/aws-sdk-go-v2/service/servicequotas v1.37.5
+go: downloading github.com/containerd/cgroups/v3 v3.0.5
+go: downloading github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8
+go: downloading github.com/go-logr/stdr v1.2.2
+go: downloading go.opentelemetry.io/auto/sdk v1.2.1
+go: downloading github.com/cespare/xxhash/v2 v2.3.0
+go: downloading github.com/go-openapi/errors v0.22.8
+go: downloading github.com/go-viper/mapstructure/v2 v2.5.0
+go: downloading github.com/oklog/ulid/v2 v2.1.1
+go: downloading golang.org/x/net v0.58.0
+go: downloading github.com/go-openapi/swag/fileutils v0.26.1
+go: downloading github.com/go-openapi/swag/jsonutils v0.26.1
+go: downloading github.com/go-openapi/swag/stringutils v0.26.1
+go: downloading golang.org/x/sync v0.22.0
+go: downloading github.com/go-openapi/validate v0.26.0
+go: downloading github.com/in-toto/in-toto-golang v0.11.0
+go: downloading github.com/blang/semver v3.5.1+incompatible
+go: downloading github.com/cenkalti/backoff/v5 v5.0.3
+go: downloading k8s.io/klog/v2 v2.140.0
+go: downloading github.com/opencontainers/go-digest v1.0.0
+go: downloading google.golang.org/genproto/googleapis/rpc v0.0.0-20260803160001-6ac0973c030d
+go: downloading github.com/go-openapi/swag/typeutils v0.27.0
+go: downloading github.com/go-openapi/swag/cmdutils v0.26.1
+go: downloading github.com/go-openapi/swag/jsonname v0.26.1
+go: downloading github.com/go-openapi/swag/loading v0.26.1
+go: downloading github.com/go-openapi/swag/mangling v0.26.1
+go: downloading github.com/go-openapi/swag/netutils v0.26.1
+go: downloading github.com/go-openapi/swag/yamlutils v0.26.1
+go: downloading golang.org/x/text v0.41.0
+go: downloading github.com/go-openapi/analysis v0.25.2
+go: downloading github.com/go-openapi/jsonpointer v0.23.1
+go: downloading github.com/go-openapi/loads v0.24.0
+go: downloading github.com/go-openapi/spec v0.22.6
+go: downloading github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
+go: downloading github.com/shibumi/go-pathspec v1.3.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+go: downloading github.com/go-openapi/runtime/server-middleware v0.30.0
+go: downloading github.com/go-openapi/jsonreference v0.21.6
+ak2: [2026-10-19T16:59:24Z] udsize: built in 125 s (GOFLAGS=-p=1)
+ak2: [2026-10-19T16:59:24Z] payload: inherited AK2_PAYLOAD_GET=url, unset (run.sh picks role under AK2_INSTANCE_ROLE=1)
+ak2: [2026-10-19T16:59:25Z] deadline: TTL ends 2026-10-20T16:56:24Z; no launch whose TTL + finalisation ends after 2026-10-20T16:41:24Z
+ak2-phase	2026-10-19T16:59:25Z	1792429165	probe	no
+ak2: [2026-10-19T16:59:28Z] probe: DRY_RUN=1 make run GATE=g3 SPEC=runs/g3-l-o3-cost-n32-c10.json NODES=32 (in /home/ec2-user/ak2c/probe)
+scripts/run-multi.sh "g3" "runs/g3-l-o3-cost-n32-c10.json" "32"
+run-multi: shell flags huB
+make run (multi): accessions: @PRJNA398089:1-10 -> 10 runs
+cost_check: ok: 32 x cost_limit $0.53 = $16.96; TTL 40m x $0.7816/h x8g.2xlarge = $0.5211 per node, max $0.5832 per node (epsilon 0.10 + $0.01) = $18.6615
+quota_check: ok: 32 x x8g.2xlarge = 256 vCPU, plus 0 vCPU already running in 0 on-demand X instance(s) = 256 of the X on-demand quota L-7295265B (256 vCPU) in us-west-2
+make run (multi): network: default VPC vpc-e7e2999f, account-wide security group sg-5059b179 admits itself, 22/tcp and ICMP only; members in us-west-2b
+make run (multi): cohort 20261019-165932-fa98c8d-7685-n32: 32 x x8g.2xlarge in us-west-2b -> s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261019-165932-fa98c8d-7685-n32
+make run (multi): DRY_RUN=1: rank 0's plan only
+make run: accessions: @PRJNA398089:1-10 -> 10 runs from results/cohort/PRJNA398089/runs.tsv (blob 8f52155b14c83c0ee6e6fe197abb8c2af42de5f4)
+make run: bucket aws-kraken2-942542972736-us-west-2 is in us-west-2
+make run: bucket kraken2-ncbi-refseq-complete-v205 is in us-west-2
+make run: run 20261019-165932-fa98c8d-7685-n32-r0  task ak2-g3-20261019-165932-fa98c8d-7685-n32-r0  ->  s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/g3/20261019-165932-fa98c8d-7685-n32-r0
+make run: payload: GET by role
+make run: user data: 13764 of 16384 bytes after base64 decoding (refuse above 15360)
+make run: plan: Instance: x8g.2xlarge (0 vCPU, 0 GiB)
+cost_check: ok: 1 x cost_limit $0.53 = $0.53; TTL 40m x $0.7816/h x8g.2xlarge = $0.5211 per node, max $0.5832 per node (epsilon 0.10 + $0.01) = $0.5832
+quota_check: ok: 1 x x8g.2xlarge = 8 vCPU, plus 0 vCPU already running in 0 on-demand X instance(s) = 8 of the X on-demand quota L-7295265B (256 vCPU) in us-west-2
+make run: DRY_RUN=1: stopping before launch; removing results/g3/20261019-165932-fa98c8d-7685-n32-r0
+DRY RUN — nothing will be launched.
+
+Task:         ak2-g3-20261019-165932-fa98c8d-7685-n32-r0
+Command:      bash -c AK2_STUB_FLAGS="$-"
+set +e
+cat > /tmp/ak2-util.sh <<'AK2UTIL'
+set +e
+OUT=${AK2_UTIL_OUT:-/tmp/ak2-util.tsv}
+PHASEF=${AK2_UTIL_PHASE:-/tmp/ak2-state/phase}
+CTX=${OUT%.tsv}.ctx
+IF=""; CG=""; T=""
+ak2u_now() { if [ -n "${EPOCHREALTIME:-}" ]; then T=${EPOCHREALTIME%???}; T=${T/,/.}; else T=$(date +%s); fi; }
+ak2u_iface() {
+  local i d r
+  while read -r i d r; do [ "$d" = 00000000 ] && { IF=$i; return 0; }; done < /proc/net/route
+  return 1
+}
+ak2u_cgroup() {
+  local l
+  while read -r l; do case $l in 0::*) CG=/sys/fs/cgroup${l#0::}; CG=${CG%/} ;; esac; done < /proc/self/cgroup
+  [ -n "$CG" ] && [ -r "$CG/cpu.stat" ] || CG=""
+}
+ak2u_sample() {
+  local k v r u n s id io irq sirq st g gn mt="" ma="" sh="" rx="" tx="" pf="" pmf="" cu="" cus="" css="" ph=stub
+  read -r k u n s id io irq sirq st g gn r < /proc/stat
+  while read -r k v r; do
+    case $k in MemTotal:) mt=$v ;; MemAvailable:) ma=$v ;; Shmem:) sh=$v; break ;; esac
+  done < /proc/meminfo
+  while read -r k v; do case $k in pgfault) pf=$v ;; pgmajfault) pmf=$v; break ;; esac; done < /proc/vmstat
+  [ -n "$IF" ] || { ak2u_iface && { printf '%s %s\n' "$IF" "${CG:--}" > "$CTX"; printf 'H\tiface\t%s\n' "$IF" >> "$OUT"; }; }
+  if [ -n "$IF" ]; then
+    read -r rx < "/sys/class/net/$IF/statistics/rx_bytes"; read -r tx < "/sys/class/net/$IF/statistics/tx_bytes"
+  fi
+  if [ -n "$CG" ]; then
+    while read -r k v; do case $k in usage_usec) cu=$v ;; user_usec) cus=$v ;; system_usec) css=$v; break ;; esac; done < "$CG/cpu.stat"
+  fi
+  [ -r "$PHASEF" ] && { read -r ph < "$PHASEF"; ph=${ph:-stub}; }
+  ak2u_now
+  printf 'S\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+    "$T" "$ph" "$1" "$u" "$n" "$s" "$id" "$io" "$irq" "$sirq" "$st" "${g:-0}" "${gn:-0}" \
+    "$mt" "$ma" "$sh" "$rx" "$tx" "$pf" "$pmf" "$cu" "$cus" "$css" >> "$OUT"
+}
+ak2u_ethtool() {
+  local e x k v n=0
+  [ -n "$IF" ] || ak2u_iface || { ak2u_now; printf 'E\t%s\t%s\tnone\tno-default-route\n' "$T" "$1" >> "$OUT"; return; }
+  for e in ethtool /usr/sbin/ethtool /sbin/ethtool; do command -v "$e" >/dev/null 2>&1 && break; e=""; done
+  ak2u_now
+  [ -n "$e" ] || { printf 'E\t%s\t%s\tnone\tno-ethtool\n' "$T" "$1" >> "$OUT"; return; }
+  x=$("$e" -S "$IF" 2>/dev/null) || x=$(sudo -n "$e" -S "$IF" 2>/dev/null)
+  while read -r k v; do
+    case $k in *_allowance_exceeded:) printf 'E\t%s\t%s\t%s\t%s\n' "$T" "$1" "${k%:}" "$v" >> "$OUT"; n=$((n + 1)) ;; esac
+  done <<< "$x"
+  [ "$n" -gt 0 ] || printf 'E\t%s\t%s\tnone\tno-allowance-counters\n' "$T" "$1" >> "$OUT"
+}
+case ${1:-loop} in
+  once)
+    [ -r "$CTX" ] && read -r IF CG < "$CTX"
+    [ "$IF" = - ] && IF=""
+    [ "$CG" = - ] && CG=""
+    [ -n "$CG" ] || ak2u_cgroup
+    ak2u_sample "${2:-final}"; [ "${2:-final}" = final ] && ak2u_ethtool end ;;
+  loop)
+    trap '' HUP; trap 'exit 0' TERM INT
+    ak2u_now; START=$T
+    ak2u_iface; ak2u_cgroup
+    BT=""; NC=0
+    while read -r k v r; do case $k in btime) BT=$v ;; cpu[0-9]*) NC=$((NC + 1)) ;; esac; done < /proc/stat
+    read -r UP r < /proc/uptime
+    HZ=$(getconf CLK_TCK 2>/dev/null) || HZ=100
+    renice -n -10 -p "$BASHPID" > /dev/null 2>&1 || sudo -n renice -n -10 -p "$BASHPID" > /dev/null 2>&1
+    read -r -a PS < "/proc/$BASHPID/stat"
+    printf '%s %s\n' "${IF:--}" "${CG:--}" > "$CTX"
+    printf 'H\tformat\tak2-util-1\nH\tevery\t%s\nH\tbtime\t%s\nH\tclk_tck\t%s\nH\tncpu\t%s\nH\tiface\t%s\nH\tcgroup\t%s\nH\tuptime_s\t%s\nH\tkernel\t%s\nH\tpid\t%s\nH\tnice\t%s\nH\tstarted_at\t%s\n' \
+      "${AK2_UTIL_EVERY:-1}" "$BT" "${HZ:-100}" "$NC" "${IF:--}" "${CG:--}" "$UP" "$(uname -r 2>/dev/null)" "$BASHPID" "${PS[18]:-?}" "$START" >> "$OUT"
+    echo "$BASHPID" > "${OUT%.tsv}.pid"
+    ak2u_ethtool start
+    FIFO=${OUT%.tsv}.fifo; rm -f "$FIFO"; mkfifo "$FIFO" && exec 9<>"$FIFO"
+    W=${2:-}
+    while :; do
+      [ -n "$W" ] && ! kill -0 "$W" 2>/dev/null && exit 0
+      ak2u_sample tick
+      read -r -t "${AK2_UTIL_EVERY:-1}" -u 9 _ 2>/dev/null || [ $? -gt 128 ] || sleep "${AK2_UTIL_EVERY:-1}"
+    done ;;
+esac
+AK2UTIL
+( bash /tmp/ak2-util.sh loop "$$" < /dev/null > /dev/null 2>&1 & )
+echo "ak2-stub: inherited \$-=$AK2_STUB_FLAGS"
+AK2_T=$(curl -sf -X PUT -m 5 http://169.254.169.254/latest/api/token -H 'X-aws-ec2-metadata-token-ttl-seconds: 300')
+AK2_R=$(curl -sf -m 5 -H "X-aws-ec2-metadata-token: $AK2_T" http://169.254.169.254/latest/meta-data/placement/region)
+AK2_PB=${AK2_PAYLOAD_URI#s3://}; AK2_PB=${AK2_PB%%/*}
+AK2_PBR=$(curl -sI -m 10 "https://$AK2_PB.s3.$AK2_R.amazonaws.com/" | tr -d '\r' | awk -F': ' 'tolower($1)=="x-amz-bucket-region"{print $2}')
+echo "ak2-stub: imds region=$AK2_R expected=$AK2_EXPECT_REGION payload bucket $AK2_PB region=$AK2_PBR"
+if [ -z "$AK2_R" ] || [ "$AK2_R" != "$AK2_EXPECT_REGION" ] || [ "$AK2_PBR" != "$AK2_R" ]; then
+  echo "ak2-stub: FATAL: region assert failed before any I/O"; exit 97
+fi
+AK2_EP="https://$AK2_PB.s3.$AK2_R.amazonaws.com/"
+case "${AK2_PAYLOAD_GET:-url}" in
+  url)
+    case "$AK2_PAYLOAD_URL" in "$AK2_EP"*) ;; *) echo "ak2-stub: FATAL: payload URL is not the in-region endpoint of $AK2_PB"; exit 97 ;; esac
+    curl -sf -m 60 --retry 3 -o /tmp/ak2-payload.sh "$AK2_PAYLOAD_URL" ;;
+  role)
+    AK2_I=http://169.254.169.254/latest/meta-data/iam/security-credentials/
+    for AK2_N in 1 2 3 4 5 6 7 8 9 10; do
+      AK2_RN=$(curl -sf -m 5 -H "X-aws-ec2-metadata-token: $AK2_T" "$AK2_I") &&
+        AK2_C=$(curl -sf -m 5 -H "X-aws-ec2-metadata-token: $AK2_T" "$AK2_I$AK2_RN") && break
+      sleep 3
+    done
+    ak2_c() { printf '%s\n' "$AK2_C" | sed -n "s/.*\"$1\" *: *\"\([^\"]*\)\".*/\1/p"; }
+    [ -n "$(ak2_c AccessKeyId)" ] || { echo "ak2-stub: FATAL: no role credentials in IMDS for the payload GET"; exit 97; }
+    echo "ak2-stub: payload GET signed with role $AK2_RN"
+    printf 'user = "%s:%s"\nheader = "x-amz-security-token: %s"\n' "$(ak2_c AccessKeyId)" "$(ak2_c SecretAccessKey)" "$(ak2_c Token)" |
+      curl -sf -m 60 --retry 3 -K - --aws-sigv4 "aws:amz:$AK2_R:s3" -H "x-amz-content-sha256: UNSIGNED-PAYLOAD" \
+        -o /tmp/ak2-payload.sh "$AK2_EP${AK2_PAYLOAD_URI#s3://$AK2_PB/}"
+    ;;
+  *) echo "ak2-stub: FATAL: AK2_PAYLOAD_GET=$AK2_PAYLOAD_GET"; exit 97 ;;
+esac || { echo "ak2-stub: FATAL: could not fetch $AK2_PAYLOAD_URI"; exit 97; }
+AK2_SUM=$(sha256sum /tmp/ak2-payload.sh | cut -d' ' -f1)
+[ "$AK2_SUM" = "$AK2_PAYLOAD_SHA256" ] ||
+  { echo "ak2-stub: FATAL: payload sha256 $AK2_SUM != $AK2_PAYLOAD_SHA256"; exit 97; }
+echo "ak2-stub: payload verified (sha256 $AK2_SUM); exec"
+export AK2_STUB_FLAGS
+unset AK2_PAYLOAD_URL AK2_C   # credentials; the payload has no use for them
+exec bash -c "$(cat /tmp/ak2-payload.sh)"
+
+Region:       us-west-2
+Instance:     x8g.2xlarge  (0 vCPU, 0 GiB)
+              chosen as cheapest of 1 matching type(s)
+AMI:          AL2023 default — x86_64 (auto-selected)
+Root disk:    60 GiB (resources.disk_gib)
+Purchase:     on_demand
+TTL:          40m   on-complete: terminate
+Cost limit:   $0.53 (lifecycle.cost_limit)
+
+Re-run without --dry-run to launch this task.
+ak2: [2026-10-19T16:59:42Z] probe: rc 0
+ak2-phase	2026-10-19T16:59:42Z	1792429182	campaign	no
+ak2: [2026-10-19T16:59:42Z] campaign: make ladder-campaign COHORT=10 REPS=2 CONCURRENCY=1
+DRY_RUN="" scripts/g3/ladder-campaign.sh "10" "2" "" "" "1"
+ladder-campaign: shell flags huB
+ladder-campaign: campaign 20261019-165943: log results/g3/ladder-campaign/20261019-165943.tsv, driver logs results/g3/ladder-campaign/20261019-165943/
+ladder-campaign: drain flag: /home/ec2-user/ak2c/DRAIN (checked before every launch; make ladder-campaign-drain sets it); deadline 2026-10-20T16:41:24Z (AK2_CAMPAIGN_DEADLINE)
+ladder-campaign: orphans (before the first launch, nothing in flight): rc 2 with nothing in flight: HARD STOP (results/g3/ladder-campaign/20261019-165943/orphans-01.txt)
+ladder-campaign: STOP: no further launches: make orphans rc 2 with nothing in flight (results/g3/ladder-campaign/20261019-165943/orphans-01.txt)
+ladder-campaign: g3-ladder (before the first launch): no Law 1 DEFECT (rc 0; results/g3/ladder-campaign/20261019-165943/g3-ladder-02.log)
+ladder-campaign: refused to start: make orphans rc 2 with nothing in flight (results/g3/ladder-campaign/20261019-165943/orphans-01.txt)
+ladder-campaign: exit 3
+make: *** [Makefile:311: ladder-campaign] Error 3
+ak2: [2026-10-19T16:59:50Z] campaign: make rc 2, campaign exit 3 (campaign 20261019-165943)
+ak2-phase	2026-10-19T16:59:50Z	1792429190	stage	no
+ak2: [2026-10-19T16:59:53Z] conductor: exit 3 (campaign rc 3); staged under s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/results-staging/20261019-165614-fa98c8d/
+spawn: [2026-10-19T16:59:54Z] command exit rc=3
