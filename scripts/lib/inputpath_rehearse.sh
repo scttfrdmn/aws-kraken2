@@ -251,8 +251,17 @@ cat "$T/helpers-dcfail.sh" <(printf '%s\n' "$BODY") > "$T/node-dcfail.sh"
 # parameter line changed. The wheel is rapidgzip 0.16.0 cp39 manylinux aarch64 from PyPI (its sha256
 # from PyPI's JSON API, 2026-10-18), the ISA-L candidate of #97.
 RG2W=https://files.pythonhosted.org/packages/46/5e/bfd0ba68015806de0959c6514a61b162548014c550a30e83be81943878c7/rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl@2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d
-printf '%s\n' "$BODY" | sed -E "/^(FAMILY|PARAMS_LINE)=/{s/THREADS=\"[0-9 ]*\"/THREADS=\"16\"/; s/PS=\"[0-9 ]*\"/PS=\"8\"/; s/REPS=[0-9]+/REPS=1/; s/CHUNKS=\"[0-9 ]*\"/CHUNKS=\"8192\"/;
-  s/THP_CONTRAST=[01]/THP_CONTRAST=0/; s/PIPE_CONTRAST=[01]/PIPE_CONTRAST=0/; s|RG2_WHEEL=[^;']*|RG2_WHEEL=$RG2W|}" > "$T/body-w.sh"
+printf '%s\n' "$BODY" | RG2W=$RG2W python3 -c '
+import os, re, sys
+w = os.environ["RG2W"]
+for line in sys.stdin:
+    if re.match(r"(FAMILY|PARAMS_LINE)=", line):
+        for pat, rep in ((r"THREADS=\"[0-9 ]*\"", "THREADS=\"16\""), (r"\bPS=\"[0-9 ]*\"", "PS=\"8\""), (r"REPS=[0-9]+", "REPS=1"),
+                         (r"CHUNKS=\"[0-9 ]*\"", "CHUNKS=\"8192\""), (r"THP_CONTRAST=[01]", "THP_CONTRAST=0"),
+                         (r"PIPE_CONTRAST=[01]", "PIPE_CONTRAST=0"), (r"RG2_WHEEL=[^;\x27\n]*", "RG2_WHEEL=" + w)):
+            line = re.sub(pat, lambda m: rep, line)
+    sys.stdout.write(line)
+' > "$T/body-w.sh"
 grep -q "^FAMILY=.*RG2_WHEEL=$RG2W\$" "$T/body-w.sh" || { say "case W: could not set the parameter line"; exit 1; }
 cat "$T/helpers.sh" "$T/body-w.sh" > "$T/node-w.sh"
 
