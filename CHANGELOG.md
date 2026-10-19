@@ -54,8 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     All of these run at threads {48, 32, 16} ({48, 16} on c8gn, its 79-min TTL), for the pe and se
     samples of #95's inputs.tsv (SRR062634_8000000, SRR4074269), REPS 2 (rep 2 reversed).
-    `RG2_SCRIPT` (off) adds I2–I4 at the best p with a second rapidgzip build (the ISA-L build of
-    `scripts/g3/rg-build.sh`, another PR).
+    `RG2_WHEEL=<url>@<sha256>` (a pinned wheel, `--require-hashes`, its own venv) or `RG2_SCRIPT`
+    (a source build), off by default, adds I2–I4 at the best p with a second rapidgzip build,
+    recording its version, build and ISA-L per point. The ISA-L arm is the 0.16.0 aarch64 wheel
+    (#97: 0.14.5 cannot build ISA-L on aarch64), pending #97's crash verdict.
   - **The pipe:** every rapidgzip decode writes into a 1 MiB pipe (`scripts/inputpath/pipesz.py`,
     F_SETPIPE_SZ, the size it got recorded).
   - **Identity:** before a rapidgzip build and configuration is used, its decode of each file

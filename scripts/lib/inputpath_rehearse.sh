@@ -23,7 +23,11 @@
 #   upstream: A, the full matrix (REPS of the spec), rapidgzip installed as on the node;
 #             B, a missing inputs.tsv: exit 1 with a fatal line before any build or stage;
 #             D, ak2_drop_caches failing: exit 95, no point run;
-#             F, a Law 1 reference whose report sha256s differ: the run stops after the first warm-up.
+#             F, a Law 1 reference whose report sha256s differ: the run stops after the first warm-up;
+#             W, the second-build switch with a pinned wheel (RG2_WHEEL: rapidgzip 0.16.0 cp39
+#             aarch64 from PyPI) on a small matrix (threads 16, p 8, REPS 1): its tool and isal
+#             lines (isal true), 6 rapidgzip-2 points ok recording 0.16.0 pypi isal true, the
+#             0.14.5 points still 0.14.5 isal false, the report's contract.
 #   ours:     C, the full matrix with induced rapidgzip crashes (a wrapper around the image's
 #             rapidgzip 0.14.5, AK2_REHEARSE_RAPIDGZIP): SIGSEGV in both identity attempts of
 #             -P 4 on pe_2.gz, in the first identity attempt of -P 2 on pe_1.gz (a transient), and
@@ -75,7 +79,7 @@ BODY=$(jq -r '.command[2]' "$SPEC")
 ENGINE=$(sed -n 's/^FAMILY=[a-z0-9]*; ENGINE=\([a-z]*\);.*/\1/p' <<< "$BODY")
 REPS=$(sed -n 's/^FAMILY=.*; REPS=\([0-9]*\);.*/\1/p' <<< "$BODY")
 TYPE=$(jq -r .resources.instance_type "$SPEC")
-case "$ENGINE" in upstream) CASES=${IPREH_CASES:-A B D F} ;; ours) CASES=${IPREH_CASES:-C B E F} ;; *) say "cannot read ENGINE from $SPEC"; exit 2 ;; esac
+case "$ENGINE" in upstream) CASES=${IPREH_CASES:-A B D F W} ;; ours) CASES=${IPREH_CASES:-C B E F} ;; *) say "cannot read ENGINE from $SPEC"; exit 2 ;; esac
 say "record $LOGF; $SPEC ($ENGINE, $TYPE, REPS $REPS) at $SHA; cases $CASES; shell flags $-"
 OK=0
 chk() { if eval "$2"; then say "ok: $1"; else say "FAILED: $1"; OK=1; fi; }
@@ -242,6 +246,15 @@ echo 'ak2_drop_caches() { ak2_say "ERROR: FATAL: DROP_CACHES FAILED (rehearsal, 
 echo 'ak2_drop_caches() { ak2_say "drop_caches (rehearsal: nothing)"; }' >> "$T/helpers.sh"
 cat "$T/helpers.sh" <(printf '%s\n' "$BODY") > "$T/node.sh"
 cat "$T/helpers-dcfail.sh" <(printf '%s\n' "$BODY") > "$T/node-dcfail.sh"
+# Case W: the second-build switch with a pinned wheel, as make inputpath ARGS='RG2_WHEEL=... THREADS=16
+# PS=8 REPS=1 CHUNKS=8192 THP_CONTRAST=0 PIPE_CONTRAST=0' would write it: the body with only its
+# parameter line changed. The wheel is rapidgzip 0.16.0 cp39 manylinux aarch64 from PyPI (its sha256
+# from PyPI's JSON API, 2026-10-18), the ISA-L candidate of #97.
+RG2W=https://files.pythonhosted.org/packages/46/5e/bfd0ba68015806de0959c6514a61b162548014c550a30e83be81943878c7/rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl@2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d
+printf '%s\n' "$BODY" | sed -E "/^(FAMILY|PARAMS_LINE)=/{s/THREADS=\"[0-9 ]*\"/THREADS=\"16\"/; s/PS=\"[0-9 ]*\"/PS=\"8\"/; s/REPS=[0-9]+/REPS=1/; s/CHUNKS=\"[0-9 ]*\"/CHUNKS=\"8192\"/;
+  s/THP_CONTRAST=[01]/THP_CONTRAST=0/; s/PIPE_CONTRAST=[01]/PIPE_CONTRAST=0/; s|RG2_WHEEL=[^;']*|RG2_WHEEL=$RG2W|}" > "$T/body-w.sh"
+grep -q "^FAMILY=.*RG2_WHEEL=$RG2W\$" "$T/body-w.sh" || { say "case W: could not set the parameter line"; exit 1; }
+cat "$T/helpers.sh" "$T/body-w.sh" > "$T/node-w.sh"
 
 # run_case NAME NODE_SCRIPT [-e K=V ...]: one node; sets RC and L (its log), J/PJ (pushed records).
 run_case() {
@@ -372,6 +385,25 @@ for c in $CASES; do
     chk "B: exit 1" '[ "$RC" = 1 ]'
     chk "B: a fatal line naming the inputs file" '[ "$(pl '\''.kind == "fatal" and (.message | test("no-such-inputs.tsv"))'\'' | cnt)" = 1 ]'
     chk "B: no engine, db or point line (it failed before any build or stage)" '[ "$(pl '\''.kind == "engine" or .kind == "db" or .kind == "point"'\'' | cnt)" = 0 ]'
+    ;;
+  W)
+    run_case W "$T/node-w.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=100000
+    chk "W: body exit 0" '[ "$RC" = 0 ]'
+    chk "W: a tool line for rapidgzip-2: 0.16.0, build pypi, its wheel's sha256 in build_detail" \
+      '[ "$(pl '\''.kind == "tool" and .build_label == "rapidgzip-2" and .version == "0.16.0" and .build == "pypi" and (.build_detail | test("2c3d75cb"))'\'' | cnt)" = 1 ]'
+    chk "W: the isal line for rapidgzip-2 is true (static $(pl '.kind == "isal" and .build_label == "rapidgzip-2"' | jq -r .static), $(pl '.kind == "isal" and .build_label == "rapidgzip-2"' | jq -r .runtime_isal_s) s of ISA-L), the pinned 0.14.5's false" \
+      '[ "$(pl '\''.kind == "isal" and .build_label == "rapidgzip-2"'\'' | jq -r .isal)" = true ] && [ "$(pl '\''.kind == "isal" and .build_label == "rapidgzip"'\'' | jq -r .isal)" = false ]'
+    chk "W: 6 rapidgzip-2 points (I2, I3, I4 x pe, se at the best p), all ok, identity ok, recording 0.16.0 pypi isal true" \
+      '[ "$(pp '\''.harness.decomp == "rapidgzip-2"'\'' | cnt)" = 6 ] && [ "$(pp '\''.harness.decomp == "rapidgzip-2" and .status == "ok" and .identity.ok == true and .rapidgzip.version == "0.16.0" and .rapidgzip.build == "pypi" and .rapidgzip.isal == true'\'' | cnt)" = 6 ]'
+    chk "W: the PyPI 0.14.5 points still record 0.14.5, isal false" \
+      '[ "$(pp '\''.harness.decomp == "rapidgzip" and .status == "ok" and (.rapidgzip.version != "0.14.5" or .rapidgzip.isal != false)'\'' | cnt)" = 0 ]'
+    chk "W: 0 defects; the warm-ups are the only skips" '[ "$(pp '\''.status != "ok"'\'' | jq -r .harness.status_detail | tr "\n" " ")" = "reference reference " ]'
+    r=$(mockrun W)
+    if [ -n "$REPORT" ]; then
+      python3 "$REPORT" "$r" "$r/report.md" > /dev/null 2>&1; ipr_rc=$?
+      ndef=$(grep -c 'DEFECT (' "$r/report.md" 2> /dev/null); ndef=${ndef:-0}
+      chk "W: the report's contract on its records: exit $ipr_rc, $ndef DEFECT lines (want 0, 0)" '[ "$ipr_rc" = 0 ] && [ "$ndef" = 0 ]'
+    fi
     ;;
   D)
     run_case D "$T/node-dcfail.sh" -e AK2_REHEARSE_INPUTS_TSV=/rh/inputs.tsv -e AK2_REHEARSE_DEADLINE_S=100000

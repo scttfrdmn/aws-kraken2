@@ -276,12 +276,24 @@ Rep 1 of everything runs first. Rep 2 runs rep 1's list in reverse and reuses re
 size and the main THP, with status `ok` and identity `ok`. The best p is the smallest p whose `wall_s` is within 1% of the minimum
 `wall_s`. If there is none, I3, I4, chunk and pipe at those threads are skipped (`no-best-p`).
 
-**A second rapidgzip build** (`ARGS="RG2_SCRIPT=scripts/g3/rg-build.sh"`, off by default; the
-script comes from another PR): the body runs the script with a work dir, takes the binary path
-from its last stdout line, checks it reports 0.14.5, records it (`tool` line, `build: source`), and
-adds I2, I3 and I4 at the best p with it per threads (`harness.decomp` `rapidgzip-src`). The
-intended build is 0.14.5 from source with ISA-L on and rpmalloc off (#95). Its decodes take the same
-identity checks.
+**A second rapidgzip build** (off by default; its use waits for #97). It adds I2, I3 and I4 at the
+best p with that build, per threads (`harness.decomp` `rapidgzip-2`). Its decodes take the same
+identity checks, and every one of its points records its `rapidgzip {version, build, isal,
+build_detail}`. Exactly one of:
+- `ARGS="RG2_WHEEL=<https url of a .whl>@<sha256>"`: a pinned wheel. It is downloaded, checked
+  against the sha256, and installed with `pip --require-hashes` into its own venv, as lever.sh
+  installs the first. The candidate is the rapidgzip 0.16.0 cp39 manylinux aarch64 wheel, which
+  carries ISA-L (#97: 0.14.5 cannot build ISA-L on aarch64; its setup.py builds ISA-L only on
+  x86_64). Its use waits for #97's verdict on whether 0.16.0 is crash-free on Graviton:
+
+  ```
+  RG2_WHEEL=https://files.pythonhosted.org/packages/46/5e/bfd0ba68015806de0959c6514a61b162548014c550a30e83be81943878c7/rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl@2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d
+  ```
+- `ARGS="RG2_SCRIPT=<script in the tree>"`: a source build. The body runs the script with a work
+  dir and takes the binary path from its last stdout line.
+
+Its version is read from `--version`, and its ISA-L verdict comes from the same detector (an
+`isal` line). Rehearsal case W installs the 0.16.0 wheel this way and runs it on a small matrix.
 
 **Threads** count against the same 64 vCPUs. Each record carries `decoder_threads` (p × mates),
 `total_threads` and `oversubscribed` (more than nproc). Oversubscribed points are kept, not
@@ -505,8 +517,8 @@ body, apart from the parameter lines, and the rehearsal checks that.
   - runtime: `rapidgzip -v`'s "Time spent decoding with ISA-L" on the se gz.
 
   `isal` is true if either finds ISA-L, false if static none and 0 s, else null; the `isal` line
-  records both. The rehearsal's real wheel gives false. The ISA-L build is the `RG2_SCRIPT` switch
-  above, not built here.
+  records both. The rehearsal's real wheel gives false. The ISA-L arm is the second-build switch
+  above (`RG2_WHEEL`, the 0.16.0 wheel), off until #97's verdict.
 - **I1 for ours** runs twice: through the same `gzip -dc` pipe as upstream (`AK2_DECOMPRESS=pipe`)
   and in process (ours' default).
 

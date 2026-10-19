@@ -29,8 +29,9 @@
 # Law 1: each sample's warm-up I0 must equal upstream at the pin (#95's g1_reference in G1_REF),
 # or the run stops (defect line, exit 1) before any other point; every later point's --output,
 # --report and sequence count must equal the warm-up's, otherwise a defect line.
-# RG2_SCRIPT (off by default): a second rapidgzip build (e.g. scripts/g3/rg-build.sh, 0.14.5 from
-# source with ISA-L, rpmalloc off) adds I2, I3 and I4 at the best p with it (decomp rapidgzip-src).
+# RG2_WHEEL / RG2_SCRIPT (off by default): a second rapidgzip build (a pinned wheel, e.g. the 0.16.0
+# aarch64 wheel with ISA-L, #97; or a source build) adds I2, I3 and I4 at the best p with it (decomp
+# rapidgzip-2).
 # Streams one `inputpath {json}` line per event (also in out/points.jsonl, pushed after every
 # point with the point's pidstat CSV, stderr and time records as out/points/<id>.tgz), so a TTL
 # kill loses no finished point. A point not started by DEADLINE (launch + TTL - MARGIN_S) is
@@ -239,10 +240,16 @@ TFMT='ak2time wall_s=%e maxrss_kb=%M exit=%x user_s=%U sys_s=%S'
 TIMEQ=$(printf '/usr/bin/time -f %q' "$TFMT")
 declare -A IDS=() IDJ=() BESTP=()
 POINTS_DONE=0; DEFECTS=0
-# The rapidgzip builds of the matrix, by the points' decomp label: rapidgzip (the PyPI wheel, always)
-# and, with RG2_SCRIPT set, rapidgzip-src (a second build, e.g. 0.14.5 from source with ISA-L and
-# rpmalloc off: scripts/g3/rg-build.sh, from another PR). The script gets a work dir and prints the
-# binary's path as its last stdout line; it must report rapidgzip $LV_RG_VERSION. Off by default.
+# The rapidgzip builds of the matrix, by the points' decomp label: rapidgzip (lever.sh's pinned PyPI
+# wheel, always) and, off by default, rapidgzip-2, a second build, from exactly one of:
+#   RG2_WHEEL=<https url>@<sha256>: a pinned wheel, downloaded, checked against the sha256 and
+#     installed with pip --require-hashes into its own venv (as lever.sh installs the first); e.g.
+#     the 0.16.0 cp39 aarch64 wheel, which carries ISA-L (#97). Its use waits for #97's verdict on
+#     whether 0.16.0 is crash-free on Graviton.
+#   RG2_SCRIPT=<script in the tree>: a source build (e.g. scripts/g3/rg-build.sh); it gets a work
+#     dir and prints the binary's path as its last stdout line. (0.14.5 cannot build ISA-L on
+#     aarch64, #97.)
+# Its version, build and ISA-L verdict go into every one of its points (rapidgzip {...}).
 declare -A RGBIN=() RGJS=()
 isal_of() {  # LABEL BIN STATIC: rapidgzip -v's ISA-L time on the se gz, then the isal verdict line
   local rt v
@@ -258,15 +265,36 @@ isal_of() {  # LABEL BIN STATIC: rapidgzip -v's ISA-L time on the se gz, then th
 RGBIN[rapidgzip]=$RG
 isal_of rapidgzip "$RG" "$ISAL_STATIC"; ISAL=$ISAL_V
 RGJS[rapidgzip]=$(jq -nc --arg v "$LV_RG_VERSION" --argjson isal "$ISAL" '{version:$v, build:"pypi", isal:$isal}')
-if [ -n "$RG2_SCRIPT" ]; then
+RG2="" RG2_SO="" RG2_BUILD="" RG2_DETAIL=""
+[ -n "$RG2_SCRIPT" ] && [ -n "$RG2_WHEEL" ] && fail "RG2_SCRIPT and RG2_WHEEL are exclusive"
+if [ -n "$RG2_WHEEL" ]; then
+  RG2_URL=${RG2_WHEEL%@*}; RG2_SHA=${RG2_WHEEL##*@}
+  [[ $RG2_URL == https://*.whl && $RG2_SHA =~ ^[0-9a-f]{64}$ ]] || fail "RG2_WHEEL must be <https url of a .whl>@<sha256> (got $RG2_WHEEL)"
+  mkdir -p "$W/rg2/wheels" || fail "mkdir rg2"
+  RG2_WHL=$W/rg2/wheels/$(basename "$RG2_URL")
+  curl -fsSL --retry 5 --retry-delay 5 "$RG2_URL" -o "$RG2_WHL" || fail "download of $RG2_URL failed"
+  [ "$(sha256sum "$RG2_WHL" | cut -d' ' -f1)" = "$RG2_SHA" ] || fail "$RG2_WHL: sha256 is not the pinned $RG2_SHA"
+  python3 -m venv "$W/rg2/venv" || fail "venv for the second rapidgzip failed"
+  printf '%s --hash=sha256:%s\n' "$RG2_WHL" "$RG2_SHA" > "$W/rg2/requirements.txt"
+  "$W/rg2/venv/bin/pip" install -q --no-deps --no-index --only-binary=:all: --require-hashes -r "$W/rg2/requirements.txt" > "$W/rg2/pip.log" 2>&1 ||
+    { tail -5 "$W/rg2/pip.log"; fail "pip install --require-hashes of $RG2_WHL failed"; }
+  RG2=$W/rg2/venv/bin/rapidgzip; RG2_SO=$(find "$W/rg2/venv" -name 'rapidgzip*.so' | head -1)
+  RG2_BUILD=pypi; RG2_DETAIL="PyPI wheel $(basename "$RG2_WHL") (sha256 $RG2_SHA, pip --require-hashes)"
+elif [ -n "$RG2_SCRIPT" ]; then
   [ -f "$RG2_SCRIPT" ] || fail "RG2_SCRIPT $RG2_SCRIPT is not in the tree"
   RG2=$(bash "$RG2_SCRIPT" "$W/rg2" 2> "$W/rg2.err" | tail -1) || { tail -20 "$W/rg2.err"; fail "$RG2_SCRIPT failed"; }
-  [ -x "$RG2" ] && "$RG2" --version 2>&1 | grep -q "version $LV_RG_VERSION" || fail "$RG2_SCRIPT gave '$RG2', not rapidgzip $LV_RG_VERSION"
-  RGBIN[rapidgzip-src]=$RG2
-  isal_of rapidgzip-src "$RG2" "$(ip_isal_static "$RG2")"; ISAL2=$ISAL_V
-  RGJS[rapidgzip-src]=$(jq -nc --arg v "$LV_RG_VERSION" --argjson isal "$ISAL2" --arg b "source ($RG2_SCRIPT, sha256 $(sha256sum "$RG2_SCRIPT" | cut -d' ' -f1))" \
-    '{version:$v, build:"source", isal:$isal, build_detail:$b}')
-  emit "$(jq -nc --arg p "$RG2" --arg s "$RG2_SCRIPT" --arg sha "$(sha256sum "$RG2" | cut -d' ' -f1)" '{kind:"tool", name:"rapidgzip", build_label:"rapidgzip-src", path:$p, script:$s, sha256:$sha}')"
+  RG2_SO=$(find "$(dirname "$(dirname "$RG2")")" -name 'rapidgzip*.so' 2> /dev/null | head -1)
+  RG2_BUILD=source; RG2_DETAIL="source build by $RG2_SCRIPT (sha256 $(sha256sum "$RG2_SCRIPT" | cut -d' ' -f1))"
+fi
+if [ -n "$RG2" ]; then
+  RG2_V=$("$RG2" --version 2>&1 | sed -n 's/.*rapidgzip version \([0-9][0-9.]*\).*/\1/p' | head -1)
+  [ -x "$RG2" ] && [ -n "$RG2_V" ] || fail "the second rapidgzip ($RG2) does not report a version"
+  RGBIN[rapidgzip-2]=$RG2
+  isal_of rapidgzip-2 "$RG2" "$(ip_isal_static "${RG2_SO:-$RG2}")"; ISAL2=$ISAL_V
+  RGJS[rapidgzip-2]=$(jq -nc --arg v "$RG2_V" --arg b "$RG2_BUILD" --argjson isal "$ISAL2" --arg d "$RG2_DETAIL" '{version:$v, build:$b, isal:$isal, build_detail:$d}')
+  emit "$(jq -nc --arg p "$RG2" --arg v "$RG2_V" --arg b "$RG2_BUILD" --arg d "$RG2_DETAIL" --arg so "$RG2_SO" \
+    --arg sosha "$([ -n "$RG2_SO" ] && sha256sum "$RG2_SO" | cut -d' ' -f1)" \
+    '{kind:"tool", name:"rapidgzip", build_label:"rapidgzip-2", version:$v, build:$b, build_detail:$d, path:$p, extension:$so, extension_sha256:$sosha}')"
 fi
 set_thp() {
   [ "$(cur_thp)" = "$1" ] && return 0
@@ -416,10 +444,10 @@ for s in $SAMPLES; do
   for t in $THREADS; do run1 "$s" I4 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip; done
   for c in $CHUNKS; do for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" "$c" "$PIPE_BYTES" "$MAIN_THP" rapidgzip; done; done
   [ "$PIPE_CONTRAST" = 1 ] && for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" 4096 default "$MAIN_THP" rapidgzip; done
-  if [ -n "${RGBIN[rapidgzip-src]:-}" ]; then
-    for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip-src; done
-    for t in $THREADS; do run1 "$s" I3 "$t" "${BESTP[$s:$t]}" - "$PIPE_BYTES" "$MAIN_THP" rapidgzip-src; done
-    for t in $THREADS; do run1 "$s" I4 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip-src; done
+  if [ -n "${RGBIN[rapidgzip-2]:-}" ]; then
+    for t in $THREADS; do run1 "$s" I2 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip-2; done
+    for t in $THREADS; do run1 "$s" I3 "$t" "${BESTP[$s:$t]}" - "$PIPE_BYTES" "$MAIN_THP" rapidgzip-2; done
+    for t in $THREADS; do run1 "$s" I4 "$t" "${BESTP[$s:$t]}" 4096 "$PIPE_BYTES" "$MAIN_THP" rapidgzip-2; done
   fi
   if [ "$ENGINE" = ours ]; then
     for t in $THREADS; do run1 "$s" I1 "$t" - - - "$MAIN_THP" inproc; done

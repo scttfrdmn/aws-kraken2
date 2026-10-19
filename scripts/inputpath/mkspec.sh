@@ -14,8 +14,9 @@
 # REPS (2), MAIN_THP (always), THP_CONTRAST (1 for upstream, 0 for ours), PIPE_BYTES (1048576),
 # PIPE_CONTRAST (1), POINT_TIMEOUT (900 s), ID_TIMEOUT (360 s), MARGIN_S (600), TTL (minutes, at
 # most the cost rule's), COST_MAX (5.00), AZ (us-west-2b), LAUNCH (0), G1_REF (#95's Law 1 reference,
-# results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json), RG2_SCRIPT (empty: a
-# second rapidgzip build's script, e.g. scripts/g3/rg-build.sh, adds I2-I4 at the best p with it).
+# results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json), RG2_WHEEL or RG2_SCRIPT
+# (empty: a second rapidgzip build, a pinned wheel <https url>@<sha256> or a source-build script, adds
+# I2-I4 at the best p with it; the 0.16.0 aarch64 wheel's use waits for #97's crash verdict).
 # THREADS defaults to "48 16" on c8gn (its TTL is 79 min).
 # Datasets: our Standard-8 copy (make stage-db) and every object of scripts/inputpath/inputs.tsv;
 # the accessions are inputs.tsv's. With no valid inputs.tsv the spec is still written (for make
@@ -31,12 +32,12 @@ case "$FAMILY" in c8g | c9g | c8gn) ;; *) echo "inputpath: FAMILY must be c8g, c
 case "$ENGINE" in upstream | ours) ;; *) echo "inputpath: ENGINE must be upstream or ours (got '$ENGINE')" >&2; exit 2 ;; esac
 THREADS="48 32 16"; [ "$FAMILY" = c8gn ] && THREADS="48 16"   # c8gn's 79-min TTL: the cut (#90 review)
 PS="16 8 4 2" CHUNKS="8192 16384" REPS=2 MAIN_THP=always PIPE_BYTES=1048576 PIPE_CONTRAST=1
-POINT_TIMEOUT=900 ID_TIMEOUT=360 MARGIN_S=600 TTL="" COST_MAX=5.00 AZ=us-west-2b LAUNCH=0 RG2_SCRIPT=""
+POINT_TIMEOUT=900 ID_TIMEOUT=360 MARGIN_S=600 TTL="" COST_MAX=5.00 AZ=us-west-2b LAUNCH=0 RG2_SCRIPT="" RG2_WHEEL=""
 G1_REF=results/inputpath/preflight-inputs-20261018T224922Z-89e0340/manifest.json   # #95's upstream I0 reference
 THP_CONTRAST=0; [ "$ENGINE" = upstream ] && THP_CONTRAST=1
 for kv in "$@"; do
   case "${kv%%=*}" in
-    THREADS | PS | CHUNKS | REPS | MAIN_THP | THP_CONTRAST | PIPE_BYTES | PIPE_CONTRAST | POINT_TIMEOUT | ID_TIMEOUT | MARGIN_S | TTL | COST_MAX | AZ | LAUNCH | G1_REF | RG2_SCRIPT)
+    THREADS | PS | CHUNKS | REPS | MAIN_THP | THP_CONTRAST | PIPE_BYTES | PIPE_CONTRAST | POINT_TIMEOUT | ID_TIMEOUT | MARGIN_S | TTL | COST_MAX | AZ | LAUNCH | G1_REF | RG2_SCRIPT | RG2_WHEEL)
       printf -v "${kv%%=*}" '%s' "${kv#*=}" ;;
     *) echo "inputpath: unknown $kv" >&2; exit 2 ;;
   esac
@@ -44,6 +45,9 @@ done
 for v in THREADS PS CHUNKS; do [[ "${!v}" =~ ^[0-9]+( [0-9]+)*$ ]] || { echo "inputpath: $v '${!v}' must be numbers" >&2; exit 2; }; done
 [ -s "$G1_REF" ] && git ls-files --error-unmatch "$G1_REF" > /dev/null 2>&1 || { echo "inputpath: G1_REF $G1_REF is not a committed file" >&2; exit 2; }
 [ -z "$RG2_SCRIPT" ] || [ -f "$RG2_SCRIPT" ] || { echo "inputpath: RG2_SCRIPT $RG2_SCRIPT is not in the tree" >&2; exit 2; }
+[ -z "$RG2_WHEEL" ] || [[ "$RG2_WHEEL" =~ ^https://[^@[:space:]]+\.whl@[0-9a-f]{64}$ ]] ||
+  { echo "inputpath: RG2_WHEEL must be <https url of a .whl>@<sha256> (got '$RG2_WHEEL')" >&2; exit 2; }
+[ -z "$RG2_SCRIPT" ] || [ -z "$RG2_WHEEL" ] || { echo "inputpath: RG2_SCRIPT and RG2_WHEEL are exclusive" >&2; exit 2; }
 [[ "$REPS$POINT_TIMEOUT$ID_TIMEOUT$MARGIN_S" =~ ^[0-9]+$ ]] && [[ "$THP_CONTRAST$PIPE_CONTRAST" =~ ^[01][01]$ ]] &&
   [[ "$MAIN_THP" =~ ^(always|never)$ ]] && [[ "$PIPE_BYTES" =~ ^[0-9]+$ ]] && [[ "$COST_MAX" =~ ^[0-9]+(\.[0-9]+)?$ ]] ||
   { echo "inputpath: bad REPS/POINT_TIMEOUT/ID_TIMEOUT/MARGIN_S/THP_CONTRAST/PIPE_CONTRAST/MAIN_THP/PIPE_BYTES/COST_MAX" >&2; exit 2; }
@@ -72,7 +76,7 @@ else
   READY=0
 fi
 RWJ=$(tr ' ' '\n' <<< "$RW" | sort -u | grep . | jq -R . | jq -sc .)
-PARAMS="FAMILY=$FAMILY; ENGINE=$ENGINE; TTL_S=$((TTL * 60)); REPS=$REPS; THREADS=\"$THREADS\"; PS=\"$PS\"; CHUNKS=\"$CHUNKS\"; MAIN_THP=$MAIN_THP; THP_CONTRAST=$THP_CONTRAST; PIPE_BYTES=$PIPE_BYTES; PIPE_CONTRAST=$PIPE_CONTRAST; POINT_TIMEOUT=$POINT_TIMEOUT; ID_TIMEOUT=$ID_TIMEOUT; MARGIN_S=$MARGIN_S; LAUNCH_LEAD_S=120; G1_REF=$G1_REF; RG2_SCRIPT=$RG2_SCRIPT"
+PARAMS="FAMILY=$FAMILY; ENGINE=$ENGINE; TTL_S=$((TTL * 60)); REPS=$REPS; THREADS=\"$THREADS\"; PS=\"$PS\"; CHUNKS=\"$CHUNKS\"; MAIN_THP=$MAIN_THP; THP_CONTRAST=$THP_CONTRAST; PIPE_BYTES=$PIPE_BYTES; PIPE_CONTRAST=$PIPE_CONTRAST; POINT_TIMEOUT=$POINT_TIMEOUT; ID_TIMEOUT=$ID_TIMEOUT; MARGIN_S=$MARGIN_S; LAUNCH_LEAD_S=120; G1_REF=$G1_REF; RG2_SCRIPT=$RG2_SCRIPT; RG2_WHEEL=$RG2_WHEEL"
 BODY=$(awk -v p="$PARAMS" '$0 == "@PARAMS@" {print "# Parameters (scripts/inputpath/mkspec.sh):"; print p; q = p; gsub(/'\''/, "", q); print "PARAMS_LINE='\''" q "'\''"; next} {print}' scripts/inputpath/inputpath.body.sh)
 grep -q '^PARAMS_LINE=' <<< "$BODY" || { echo "inputpath: the body has no @PARAMS@ line" >&2; exit 1; }
 SPEC=runs/inputpath-$FAMILY-$ENGINE.json
