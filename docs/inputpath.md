@@ -518,7 +518,7 @@ body, apart from the parameter lines, and the rehearsal checks that.
 
   `isal` is true if either finds ISA-L, false if static none and 0 s, else null; the `isal` line
   records both. The rehearsal's real wheel gives false. The ISA-L arm is the second-build switch
-  above (`RG2_WHEEL`, the 0.16.0 wheel), off until #97's verdict.
+  above (`RG2_WHEEL`, the 0.16.0 wheel). #97's verdict (results/g3/20261019-002817-f71164f): 0 failures in 1,732 identity jobs, so the null resolves. Scott, 2026-10-19: the sweep runs with it on; 0.16.0 is pinned from the next cohort, and c10 finishes on the 0.14.5 wheel.
 - **I1 for ours** runs twice: through the same `gzip -dc` pipe as upstream (`AK2_DECOMPRESS=pipe`)
   and in process (ours' default).
 
