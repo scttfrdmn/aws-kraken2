@@ -1,0 +1,67 @@
+rgfix-rehearse: record results/rehearse/g3-probe-rgfix-r8g.16xlarge-20261018T230022Z-1e2b626.log; runs/g3-probe-rgfix-r8g.16xlarge.json at 1e2b626; shell flags huB
+rgfix-rehearse: stand-in cohort: 20 files from 10 read sets, 242M
+rgfix-rehearse: the VM's kernel.core_pattern before: |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+rgfix-rehearse: run 1: loop started; inducing 3 crashes
+rgfix-rehearse: crash 1: SIGSEGV to pid 4417 (rga-venv)
+rgfix-rehearse: crash 2: SIGSEGV to pid 7442 (rg16-venv)
+rgfix-rehearse: crash 3: SIGSEGV to pid 10343 (rga-venv)
+rgfix-rehearse: run 1: body exit 0; the VM's kernel.core_pattern after: |/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h
+rgfix-rehearse: run 2 (failed build): body exit 0
+rgfix-rehearse: run 3 (rg-build.sh alone): exit 0
+rgfix-rehearse: ---- run 1
+rgfix-rehearse: ok: body exit 0
+rgfix-rehearse: ok: the body's shell flags (hBc) lack e
+rgfix-rehearse: ok: rg-build: ok, stored in the cache, 0 rpmalloc and 0 ISA-L symbols, measured (ok stored 0 0 140 s)
+rgfix-rehearse: ok: tool a: 0.14.5-norpmalloc, 0 rpmalloc functions, 0 ISA-L symbols, reports 0.14.5
+rgfix-rehearse: ok: tool b: 0.16.0, wheel 2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d, ISA-L symbols > 0
+rgfix-rehearse: ok: host line: 6 lanes, P 8, variants a b
+rgfix-rehearse: ok: core control ok
+rgfix-rehearse: ok: 20 reference lines, exit 0
+rgfix-rehearse: ok: plan: build_s > 0, expected_jobs > 0, per variant p = exp(-(9/3588) x n)
+rgfix-rehearse: ok: progress lines per variant
+rgfix-rehearse: ok: job lines streamed = pushed (1776)
+rgfix-rehearse: ok: every job lad_identity's: -P 8, lane = n mod 6, file = n mod 20, gzip = the reference; variant = (k + lane) mod 2
+rgfix-rehearse: ok: both variants ran jobs
+rgfix-rehearse: ok: exactly the 3 killed jobs failed, each exit 139 signal 11 (variants a b a )
+rgfix-rehearse: ok: every other job exit 0 with the reference sha256
+rgfix-rehearse: ok: job 127: failure line with a core, gdb frames and frame0
+rgfix-rehearse: ok: job 127: gdb output streamed through x/16i, and pushed
+rgfix-rehearse: ok: job 133: failure line with a core, gdb frames and frame0
+rgfix-rehearse: ok: job 133: gdb output streamed through x/16i, and pushed
+rgfix-rehearse: ok: job 398: failure line with a core, gdb frames and frame0
+rgfix-rehearse: ok: job 398: gdb output streamed through x/16i, and pushed
+rgfix-rehearse: ok: 2 cores pushed (of 3), valid zstd
+rgfix-rehearse: ok: 2 analysis bundles, the built wheel and the build log pushed
+rgfix-rehearse: ok: tally jobs = job lines
+rgfix-rehearse: ok: 2 summary lines, both ran, crashes a 2 b 1, p = exp(-(9/3588) x jobs), verdict crashed
+rgfix-rehearse: ok: restore line restored
+rgfix-rehearse: ok: the VM's core_pattern restored (|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h)
+rgfix-rehearse: ok: the cache entry in the stand-in S3 (recipe ecd891cb56d2)
+probe-rgfix {"kind":"rg-build","status":"ok","note":"built","version":"0.14.5","sdist_sha256":"faed46013a1a62a5193c49615a896683ea5c14ed4744bcb4bd1869b1420551d8","flags":"RAPIDGZIP_BUILD_RPMALLOC=disable RAPIDGZIP_BUILD_ISAL=disable","build_deps":"setuptools==71.1.0 --hash=sha256:33874fdc59b3188304b2e7c80d9029097ea31627180896fb549c578ceb8a0855 wheel==0.44.0 --hash=sha256:2376a90c98cc337d18623527a97c31797bd02bad0033d41547043a1cbfbe448f cython==3.0.12 --hash=sha256:0038c9bae46c459669390e53a1ec115f8
+probe-rgfix {"kind":"tool","variant":"a","version":"0.14.5-norpmalloc","reports":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.14.5","path":"/home/ec2-user/ak2/rga-venv/bin/rapidgzip","wheel":"rapidgzip-0.14.5-cp39-cp39-linux_aarch64.whl","wheel_sha256":"55ed0c30282a15df9754d564b22d0f06455de5dac207514a25b03a88e5bfc1e2","extension":"/home/ec2-user/ak2/rga-venv/lib/python3.9/site-packages/rapidgzip.cpython-39-aarch64-linux-gnu.so","extension_s
+probe-rgfix {"kind":"tool","variant":"b","version":"0.16.0","reports":"rapidgzip, CLI to the parallelized, indexed, and seekable gzip decoding library rapidgzip version 0.16.0","path":"/home/ec2-user/ak2/rg16-venv/bin/rapidgzip","wheel":"rapidgzip-0.16.0-cp39-cp39-manylinux_2_26_aarch64.manylinux_2_28_aarch64.whl","wheel_sha256":"2c3d75cb314b6dc28cf8fa238ff56f5ffae142af581f531fc674229184386f1d","extension":"/home/ec2-user/ak2/rg16-venv/lib/python3.9/site-packages/rapidgzip.cpython-39-aarch64-lin
+probe-rgfix {"kind":"host","gdb":"GNU gdb (Amazon Linux) 16.3-1.amzn2023.0.2","debuginfo_install":"ok","debuginfo_tail":"  python3.9-debuginfo-3.9.25-1.amzn2023.0.9.aarch64                                python3.9-debugsource-3.9.25-1.amzn2023.0.9.aarch64                             ","kernel":"6.12.13-200.fc41.aarch64","cpu":"","nproc":8,"lanes":6,"P":8,"lanes_rule":"lad_identity: IDL = nproc / (P + 2)","glibc":"ldd (GNU libc) 2.34","instance_type":"r8g.16xlarge","variants":["a","b"]}
+probe-rgfix {"kind":"core-control","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern":"/dev/shm/cores/core.%p.%e.%t","ulimit_c":"unlimited","ulimit_hc":"unlimited","systemd_coredump_socket":"","core_pipe_limit":"16","control_exit":139,"control_core":"/dev/shm/cores/core.593.python3.9.1792364590","control_core_bytes":2969600,"gdb_frames":25,"ok":true}
+probe-rgfix {"kind":"plan","lanes":6,"variants":["a","b"],"loop_start":1792364595,"last_start":1792364745,"end_basis":"rehearsal","loop_s":150,"ttl_rule_last_start":1792153564,"margin_s":900,"wrap_s":120,"job_timeout_s":300,"kill_grace_s":30,"ttl_end_est":1792154915,"boot":1792146035,"worst_end_before_ttl_s":-210281,"gzip_max_s":1,"build_s":140,"setup_s":171,"prior_job_s":12.3,"reference_rate":0.002508361204013378,"reference_rate_basis":"probe (g) 9/3588, results/g3/20261018-184334-cc920a8","exp
+probe-rgfix {"kind":"summary","variant":"a","version":"0.14.5-norpmalloc","mode":"identity","lanes":6,"ran":true,"build":"ok","jobs":888,"crashes":2,"sigsegv":2,"timeouts":0,"nonzero_exit":2,"wrong_sha":2,"wrong_sha_exit0":0,"gzip_mismatch":0,"crash_rate":0.0022522522522522522,"mean_step_s":0.47941328920759596,"reference_rate":0.002508361204013378,"p_no_crash_at_reference_rate":0.10780569968148787,"null_resolves":false,"verdict":"crashed: not a fix"}
+probe-rgfix {"kind":"summary","variant":"b","version":"0.16.0","mode":"identity","lanes":6,"ran":true,"build":"pypi wheel","jobs":888,"crashes":1,"sigsegv":1,"timeouts":0,"nonzero_exit":1,"wrong_sha":1,"wrong_sha_exit0":0,"gzip_mismatch":0,"crash_rate":0.0011261261261261261,"mean_step_s":0.4767432427621103,"reference_rate":0.002508361204013378,"p_no_crash_at_reference_rate":0.10780569968148787,"null_resolves":false,"verdict":"crashed: not a fix"}
+probe-rgfix {"kind":"restore","core_pattern_prev":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","core_pattern_now":"|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h","restored":true}
+rgfix-gdb 127 | #0  __GI___libc_write (nbytes=65536, buf=0xffff84939300, fd=1) at ../sysdeps/unix/sysv/linux/write.c:26
+rgfix-gdb 127 | #0  __GI___libc_write (nbytes=65536, buf=0xffff84939300, fd=1) at ../sysdeps/unix/sysv/linux/write.c:26
+rgfix-gdb 127 | #0  0x0000ffff94519794 in __futex_abstimed_wait_common64 (private=36894980, cancel=true, abstime=0x0, op=393, expected=10, futex_word=0xaaab0232f904) at futex-internal.c:57
+rgfix-gdb 127 | #0  0x0000ffff94519794 in __futex_abstimed_wait_common64 (private=36894980, cancel=true, abstime=0x0, op=393, expected=10, futex_word=0xaaab0232f904) at futex-internal.c:57
+rgfix-gdb 127 | #0  0x0000ffff94519794 in __futex_abstimed_wait_common64 (private=36894976, cancel=true, abstime=0x0, op=393, expected=2, futex_word=0xaaab0232f900) at futex-internal.c:57
+rgfix-gdb 127 | #0  0x0000ffff94519794 in __futex_abstimed_wait_common64 (private=36894976, cancel=true, abstime=0x0, op=393, expected=2, futex_word=0xaaab0232f900) at futex-internal.c:57
+variant  version            jobs  nonzero_exit  crashes  timeouts  wrong_sha  gzip_mismatch
+a        0.14.5-norpmalloc  888   2             2        0         2          0
+b        0.16.0             888   1             1        0         1          0
+rgfix-rehearse: ---- run 2 (failed build)
+rgfix-rehearse: ok: body exit 0
+rgfix-rehearse: ok: rg-build line status failed
+rgfix-rehearse: ok: the build log streamed (rg-build-log lines)
+rgfix-rehearse: ok: host variants b only; every job variant b
+rgfix-rehearse: ok: summary a not run (build failed), b ran with jobs
+rgfix-rehearse: ---- run 3 (rg-build.sh alone)
+rgfix-rehearse: ok: exit 0, cache hit, wheel sha256 = run 1's (55ed0c30282a)
+rgfix-rehearse: ok
+rgfix-rehearse: kept /Users/scttfrdmn/.ak2-rgfreh.YKNUTG

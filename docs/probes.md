@@ -12,6 +12,7 @@ validation run.
 | (d) #44 fix speed | `scripts/g3/hitbench.sh [PRE] [POST]` | local | our classifier before the fix (3201a75) and after, SRR062634 8M pairs against Standard-8, warm, alternating |
 | (f) classic `aws s3 cp` rate | `runs/g3-probe-awscp-r8gd.48xlarge.json` (`scripts/g3/probe-awscp.body.sh`) | 1 × r8gd.48xlarge | S0's staging of hash.k2d with the AMI's aws CLI as shipped onto one NVMe device, for 20 min or 300 GiB; sizes S0-T1 and S0-Tv's TTL ("The classic aws s3 cp rate" below) |
 | (g) rapidgzip crash | `runs/g3-probe-rgcrash-r8g.16xlarge.json` (`scripts/g3/probe-rgcrash.body.sh`) | 1 × r8g.16xlarge | `lad_identity` exactly (6 lanes of gzip -dc then rapidgzip 0.14.5 -P 8 on the c10 files), until 15 min before the TTL, with core capture, gdb and the null's resolution ("The rapidgzip crash probe" below) |
+| (h) rapidgzip fix | `runs/g3-probe-rgfix-r8g.16xlarge.json` (`scripts/g3/probe-rgfix.body.sh`, `scripts/g3/rg-build.sh`) | 1 × r8g.16xlarge | probe (g)'s conditions with two candidate fixes alternating per job: 0.14.5 built without rpmalloc, and the 0.16.0 wheel; P(no crash) at (g)'s 9/3588 per variant ("The rapidgzip fix probe" below) |
 | (e) host tunes (#41) | `runs/g3-probe-tune-x8g.24xlarge.json` (`scripts/g3/probe-tune.body.sh`, `scripts/g3/hosttune.sh`) | 1 × x8g.24xlarge | load and classify time under each candidate host-tune set, upstream `-M` on tmpfs and ours' engine N = 1, with fragmentation counters; fixes S3's set ("Host tunes" below) |
 
 ## Running them
@@ -272,6 +273,132 @@ It passes on observed output:
 A kill that lands after the last write leaves a correct sha256, so the check uses the exit status
 only. The TTL rule itself is not exercised in the rehearsal: the VM's uptime is not an instance's.
 Its inputs and result are in the `plan` line (`ttl_rule_last_start`, `worst_end_before_ttl_s`).
+
+## The rapidgzip fix probe (probe h)
+
+**Why:** probe (g) (`results/g3/20261018-184334-cc920a8`) reproduced the crash. rapidgzip 0.14.5
+under `lad_identity` on r8g.16xlarge had 9 SIGSEGVs in 3,588 jobs (0.25%), and every one gave a
+wrong sha256.
+- **6 cores** stop at `_rpmalloc_deallocate_small_or_medium` (rpmalloc.c:814). The main thread
+  is freeing `ChunkData` buffers through `Cache<…>::clear` ← `BlockFetcher::insertIntoCache` ←
+  `GzipChunkFetcher::processNextChunk`.
+- **3 cores** stop at `__aarch64_cas4_acq`.
+
+The diagnosis is a race in 0.14.5's bundled rpmalloc on aarch64. Scott approved this follow-up on
+2026-10-18. It runs the same conditions with two candidate fixes, about half the jobs each,
+alternating job by job within the identity lanes.
+
+```bash
+make rehearse SPEC=runs/g3-probe-rgfix-r8g.16xlarge.json
+make run GATE=g3 SPEC=runs/g3-probe-rgfix-r8g.16xlarge.json      # Scott's call
+make orphans
+```
+
+**The variants:**
+
+| variant | what | rpmalloc | ISA-L | from |
+|---|---|---|---|---|
+| a `0.14.5-norpmalloc` | 0.14.5 built from its sdist | off | off | `scripts/g3/rg-build.sh` |
+| b `0.16.0` | the PyPI cp39 manylinux aarch64 wheel, `--require-hashes` (`2c3d75cb…`) | on (a newer rpmalloc) | on | PyPI |
+
+**ISA-L cannot be on in (a).** 0.14.5 cannot build ISA-L on aarch64:
+- its `setup.py` builds ISA-L only with nasm on x86_64 (`canBuildIsal`);
+- its CMake sets `WITH_ISAL OFF` on ARM ("ARM compilation not yet implemented").
+
+So the crashing PyPI aarch64 wheel has no ISA-L either (`nm -D`: 0 ISA-L symbols, 23 rpmalloc
+functions). Against that wheel, (a) differs by **rpmalloc off and a different toolchain (gcc 11.5,
+AL2023), not a single-lever change**. The wheel was built with the manylinux toolchain; (a) is
+built with AL2023's gcc 11.5 against the system python.
+
+(b) changes the release, the rpmalloc version and ISA-L together. A clean (b) shows that 0.16.0
+works, not why. 0.16.0's `setup.py` builds ISA-L on aarch64, and its wheel exports 64 ISA-L
+symbols. ISA-L on aarch64 for the input-path sweep (#90) therefore comes from 0.16.0, not from a
+0.14.5 build.
+
+**`scripts/g3/rg-build.sh OUTDIR [S3_CACHE_PREFIX]`** is the one recipe for (a). Probe (h) uses
+it, and so will #90, so both run the same artefact.
+- **Pins:**
+  - the sdist `rapidgzip-0.14.5.tar.gz` by sha256
+    (`faed4601…`, `pip download --no-binary --require-hashes`);
+  - the build deps by `--require-hashes`: setuptools 71.1.0, wheel 0.44.0 and Cython 3.0.12
+    (inside the sdist's pyproject bounds);
+  - AL2023's gcc-c++ (11.5.0) and python3-devel;
+  - `pip wheel --no-build-isolation` with `RAPIDGZIP_BUILD_RPMALLOC=disable` and
+    `RAPIDGZIP_BUILD_ISAL=disable`.
+- **Verification:** the build log must say `rpmalloc: disable` and `isal: disable`. The `.so`
+  must export 0 rpmalloc functions and 0 ISA-L symbols, `--oss-attributions` must list neither,
+  and the version must be 0.14.5. Anything else is a failure.
+- **Cache:** the recipe's sha256 (the script, the pins, gcc, python and the arch) is the key, under
+  `s3://aws-kraken2-942542972736-us-west-2/aws-kraken2/data/rg-build/<recipe>/` (wheel and
+  `build.json`).
+  - A hit downloads the wheel and checks its sha256.
+  - A miss builds the wheel and stores it.
+  - The wheel is not bit-reproducible: two builds differ in sha256. The cache is what makes
+    later runs use the identical artefact.
+- **Build time:** 140 s in the rehearsal container (`build_s`, dnf included). Probe (h) measures it,
+  and the plan line records it.
+
+**What it does:** the same as probe (g), with these differences:
+- **The build.** rg-build.sh runs first. Its record streams as the `rg-build` line, and the build
+  log is pushed. If the build fails, the probe still runs: every job uses (b), (a)'s summary says
+  `not run: build failed`, and the tail of the build log streams as `rg-build-log | …` lines.
+- **The variant per job.** It is `(k + lane) mod 2` within lad_identity's lanes (n = l + 6k,
+  gzip -dc then rapidgzip -P 8 on the same file).
+- **The reference rate** is probe (g)'s measured 9/3588. It is the 0.14.5 wheel's crash rate under
+  this exact load. There is no 0.14.5-wheel control in this run, because the budget covers the two
+  candidates only, so the reference is the committed record.
+- **The plan line** adds `build_s`, `setup_s` and `per_variant` (expected jobs and
+  P(no crash) = exp(−(9/3588)·n)). The expected total uses probe (g)'s measured mean step,
+  12.3 s. Progress lines re-project per variant from this run's steps.
+- **The summary** has one line per variant: `ran`, `build`, `differs_from_crashing_wheel_by`,
+  `jobs`, `failures`, `crashes`, …, `p_no_crash_at_reference_rate`, `null_resolves` and a
+  `verdict`.
+  - A failure is any job with a non-zero exit, a wrong sha256 or a gzip mismatch. Wrong output
+    with exit 0 counts, as it does in the progress lines.
+  - `null_resolves` needs 0 failures, not just 0 crashes.
+  - The verdict is one of: *failed (… crashes, … failures incl. wrong output): not a fix*;
+    *no failure; the null resolves … the fix is supported (<what differs>)*; *no failure; the
+    null does NOT resolve*; *not run: build failed*.
+- **Stop rule and margins:** the same as probe (g), with TTL 150 min and cost_limit $9.43.
+
+**Resolution:** probe (g)'s loop ran 7,378 s. Probe (h) loses the build (about 3 min), so about
+7,200 s are left: 6 × 7,200 / 12.3 ≈ 3,500 jobs, about 1,750 per variant. At 9/3588, P(no crash) ≈
+exp(−4.4) ≈ 0.012 per variant, so each variant's null is expected to resolve. It needs about 1,195
+jobs per variant for 0.05.
+
+**Lines** (`probe-rgfix {json}`, and `out/rgfix.jsonl`): `rg-build`, `tool` (per variant: wheel,
+sha256s, `rpmalloc_functions`, `isal_symbols`, `oss_attributions`), `host` (`variants`),
+`core-control`, `reference`, `plan`, `progress`, `meminfo`, `job` (with `variant`), `failure`
+(with `variant` and `frame0`, gdb's `#0` line), `summary` × 2, and `restore`. gdb's output streams
+as `rgfix-gdb <n> | …` lines. Files: `rgfix.jsonl`, `rgfix-tally.tsv` (variant × version),
+`rg-build.log`, the built wheel, `gdb/`, `cores/` and the 2 bundles.
+
+**How to read it:**
+- **(a) clean and resolving** supports turning rpmalloc off as a fix for 0.14.5 on this host. It
+  does not isolate rpmalloc as the cause: (a) also changes the toolchain (gcc 11.5, AL2023), so it
+  is not a single-lever change. Together with the cores (6 of 9 in rpmalloc's free path), it is
+  consistent with rpmalloc.
+- **(a) failing** means rpmalloc is not the whole story. Read `frame0` in its failures.
+- **(b)** says whether 0.16.0 can replace 0.14.5 (S5, and #90's ISA-L arm), not why.
+
+**Rehearsal** (`scripts/lib/rgfix_rehearse.sh`, through `probe_rehearse.sh`): the body runs
+unmodified on AL2023 aarch64 containers (rootful podman, privileged) as ec2-user under
+`bash -e -c`, with a real source build. There are three runs:
+1. **The probe,** with a 150 s loop and 6 lanes. The host sends SIGSEGV to 3 running rapidgzip
+   processes (a, b, a), with MAXCORES=2.
+2. **A failed build,** via rg-build.sh's seam `AK2_REHEARSE_RGBUILD_SDIST_SHA256`, a wrong sdist
+   pin. (b) must still run.
+3. **rg-build.sh alone,** after run 1. It must be a cache hit giving run 1's wheel.
+
+The checks are in the script's header; they all run on observed output. They include:
+- the build is verified, with 0 rpmalloc and 0 ISA-L symbols;
+- (b)'s ISA-L symbols are present;
+- the variant alternation is exactly `(k + lane) mod 2`;
+- exactly the killed jobs fail, with cores and gdb output;
+- the summaries are a 2 / b 1 crashed, with the right p;
+- the VM's core_pattern is restored;
+- in run 2, (a) is `not run` and every job is (b);
+- run 3 is a cache hit with the same sha256.
 
 ## How the frontier uses them
 

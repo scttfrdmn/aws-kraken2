@@ -28,6 +28,7 @@
 #     trial wrote; the end record is back at the tree's boot values; tune_tables.py makes a
 #     selection row per regime and 12 cell rows.
 #   rgcrash: scripts/lib/rgcrash_rehearse.sh (an AL2023 container; its header lists what passes).
+#   rgfix: scripts/lib/rgfix_rehearse.sh (AL2023 containers with a real source build; its header lists what passes).
 # Usage: scripts/lib/probe_rehearse.sh runs/g3-probe-<kind>-<type>.json
 set +e
 set -uo pipefail
@@ -43,6 +44,7 @@ SHA=$(git rev-parse --short=7 HEAD)
 KIND=$(basename "$SPEC" .json | sed -E 's/^g3-probe-([a-z]+)-.*/\1/')
 # rgcrash: cores, sysctl and gdb need Linux, so it runs on an AL2023 container (its own record).
 [ "$KIND" = rgcrash ] && exec scripts/lib/rgcrash_rehearse.sh "$SPEC"
+[ "$KIND" = rgfix ] && exec scripts/lib/rgfix_rehearse.sh "$SPEC"
 mkdir -p results/rehearse || exit 1
 LOGF="results/rehearse/$(basename "$SPEC" .json)-$(date -u +%Y%m%dT%H%M%SZ)-$SHA.log"
 exec > >(tee "$LOGF") 2>&1

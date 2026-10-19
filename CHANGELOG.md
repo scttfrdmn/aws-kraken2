@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **G3 probe (h): two candidate fixes for the rapidgzip crash** (docs/probes.md, "The rapidgzip
+  fix probe"; Scott approved 2026-10-18). Probe (g) reproduced the crash (results/g3/20261018-184334-cc920a8:
+  9 SIGSEGV in 3,588 jobs, in 0.14.5's bundled rpmalloc on aarch64).
+  `runs/g3-probe-rgfix-r8g.16xlarge.json` (`scripts/g3/probe-rgfix.body.sh`) keeps probe (g)'s
+  conditions: lad_identity's 6 lanes, TTL 150 min, cost_limit $9.43.
+  - **Variants,** alternating per job:
+    - (a) 0.14.5 built from its sha256-pinned sdist with rpmalloc off. ISA-L stays off, because
+      0.14.5 cannot build it on aarch64 and the PyPI wheel has none. Against that wheel, (a)
+      differs by rpmalloc off and a different toolchain (gcc 11.5, AL2023): not a single-lever
+      change.
+    - (b) the pinned 0.16.0 wheel (rpmalloc and ISA-L on).
+  - **Summary:** per variant, P(no crash) = exp(−(9/3588)·jobs) and whether it resolves; about
+    1,750 jobs and P ≈ 0.012 are expected per variant. The verdict and `null_resolves` count any
+    failure (a non-zero exit, a wrong sha256, or a gzip mismatch), not only crashes.
+  - **If (a)'s build fails,** (b) still runs.
+  - **`scripts/g3/rg-build.sh`** is the one build recipe, also for #90. It pins the build deps by
+    hash, verifies the `.so` (0 rpmalloc functions, 0 ISA-L symbols, `--oss-attributions`) and
+    caches the wheel in S3 by recipe sha256.
+  - **Rehearsal:** `make rehearse` runs the body on AL2023 containers with a real source build:
+    the probe with 3 induced crashes, a failed build, and a cache hit.
 - **G2 input-path sweep (#90): pre-flight checks and inputs** (docs/inputpath.md, "Pre-flight
   and inputs"). `make inputpath-preflight` (`scripts/inputpath/preflight.sh`; also in CI) and
   `make inputpath-prep` (`scripts/inputpath/prep.sh`), with tool pins in `scripts/inputpath/lib.sh`:

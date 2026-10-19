@@ -1,0 +1,7 @@
+ok  clean 2000 jobs: null_resolves True, failures 0, verdict 'no failure; the null resolves (P(no crash at 9/3588) <= 0.05): the fix is supported (rpmalloc off and a different toolchain (gcc 11.5, AL2023), not a single-lever change)'
+ok  clean 500 jobs: null_resolves False, failures 0, verdict 'no failure; the null does NOT resolve (P(no crash at 9/3588) > 0.05)'
+ok  one wrong output, exit 0: null_resolves False, failures 1, verdict 'failed (0 crashes, 1 failures incl. wrong output): not a fix'
+ok  one gzip mismatch: null_resolves False, failures 1, verdict 'failed (0 crashes, 1 failures incl. wrong output): not a fix'
+ok  one crash: null_resolves False, failures 1, verdict 'failed (1 crashes, 1 failures incl. wrong output): not a fix'
+ok  not run: null_resolves False, failures 0, verdict 'not run: build failed (see the rg-build line and rg-build-log)'
+a differs_from_crashing_wheel_by: rpmalloc off and a different toolchain (gcc 11.5, AL2023), not a single-lever change
